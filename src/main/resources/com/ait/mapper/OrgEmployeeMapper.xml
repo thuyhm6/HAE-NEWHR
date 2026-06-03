@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.org.orgManage.mapper.OrgEmployeeMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.org.orgManage.model.OrgEmployee">
+        <result column="RESUME_NO" property="resumeNo" jdbcType="VARCHAR" />
+        <result column="EMPID" property="empId" jdbcType="VARCHAR" />
+        <result column="CHINESE_PINYIN" property="chinesePinyin" jdbcType="VARCHAR" />
+        <result column="ENGLISH_NAME" property="englishName" jdbcType="VARCHAR" />
+        <result column="POSITION_NO" property="positionNo" jdbcType="VARCHAR" />
+        <result column="DUTY_NO" property="dutyNo" jdbcType="VARCHAR" />
+        <result column="POST_NO" property="postNo" jdbcType="VARCHAR" />
+        <result column="STATUS_CODE" property="statusCode" jdbcType="VARCHAR" />
+        <result column="DATE_STARTED" property="dateStarted" jdbcType="DATE" />
+        <result column="DATE_LEFT" property="dateLeft" jdbcType="DATE" />
+        <result column="END_PROBATION_DATE" property="endProbationDate" jdbcType="DATE" />
+        <result column="EMP_TYPE_CODE" property="empTypeCode" jdbcType="VARCHAR" />
+        <result column="CPNY_ID" property="cpnyId" jdbcType="VARCHAR" />
+        <result column="PERSON_ID" property="personId" jdbcType="VARCHAR" />
+        <result column="DEPTNO" property="deptNo" jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR" />
+        <result column="WORK_AREA" property="workArea" jdbcType="VARCHAR" />
+        <result column="ID_CARD_NO" property="idCardNo" jdbcType="VARCHAR" />
+        <result column="SHIFT_NO" property="shiftNo" jdbcType="VARCHAR" />
+        <result column="EMP_OFFICE" property="empOffice" jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="CREATED_BY" property="createdBy" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR" />
+        <result column="ACTIVITY" property="activity" jdbcType="DECIMAL" />
+        <result column="MAIN_BUSINESS" property="mainBusiness" jdbcType="VARCHAR" />
+        <result column="EXPERIENCE" property="experience" jdbcType="VARCHAR" />
+        <result column="INCUMBENCY" property="incumbency" jdbcType="VARCHAR" />
+        <result column="PROMOTION_DAY" property="promotionDay" jdbcType="VARCHAR" />
+        <result column="UPDATED_IP" property="updatedIp" jdbcType="VARCHAR" />
+        <result column="CREATED_IP" property="createdIp" jdbcType="VARCHAR" />
+        <result column="KOREAN_NAME" property="koreanName" jdbcType="VARCHAR" />
+        <result column="STANDARD_POSITION" property="standardPosition" jdbcType="VARCHAR" />
+        <result column="EMP_COMMON_TYPE_CODE" property="empCommonTypeCode" jdbcType="VARCHAR" />
+        <result column="AFFIRM_WORK_AGE" property="affirmWorkAge" jdbcType="VARCHAR" />
+        <result column="WORK_HOUR_TYPE" property="workHourType" jdbcType="VARCHAR" />
+        <result column="DIRECT_INDIRECT_DISTINCTION" property="directIndirectDistinction" jdbcType="VARCHAR" />
+        <result column="RECRUIT_TYPE" property="recruitType" jdbcType="VARCHAR" />
+        <result column="INSURANCE_TYPE" property="insuranceType" jdbcType="VARCHAR" />
+        <result column="INSURANCE_AREA" property="insuranceArea" jdbcType="VARCHAR" />
+        <result column="FILENUMBER" property="fileNumber" jdbcType="VARCHAR" />
+        <result column="EMPLOYEE_OWNED" property="employeeOwned" jdbcType="VARCHAR" />
+        <result column="WAGE_TYPE" property="wageType" jdbcType="VARCHAR" />
+        <result column="POSITION" property="position" jdbcType="VARCHAR" />
+        <result column="DATE_LAST_UP" property="dateLastUp" jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO" property="postGradeNo" jdbcType="VARCHAR" />
+        <result column="POST_FAMILY" property="postFamily" jdbcType="VARCHAR" />
+        <result column="OLD_DEPTNO" property="oldDeptNo" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        RESUME_NO, EMPID, CHINESE_PINYIN, ENGLISH_NAME, POSITION_NO, DUTY_NO, POST_NO, 
+        STATUS_CODE, DATE_STARTED, DATE_LEFT, END_PROBATION_DATE, EMP_TYPE_CODE, CPNY_ID, 
+        PERSON_ID, DEPTNO, LOCAL_NAME, WORK_AREA, ID_CARD_NO, SHIFT_NO, EMP_OFFICE, 
+        CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ACTIVITY, MAIN_BUSINESS, EXPERIENCE, 
+        INCUMBENCY, PROMOTION_DAY, UPDATED_IP, CREATED_IP, KOREAN_NAME, STANDARD_POSITION, 
+        EMP_COMMON_TYPE_CODE, AFFIRM_WORK_AGE, WORK_HOUR_TYPE, DIRECT_INDIRECT_DISTINCTION, 
+        RECRUIT_TYPE, INSURANCE_TYPE, INSURANCE_AREA, FILENUMBER, EMPLOYEE_OWNED, WAGE_TYPE, 
+        POSITION, DATE_LAST_UP, POST_GRADE_NO, POST_FAMILY, OLD_DEPTNO
+    </sql>
+
+    <select id="getEmployeesByDept" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM ORG_EMPLOYEE
+        WHERE RESUME_NO = #{resumeNo} AND DEPTNO = #{deptNo}
+    </select>
+
+    <update id="updateEmployeeDept" parameterType="map">
+        UPDATE ORG_EMPLOYEE
+        SET DEPTNO = #{targetDeptNo},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        WHERE RESUME_NO = #{resumeNo}
+          AND EMPID IN
+          <foreach collection="empIds" item="empId" open="(" separator="," close=")">
+              #{empId}
+          </foreach>
+    </update>
+
+</mapper>

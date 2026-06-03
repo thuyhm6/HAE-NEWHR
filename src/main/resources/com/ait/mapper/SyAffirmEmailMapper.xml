@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.syAffirm.mapper.SyAffirmEmailMapper">
+
+    <resultMap id="SyAffirmEmailResultMap" type="com.ait.sy.syAffirm.dto.SyAffirmEmailDto">
+        <id property="seq" column="SEQ"/>
+        <result property="affirmType" column="AFFIRM_TYPE"/>
+        <result property="applyNo" column="APPLY_NO"/>
+        <result property="applyType" column="APPLY_TYPE"/>
+        <result property="applyPersonId" column="APPLY_PERSON_ID"/>
+        <result property="affirmPersonId" column="AFFIRM_PERSON_ID"/>
+        <result property="title" column="TITLE"/>
+        <result property="affirmLevel" column="AFFIRM_LEVEL"/>
+        <result property="affirmFlag" column="AFFIRM_FLAG"/>
+        <result property="affirmUrl" column="AFFIRM_URL"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="applyTypeCode" column="APPLY_TYPE_CODE"/>
+        <result property="applyPersonInfo" column="APPLY_PERSON_INFO"/>
+        <result property="applyAffirmFlag" column="APPLY_AFFIRM_FLAG"/>
+        <result property="applyFlag" column="APPLY_FLAG"/>
+        <result property="affirmDate" column="AFFIRM_DATE"/>
+        <result property="readFlag" column="READ_FLAG"/>
+        <result property="emailTitle" column="EMAIL_TITLE"/>
+        <result property="emailContent" column="EMAIL_CONTENT"/>
+        <result property="sendFlag" column="SEND_FLAG"/>
+        <result property="affirmContent" column="AFFIRM_CONTENT"/>
+
+        <result property="empId" column="EMP_ID"/>
+        <result property="localName" column="LOCAL_NAME"/>
+        <result property="positionNo" column="POSITION_NO"/>
+        <result property="deptName" column="DEPT_NAME"/>
+        <result property="positionName" column="POSITION_NAME"/>
+        <result property="postionName" column="POSTIONNAME"/>
+        <result property="affirmorId" column="AFFIRMOR_ID"/>
+        <result property="lastName" column="LAST_NAME"/>
+    </resultMap>
+
+    <select id="selectList" resultMap="SyAffirmEmailResultMap">
+        SELECT
+            SEQ, AFFIRM_TYPE, APPLY_NO, APPLY_TYPE, APPLY_PERSON_ID,
+            AFFIRM_PERSON_ID, TITLE, AFFIRM_LEVEL, AFFIRM_FLAG,
+            AFFIRM_URL, ACTIVITY, APPLY_TYPE_CODE, APPLY_PERSON_INFO,
+            APPLY_AFFIRM_FLAG, APPLY_FLAG, READ_FLAG, EMAIL_TITLE,
+            EMAIL_CONTENT, SEND_FLAG, AFFIRM_CONTENT,
+            TO_CHAR(CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE, 
+            CREATED_IP, CREATED_BY, 
+            TO_CHAR(UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE, 
+            UPDATED_IP, UPDATED_BY, 
+            TO_CHAR(AFFIRM_DATE, 'YYYY-MM-DD HH24:MI:SS') AS AFFIRM_DATE
+        FROM SY_AFFIRM_EMAIL
+        WHERE 1=1
+        <if test="applyNo != null and applyNo != ''">
+            AND APPLY_NO LIKE '%' || #{applyNo, jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="applyPersonId != null and applyPersonId != ''">
+            AND UPPER(APPLY_PERSON_ID) LIKE '%' || UPPER(#{applyPersonId, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="affirmPersonId != null and affirmPersonId != ''">
+            AND UPPER(AFFIRM_PERSON_ID) LIKE '%' || UPPER(#{affirmPersonId, jdbcType=VARCHAR}) || '%'
+        </if>
+        ORDER BY SEQ DESC
+    </select>
+
+    <select id="selectById" resultMap="SyAffirmEmailResultMap">
+        SELECT
+            SEQ, AFFIRM_TYPE, APPLY_NO, APPLY_TYPE, APPLY_PERSON_ID,
+            AFFIRM_PERSON_ID, TITLE, AFFIRM_LEVEL, AFFIRM_FLAG,
+            AFFIRM_URL, ACTIVITY, APPLY_TYPE_CODE, APPLY_PERSON_INFO,
+            APPLY_AFFIRM_FLAG, APPLY_FLAG, READ_FLAG, EMAIL_TITLE,
+            EMAIL_CONTENT, SEND_FLAG, AFFIRM_CONTENT,
+            TO_CHAR(CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE, 
+            CREATED_IP, CREATED_BY, 
+            TO_CHAR(UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE, 
+            UPDATED_IP, UPDATED_BY, 
+            TO_CHAR(AFFIRM_DATE, 'YYYY-MM-DD HH24:MI:SS') AS AFFIRM_DATE
+        FROM SY_AFFIRM_EMAIL
+        WHERE SEQ = #{seq, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SY_AFFIRM_EMAIL (
+            SEQ, AFFIRM_TYPE, APPLY_NO, APPLY_TYPE, APPLY_PERSON_ID,
+            AFFIRM_PERSON_ID, TITLE, AFFIRM_LEVEL, AFFIRM_FLAG,
+            AFFIRM_URL, ACTIVITY,
+            APPLY_TYPE_CODE, APPLY_PERSON_INFO, APPLY_AFFIRM_FLAG, APPLY_FLAG,
+            READ_FLAG, EMAIL_TITLE, EMAIL_CONTENT, SEND_FLAG, AFFIRM_DATE,
+            CREATE_DATE, CREATED_BY, CREATED_IP
+        ) VALUES (
+            ESS_AFFIRM_SEQ.NEXTVAL, NVL(#{affirmType, jdbcType=VARCHAR}, 1), #{applyNo, jdbcType=VARCHAR}, #{applyType, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR},
+            #{affirmPersonId, jdbcType=VARCHAR}, GET_CODE_NAME(#{applyType, jdbcType=VARCHAR}, #{lang, jdbcType=VARCHAR}) || ' ' || #{lastName, jdbcType=VARCHAR}, #{affirmLevel, jdbcType=VARCHAR}, 0,
+            DECODE(#{applyTypeCode, jdbcType=VARCHAR},'31','/ess/infoApply/viewApprovaledOt','21','/ess/infoApply/viewApprovaledLeave','218197','/ess/infoApply/viewAttendanceEx'),
+            DECODE(#{affirmLevel, jdbcType=VARCHAR},1,0,3),
+            #{applyTypeCode, jdbcType=VARCHAR}, #{applyPersonInfo, jdbcType=VARCHAR}, #{applyAffirmFlag, jdbcType=VARCHAR}, #{applyFlag, jdbcType=VARCHAR},
+            0,  '【approval to remind】【CHR】' || GET_CODE_NAME(#{applyTypeCode, jdbcType=VARCHAR},#{lang, jdbcType=VARCHAR}) || #{lastName, jdbcType=VARCHAR}, 
+            #{emailContent, jdbcType=VARCHAR}, DECODE(#{affirmLevel, jdbcType=VARCHAR},1,0,2), DECODE(#{affirmLevel, jdbcType=VARCHAR},0,SYSDATE),
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE SY_AFFIRM_EMAIL
+        SET
+            AFFIRM_TYPE = #{affirmType, jdbcType=VARCHAR},
+            APPLY_NO = #{applyNo, jdbcType=VARCHAR},
+            APPLY_TYPE = #{applyType, jdbcType=VARCHAR},
+            APPLY_PERSON_ID = #{applyPersonId, jdbcType=VARCHAR},
+            AFFIRM_PERSON_ID = #{affirmPersonId, jdbcType=VARCHAR},
+            TITLE = #{title, jdbcType=VARCHAR},
+            AFFIRM_LEVEL = #{affirmLevel, jdbcType=VARCHAR},
+            AFFIRM_FLAG = #{affirmFlag, jdbcType=VARCHAR},
+            AFFIRM_URL = #{affirmUrl, jdbcType=VARCHAR},
+            ACTIVITY = NVL(#{activity, jdbcType=VARCHAR}, ACTIVITY),
+            APPLY_TYPE_CODE = #{applyTypeCode, jdbcType=VARCHAR},
+            APPLY_PERSON_INFO = #{applyPersonInfo, jdbcType=VARCHAR},
+            APPLY_AFFIRM_FLAG = #{applyAffirmFlag, jdbcType=VARCHAR},
+            APPLY_FLAG = NVL(#{applyFlag, jdbcType=VARCHAR}, APPLY_FLAG),
+            AFFIRM_DATE = <choose>
+                <when test="affirmDate != null and affirmDate != ''">
+                    TO_DATE(#{affirmDate, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI:SS')
+                </when>
+                <otherwise>AFFIRM_DATE</otherwise>
+            </choose>,
+            READ_FLAG = NVL(#{readFlag, jdbcType=VARCHAR}, READ_FLAG),
+            EMAIL_TITLE = #{emailTitle, jdbcType=VARCHAR},
+            EMAIL_CONTENT = #{emailContent, jdbcType=VARCHAR},
+            SEND_FLAG = #{sendFlag, jdbcType=VARCHAR},
+            AFFIRM_CONTENT = #{affirmContent, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE SEQ = #{seq, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM SY_AFFIRM_EMAIL WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- Danh sách đơn chờ phê duyệt của người dùng hiện tại -->
+    <select id="selectApprovalEmailList" parameterType="com.ait.sy.syAffirm.dto.SyAffirmEmailDto"
+            resultMap="SyAffirmEmailResultMap">
+        SELECT SEQ,
+               AFFIRM_TYPE,
+               APPLY_NO,
+               APPLY_TYPE,
+               APPLY_PERSON_ID,
+               AFFIRM_PERSON_ID,
+               TITLE,
+               AFFIRM_LEVEL,
+               AFFIRM_FLAG,
+               AFFIRM_URL,
+               APPLY_FLAG,
+               APPLY_TYPE_CODE,
+               APPLY_PERSON_INFO,
+               GET_CODE_NAME(APPLY_AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS APPLY_AFFIRM_FLAG,
+               TO_CHAR(UPDATE_DATE, 'YYYY.MM.DD HH24:MI:SS') AS UPDATE_DATE,
+               ACTIVITY,
+               READ_FLAG
+          FROM SY_AFFIRM_EMAIL EM
+         WHERE ACTIVITY = 0
+           AND AFFIRM_PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           AND APPLY_AFFIRM_FLAG NOT IN ('14014310', '14014309', '14014308')
+           AND NOT EXISTS (SELECT 1
+                  FROM ESS_LEAVE_APPLY_TB TB
+                 WHERE TB.APPLY_NO = EM.APPLY_NO
+                   AND TB.BATCH_YN = 2)
+           AND NOT EXISTS (SELECT 1
+                  FROM ESS_APPLY_OT OT
+                 WHERE OT.APPLY_NO = EM.APPLY_NO
+                   AND OT.BATCH_YN = 2)
+        <if test="titleSearch != null and titleSearch != ''">
+           AND UPPER(TITLE) LIKE '%' || UPPER(#{titleSearch, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="applyTypeCodeSearch != null and applyTypeCodeSearch != ''">
+           AND APPLY_TYPE_CODE = #{applyTypeCodeSearch, jdbcType=VARCHAR}
+        </if>
+         ORDER BY CREATE_DATE DESC
+    </select>
+
+    <!-- Danh sách đơn đã duyệt của người dùng hiện tại (tháng hiện tại) -->
+    <select id="selectApprovaledEmailList" parameterType="com.ait.sy.syAffirm.dto.SyAffirmEmailDto"
+            resultMap="SyAffirmEmailResultMap">
+        SELECT SEQ,
+               AFFIRM_TYPE,
+               APPLY_NO,
+               APPLY_TYPE,
+               APPLY_PERSON_ID,
+               AFFIRM_PERSON_ID,
+               TITLE,
+               AFFIRM_LEVEL,
+               AFFIRM_FLAG,
+               AFFIRM_URL,
+               APPLY_FLAG,
+               APPLY_TYPE_CODE,
+               APPLY_PERSON_INFO,
+               GET_CODE_NAME(APPLY_AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS APPLY_AFFIRM_FLAG,
+               TO_CHAR(UPDATE_DATE, 'DD.MM.YYYY HH24:MI:SS') AS UPDATE_DATE,
+               ACTIVITY,
+               READ_FLAG
+          FROM SY_AFFIRM_EMAIL EM
+         WHERE ACTIVITY IN ('0', '1')
+           AND AFFIRM_PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           AND AFFIRM_TYPE NOT IN (3, 4)
+           AND APPLY_AFFIRM_FLAG IN ('14014308', '14014309', '14014310')
+           AND NOT EXISTS (SELECT 1
+                  FROM ESS_LEAVE_APPLY_TB TB
+                 WHERE TB.APPLY_NO = EM.APPLY_NO
+                   AND TB.BATCH_YN = 2)
+           AND NOT EXISTS (SELECT 1
+                  FROM ESS_APPLY_OT OT
+                 WHERE OT.APPLY_NO = EM.APPLY_NO
+                   AND OT.BATCH_YN = 2)
+           AND CREATE_DATE &gt;= TO_DATE(TO_CHAR(SYSDATE, 'YYYY.MM') || '.01', 'YYYY.MM.DD')
+        <if test="titleSearch != null and titleSearch != ''">
+           AND UPPER(TITLE) LIKE '%' || UPPER(#{titleSearch, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="applyTypeCodeSearch != null and applyTypeCodeSearch != ''">
+           AND APPLY_TYPE_CODE = #{applyTypeCodeSearch, jdbcType=VARCHAR}
+        </if>
+         ORDER BY CREATE_DATE DESC
+    </select>
+
+    <!-- Gọi stored procedure phê duyệt / từ chối đơn -->
+    <update id="callAffirmExecute" parameterType="java.util.Map" statementType="CALLABLE">
+        {CALL PKG_AFFIRM_EMAIL.PR_AFFIRM_EXECUTE(
+            #{applyNo,       jdbcType=VARCHAR, mode=IN},
+            #{applyType,     jdbcType=VARCHAR, mode=IN},
+            #{applyFlag,     jdbcType=VARCHAR, mode=IN},
+            #{flag,          jdbcType=INTEGER, mode=IN},
+            #{affirmContent, jdbcType=VARCHAR, mode=IN},
+            #{adminID,       jdbcType=VARCHAR, mode=IN},
+            #{adminIP,       jdbcType=VARCHAR, mode=IN},
+            #{affirmLevel,   jdbcType=VARCHAR, mode=IN},
+            #{message,       jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <select id="countPendingApprovals" parameterType="com.ait.sy.syAffirm.dto.SyAffirmEmailDto" resultType="int">
+        SELECT COUNT(1)
+          FROM SY_AFFIRM_EMAIL EM
+         WHERE ACTIVITY = 0
+           AND AFFIRM_PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           AND APPLY_AFFIRM_FLAG NOT IN ('14014310', '14014309', '14014308')
+        <if test="applyTypeCodeSearch != null and applyTypeCodeSearch != ''">
+           AND APPLY_TYPE_CODE = #{applyTypeCodeSearch, jdbcType=VARCHAR}
+        </if>
+           AND NOT EXISTS (SELECT 1
+                  FROM ESS_LEAVE_APPLY_TB TB
+                 WHERE TB.APPLY_NO = EM.APPLY_NO
+                   AND TB.BATCH_YN = 2)
+           AND NOT EXISTS (SELECT 1
+                  FROM ESS_APPLY_OT OT
+                 WHERE OT.APPLY_NO = EM.APPLY_NO
+                   AND OT.BATCH_YN = 2)
+    </select>
+
+    <select id="countHrmPendingLeave" resultType="int">
+        SELECT COUNT(1)
+          FROM ESS_LEAVE_APPLY_TB EL
+         WHERE EL.AFFIRM_FLAG = 14014308
+           AND EL.PERSON_ID NOT LIKE '111111%'
+           AND EL.ACTIVITY = '1'
+           AND EL.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND EL.CONFIRM_FLAG = '0'
+    </select>
+
+    <select id="countHrmPendingAnomalous" resultType="int">
+        SELECT COUNT(1)
+          FROM ESS_CARD_APPLY_TB EC
+         WHERE EC.AFFIRM_FLAG = '14014308'
+           AND EC.ACTIVITY = '1'
+           AND EC.PERSON_ID NOT LIKE '111111%'
+           AND EC.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND EC.CONFIRM_FLAG = '0'
+    </select>
+
+    <!-- Danh sách thông báo đơn đã duyệt (AFFIRM_TYPE IN 3,4) trong 2 tháng gần nhất -->
+    <select id="selectNoticeedEmailList" parameterType="com.ait.sy.syAffirm.dto.SyAffirmEmailDto"
+            resultMap="SyAffirmEmailResultMap">
+        SELECT SEQ,
+               AFFIRM_TYPE,
+               APPLY_NO,
+               APPLY_TYPE,
+               APPLY_PERSON_ID,
+               AFFIRM_PERSON_ID,
+               TITLE,
+               AFFIRM_LEVEL,
+               AFFIRM_FLAG,
+               AFFIRM_URL,
+               APPLY_FLAG,
+               APPLY_TYPE_CODE,
+               APPLY_PERSON_INFO,
+               GET_CODE_NAME(APPLY_AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS APPLY_AFFIRM_FLAG,
+               TO_CHAR(UPDATE_DATE, 'DD.MM.YYYY HH24:MI:SS') AS UPDATE_DATE,
+               ACTIVITY,
+               READ_FLAG
+          FROM SY_AFFIRM_EMAIL
+         WHERE AFFIRM_PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           AND AFFIRM_TYPE IN (3, 4)
+           AND CREATE_DATE &gt;=
+               ADD_MONTHS(TO_DATE(TO_CHAR(SYSDATE, 'YYYY.MM') || '.01', 'YYYY.MM.DD'), -1)
+        <if test="titleSearch != null and titleSearch != ''">
+           AND UPPER(TITLE) LIKE '%' || UPPER(#{titleSearch, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="applyTypeCodeSearch != null and applyTypeCodeSearch != ''">
+           AND APPLY_TYPE_CODE = #{applyTypeCodeSearch, jdbcType=VARCHAR}
+        </if>
+         ORDER BY CREATE_DATE DESC
+    </select>
+
+    <select id="getAffirmorList" statementType="CALLABLE" parameterType="java.util.Map">
+        { #{resultList, mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet, resultMap=SyAffirmEmailResultMap} = 
+          call PKG_AFFIRM_EMAIL.GET_AFFIRMOR_LIST_IMPROVE(
+            #{applyTypeNo, mode=IN, jdbcType=VARCHAR},
+            #{personId, mode=IN, jdbcType=VARCHAR},
+            #{applyTypeCode, mode=IN, jdbcType=VARCHAR},
+            #{applyLength, mode=IN, jdbcType=VARCHAR},
+            #{lang, mode=IN, jdbcType=VARCHAR}
+          ) 
+        }
+    </select>
+
+</mapper>

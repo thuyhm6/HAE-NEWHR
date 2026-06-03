@@ -1,0 +1,356 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <form id="aec_searchForm" class="row g-3 mb-3">
+                        <div class="col-md-2">
+                            <label for="aec_searchEmpId" class="form-label" th:text="#{common.search.empIdOrName}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="aec_searchEmpId"
+                                th:placeholder="#{common.placeholder.empId}" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="aec_searchFromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
+                            <input type="date" class="form-control" id="aec_searchFromDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="aec_searchToDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
+                            <input type="date" class="form-control" id="aec_searchToDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="aec_searchConfirmFlag" class="form-label" th:text="#{applyAtt.search.confirmFlag}">Trạng thái xác nhận</label>
+                            <select class="form-select" id="aec_searchConfirmFlag">
+                                <option value="" th:text="#{common.selectAll}">-- Tất cả --</option>
+                                <option value="0" selected th:text="#{applyAtt.confirmFlag.notConfirmed}">Chưa xác nhận</option>
+                                <option value="1" th:text="#{applyAtt.confirmFlag.confirmed}">Đã xác nhận</option>
+                                <option value="2" th:text="#{applyAtt.confirmFlag.rejected}">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end flex-wrap gap-1">
+                            <button type="button" class="btn btn-primary" onclick="aecSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tìm kiếm</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="aecClearSearch()">
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="aecBatchAction('1')">
+                                <i class="bx bx-check-circle"></i> <span th:text="#{lc.btn.batchApprove}">Duyệt hàng loạt</span>
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="aecBatchAction('2')">
+                                <i class="bx bx-x-circle"></i> <span th:text="#{lc.btn.batchReject}">Từ chối hàng loạt</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Data Table -->
+                    <div class="table-responsive">
+                        <table id="aec_dataTable" class="table table-striped table-bordered table-hover"
+                            style="min-width:2000px">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th><input type="checkbox" id="aec_chkAll" title="Chọn tất cả"></th>
+                                    <th th:text="#{common.no.serial}">NO.</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{applyAtt.applicant}">Người xin phép</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{common.position}">Chức vụ</th>
+                                    <th th:text="#{aec.col.itemName}">Phân loại</th>
+                                    <th th:text="#{aec.col.arDateStr}">Ngày công</th>
+                                    <th th:text="#{aec.col.scanTime}">Thời gian quẹt thẻ</th>
+                                    <th th:text="#{aec.col.shiftName}">Ca</th>
+                                    <th th:text="#{aec.col.applyTime}">Thời gian</th>
+                                    <th th:text="#{common.reason}">Miêu tả</th>
+                                    <th th:text="#{lc.col.affirmStatus}">Trạng thái duyệt</th>
+                                    <th th:text="#{lc.col.hrComment}">Ý kiến nhân sự</th>
+                                    <th th:text="#{lc.col.hrConfirm}">Nhân sự xác nhận</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal chi tiết phê duyệt nghỉ bất thường -->
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExModal}"></th:block>
+
+    <!-- Modal nhập ý kiến khi từ chối hàng loạt -->
+    <div class="modal fade" id="aec_rejectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{lc.btn.batchReject}">Từ chối hàng loạt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="aec_rejectComment" class="form-label" th:text="#{lc.dialog.hrComment}">Nhập ý kiến</label>
+                    <textarea class="form-control" id="aec_rejectComment" rows="3" placeholder="Nhập ý kiến từ chối..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.no}">Không</button>
+                    <button type="button" class="btn btn-danger" id="aec_btnConfirmReject" th:text="#{lc.btn.reject}">Từ chối</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _aec_table;
+        var _aec_pageBooted = false;
+
+        function aecBootPage() {
+            if (_aec_pageBooted) return;
+            if (!document.getElementById('aec_dataTable')) {
+                setTimeout(aecBootPage, 30);
+                return;
+            }
+            _aec_pageBooted = true;
+
+            $('#aec_searchFromDate').val('');
+            $('#aec_searchToDate').val('');
+            $('#aec_searchConfirmFlag').val('0');
+
+            aecInitTable();
+        }
+
+        function aecInitTable() {
+            var hasFixedColumns = !!($.fn.dataTable && $.fn.dataTable.FixedColumns);
+            _aec_table = $('#aec_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                autoWidth: false,
+                scrollY: 'calc(100vh - 300px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                serverSide: true,
+                columnDefs: [
+                    { targets: 0,  width: '30px',  orderable: false },
+                    { targets: 1,  width: '40px',  orderable: false },
+                    { targets: 2,  width: '100px', orderable: false },
+                    { targets: 3,  width: '160px', orderable: false },
+                    { targets: 4,  width: '180px', orderable: false },
+                    { targets: 5,  width: '120px', orderable: false },
+                    { targets: 6,  width: '160px', orderable: false },
+                    { targets: 7,  width: '110px', orderable: false },
+                    { targets: 8,  width: '130px', orderable: false },
+                    { targets: 9,  width: '150px', orderable: false },
+                    { targets: 10, width: '220px', orderable: false },
+                    { targets: 11, width: '160px', orderable: false },
+                    { targets: 12, width: '110px', orderable: false, className: 'text-center' },
+                    { targets: 13, width: '200px', orderable: false },
+                    { targets: 14, width: '170px', orderable: false, className: 'text-center' }
+                ],
+                fixedColumns: hasFixedColumns ? { leftColumns: 4 } : false,
+                ajax: {
+                    url: '/ess/arConfirm/api/attendanceExConfirm/list',
+                    data: function (d) {
+                        d.searchEmpId  = $('#aec_searchEmpId').val();
+                        d.fromDate     = $('#aec_searchFromDate').val();
+                        d.toDate       = $('#aec_searchToDate').val();
+                        d.confirmFlag  = $('#aec_searchConfirmFlag').val();
+                        d.draw         = d.draw  || 1;
+                        d.start        = d.start || 0;
+                        d.length       = d.length || 25;
+                    },
+                    error: function () {
+                        toastr && toastr.error('Lỗi tải danh sách xác nhận nghỉ bất thường');
+                    }
+                },
+                columns: [
+                    {
+                        data: null, className: 'text-center align-middle',
+                        render: function () {
+                            return '<input type="checkbox" class="aec-chk-row">';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',         render: function (d) { return d || ''; } },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            var name = row.localName || '';
+                            var applyNo = String(row.applyNo || '').replace(/'/g, "\\'");
+                            var applyType = String(row.itemNo || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                            if (!applyNo) return name;
+                            return '<a href="javascript:void(0)" onclick="atexOpenApplyDetail(\'' + applyNo + '\', \'' + applyType + '\')">' + name + '</a>';
+                        }
+                    },
+                    { data: 'deptName',      render: function (d) { return d || ''; } },
+                    { data: 'postGradeName', render: function (d) { return d || ''; } },
+                    { data: 'itemName',      render: function (d) { return d || ''; } },
+                    { data: 'arDateStr',     render: function (d) { return d || ''; } },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            var inn  = row.indoorTime  || '';
+                            var out  = row.outdoorTime || '';
+                            return 'Vào: ' + inn + '<br>Ra: ' + out;
+                        }
+                    },
+                    { data: 'shiftName', render: function (d) { return d || ''; } },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            var from = row.fromTime || row.inTime  || '';
+                            var to   = row.toTime   || row.outTime || '';
+                            return 'Vào: ' + from + '<br>Ra: ' + to;
+                        }
+                    },
+                    { data: 'applyReason', render: function (d) { return d || ''; } },
+                    {
+                        data: 'affirmFlagName', className: 'text-center align-middle',
+                        render: function (d) {
+                            return d ? '<span class="badge bg-success">' + d + '</span>' : '';
+                        }
+                    },
+                    {
+                        data: 'hrComment',
+                        render: function (data, type, row) {
+                            var val     = (data || '').replace(/"/g, '&quot;');
+                            var applyNo = String(row.applyNo || '').replace(/'/g, "\\'");
+                            return '<input type="text" class="form-control form-control-sm aec-in-comment" '
+                                + 'data-apply-no="' + applyNo + '" value="' + val + '" '
+                                + 'placeholder="Nhập ý kiến...">';
+                        }
+                    },
+                    {
+                        data: null, className: 'text-center align-middle',
+                        render: function (data, type, row) {
+                            var applyNo = String(row.applyNo || '').replace(/'/g, "\\'");
+                            var confirmInfo = row.confirmBy ? '<div class="small text-muted mb-1">' + row.confirmBy + '</div>' : '';
+                            return confirmInfo
+                                + '<button class="btn btn-sm btn-success me-1" '
+                                + 'onclick="aecConfirmLine(\'' + applyNo + '\',\'1\')" title="Duyệt">'
+                                + '<i class="bx bx-check"></i> Duyệt</button>'
+                                + '<button class="btn btn-sm btn-danger" '
+                                + 'onclick="aecConfirmLine(\'' + applyNo + '\',\'2\')" title="Từ chối">'
+                                + '<i class="bx bx-x"></i> Từ chối</button>';
+                        }
+                    }
+                ]
+            });
+        }
+
+        window.aecSearchData = function () {
+            if (_aec_table) _aec_table.ajax.reload();
+        };
+
+        window.aecClearSearch = function () {
+            $('#aec_searchForm')[0].reset();
+            $('#aec_searchConfirmFlag').val('0');
+            if (_aec_table) _aec_table.ajax.reload();
+        };
+
+        window.aecConfirmLine = function (applyNo, flag) {
+            var hrComment = $('#aec_dataTable').find('.aec-in-comment[data-apply-no="' + applyNo + '"]').val() || '';
+
+            if (flag === '2' && !hrComment.trim()) {
+                toastr && toastr.warning('Vui lòng nhập ý kiến khi từ chối!');
+                return;
+            }
+
+            var action = flag === '1' ? 'duyệt' : 'từ chối';
+            if (!confirm('Bạn có chắc chắn muốn ' + action + ' đơn này?')) return;
+
+            $.ajax({
+                url: '/ess/arConfirm/api/attendanceExConfirm/confirm',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ applyNo: applyNo, flag: flag, hrComment: hrComment }),
+                success: function (res) {
+                    if (res && res.success) {
+                        toastr && toastr.success(flag === '1' ? 'Duyệt thành công!' : 'Từ chối thành công!');
+                        _aec_table.ajax.reload(null, false);
+                    } else {
+                        toastr && toastr.error((res && res.error) || 'Có lỗi xảy ra!');
+                    }
+                },
+                error: function () {
+                    toastr && toastr.error('Lỗi kết nối máy chủ!');
+                }
+            });
+        };
+
+        window.aecBatchAction = function (flag) {
+            var applyNos = [];
+            _aec_table.rows().every(function () {
+                var $tr = $(this.node());
+                if ($tr.find('.aec-chk-row').is(':checked')) {
+                    applyNos.push(String(this.data().applyNo));
+                }
+            });
+
+            if (!applyNos.length) {
+                toastr && toastr.warning('Vui lòng chọn đơn cần xử lý!');
+                return;
+            }
+
+            if (flag === '1') {
+                if (!confirm('Bạn có chắc chắn muốn duyệt ' + applyNos.length + ' đơn đã chọn?')) return;
+                aecSendBatch(applyNos, '1', '');
+            } else {
+                $('#aec_rejectComment').val('');
+                $('#aec_rejectModal').modal('show');
+                $('#aec_btnConfirmReject').off('click').on('click', function () {
+                    var comment = $('#aec_rejectComment').val().trim();
+                    if (!comment) {
+                        toastr && toastr.warning('Vui lòng nhập ý kiến khi từ chối!');
+                        return;
+                    }
+                    $('#aec_rejectModal').modal('hide');
+                    aecSendBatch(applyNos, '2', comment);
+                });
+            }
+        };
+
+        function aecSendBatch(applyNos, flag, hrComment) {
+            $.ajax({
+                url: '/ess/arConfirm/api/attendanceExConfirm/confirmBatch',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ applyNos: applyNos, flag: flag, hrComment: hrComment }),
+                success: function (res) {
+                    if (res && res.success) {
+                        toastr && toastr.success(flag === '1' ? 'Duyệt hàng loạt thành công!' : 'Từ chối hàng loạt thành công!');
+                    } else {
+                        toastr && toastr.error((res && res.error) || 'Có lỗi xảy ra!');
+                    }
+                    $('#aec_chkAll').prop('checked', false);
+                    _aec_table.ajax.reload(null, false);
+                },
+                error: function () {
+                    toastr && toastr.error('Lỗi kết nối máy chủ!');
+                }
+            });
+        }
+
+        $(document).on('change', '#aec_chkAll', function () {
+            var checked = $(this).is(':checked');
+            $('#aec_dataTable tbody').find('.aec-chk-row').prop('checked', checked);
+        });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', aecBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(aecBootPage);
+        } else {
+            aecBootPage();
+        }
+    </script>
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExScript}"></th:block>
+</template>

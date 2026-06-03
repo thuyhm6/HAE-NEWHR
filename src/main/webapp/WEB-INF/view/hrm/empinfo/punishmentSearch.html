@@ -1,0 +1,351 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="searchEmpId" placeholder="Nhập mã nhân viên">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="searchLocalName" placeholder="Nhập họ tên">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Loại kỷ luật</label>
+                            <input type="text" class="form-control" id="searchPunishCode"
+                                placeholder="Nhập loại kỷ luật">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary me-2" onclick="searchData()">
+                                <i class="bx bx-search-alt"></i> Tìm kiếm
+                            </button>
+                            <button type="button" class="btn btn-success me-2" onclick="openModal()">
+                                <i class="bx bx-plus"></i> Thêm mới
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="exportData()">
+                                <i class="bx bx-export"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div class="table-responsive">
+                        <table id="punishmentTable" class="table table-striped table-bordered table-hover"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã NV</th>
+                                    <th>Họ tên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Loại KL</th>
+                                    <th>Ngày KL</th>
+                                    <th>Lý do</th>
+                                    <th>Bộ phận KL</th>
+                                    <th>Điểm</th>
+                                    <th>Ghi chú</th>
+                                    <th style="width: 100px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data loaded via Ajax -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm/Sửa -->
+    <div class="modal fade" id="punishmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="punishmentModalLabel">Thêm mới kỷ luật</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="punishmentForm">
+                        <input type="hidden" id="punishNo" name="punishNo">
+
+                        <!-- Nhân viên -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Nhân viên <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="hidden" id="personId" name="personId">
+                                    <input type="text" class="form-control" id="empId" placeholder="Mã NV" readonly>
+                                    <input type="text" class="form-control w-50" id="localName" placeholder="Họ tên"
+                                        readonly>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                        onclick="openEmployeeSearchPopup()">
+                                        <i class="bx bx-search"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text" id="deptName"></div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Loại kỷ luật (Mã)</label>
+                                <input type="text" class="form-control" id="punishCode" name="punishCode">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày kỷ luật</label>
+                                <input type="date" class="form-control" id="punishDate" name="punishDate">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Lý do kỷ luật</label>
+                            <textarea class="form-control" id="punishReason" name="punishReason" rows="2"></textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày gỡ bỏ/Hết hạn</label>
+                                <input type="date" class="form-control" id="releaseDate" name="releaseDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Bộ phận/Cơ quan kỷ luật</label>
+                                <input type="text" class="form-control" id="punishDepartment" name="punishDepartment">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Điểm kỷ luật/phạt</label>
+                                <input type="text" class="form-control" id="punishScore" name="punishScore">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Mã loại lỗi</label>
+                                <input type="text" class="form-control" id="faultTypeCode" name="faultTypeCode">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày bắt đầu giảm lương</label>
+                                <input type="date" class="form-control" id="paycutStartDate" name="paycutStartDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày kết thúc giảm lương</label>
+                                <input type="date" class="form-control" id="paycutEndDate" name="paycutEndDate">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Hiển thị thẻ nhân sự</label>
+                                <select class="form-select" id="personnelCardInquiry" name="personnelCardInquiry">
+                                    <option value="N">Không</option>
+                                    <option value="Y">Có</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <!-- Include Employee Search Script if not already included in fragment -->
+    <script th:src="@{/js/hrm/employeeSearch.js}"></script>
+
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            var table = $('#punishmentTable').DataTable({
+                "destroy": true,
+                "processing": true,
+                "serverSide": false,
+                "ajax": {
+                    "url": "/hrm/empinfo/api/punishment",
+                    "data": function (d) {
+                        d.empId = $('#searchEmpId').val();
+                        d.localName = $('#searchLocalName').val();
+                        d.punishCode = $('#searchPunishCode').val();
+                    },
+                    "dataSrc": ""
+                },
+                "columns": [
+                    {
+                        "data": null,
+                        "render": function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { "data": "empId" },
+                    { "data": "localName" },
+                    {
+                        "data": "deptName",
+                        "defaultContent": ""
+                    },
+                    { "data": "punishCode" },
+                    {
+                        "data": "punishDate",
+                        "render": function (data) {
+                            return data ? new Date(data).toLocaleDateString('vi-VN') : '';
+                        }
+                    },
+                    { "data": "punishReason" },
+                    { "data": "punishDepartment" },
+                    { "data": "punishScore" },
+                    { "data": "remarks" },
+                    {
+                        "data": "punishNo",
+                        "width": "100px",
+                        "className": "text-center",
+                        "render": function (data, type, row) {
+                            return `
+                                <button class="btn btn-sm btn-primary" onclick="editRaw(${data})"><i class="bx bx-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRaw(${data})"><i class="bx bx-trash"></i></button>
+                            `;
+                        }
+                    }
+                ],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Vietnamese.json"
+                }
+            });
+
+            window.searchData = function () {
+                table.ajax.reload();
+            };
+
+            window.openModal = function () {
+                $('#punishmentForm')[0].reset();
+                $('#punishNo').val('');
+                $('#personId').val('');
+                $('#deptName').text('');
+                $('#punishmentModalLabel').text('Thêm mới kỷ luật');
+                var modal = new bootstrap.Modal(document.getElementById('punishmentModal'));
+                modal.show();
+            };
+
+            window.openEmployeeSearchPopup = function () {
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    EmployeeSearchModal.open(function (employee) {
+                        $('#personId').val(employee.personId);
+                        $('#empId').val(employee.empId);
+                        $('#localName').val(employee.localName);
+                        $('#deptName').text(employee.deptName);
+                    });
+                } else {
+                    alert('Chức năng tìm kiếm nhân viên chưa được tải!');
+                }
+            };
+
+            window.saveData = function () {
+                if (!$('#personId').val()) {
+                    if (typeof toastr !== 'undefined') toastr.error('Vui lòng chọn nhân viên');
+                    else alert('Vui lòng chọn nhân viên');
+                    return;
+                }
+
+                var formData = {
+                    punishNo: $('#punishNo').val() || null,
+                    personId: $('#personId').val(),
+                    punishCode: $('#punishCode').val(),
+                    punishDate: $('#punishDate').val() || null,
+                    punishReason: $('#punishReason').val(),
+                    releaseDate: $('#releaseDate').val() || null,
+                    punishDepartment: $('#punishDepartment').val(),
+                    punishScore: $('#punishScore').val(),
+                    paycutStartDate: $('#paycutStartDate').val() || null,
+                    paycutEndDate: $('#paycutEndDate').val() || null,
+                    personnelCardInquiry: $('#personnelCardInquiry').val(),
+                    faultTypeCode: $('#faultTypeCode').val(),
+                    remarks: $('#remarks').val()
+                };
+
+                $.ajax({
+                    url: '/hrm/empinfo/api/punishment/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (typeof toastr !== 'undefined') toastr.success(response.message);
+                        else alert(response.message);
+
+                        var modalEl = document.getElementById('punishmentModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                        else $(modalEl).modal('hide');
+
+                        table.ajax.reload();
+                    },
+                    error: function (xhr) {
+                        var msg = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : xhr.statusText;
+                        if (typeof toastr !== 'undefined') toastr.error('Lỗi: ' + msg);
+                        else alert('Lỗi: ' + msg);
+                    }
+                });
+            };
+
+            window.editRaw = function (id) {
+                $.get('/hrm/empinfo/api/punishment/' + id, function (data) {
+                    $('#punishNo').val(data.punishNo);
+                    $('#personId').val(data.personId);
+                    $('#empId').val(data.empId);
+                    $('#localName').val(data.localName);
+                    $('#deptName').text(data.deptName);
+
+                    $('#punishCode').val(data.punishCode);
+                    $('#punishDate').val(data.punishDate ? data.punishDate.substring(0, 10) : '');
+                    $('#punishReason').val(data.punishReason);
+                    $('#releaseDate').val(data.releaseDate ? data.releaseDate.substring(0, 10) : '');
+                    $('#punishDepartment').val(data.punishDepartment);
+                    $('#punishScore').val(data.punishScore);
+                    $('#paycutStartDate').val(data.paycutStartDate ? data.paycutStartDate.substring(0, 10) : '');
+                    $('#paycutEndDate').val(data.paycutEndDate ? data.paycutEndDate.substring(0, 10) : '');
+                    $('#personnelCardInquiry').val(data.personnelCardInquiry || 'N');
+                    $('#faultTypeCode').val(data.faultTypeCode);
+                    $('#remarks').val(data.remarks);
+
+                    $('#punishmentModalLabel').text('Cập nhật kỷ luật');
+                    var modal = new bootstrap.Modal(document.getElementById('punishmentModal'));
+                    modal.show();
+                });
+            };
+
+            window.deleteRaw = function (id) {
+                if (confirm('Bạn có chắc chắn muốn xóa bản ghi này?')) {
+                    $.ajax({
+                        url: '/hrm/empinfo/api/punishment/delete/' + id,
+                        type: 'DELETE',
+                        success: function (response) {
+                            if (typeof toastr !== 'undefined') toastr.success(response.message);
+                            else alert(response.message);
+                            table.ajax.reload();
+                        },
+                        error: function (xhr) {
+                            var msg = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : xhr.statusText;
+                            if (typeof toastr !== 'undefined') toastr.error('Lỗi: ' + msg);
+                            else alert('Lỗi: ' + msg);
+                        }
+                    });
+                }
+            };
+
+            window.exportData = function () {
+                alert('Chức năng xuất Excel đang được phát triển');
+            };
+        });
+    </script>
+</template>

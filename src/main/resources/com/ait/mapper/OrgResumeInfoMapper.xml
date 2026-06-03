@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.org.orgManage.mapper.OrgResumeInfoMapper">
+
+    <resultMap id="OrgResumeInfoResultMap" type="com.ait.org.orgManage.model.OrgResumeInfo">
+        <result column="SEQ" property="seq" jdbcType="VARCHAR" />
+        <result column="NO" property="no" jdbcType="VARCHAR" />
+        <result column="CHANGE_DATE" property="changeDate" jdbcType="DATE" />
+        <result column="RESUME_NAME" property="resumeName" jdbcType="VARCHAR" />
+        <result column="IS_CURRENT_ORG" property="isCurrentOrg" jdbcType="CHAR" />
+        <result column="CHANGE_REASON" property="changeReason" jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="CREATED_BY" property="createdBy" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR" />
+        <result column="ACTIVITY" property="activity" jdbcType="VARCHAR" />
+        <result column="CPNY_ID" property="cpnyId" jdbcType="VARCHAR" />
+        <result column="UPDATED_IP" property="updatedIp" jdbcType="VARCHAR" />
+        <result column="FROM_NO" property="fromNo" jdbcType="VARCHAR" />
+        <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+        <result column="CREATED_IP" property="createdIp" jdbcType="VARCHAR" />
+        <result column="EXPERIENCE_TYPE" property="experienceType" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        SEQ, NO, CHANGE_DATE, RESUME_NAME, IS_CURRENT_ORG, CHANGE_REASON, 
+        CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ACTIVITY, CPNY_ID, 
+        UPDATED_IP, FROM_NO, REMARK, CREATED_IP, EXPERIENCE_TYPE
+    </sql>
+
+    <sql id="searchConditions">
+        <where>
+            <if test="searchParams.no != null and searchParams.no != ''">
+                AND NO LIKE '%' || #{searchParams.no} || '%'
+            </if>
+            <if test="searchParams.resumeName != null and searchParams.resumeName != ''">
+                AND RESUME_NAME LIKE '%' || #{searchParams.resumeName} || '%'
+            </if>
+            <if test="searchParams.changeDateFrom != null and searchParams.changeDateFrom != ''">
+                AND CHANGE_DATE &gt;= TO_DATE(#{searchParams.changeDateFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.changeDateTo != null and searchParams.changeDateTo != ''">
+                AND CHANGE_DATE &lt;= TO_DATE(#{searchParams.changeDateTo}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.activity != null and searchParams.activity != ''">
+                AND ACTIVITY = #{searchParams.activity}
+            </if>
+            <!-- Add more search conditions as needed -->
+        </where>
+    </sql>
+
+    <select id="getResumeListForDataTables" resultMap="OrgResumeInfoResultMap">
+        SELECT * FROM (
+            SELECT 
+                <include refid="Base_Column_List"/>,
+                ROW_NUMBER() OVER (ORDER BY 
+                    <choose>
+                        <when test="orderColumn == 'NO'">NO</when>
+                        <when test="orderColumn == 'CHANGE_DATE'">CHANGE_DATE</when>
+                        <when test="orderColumn == 'RESUME_NAME'">RESUME_NAME</when>
+                        <when test="orderColumn == 'IS_CURRENT_ORG'">IS_CURRENT_ORG</when>
+                        <when test="orderColumn == 'CHANGE_REASON'">CHANGE_REASON</when>
+                        <when test="orderColumn == 'ACTIVITY'">ACTIVITY</when>
+                        <when test="orderColumn == 'CREATED_BY'">CREATED_BY</when>
+                        <when test="orderColumn == 'CREATE_DATE'">CREATE_DATE</when>
+                        <otherwise>CHANGE_DATE</otherwise>
+                    </choose>
+                    <choose>
+                        <when test="orderDir == 'ASC'"> ASC</when>
+                        <otherwise> DESC</otherwise>
+                    </choose>
+                    , NO DESC
+                ) as rn
+            FROM ORG_RESUME_INFO
+            <include refid="searchConditions"/>
+        )
+        WHERE rn BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <select id="countResumeListForDataTables" resultType="int">
+        SELECT COUNT(*) FROM ORG_RESUME_INFO
+        <include refid="searchConditions"/>
+    </select>
+
+    <select id="getResumeByNo" resultMap="OrgResumeInfoResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM ORG_RESUME_INFO
+        WHERE NO = #{no}
+    </select>
+
+    <insert id="insertResume" parameterType="com.ait.org.orgManage.model.OrgResumeInfo">
+        INSERT INTO ORG_RESUME_INFO (
+            SEQ, NO, CHANGE_DATE, RESUME_NAME, IS_CURRENT_ORG, CHANGE_REASON,
+            CREATE_DATE, CREATED_BY, ACTIVITY, CPNY_ID, FROM_NO, REMARK, 
+            CREATED_IP, EXPERIENCE_TYPE
+        ) VALUES (
+            ORG_RESUME_INFO_SEQ.NEXTVAL, #{no}, #{changeDate, jdbcType=DATE}, #{resumeName}, #{isCurrentOrg}, #{changeReason},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{activity}, #{cpnyId, jdbcType=VARCHAR}, #{fromNo}, #{remark},
+            #{createdIp}, #{experienceType}
+        )
+    </insert>
+
+    <update id="updateResume" parameterType="com.ait.org.orgManage.model.OrgResumeInfo">
+        UPDATE ORG_RESUME_INFO
+        SET 
+            CHANGE_DATE = #{changeDate, jdbcType=DATE},
+            RESUME_NAME = #{resumeName},
+            IS_CURRENT_ORG = #{isCurrentOrg},
+            CHANGE_REASON = #{changeReason},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ACTIVITY = #{activity},
+            UPDATED_IP = #{updatedIp},
+            REMARK = #{remark},
+            EXPERIENCE_TYPE = #{experienceType}
+        WHERE NO = #{no}
+    </update>
+
+    <delete id="deleteResume">
+        DELETE FROM ORG_RESUME_INFO WHERE NO = #{no}
+    </delete>
+
+    <select id="getMaxNoByDate" resultType="string">
+        SELECT MAX(NO) 
+        FROM ORG_RESUME_INFO 
+        WHERE NO LIKE #{prefix} || '%'
+    </select>
+
+    <select id="getResumeListForExport" resultMap="OrgResumeInfoResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM ORG_RESUME_INFO
+        <include refid="searchConditions"/>
+        ORDER BY CHANGE_DATE DESC, NO DESC
+    </select>
+
+    <select id="getResumeListForDropdown" resultType="com.ait.org.orgManage.model.OrgResumeInfo">
+        SELECT NO, RESUME_NAME, ACTIVITY 
+        FROM ORG_RESUME_INFO 
+        ORDER BY CHANGE_DATE DESC, NO DESC
+    </select>
+
+    <select id="callProcessExecute" statementType="CALLABLE">
+        {call PKG_RESUME_PROCESS.PR_PROCESS_EXECUTE(
+            #{resumeNo, mode=IN, jdbcType=VARCHAR},
+            #{adminID, mode=IN, jdbcType=VARCHAR},
+            #{adminIP, mode=IN, jdbcType=VARCHAR},
+            #{cpnyId, mode=IN, jdbcType=VARCHAR},
+            #{type, mode=IN, jdbcType=VARCHAR},
+            #{message, mode=OUT, jdbcType=VARCHAR}
+        )}
+    </select>
+
+</mapper>

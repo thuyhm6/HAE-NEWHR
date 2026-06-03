@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.syRole.mapper.SyRoleGroupMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.sy.syRole.model.SyRoleGroup">
+        <id column="ROLE_GROUP_NO" property="roleGroupNo" />
+        <result column="ROLE_GROUP_ID" property="roleGroupId" />
+        <result column="JOIN_DEFAULT" property="joinDefault" />
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ORDERNO" property="orderNo" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="SYS_TYPE" property="sysType" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.sy.syRole.dto.SyRoleGroupDto" extends="BaseResultMap">
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+    </resultMap>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT r.*,
+               gvi.CONTENT AS NAME_VI,
+               gen.CONTENT AS NAME_EN,
+               gzh.CONTENT AS NAME_ZH,
+               gko.CONTENT AS NAME_KO
+        FROM SY_ROLE_GROUP r
+        LEFT JOIN SY_GLOBAL_NAME gvi ON r.ROLE_GROUP_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON r.ROLE_GROUP_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON r.ROLE_GROUP_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON r.ROLE_GROUP_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE 1=1 AND r.ACTIVITY = 1 
+        <if test="cpnyId != null and cpnyId != ''"> AND r.CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                r.ROLE_GROUP_ID LIKE '%' || #{keyword} || '%' OR 
+                gvi.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gen.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gzh.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gko.CONTENT LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        ORDER BY r.ORDERNO, r.ROLE_GROUP_ID
+    </select>
+
+    <select id="findByRoleGroupId" resultMap="BaseResultMap">
+        SELECT * FROM SY_ROLE_GROUP WHERE ROLE_GROUP_ID = #{roleGroupId} 
+        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
+    </select>
+
+    <select id="findByRoleGroupNo" resultMap="BaseResultMap">
+        SELECT * FROM SY_ROLE_GROUP WHERE ROLE_GROUP_NO = #{roleGroupNo} 
+        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
+    </select>
+
+    <select id="existsByRoleGroupId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM SY_ROLE_GROUP WHERE ROLE_GROUP_ID = #{roleGroupId}
+        <if test="cpnyId != null and cpnyId != ''"> AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SY_ROLE_GROUP (
+            ROLE_GROUP_NO, ROLE_GROUP_ID, JOIN_DEFAULT, CPNY_ID,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY,
+            ORDERNO, ACTIVITY, SYS_TYPE
+        ) VALUES (
+            #{roleGroupNo}, #{roleGroupId}, #{joinDefault}, #{cpnyId, jdbcType=VARCHAR},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR},
+            #{orderNo}, #{activity}, #{sysType}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE SY_ROLE_GROUP SET
+            JOIN_DEFAULT = #{joinDefault},
+            CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            UPDATE_DATE = sysdate,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ORDERNO = #{orderNo},
+            ACTIVITY = #{activity},
+            SYS_TYPE = #{sysType}
+            <!-- Note: ROLE_GROUP_ID is typically not modified if it is the ID displayed to user, unless we want to allow it -->
+            <!-- But user said it's auto-generated from sequence, so it's a key. -->
+        WHERE ROLE_GROUP_NO = #{roleGroupNo}
+    </update>
+
+    <delete id="deleteByRoleGroupId">
+        UPDATE SY_ROLE_GROUP SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} WHERE ROLE_GROUP_ID = #{roleGroupId}
+    </delete>
+
+    <select id="getNextGlobalNoSeq" resultType="String">
+        SELECT SY_GLOBAL_NO_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+</mapper>

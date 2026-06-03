@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"d:/Java/WorkSpace/New_HR/HR-11-codex/src/main/java/com/ait/pa/workManagement/controller\" \"d:/Java/WorkSpace/New_HR/HR-11-codex/src/main/java/com/ait/pa/workManagement/dto\" \"d:/Java/WorkSpace/New_HR/HR-11-codex/src/main/java/com/ait/pa/workManagement/mapper\" \"d:/Java/WorkSpace/New_HR/HR-11-codex/src/main/java/com/ait/pa/workManagement/service/impl\")",
+      "Bash(Get-ChildItem \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\java\\\\com\\\\ait\\\\pa\\\\workManagement\" -Recurse -Name)",
+      "Bash(cat >> *)",
+      "PowerShell($lastLine = \\(Get-Content \"d:\\\\Java\\\\WorkSpace\\\\New_HR\\\\HR-11-codex\\\\src\\\\main\\\\resources\\\\messages_vi_VN.properties\" | Measure-Object -Line\\).Lines; Write-Output \"Total lines: $lastLine\")"
+    ],
+    "additionalDirectories": [
+      "d:\\Java\\WorkSpace\\New_HR\\HR-11-codex\\src\\main\\java\\com\\ait\\pa\\workManagement",
+      "d:\\Java\\WorkSpace\\New_HR\\HR-11-codex\\src\\main\\resources"
+    ]
+  }
+}

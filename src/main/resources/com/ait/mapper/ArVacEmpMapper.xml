@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArVacEmpMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArVacEmpDto">
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="VAC_TP" property="vacTp" />
+        <result column="VAC_ID" property="vacId" />
+        <result column="STRT_DATE" property="strtDate" />
+        <result column="END_DATE" property="endDate" />
+        <result column="TOT_VAC_CNT" property="totVacCnt" />
+        <result column="LAST_YEAR_VAC" property="lastYearVac" />
+        <result column="ADD_VAC" property="addVac" />
+        <result column="USE_VAC_CNT" property="useVacCnt" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="UPDATED_IP" property="updatedIp" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="MENT_VAC" property="mentVac" />
+        <result column="WORK_MONTH" property="workMonth" />
+        <result column="IS_LOCKED" property="isLocked" />
+        <result column="REASON_WUJIA" property="reasonWujia" />
+        <result column="LAST_YEAR_CAL" property="lastYearCal" />
+        <result column="YEAR_VAC_CAL" property="yearVacCal" />
+        <result column="LAST_YEAR_CAL_2" property="lastYearCal2" />
+        <result column="USE_VAC_1" property="useVac1" />
+        <result column="USE_VAC_2" property="useVac2" />
+        <result column="USE_VAC_3" property="useVac3" />
+        <result column="USE_VAC_4" property="useVac4" />
+        <result column="USE_VAC_5" property="useVac5" />
+        <result column="USE_VAC_6" property="useVac6" />
+        <result column="USE_VAC_7" property="useVac7" />
+        <result column="USE_VAC_8" property="useVac8" />
+        <result column="USE_VAC_9" property="useVac9" />
+        <result column="USE_VAC_10" property="useVac10" />
+        <result column="USE_VAC_11" property="useVac11" />
+        <result column="USE_VAC_12" property="useVac12" />
+        <result column="USE_VAC" property="useVac" />
+        <result column="AFFIRM_USE_VAC" property="affirmUseVac" />
+        <result column="PERSON_ID" property="personId" />
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPT_NO" property="deptNo" />
+        <result column="DEPT_NAME" property="deptName" />
+        <result column="POST_GRADE_NO" property="postGradeNo" />
+        <result column="POST_GRADE_NAME" property="postGradeName" />
+    </resultMap>
+
+    <select id="selectVacEmpList"
+            parameterType="com.ait.ar.attendanceSettings.dto.ArVacEmpDto"
+            resultMap="DtoResultMap">
+        SELECT
+            A.CPNY_ID,
+            A.VAC_TP,
+            A.VAC_ID,
+            TO_CHAR(A.STRT_DATE, 'DD/MM/YYYY') AS STRT_DATE,
+            TO_CHAR(A.END_DATE, 'DD/MM/YYYY') AS END_DATE,
+            TO_CHAR(A.TOT_VAC_CNT) AS TOT_VAC_CNT,
+            TO_CHAR(A.LAST_YEAR_VAC) AS LAST_YEAR_VAC,
+            TO_CHAR(A.ADD_VAC) AS ADD_VAC,
+            TO_CHAR(A.USE_VAC_CNT) AS USE_VAC_CNT,
+            A.REMARK,
+            TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY HH24:MI:SS') AS CREATE_DATE,
+            A.CREATED_BY,
+            A.CREATED_IP,
+            TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE,
+            A.UPDATED_BY,
+            A.UPDATED_IP,
+            TO_CHAR(A.ACTIVITY) AS ACTIVITY,
+            TO_CHAR(A.MENT_VAC) AS MENT_VAC,
+            TO_CHAR(A.WORK_MONTH) AS WORK_MONTH,
+            A.IS_LOCKED,
+            A.REASON_WUJIA,
+            TO_CHAR(A.LAST_YEAR_CAL) AS LAST_YEAR_CAL,
+            TO_CHAR(A.YEAR_VAC_CAL) AS YEAR_VAC_CAL,
+            TO_CHAR(A.LAST_YEAR_CAL_2) AS LAST_YEAR_CAL_2,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/01/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/01/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/01/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/01/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_1,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/02/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/02/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/02/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/02/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_2,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/03/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/03/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/03/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/03/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_3,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/04/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/04/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/04/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/04/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_4,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/05/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/05/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/05/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/05/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_5,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/06/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/06/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/06/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/06/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_6,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/07/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/07/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/07/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/07/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_7,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/08/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/08/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/08/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/08/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_8,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/09/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/09/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/09/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/09/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_9,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/10/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/10/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/10/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/10/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_10,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/11/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/11/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/11/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/11/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_11,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/12/01',
+                                TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/12/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+                + AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY') || '/12/01',
+                                  TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(A.END_DATE, 'YYYY') || '/12/01', 'YYYY/MM/DD'), 1) - 1, 'YYYY/MM/DD'),
+                                  A.CPNY_ID,
+                                  A.PERSON_ID,
+                                  'AFFIRM')
+            ) AS USE_VAC_12,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'),
+                                TO_CHAR(A.END_DATE, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'CONFIRM')
+            ) AS USE_VAC,
+            TO_CHAR(
+                AR_USE_VACATION(TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'),
+                                TO_CHAR(A.END_DATE, 'YYYY/MM/DD'),
+                                A.CPNY_ID,
+                                A.PERSON_ID,
+                                'AFFIRM')
+            ) AS AFFIRM_USE_VAC,
+            HE.PERSON_ID,
+            HE.EMPID,
+            HE.LOCAL_NAME,
+            HE.DEPTNO AS DEPT_NO,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            HE.POST_GRADE_NO,
+            GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME
+        FROM AR_VAC_EMP A
+        INNER JOIN HR_EMPLOYEE HE ON A.PERSON_ID = HE.PERSON_ID
+        WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND A.VAC_ID = #{vacId, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR UPPER(HE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="empOffice != null and empOffice != ''">
+            AND HE.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+        </if>
+        ORDER BY HE.DEPTNO, HE.EMPID
+    </select>
+</mapper>

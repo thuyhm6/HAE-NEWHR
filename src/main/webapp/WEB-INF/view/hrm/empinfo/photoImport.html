@@ -1,0 +1,258 @@
+<div th:fragment="content" xmlns:th="http://www.thymeleaf.org">
+
+    <!-- Thông tin hướng dẫn -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-image-fill me-1"></i>
+                        <span th:text="#{hrm.photoImport.title}">Import ảnh đại diện nhân viên</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <strong><i class="bi bi-info-circle me-1"></i>
+                            <span th:text="#{hrm.photoImport.instruction}">Hướng dẫn sử dụng</span>:</strong>
+                        <ul class="mb-0 mt-1">
+                            <li th:text="#{hrm.photoImport.filename.rule}">Tên file phải chứa mã nhân viên (ví dụ: NV001.jpg, nv001_photo.png)</li>
+                            <li th:text="#{hrm.photoImport.accept.formats}">Định dạng cho phép: .jpg, .jpeg, .png</li>
+                            <li th:text="#{hrm.photoImport.max.size}">Ảnh sẽ tự động được cắt về kích thước 600x800px khi lưu</li>
+                            <li th:text="#{hrm.photoImport.overwrite.note}">Ảnh mới sẽ ghi đè ảnh cũ của cùng nhân viên</li>
+                        </ul>
+                    </div>
+
+                    <!-- Chọn file -->
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label for="phoImp_fileInput" class="form-label fw-semibold"
+                                   th:text="#{hrm.photoImport.selectFiles}">Chọn file ảnh (có thể chọn nhiều)</label>
+                            <input type="file" class="form-control" id="phoImp_fileInput"
+                                   accept=".jpg,.jpeg,.png" multiple>
+                            <div class="form-text text-muted mt-1" id="phoImp_fileCount"
+                                 th:text="#{hrm.photoImport.noFilesSelected}">Chưa chọn file nào</div>
+                        </div>
+                        <div class="col-md-4 d-flex gap-2">
+                            <button type="button" class="btn btn-primary" id="phoImp_btnPreview"
+                                    onclick="phoImpPreview()">
+                                <i class="bi bi-search me-1"></i>
+                                <span th:text="#{hrm.photoImport.btnPreview}">Kiểm tra</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="phoImpReset()">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                <span th:text="#{hrm.photoImport.btnReset}">Chọn lại</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kết quả kiểm tra / lưu -->
+    <div class="row" id="phoImp_resultArea" style="display:none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h5 class="card-title mb-0" id="phoImp_resultTitle">
+                        <span th:text="#{hrm.photoImport.result.title}">Kết quả kiểm tra</span>
+                        &nbsp;—&nbsp;
+                        <span class="text-success fw-bold" id="phoImp_successCount">0</span>
+                        <span th:text="#{hrm.photoImport.result.valid}"> hợp lệ</span>
+                        &nbsp;/&nbsp;
+                        <span class="text-danger fw-bold" id="phoImp_failCount">0</span>
+                        <span th:text="#{hrm.photoImport.result.invalid}"> lỗi</span>
+                    </h5>
+                    <button type="button" class="btn btn-success" id="phoImp_btnConfirm"
+                            onclick="phoImpConfirm()" style="display:none;">
+                        <i class="bi bi-check-circle me-1"></i>
+                        <span th:text="#{hrm.photoImport.btnConfirm}">Xác nhận lưu</span>
+                    </button>
+                </div>
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:50px;"
+                                        th:text="#{hrm.photoImport.col.no}">STT</th>
+                                    <th th:text="#{hrm.photoImport.col.fileName}">Tên file</th>
+                                    <th style="width:120px;"
+                                        th:text="#{hrm.photoImport.col.empId}">Mã nhân viên</th>
+                                    <th th:text="#{hrm.photoImport.col.empName}">Tên nhân viên</th>
+                                    <th class="text-center" style="width:120px;"
+                                        th:text="#{hrm.photoImport.col.status}">Trạng thái</th>
+                                    <th th:text="#{hrm.photoImport.col.errorReason}">Lý do lỗi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="phoImp_resultBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- i18n variables cho JavaScript -->
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const phoImpI18n = {
+            noFilesSelected  : /*[[#{hrm.photoImport.noFilesSelected}]]*/ 'Chưa chọn file nào',
+            noValidFiles     : /*[[#{hrm.photoImport.noValidFiles}]]*/ 'Không có file hợp lệ để lưu',
+            confirmMessage   : /*[[#{hrm.photoImport.confirm.message}]]*/ 'Xác nhận lưu ảnh hợp lệ vào hệ thống?',
+            statusSuccess    : /*[[#{hrm.photoImport.status.success}]]*/ 'Hợp lệ',
+            statusFailed     : /*[[#{hrm.photoImport.status.failed}]]*/ 'Lỗi',
+            saveResultTitle  : /*[[#{hrm.photoImport.saveResult.title}]]*/ 'Kết quả lưu ảnh',
+            previewTitle     : /*[[#{hrm.photoImport.result.title}]]*/ 'Kết quả kiểm tra',
+            savedSuccess     : /*[[#{hrm.photoImport.saved.success}]]*/ 'ảnh đã lưu thành công',
+            selectedCount    : /*[[#{hrm.photoImport.selected.count}]]*/ 'file đã được chọn',
+            checking         : /*[[#{hrm.photoImport.checking}]]*/ 'Đang kiểm tra...',
+            saving           : /*[[#{hrm.photoImport.saving}]]*/ 'Đang lưu...',
+            errorCheck       : /*[[#{hrm.photoImport.error.check}]]*/ 'Lỗi khi kiểm tra file',
+            errorSave        : /*[[#{hrm.photoImport.error.save}]]*/ 'Lỗi khi lưu file',
+        };
+        /*]]>*/
+    </script>
+
+    <script>
+        let phoImpSelectedFiles = [];
+        let phoImpPreviewResults = [];
+
+        document.getElementById('phoImp_fileInput').addEventListener('change', function () {
+            phoImpSelectedFiles = Array.from(this.files);
+            const count = phoImpSelectedFiles.length;
+            document.getElementById('phoImp_fileCount').textContent =
+                count > 0
+                    ? count + ' ' + phoImpI18n.selectedCount
+                    : phoImpI18n.noFilesSelected;
+            document.getElementById('phoImp_resultArea').style.display = 'none';
+            document.getElementById('phoImp_btnConfirm').style.display = 'none';
+        });
+
+        function phoImpPreview() {
+            if (phoImpSelectedFiles.length === 0) {
+                alert(phoImpI18n.noFilesSelected);
+                return;
+            }
+
+            const formData = new FormData();
+            phoImpSelectedFiles.forEach(f => formData.append('files', f));
+
+            const btn = document.getElementById('phoImp_btnPreview');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>' + phoImpI18n.checking;
+
+            const headers = phoImpGetCsrfHeaders();
+
+            fetch('/hrm/empinfo/api/photo/preview', { method: 'POST', body: formData, headers: headers })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(results => {
+                    phoImpPreviewResults = results;
+                    phoImpRenderResults(results, false);
+                })
+                .catch(err => alert(phoImpI18n.errorCheck + ': ' + err.message))
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-search me-1"></i><span>' + (phoImpI18n.previewTitle || 'Kiểm tra') + '</span>';
+                });
+        }
+
+        function phoImpConfirm() {
+            const validFiles = phoImpSelectedFiles.filter(f =>
+                phoImpPreviewResults.some(r => r.success && r.fileName === f.name)
+            );
+
+            if (validFiles.length === 0) {
+                alert(phoImpI18n.noValidFiles);
+                return;
+            }
+
+            if (!confirm(phoImpI18n.confirmMessage)) return;
+
+            const formData = new FormData();
+            validFiles.forEach(f => formData.append('files', f));
+
+            const btn = document.getElementById('phoImp_btnConfirm');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>' + phoImpI18n.saving;
+
+            const headers = phoImpGetCsrfHeaders();
+
+            fetch('/hrm/empinfo/api/photo/save', { method: 'POST', body: formData, headers: headers })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(results => {
+                    phoImpRenderResults(results, true);
+                    const saved = results.filter(r => r.success).length;
+                    alert(saved + ' ' + phoImpI18n.savedSuccess);
+                })
+                .catch(err => alert(phoImpI18n.errorSave + ': ' + err.message))
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check-circle me-1"></i><span>' + (phoImpI18n.saveResultTitle || 'Xác nhận lưu') + '</span>';
+                });
+        }
+
+        function phoImpRenderResults(results, isSaveResult) {
+            const tbody = document.getElementById('phoImp_resultBody');
+            const resultArea = document.getElementById('phoImp_resultArea');
+            const resultTitle = document.getElementById('phoImp_resultTitle');
+            const btnConfirm = document.getElementById('phoImp_btnConfirm');
+
+            let html = '';
+            let successCount = 0;
+            let failCount = 0;
+
+            results.forEach((r, idx) => {
+                if (r.success) successCount++; else failCount++;
+                const statusBadge = r.success
+                    ? '<span class="badge bg-success">' + phoImpI18n.statusSuccess + '</span>'
+                    : '<span class="badge bg-danger">' + phoImpI18n.statusFailed + '</span>';
+                const errorCell = r.success ? '' : phoImpEscapeHtml(r.errorMessage || '');
+                html += `<tr>
+                    <td class="text-center">${idx + 1}</td>
+                    <td>${phoImpEscapeHtml(r.fileName || '')}</td>
+                    <td>${phoImpEscapeHtml(r.empId || '')}</td>
+                    <td>${phoImpEscapeHtml(r.localName || '')}</td>
+                    <td class="text-center">${statusBadge}</td>
+                    <td class="text-danger small">${errorCell}</td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html;
+            document.getElementById('phoImp_successCount').textContent = successCount;
+            document.getElementById('phoImp_failCount').textContent = failCount;
+            resultArea.style.display = '';
+
+            btnConfirm.style.display = (!isSaveResult && successCount > 0) ? '' : 'none';
+        }
+
+        function phoImpReset() {
+            document.getElementById('phoImp_fileInput').value = '';
+            phoImpSelectedFiles = [];
+            phoImpPreviewResults = [];
+            document.getElementById('phoImp_fileCount').textContent = phoImpI18n.noFilesSelected;
+            document.getElementById('phoImp_resultArea').style.display = 'none';
+            document.getElementById('phoImp_btnConfirm').style.display = 'none';
+        }
+
+        function phoImpGetCsrfHeaders() {
+            const token = document.querySelector('meta[name="_csrf"]')?.content;
+            const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+            return (token && header) ? { [header]: token } : {};
+        }
+
+        function phoImpEscapeHtml(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+    </script>
+</template>
+</div>

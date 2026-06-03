@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.arConfirm.mapper.EssLeaveConfirmMapper">
+
+    <resultMap id="EssLeaveConfirmResultMap" type="com.ait.ess.arConfirm.dto.EssLeaveConfirmDto">
+        <result property="applyNo"           column="APPLY_NO"/>
+        <result property="applyTime"         column="APPLY_TIME"/>
+        <result property="personId"          column="PERSON_ID"/>
+        <result property="dayHours"          column="DAY_HOURS"/>
+        <result property="leaveFromTime"     column="LEAVE_FROM_TIME"/>
+        <result property="leaveToTime"       column="LEAVE_TO_TIME"/>
+        <result property="overDay"           column="OVER_DAY"/>
+        <result property="overHour"          column="OVER_HOUR"/>
+        <result property="leaveReason"       column="LEAVE_REASON"/>
+        <result property="leaveTypeCode"     column="LEAVE_TYPE_CODE"/>
+        <result property="leaveTypeCodeName" column="LEAVE_TYPE_CODE_NAME"/>
+        <result property="hrComment"         column="HR_COMMENT"/>
+        <result property="applyLength"       column="APPLY_LENGTH"/>
+        <result property="confirmFlag"       column="CONFIRM_FLAG"/>
+        <result property="activity"          column="ACTIVITY"/>
+        <result property="createdBy"         column="CREATED_BY"/>
+        <result property="createdName"       column="CREATED_NAME"/>
+        <result property="localName"         column="LOCAL_NAME"/>
+        <result property="deptNo"            column="DEPTNO"/>
+        <result property="empId"             column="EMPID"/>
+        <result property="deptName"          column="DEPT_NAME"/>
+        <result property="postGradeNo"       column="POST_GRADE_NO"/>
+        <result property="postGradeName"     column="POST_GRADE_NAME"/>
+        <result property="postFamily"        column="POST_FAMILY"/>
+        <result property="postFamilyName"    column="POST_FAMILY_NAME"/>
+        <result property="confirmBy"         column="CONFIRM_BY"/>
+    </resultMap>
+
+    <!-- SQL base dùng chung cho countList và selectListPage -->
+    <sql id="baseQuery">
+        SELECT EL.APPLY_NO,
+               TO_CHAR(EL.APPLY_TIME, 'DD-MM-YYYY') AS APPLY_TIME,
+               EL.PERSON_ID,
+               AR_GET_DAY_HOURS(EL.PERSON_ID,
+                                TO_CHAR(EL.LEAVE_FROM_TIME, 'YYYY/MM/DD')) AS DAY_HOURS,
+               TO_CHAR(EL.LEAVE_FROM_TIME, 'DD-MM-YYYY HH24:MI') AS LEAVE_FROM_TIME,
+               TO_CHAR(EL.LEAVE_TO_TIME,   'DD-MM-YYYY HH24:MI') AS LEAVE_TO_TIME,
+               TRUNC(EL.LEAVE_TO_TIME - SYSDATE) AS OVER_DAY,
+               TRUNC(((EL.LEAVE_TO_TIME - SYSDATE) - TRUNC(EL.LEAVE_TO_TIME - SYSDATE)) * 24) AS OVER_HOUR,
+               EL.LEAVE_REASON,
+               EL.LEAVE_TYPE_CODE,
+               GET_GLOBAL_NAME(EL.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS LEAVE_TYPE_CODE_NAME,
+               EL.HR_COMMENT,
+               EL.APPLY_LENGTH,
+               EL.CONFIRM_FLAG,
+               EL.ACTIVITY,
+               EL.CREATED_BY,
+               GET_UPDATED_INFO(EL.CREATED_BY) AS CREATED_NAME,
+               HR.LOCAL_NAME,
+               HR.DEPTNO,
+               HR.EMPID,
+               GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               HR.POST_GRADE_NO,
+               GET_GLOBAL_NAME(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               HR.POST_FAMILY,
+               GET_GLOBAL_NAME(HR.POST_FAMILY, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+               GET_UPDATED_INFO(EL.CONFIRM_BY) AS CONFIRM_BY
+          FROM ESS_LEAVE_APPLY_TB EL
+          JOIN HR_EMPLOYEE HR ON EL.PERSON_ID = HR.PERSON_ID
+         WHERE EL.AFFIRM_FLAG = 14014308
+           AND EL.PERSON_ID NOT LIKE '111111%'
+           AND EL.ACTIVITY = '1'
+           AND EL.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="searchConfirmFlag != null and searchConfirmFlag != ''">
+            AND EL.CONFIRM_FLAG = #{searchConfirmFlag, jdbcType=VARCHAR}
+        </if>
+        <if test="searchEmpId != null and searchEmpId != ''">
+            AND (UPPER(HR.EMPID) LIKE '%' || UPPER(#{searchEmpId, jdbcType=VARCHAR}) || '%'
+              OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchEmpId, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="searchLocalName != null and searchLocalName != ''">
+            AND CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchLocalName, jdbcType=VARCHAR})) || '%'
+        </if>
+        <if test="searchLeaveTypeCode != null and searchLeaveTypeCode != ''">
+            AND EL.LEAVE_TYPE_CODE = #{searchLeaveTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND EL.LEAVE_FROM_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND EL.LEAVE_FROM_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+    </sql>
+
+    <select id="countList" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="baseQuery"/>
+        )
+    </select>
+
+    <select id="selectListPage" resultMap="EssLeaveConfirmResultMap">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY EL.APPLY_TIME DESC
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <update id="callLeaveConfirm" statementType="CALLABLE">
+        {CALL PKG_AFFIRM_EMAIL.PR_LEAVE_CONFIRM(
+            #{applyNo,   jdbcType=VARCHAR, mode=IN},
+            #{flag,      jdbcType=VARCHAR, mode=IN},
+            #{hrComment, jdbcType=VARCHAR, mode=IN},
+            #{adminID,   jdbcType=VARCHAR, mode=IN},
+            #{adminIP,   jdbcType=VARCHAR, mode=IN},
+            #{message,   jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+</mapper>

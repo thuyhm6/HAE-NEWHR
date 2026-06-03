@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArStaItemMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArStaItem">
+        <id column="ITEM_NO" property="itemNo" />
+        <result column="UNIT" property="unit" />
+        <result column="DATATYPE" property="datatype" />
+        <result column="STA_ITEM_ID" property="staItemId" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="SHOW_YN" property="showYn" />
+        <result column="SHOW_ORDER" property="showOrder" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="UPDATED_IP" property="updatedIp" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArStaItemDto" extends="BaseResultMap">
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+    </resultMap>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT a.*,
+               gvi.CONTENT AS NAME_VI,
+               gen.CONTENT AS NAME_EN,
+               gzh.CONTENT AS NAME_ZH,
+               gko.CONTENT AS NAME_KO
+        FROM AR_STA_ITEM a
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE 1=1
+        <if test="searchText != null and searchText != ''">
+            AND (a.ITEM_NO LIKE '%' || CAST(#{searchText} AS VARCHAR2(255)) || '%' OR 
+                 gvi.CONTENT LIKE '%' || CAST(#{searchText} AS VARCHAR2(255)) || '%')
+        </if>
+        ORDER BY a.ORDERNO, a.ITEM_NO
+    </select>
+
+    <select id="selectByItemNo" resultMap="BaseResultMap">
+        SELECT *
+        FROM AR_STA_ITEM
+        WHERE ITEM_NO = #{itemNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArStaItem">
+        INSERT INTO AR_STA_ITEM (
+            ITEM_NO, UNIT, DATATYPE, STA_ITEM_ID, ACTIVITY, ORDERNO, SHOW_YN, SHOW_ORDER, CREATE_DATE, CREATED_BY, CREATED_IP
+        ) VALUES (
+            #{itemNo}, #{unit}, #{datatype}, #{staItemId}, #{activity}, #{orderno}, #{showYn}, #{showOrder}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArStaItem">
+        UPDATE AR_STA_ITEM
+        SET UNIT = #{unit},
+            DATATYPE = #{datatype},
+            STA_ITEM_ID = #{staItemId},
+            ACTIVITY = #{activity},
+            ORDERNO = #{orderno},
+            SHOW_YN = #{showYn},
+            SHOW_ORDER = #{showOrder},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE ITEM_NO = #{itemNo}
+    </update>
+
+    <delete id="delete" parameterType="String">
+        DELETE FROM AR_STA_ITEM WHERE ITEM_NO = #{itemNo}
+    </delete>
+
+</mapper>

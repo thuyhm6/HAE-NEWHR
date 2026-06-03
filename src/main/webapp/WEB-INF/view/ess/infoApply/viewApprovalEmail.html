@@ -1,0 +1,357 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vae_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2 px-3">
+                    <form id="vae_searchForm" class="row gy-2 align-items-center">
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{vae.search.title}">Tiêu đề</label>
+                            <input type="text" class="form-control form-control-sm" id="vae_titleSearch"
+                                style="min-width:200px;">
+                        </div>
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{vae.search.applyType}">Loại đơn</label>
+                            <select class="form-select form-select-sm" id="vae_applyTypeSearch"
+                                style="min-width:140px;">
+                                <option value="" th:text="#{vae.search.applyType.all}">-- Tất cả --</option>
+                                <option value="31" th:text="#{vae.search.applyType.ot}">Tăng ca</option>
+                                <option value="21" th:text="#{vae.search.applyType.leave}">Nghỉ phép</option>
+                                <option value="218197" th:text="#{vae.search.applyType.anomaly}">Nghỉ bất thường</option>
+                            </select>
+                        </div>
+                        <div class="col-auto ms-auto d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="vaeSearch()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{vae.btn.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="vaeAction(1)">
+                                <i class="bi bi-check-circle"></i>
+                                <span th:text="#{vae.btn.approve}">Duyệt</span>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="vaeAction(2)">
+                                <i class="bi bi-x-circle"></i>
+                                <span th:text="#{vae.btn.reject}">Từ chối</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle mb-0"
+                            id="vae_table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:30px;" th:text="#{vae.col.no}">NO</th>
+                                    <th class="text-center" style="width:30px;">
+                                        <input type="checkbox" id="vae_checkAll">
+                                    </th>
+                                    <th th:text="#{vae.col.title}">Tiêu đề</th>
+                                    <th class="text-center" style="width:20%; white-space:nowrap;"
+                                        th:text="#{vae.col.applyPerson}">Người xin phép</th>
+                                    <th class="text-center" style="width:10%; white-space:nowrap;"
+                                        th:text="#{vae.col.updateDate}">Ngày thực hiện</th>
+                                    <th class="text-center" style="width:10%; white-space:nowrap;"
+                                        th:text="#{vae.col.affirmStatus}">Trạng thái duyệt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vae_tableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-3"
+                                        th:text="#{vae.msg.loading}">Đang tải...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vae_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- Modal chi tiết đơn tăng ca -->
+    <th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtModal}"></th:block>
+    <!-- Modal chi tiết đơn nghỉ phép -->
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveModal}"></th:block>
+    <!-- Modal chi tiết điều chỉnh chấm công -->
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExModal}"></th:block>
+
+    <!-- Modal xác nhận duyệt / từ chối -->
+    <div class="modal fade" id="vae_actionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vae_actionModalTitle" th:text="#{vae.modal.approve.title}">
+                        Xác nhận duyệt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label fw-semibold"
+                        th:text="#{vae.modal.remarkLabel}">Nội dung phê duyệt</label>
+                    <textarea class="form-control" id="vae_affirmContent" rows="3"
+                        th:placeholder="#{vae.modal.remarkPlaceholder}"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="vae_confirmBtn"
+                        onclick="vaeConfirmAction()">
+                        <i class="bi bi-check-lg"></i>
+                        <span th:text="#{common.confirm}">Xác nhận</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtScript}"></th:block>
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveScript}"></th:block>
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExScript}"></th:block>
+    <style>
+        #vae_table th,
+        #vae_table td {
+            vertical-align: middle;
+        }
+        #vae_table thead th {
+            white-space: nowrap;
+        }
+        .vae-row-chk {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        tr.vae-ticked {
+            background-color: #fff3cd !important;
+        }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            var _vae_tabId = window._currentTabId || 'default-content';
+            var _vae_currentFlag = 0;
+            var _vae_data = [];
+            var _vae_modal = null;
+
+            var _vae_i18n = {
+                noSelect:       /*[[#{vae.msg.noSelect}]]*/ 'Vui lòng chọn ít nhất một đơn.',
+                approveSuccess: /*[[#{vae.msg.approveSuccess}]]*/ 'Phê duyệt thành công!',
+                rejectSuccess:  /*[[#{vae.msg.rejectSuccess}]]*/ 'Từ chối thành công!',
+                executeFail:    /*[[#{vae.msg.executeFail}]]*/ 'Có lỗi xảy ra trong quá trình xử lý.',
+                noData:         /*[[#{vae.msg.noData}]]*/ 'Không có dữ liệu',
+                loading:        /*[[#{vae.msg.loading}]]*/ 'Đang tải...',
+                loadError:      /*[[#{vae.msg.loadError}]]*/ 'Lỗi tải dữ liệu',
+                approveTitle:   /*[[#{vae.modal.approve.title}]]*/ 'Xác nhận duyệt',
+                rejectTitle:    /*[[#{vae.modal.reject.title}]]*/ 'Xác nhận từ chối'
+            };
+
+            function vae$(sel) { return $('#' + _vae_tabId).find(sel); }
+
+            function vaeEsc(s) {
+                if (s == null) return '';
+                return String(s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function vaeShowToast(msg, type) {
+                var bg = type === 'success' ? 'text-bg-success' : 'text-bg-danger';
+                var $t = $('<div class="toast align-items-center ' + bg + ' border-0 position-fixed bottom-0 end-0 m-3" role="alert" style="z-index:9999">'
+                    + '<div class="d-flex"><div class="toast-body">' + vaeEsc(msg) + '</div>'
+                    + '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div></div>');
+                $('body').append($t);
+                new bootstrap.Toast($t[0], { delay: 4000 }).show();
+                $t.on('hidden.bs.toast', function () { $t.remove(); });
+            }
+
+function vaeRenderTable(rows) {
+                var $tbody = vae$('#vae_tableBody');
+                if (!rows || !rows.length) {
+                    $tbody.html('<tr><td colspan="6" class="text-center text-muted py-3">' + vaeEsc(_vae_i18n.noData) + '</td></tr>');
+                    return;
+                }
+                var html = '';
+                rows.forEach(function (r, idx) {
+                    var titleHtml = r.affirmUrl
+                        ? '<a href="javascript:void(0)" class="text-primary vae-detail-link"'
+                          + ' data-apply-no="' + vaeEsc(r.applyNo || '') + '"'
+                          + ' data-apply-type="' + vaeEsc(r.applyType || '') + '"'
+                          + ' data-affirm-url="' + vaeEsc(r.affirmUrl || '') + '"'
+                          + ' data-idx="' + idx + '">'
+                          + vaeEsc(r.title || '') + '</a>'
+                        : vaeEsc(r.title || '');
+                    html += '<tr>'
+                        + '<td class="text-center">' + (idx + 1) + '</td>'
+                        + '<td class="text-center"><input type="checkbox" class="vae-row-chk" data-idx="' + idx + '"></td>'
+                        + '<td>' + titleHtml + '</td>'
+                        + '<td class="text-center">' + vaeEsc(r.applyPersonInfo || '') + '</td>'
+                        + '<td class="text-center">' + vaeEsc(r.updateDate || '') + '</td>'
+                        + '<td class="text-center"><span class="badge text-bg-warning">' + vaeEsc(r.applyAffirmFlag || '') + '</span></td>'
+                        + '</tr>';
+                });
+                $tbody.html(html);
+
+                // Checkbox từng dòng → highlight
+                vae$('.vae-row-chk').on('change', function () {
+                    $(this).closest('tr').toggleClass('vae-ticked', $(this).is(':checked'));
+                });
+            }
+
+            function vaeOpenDetailModal(applyNo, applyType, affirmUrl, rowData) {
+                var url = affirmUrl || '';
+                var ctx = rowData ? {
+                    fromApprovalEmail: true,
+                    affirmPersonId:    rowData.affirmPersonId,
+                    applyNo:           rowData.applyNo,
+                    applyType:         rowData.applyType,
+                    applyFlag:         rowData.applyFlag,
+                    affirmLevel:       rowData.affirmLevel,
+                    affirmFlag:        rowData.affirmFlag
+                } : null;
+                if (url.indexOf('viewApprovaledOt') !== -1) {
+                    typeof vaotOpenApplyDetail === 'function' && vaotOpenApplyDetail(applyNo, applyType, ctx);
+                } else if (url.indexOf('viewApprovaledLeave') !== -1) {
+                    typeof valOpenApplyDetail === 'function' && valOpenApplyDetail(applyNo, applyType, ctx);
+                } else if (url.indexOf('viewAttendanceEx') !== -1) {
+                    typeof atexOpenApplyDetail === 'function' && atexOpenApplyDetail(applyNo, applyType, ctx);
+                }
+            }
+
+            window.vaeLoadList = vaeLoadList;
+
+            window.vaeSearch = function () {
+                var typeFilter = vae$('#vae_applyTypeSearch').val() || '';
+                var titleFilter = vae$('#vae_titleSearch').val() || '';
+
+                var rows = _vae_data.filter(function (r) {
+                    var matchType = !typeFilter || r.applyTypeCode === typeFilter;
+                    var matchTitle = !titleFilter || (r.title && r.title.toLowerCase().indexOf(titleFilter.toLowerCase()) !== -1);
+                    return matchType && matchTitle;
+                });
+                vaeRenderTable(rows);
+                vae$('#vae_checkAll').prop('checked', false);
+            };
+
+            function vaeLoadList() {
+                vae$('#vae_tableBody').html('<tr><td colspan="6" class="text-center text-muted py-3">' + vaeEsc(_vae_i18n.loading) + '</td></tr>');
+                $.ajax({
+                    url: '/ess/infoApply/api/approvalEmail/list',
+                    type: 'GET',
+                    success: function (rows) {
+                        _vae_data = rows || [];
+                        vaeSearch();
+                    },
+                    error: function () {
+                        vae$('#vae_tableBody').html('<tr><td colspan="6" class="text-center text-danger py-3">' + vaeEsc(_vae_i18n.loadError) + '</td></tr>');
+                    }
+                });
+            }
+
+            // Lấy danh sách dòng đã tick
+            function vaeGetSelected() {
+                var selected = [];
+                vae$('.vae-row-chk:checked').each(function () {
+                    var idx = parseInt($(this).data('idx'), 10);
+                    if (_vae_data[idx]) selected.push(_vae_data[idx]);
+                });
+                return selected;
+            }
+
+            window.vaeAction = function (flag) {
+                var selected = vaeGetSelected();
+                if (!selected.length) { alert(_vae_i18n.noSelect); return; }
+                _vae_currentFlag = flag;
+                vae$('#vae_actionModalTitle').text(flag === 1 ? _vae_i18n.approveTitle : _vae_i18n.rejectTitle);
+                vae$('#vae_affirmContent').val(flag === 1 ? 'Ok' : 'Reject');
+                _vae_modal.show();
+            };
+
+            window.vaeConfirmAction = function () {
+                var selected = vaeGetSelected();
+                var affirmContent = vae$('#vae_affirmContent').val().trim() || (_vae_currentFlag === 1 ? 'Ok' : 'Reject');
+                var flag = _vae_currentFlag;
+
+                var items = selected.map(function (r) {
+                    return {
+                        applyNo:      r.applyNo,
+                        applyType:    r.applyType,
+                        applyFlag:    r.applyFlag,
+                        affirmLevel:  r.affirmLevel,
+                        flag:         flag,
+                        affirmContent: affirmContent
+                    };
+                });
+
+                _vae_modal.hide();
+                $.ajax({
+                    url: '/ess/infoApply/api/approvalEmail/execute',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ items: items }),
+                    success: function (res) {
+                        if (res.success) {
+                            vaeShowToast(flag === 1 ? _vae_i18n.approveSuccess : _vae_i18n.rejectSuccess, 'success');
+                        } else {
+                            vaeShowToast((res.message || _vae_i18n.executeFail), 'danger');
+                        }
+                        vaeLoadList();
+                    },
+                    error: function () {
+                        vaeShowToast(_vae_i18n.executeFail, 'danger');
+                        vaeLoadList();
+                    }
+                });
+            };
+
+            $(document).ready(function () {
+                _vae_modal = new bootstrap.Modal(vae$('#vae_actionModal')[0]);
+
+                // Auto-filter theo applyTypeCode từ URL khi mở từ thông báo
+                if (window._currentTabUrl) {
+                    try {
+                        var qStr = window._currentTabUrl.split('?')[1] || '';
+                        var urlParams = new URLSearchParams(qStr);
+                        var typeCode = urlParams.get('applyTypeCode');
+                        if (typeCode) {
+                            vae$('#vae_applyTypeSearch').val(typeCode);
+                        }
+                    } catch (e) {}
+                }
+
+                // Checkbox chọn tất cả
+                vae$('#vae_checkAll').on('change', function () {
+                    var checked = $(this).is(':checked');
+                    vae$('.vae-row-chk').prop('checked', checked)
+                        .closest('tr').toggleClass('vae-ticked', checked);
+                });
+
+                // Enter trong ô tìm kiếm tiêu đề → tra cứu
+                vae$('#vae_titleSearch').on('keydown', function (e) {
+                    if (e.key === 'Enter') { e.preventDefault(); vaeSearch(); }
+                });
+
+                // Click vào tiêu đề đơn → mở modal chi tiết tương ứng
+                vae$('#vae_tableBody').on('click', '.vae-detail-link', function () {
+                    var idx = parseInt($(this).data('idx'), 10);
+                    var rowData = _vae_data[idx] || null;
+                    vaeOpenDetailModal(
+                        $(this).data('apply-no'),
+                        $(this).data('apply-type'),
+                        $(this).data('affirm-url'),
+                        rowData
+                    );
+                });
+
+                vaeLoadList();
+            });
+        })();
+    </script>
+</template>

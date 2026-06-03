@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.basicMaintenance.mapper.HrCompanyMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.sy.basicMaintenance.model.HrCompany">
+        <id column="CPNY_ID" property="cpnyId" />
+        <result column="CPNY_LOCATION" property="cpnyLocation" />
+        <result column="CPNY_ADDR" property="cpnyAddr" />
+        <result column="CPNY_POSTALCODE" property="cpnyPostalcode" />
+        <result column="CPNY_INTRO" property="cpnyIntro" />
+        <result column="CPNY_HISTORY" property="cpnyHistory" />
+        <result column="CPNY_WEB_ADDR" property="cpnyWebAddr" />
+        <result column="CPNY_TEL_NO" property="cpnyTelNo" />
+        <result column="CPNY_FAX_NO" property="cpnyFaxNo" />
+        <result column="CPNY_NO" property="cpnyNo" />
+        <result column="OPERATION_ID" property="operationId" />
+        <result column="GGS_YN" property="ggsYn" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderNo" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.sy.basicMaintenance.dto.HrCompanyDto" extends="BaseResultMap">
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+    </resultMap>
+
+    <select id="findAllWithNames" resultMap="DtoResultMap">
+        SELECT c.*,
+               gvi.CONTENT AS NAME_VI,
+               gen.CONTENT AS NAME_EN,
+               gzh.CONTENT AS NAME_ZH,
+               gko.CONTENT AS NAME_KO
+        FROM HR_COMPANY c
+        LEFT JOIN SY_GLOBAL_NAME gvi ON c.CPNY_NO = gvi.NO AND gvi.LANGUAGE = 'vi' AND gvi.ACTIVITY = 1
+        LEFT JOIN SY_GLOBAL_NAME gen ON c.CPNY_NO = gen.NO AND gen.LANGUAGE = 'en' AND gen.ACTIVITY = 1
+        LEFT JOIN SY_GLOBAL_NAME gzh ON c.CPNY_NO = gzh.NO AND gzh.LANGUAGE = 'zh' AND gzh.ACTIVITY = 1
+        LEFT JOIN SY_GLOBAL_NAME gko ON c.CPNY_NO = gko.NO AND gko.LANGUAGE = 'ko' AND gko.ACTIVITY = 1
+        WHERE 1=1 AND c.ACTIVITY = 1
+        <if test="keyword != null and keyword != ''">
+            AND (
+                c.CPNY_ID LIKE '%' || #{keyword} || '%' OR 
+                gvi.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gen.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gzh.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gko.CONTENT LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        ORDER BY c.ORDERNO, c.CPNY_ID
+    </select>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM HR_COMPANY ORDER BY CPNY_ID
+    </select>
+
+    <select id="searchCompanies" resultMap="BaseResultMap">
+        SELECT * FROM HR_COMPANY 
+        WHERE CPNY_ID LIKE '%' || #{keyword} || '%' OR CPNY_LOCATION LIKE '%' || #{keyword} || '%'
+        ORDER BY CPNY_ID
+    </select>
+
+    <select id="findByCpnyId" resultMap="BaseResultMap">
+        SELECT * FROM HR_COMPANY WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+    
+    <select id="findByCpnyNo" resultMap="BaseResultMap">
+        SELECT * FROM HR_COMPANY WHERE CPNY_NO = #{cpnyNo}
+    </select>
+
+    <select id="existsByCpnyId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM HR_COMPANY WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO HR_COMPANY (
+            CPNY_ID, CPNY_LOCATION, CPNY_ADDR, CPNY_POSTALCODE,
+            CPNY_INTRO, CPNY_HISTORY, CPNY_WEB_ADDR, CPNY_TEL_NO,
+            CPNY_FAX_NO, CPNY_NO, OPERATION_ID, GGS_YN,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY,
+            ACTIVITY, ORDERNO
+        ) VALUES (
+            #{cpnyId, jdbcType=VARCHAR}, #{cpnyLocation}, #{cpnyAddr}, #{cpnyPostalcode},
+            #{cpnyIntro}, #{cpnyHistory}, #{cpnyWebAddr}, #{cpnyTelNo},
+            #{cpnyFaxNo}, #{cpnyNo}, #{operationId}, #{ggsYn},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR},
+            #{activity}, #{orderNo}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE HR_COMPANY SET
+            CPNY_LOCATION = #{cpnyLocation},
+            CPNY_ADDR = #{cpnyAddr},
+            CPNY_POSTALCODE = #{cpnyPostalcode},
+            CPNY_INTRO = #{cpnyIntro},
+            CPNY_HISTORY = #{cpnyHistory},
+            CPNY_WEB_ADDR = #{cpnyWebAddr},
+            CPNY_TEL_NO = #{cpnyTelNo},
+            CPNY_FAX_NO = #{cpnyFaxNo},
+            OPERATION_ID = #{operationId},
+            GGS_YN = #{ggsYn},
+            UPDATE_DATE = sysdate,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ACTIVITY = #{activity},
+            ORDERNO = #{orderNo}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteByCpnyId">
+        UPDATE HR_COMPANY SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+    
+    <delete id="deleteByCpnyNo">
+        UPDATE HR_COMPANY SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} WHERE CPNY_NO = #{cpnyNo}
+    </delete>
+
+    <select id="getNextGlobalNoSeq" resultType="String">
+        SELECT SY_GLOBAL_NO_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+</mapper>

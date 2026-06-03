@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArShift010Mapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArShift010">
+        <id column="SHIFT_NO" property="shiftNo" />
+        <result column="DATATYPE" property="datatype" />
+        <result column="SHIFT_ID" property="shiftId" />
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="DEPT_DISTINGUISH_NO" property="deptDistinguishNo" />
+        <result column="DEDUCT_TIME" property="deductTime" />
+        <result column="OT_TIME_START" property="otTimeStart" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="UPDATED_IP" property="updatedIp" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="OT_ALLOWANCE" property="otAllowance" />
+        <result column="SHIFT_SHORTNAME" property="shiftShortname" />
+        <result column="SHIFT_LENGTH" property="shiftLength" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArShift010Dto" extends="BaseResultMap">
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+    </resultMap>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT a.*,
+               c.CPNY_LOCATION AS COMPANY_NAME,
+               gvi.CONTENT AS NAME_VI,
+               gen.CONTENT AS NAME_EN,
+               gzh.CONTENT AS NAME_ZH,
+               gko.CONTENT AS NAME_KO
+        FROM AR_SHIFT010 a
+        LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.SHIFT_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.SHIFT_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.SHIFT_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.SHIFT_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE 1 = 1
+        <if test="cpnyId != null and cpnyId != ''">
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+        <if test="searchText != null and searchText != ''">
+            AND (a.SHIFT_NO LIKE '%' || #{searchText} || '%' OR 
+                 gvi.CONTENT LIKE '%' || #{searchText} || '%')
+        </if>
+        ORDER BY a.ORDERNO, a.SHIFT_NO
+    </select>
+
+    <select id="selectByShiftNo" resultMap="BaseResultMap">
+        SELECT * FROM AR_SHIFT010 WHERE SHIFT_NO = #{shiftNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArShift010">
+        INSERT INTO AR_SHIFT010 (
+            SHIFT_NO, DATATYPE, SHIFT_ID, CPNY_ID, DEPT_DISTINGUISH_NO, 
+            DEDUCT_TIME, OT_TIME_START, CREATE_DATE, CREATED_BY, 
+            UPDATE_DATE, UPDATED_BY, ACTIVITY, ORDERNO, UPDATED_IP, CREATED_IP, OT_ALLOWANCE, SHIFT_SHORTNAME, SHIFT_LENGTH
+        ) VALUES (
+            #{shiftNo, jdbcType=VARCHAR}, #{datatype, jdbcType=NUMERIC}, #{shiftId, jdbcType=VARCHAR}, 
+            #{cpnyId, jdbcType=VARCHAR}, #{deptDistinguishNo, jdbcType=VARCHAR},
+            #{deductTime, jdbcType=NUMERIC}, #{otTimeStart, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
+            #{updatedIp, jdbcType=VARCHAR}, #{createdIp, jdbcType=VARCHAR}, #{otAllowance, jdbcType=NUMERIC}, 
+            #{shiftShortname, jdbcType=VARCHAR}, #{shiftLength, jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArShift010">
+        UPDATE AR_SHIFT010
+        <set>
+            <if test="datatype != null">DATATYPE = #{datatype},</if>
+            <if test="shiftId != null">SHIFT_ID = #{shiftId},</if>
+            <if test="cpnyId != null">CPNY_ID = #{cpnyId, jdbcType=VARCHAR},</if>
+            <if test="deptDistinguishNo != null">DEPT_DISTINGUISH_NO = #{deptDistinguishNo},</if>
+            <if test="deductTime != null">DEDUCT_TIME = #{deductTime},</if>
+            <if test="otTimeStart != null">OT_TIME_START = #{otTimeStart},</if>
+            <if test="activity != null">ACTIVITY = #{activity},</if>
+            <if test="orderno != null">ORDERNO = #{orderno},</if>
+            <if test="updatedIp != null">UPDATED_IP = #{updatedIp},</if>
+            <if test="otAllowance != null">OT_ALLOWANCE = #{otAllowance},</if>
+            <if test="shiftShortname != null">SHIFT_SHORTNAME = #{shiftShortname},</if>
+            <if test="shiftLength != null">SHIFT_LENGTH = #{shiftLength},</if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        </set>
+        WHERE SHIFT_NO = #{shiftNo}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM AR_SHIFT010 WHERE SHIFT_NO = #{shiftNo}
+    </delete>
+
+</mapper>

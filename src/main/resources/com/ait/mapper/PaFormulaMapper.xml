@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.salary.mapper.PaFormulaMapper">
+
+    <resultMap id="PaFormulaToolItemResultMap" type="com.ait.pa.salary.dto.PaFormulaToolItemDto">
+        <result column="ITEM_ID"   property="itemId"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME" property="itemName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="PaFormulaResultMap" type="com.ait.pa.salary.dto.PaFormulaDto">
+        <result column="FORMULAR_NO"   property="formularNo"   jdbcType="NUMERIC" />
+        <result column="ITEM_NO"       property="itemNo"       jdbcType="VARCHAR" />
+        <result column="CONDITION"     property="condition"    jdbcType="VARCHAR" />
+        <result column="FORMULAR"      property="formular"     jdbcType="VARCHAR" />
+        <result column="CONDITION_SEQ" property="conditionSeq" jdbcType="NUMERIC" />
+        <result column="DESCRIPTION"   property="description"  jdbcType="VARCHAR" />
+        <result column="CPNY_ID"       property="cpnyId"       jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"     property="itemName"     jdbcType="VARCHAR" />
+        <result column="MIN_SEQ"       property="minSeq"       jdbcType="NUMERIC" />
+        <result column="MAX_SEQ"       property="maxSeq"       jdbcType="NUMERIC" />
+    </resultMap>
+
+    <!-- ── Công cụ: Danh sách mục nhập ─────────────────────────────────────── -->
+    <select id="selectToolParamItemList" resultMap="PaFormulaToolItemResultMap">
+        SELECT PI.PARAM_ITEM_ID AS ITEM_ID,
+               SY.CONTENT       AS ITEM_NAME
+          FROM PA_PARAM_ITEM_PARAM T,
+               PA_PARAM_ITEM       PI,
+               SY_GLOBAL_NAME      SY
+         WHERE T.PARAM_ITEM_NO    = PI.PARAM_ITEM_NO
+           AND T.PARAM_ITEM_NO    = SY.NO(+)
+           AND SY.LANGUAGE(+)     = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY        = 1
+           AND T.CPNY_ID          = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY PI.ORDER_NO
+    </select>
+
+    <!-- ── Công cụ: Danh sách hạng mục lương ────────────────────────────────── -->
+    <select id="selectToolSalaryItemList" resultMap="PaFormulaToolItemResultMap">
+        SELECT PI.ITEM_ID  AS ITEM_ID,
+               SY.CONTENT  AS ITEM_NAME
+          FROM PA_ITEM_PARAM  T,
+               PA_ITEM        PI,
+               SY_GLOBAL_NAME SY
+         WHERE T.ITEM_NO       = PI.ITEM_NO
+           AND T.ITEM_NO       = SY.NO(+)
+           AND SY.LANGUAGE(+)  = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY     = 1
+           AND T.CPNY_ID       = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY CALCU_ORDER
+    </select>
+
+    <!-- ── Công cụ: Hạng mục chấm công ──────────────────────────────────────── -->
+    <select id="selectToolAttendanceItemList" resultMap="PaFormulaToolItemResultMap">
+        SELECT COLUMN_NAME           AS ITEM_ID,
+               SY_GLOBAL_NAME.CONTENT AS ITEM_NAME
+          FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
+         WHERE TABLE_NAME              = 'AR_SUMMARY_HTSV'
+           AND DATA_TYPE               = 'NUMBER'
+           AND COLUMN_NAME             = STA_ITEM_ID
+           AND AR_STA_ITEM.ITEM_NO     = AR_STA_ITEM_PARAM.ITEM_NO
+           AND AR_STA_ITEM_PARAM.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND AR_STA_ITEM.ITEM_NO     = SY_GLOBAL_NAME.NO(+)
+           AND SY_GLOBAL_NAME.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND AR_STA_ITEM.ACTIVITY    = 1
+           AND NOT EXISTS (
+               SELECT * FROM PA_DISTINCT_LIST
+                WHERE COLUMN_NAME  = DISTINCT_FIELD
+                  AND TABLE_NAME   = 'PA_HR_V'
+                  AND CPNY_ID      = #{cpnyId, jdbcType=VARCHAR}
+           )
+         ORDER BY AR_STA_ITEM_PARAM.CAL_ORDER
+    </select>
+
+    <!-- ── Công cụ: Tham số cố định ──────────────────────────────────────────── -->
+    <select id="selectToolFixedParamList" resultMap="PaFormulaToolItemResultMap">
+        SELECT T.DISTINCT_FIELD AS ITEM_ID,
+               SY.CONTENT       AS ITEM_NAME
+          FROM PA_DISTINCT_LIST T, SY_GLOBAL_NAME SY
+         WHERE T.ID              = SY.NO(+)
+           AND SY.LANGUAGE(+)   = #{lang, jdbcType=VARCHAR}
+           AND T.TABLE_NAME     = 'PA_HR_V'
+           AND T.CPNY_ID        = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY T.ORDERNO, T.ID
+    </select>
+
+    <!-- ── Danh sách hạng mục ACTIVITY=1 cho panel bên trái ────────────────── -->
+    <select id="selectItemList" parameterType="com.ait.pa.salary.dto.PaFormulaDto"
+            resultMap="PaFormulaResultMap">
+        SELECT PI.ITEM_NO, SY.CONTENT ITEM_NAME
+          FROM PA_ITEM PI, PA_ITEM_PARAM PIP, SY_GLOBAL_NAME SY
+         WHERE PI.ITEM_NO  = PIP.ITEM_NO
+           AND PIP.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND PI.ITEM_NO  = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY = 1
+         ORDER BY PIP.CALCU_ORDER
+    </select>
+
+    <!-- ── Tất cả ITEM_ID → ITEM_NAME để hiển thị condition/formular ───────── -->
+    <select id="selectAllItemNames" resultMap="PaFormulaToolItemResultMap">
+        SELECT II.ITEM_ID AS ITEM_ID, SY.CONTENT AS ITEM_NAME
+          FROM IS_ITEM II, SY_GLOBAL_NAME SY
+         WHERE II.ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+        UNION
+        SELECT DISTINCT IPI.PARAM_ID, SY.CONTENT
+          FROM IS_PARAM_ITEM IPI, SY_GLOBAL_NAME SY
+         WHERE IPI.PARAM_ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+        UNION
+        SELECT PDL.DISTINCT_FIELD, SY.CONTENT
+          FROM PA_DISTINCT_LIST PDL, SY_GLOBAL_NAME SY
+         WHERE PDL.ID = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+        UNION
+        SELECT PBI.ITEM_ID, SY.CONTENT
+          FROM PA_BASIC_ITEM PBI, SY_GLOBAL_NAME SY
+         WHERE PBI.ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+        UNION
+        SELECT PI.ITEM_ID AS ITEM_ID, SY.CONTENT AS ITEM_NAME
+          FROM PA_ITEM PI, SY_GLOBAL_NAME SY
+         WHERE PI.ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+        UNION
+        SELECT DISTINCT PPI.PARAM_ITEM_ID, SY.CONTENT
+          FROM PA_PARAM_ITEM PPI, SY_GLOBAL_NAME SY
+         WHERE PPI.PARAM_ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+        UNION
+        SELECT ASI.STA_ITEM_ID, SY.CONTENT
+          FROM AR_STA_ITEM ASI, SY_GLOBAL_NAME SY
+         WHERE ASI.ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── SQL cốt lõi cho danh sách công thức (kèm min/max toàn bộ để ẩn mũi tên) -->
+    <sql id="baseFormularSelect">
+        SELECT FORMULAR_NO,
+               ITEM_NO,
+               CONDITION,
+               FORMULAR,
+               CONDITION_SEQ,
+               DESCRIPTION,
+               CPNY_ID,
+               MIN(CONDITION_SEQ) OVER() AS MIN_SEQ,
+               MAX(CONDITION_SEQ) OVER() AS MAX_SEQ
+          FROM PA_FORMULAR T
+         WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ITEM_NO = #{itemNo,  jdbcType=VARCHAR}
+    </sql>
+
+    <!-- ── Đếm tổng số công thức theo itemNo ───────────────────────────────── -->
+    <select id="countFormularList" parameterType="com.ait.pa.salary.dto.PaFormulaDto" resultType="long">
+        SELECT COUNT(1) FROM (
+            <include refid="baseFormularSelect"/>
+        )
+    </select>
+
+    <!-- ── Phân trang công thức – Oracle ROWNUM ─────────────────────────────── -->
+    <select id="selectFormularListPage" parameterType="com.ait.pa.salary.dto.PaFormulaDto"
+            resultMap="PaFormulaResultMap">
+        SELECT FORMULAR_NO, ITEM_NO, CONDITION, FORMULAR, CONDITION_SEQ,
+               DESCRIPTION, CPNY_ID, MIN_SEQ, MAX_SEQ
+          FROM (
+            SELECT a.*, ROWNUM AS RN
+              FROM (
+                <include refid="baseFormularSelect"/>
+                ORDER BY CONDITION_SEQ DESC
+              ) a
+             WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+          )
+         WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Lấy một công thức để chỉnh sửa ──────────────────────────────────── -->
+    <select id="selectFormularOne" resultMap="PaFormulaResultMap">
+        SELECT FORMULAR_NO, ITEM_NO, CONDITION, FORMULAR, CONDITION_SEQ, DESCRIPTION, CPNY_ID
+          FROM PA_FORMULAR
+         WHERE FORMULAR_NO = #{formularNo, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Thêm mới công thức, FORMULAR_NO tự tăng qua sequence ─────────────── -->
+    <insert id="insertFormular" parameterType="com.ait.pa.salary.dto.PaFormulaDto">
+        INSERT INTO PA_FORMULAR (
+            FORMULAR_NO,
+            ITEM_NO,
+            CPNY_ID,
+            CONDITION,
+            FORMULAR,
+            CONDITION_SEQ,
+            DESCRIPTION,
+            CREATED_BY,
+            CREATE_DATE,
+            UPDATED_BY,
+            UPDATE_DATE,
+            ACTIVITY
+        ) VALUES (
+            PA_FORMULAR_SEQ.NEXTVAL,
+            #{itemNo,      jdbcType=VARCHAR},
+            #{cpnyId,      jdbcType=VARCHAR},
+            #{condition,   jdbcType=VARCHAR},
+            #{formular,    jdbcType=VARCHAR},
+            (SELECT NVL(MAX(CONDITION_SEQ), 0) + 1
+               FROM PA_FORMULAR
+              WHERE ITEM_NO = #{itemNo,  jdbcType=VARCHAR}
+                AND CPNY_ID = #{cpnyId,  jdbcType=VARCHAR}),
+            #{description, jdbcType=VARCHAR},
+            #{adminID,     jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,     jdbcType=VARCHAR},
+            SYSDATE,
+            1
+        )
+    </insert>
+
+    <!-- ── Cập nhật công thức ───────────────────────────────────────────────── -->
+    <update id="updateFormular" parameterType="com.ait.pa.salary.dto.PaFormulaDto">
+        UPDATE PA_FORMULAR
+           SET CONDITION   = #{condition,   jdbcType=VARCHAR},
+               FORMULAR    = #{formular,    jdbcType=VARCHAR},
+               DESCRIPTION = #{description, jdbcType=VARCHAR},
+               UPDATED_BY  = #{adminID,     jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE FORMULAR_NO = #{formularNo,  jdbcType=NUMERIC}
+    </update>
+
+    <!-- ── Xóa công thức ────────────────────────────────────────────────────── -->
+    <delete id="deleteFormular">
+        DELETE FROM PA_FORMULAR
+         WHERE FORMULAR_NO = #{formularNo, jdbcType=NUMERIC}
+    </delete>
+
+    <!-- ── Tìm công thức kề trên/dưới để hoán đổi CONDITION_SEQ ─────────────── -->
+    <!-- Danh sách hiển thị theo DESC: up = tăng seq (hoán với bản ghi ngay trên) -->
+    <select id="findAdjacentBySeq" resultMap="PaFormulaResultMap">
+        SELECT FORMULAR_NO, CONDITION_SEQ
+          FROM PA_FORMULAR
+         WHERE ITEM_NO  = #{itemNo,  jdbcType=VARCHAR}
+           AND CPNY_ID  = #{cpnyId,  jdbcType=VARCHAR}
+           AND CONDITION_SEQ = (
+               <choose>
+                   <when test="direction == 'up'">
+                       SELECT MIN(CONDITION_SEQ) FROM PA_FORMULAR
+                        WHERE ITEM_NO  = #{itemNo,  jdbcType=VARCHAR}
+                          AND CPNY_ID  = #{cpnyId,  jdbcType=VARCHAR}
+                          AND CONDITION_SEQ &gt; #{currentSeq, jdbcType=NUMERIC}
+                   </when>
+                   <otherwise>
+                       SELECT MAX(CONDITION_SEQ) FROM PA_FORMULAR
+                        WHERE ITEM_NO  = #{itemNo,  jdbcType=VARCHAR}
+                          AND CPNY_ID  = #{cpnyId,  jdbcType=VARCHAR}
+                          AND CONDITION_SEQ &lt; #{currentSeq, jdbcType=NUMERIC}
+                   </otherwise>
+               </choose>
+           )
+    </select>
+
+    <!-- ── Cập nhật CONDITION_SEQ cho một bản ghi ───────────────────────────── -->
+    <update id="updateConditionSeq">
+        UPDATE PA_FORMULAR
+           SET CONDITION_SEQ = #{conditionSeq, jdbcType=NUMERIC},
+               UPDATED_BY    = #{adminID,      jdbcType=VARCHAR},
+               UPDATE_DATE   = SYSDATE
+         WHERE FORMULAR_NO   = #{formularNo,   jdbcType=NUMERIC}
+    </update>
+
+</mapper>

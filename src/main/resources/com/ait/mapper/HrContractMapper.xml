@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.contract.mapper.HrContractMapper">
+
+    <!-- Result Map -->
+    <resultMap id="HrContractResultMap" type="com.ait.hrm.contract.model.HrContract">
+        <id property="contractNo" column="CONTRACT_NO"/>
+        <result property="personId" column="PERSON_ID"/>
+        <result property="contractTypeCode" column="CONTRACT_TYPE_CODE"/>
+        <result property="contractTypeName" column="CONTRACT_TYPE_NAME"/>
+        <result property="startContractDate" column="START_CONTRACT_DATE"/>
+        <result property="endContractDate" column="END_CONTRACT_DATE"/>
+        <result property="remark" column="REMARK"/>
+        <result property="workTime" column="WORK_TIME"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="orderno" column="ORDERNO"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        <result property="workPosition" column="WORK_POSITION"/>
+        <result property="workContent" column="WORK_CONTENT"/>
+        <result property="salary" column="SALARY"/>
+        <result property="deptNo" column="DEPTNO"/>
+        <result property="positionNo" column="POSITION_NO"/>
+        <result property="postGradeNo" column="POST_GRADE_NO"/>
+        <result property="workHourType" column="WORK_HOUR_TYPE"/>
+        <result property="totalPeriod" column="TOTAL_PERIOD"/>
+        <result property="contractName" column="CONTRACT_NAME"/>
+        <result property="changeDate" column="CHANGE_DATE"/>
+        <result property="contractType" column="CONTRACT_TYPE"/>
+        <result property="totalPeriod08" column="TOTAL_PERIOD08"/>
+        <result property="localName" column="LOCAL_NAME"/>
+        <result property="empId" column="EMPID"/>
+        <result property="currentDeptNo" column="CURRENT_DEPTNO"/>
+        <result property="position" column="POSITION"/>
+    </resultMap>
+
+    <!-- ============================================ -->
+    <!-- SQL FRAGMENTS - Tái sử dụng -->
+    <!-- ============================================ -->
+
+    <!-- Fragment 1: Base columns SELECT -->
+    <sql id="baseColumns">
+        hc.CONTRACT_NO,
+        hc.PERSON_ID,
+        hc.CONTRACT_TYPE_CODE,
+        hc.START_CONTRACT_DATE,
+        hc.END_CONTRACT_DATE,
+        hc.REMARK,
+        hc.WORK_TIME,
+        hc.CREATE_DATE,
+        hc.CREATED_BY,
+        hc.UPDATE_DATE,
+        hc.UPDATED_BY,
+        hc.ORDERNO,
+        hc.ACTIVITY,
+        hc.CREATED_IP,
+        hc.UPDATED_IP,
+        hc.WORK_POSITION,
+        hc.WORK_CONTENT,
+        hc.SALARY,
+        hc.DEPTNO,
+        hc.POSITION_NO,
+        hc.POST_GRADE_NO,
+        hc.WORK_HOUR_TYPE,
+        hc.TOTAL_PERIOD,
+        hc.CONTRACT_NAME,
+        hc.CHANGE_DATE,
+        hc.CONTRACT_TYPE,
+        hc.TOTAL_PERIOD08
+    </sql>
+
+    <!-- Fragment 2: Employee columns -->
+    <sql id="employeeColumns">
+        he.EMPID,
+        he.LOCAL_NAME,
+        he.DEPTNO as CURRENT_DEPTNO,
+        he.POSITION
+    </sql>
+
+    <!-- Fragment 3: Base FROM clause with JOIN -->
+    <sql id="baseFromClause">
+        FROM HR_CONTRACT hc
+        LEFT JOIN hr_employee he ON hc.PERSON_ID = he.PERSON_ID
+    </sql>
+
+    <!-- Fragment 4: Base WHERE clause -->
+    <sql id="baseWhereClause">
+        WHERE 1 = 1
+    </sql>
+
+    <!-- Fragment 5: Search conditions - Keyword search -->
+    <sql id="keywordSearchConditions">
+        <if test="searchValue != null and searchValue != ''">
+            AND (
+                CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchValue})) || '%'
+                OR he.EMPID LIKE '%' || #{searchValue} || '%'
+                OR hc.CONTRACT_NO LIKE '%' || #{searchValue} || '%'
+                OR hc.CONTRACT_NAME LIKE '%' || #{searchValue} || '%'
+                OR he.DEPTNO LIKE '%' || #{searchValue} || '%'
+                OR hc.WORK_POSITION LIKE '%' || #{searchValue} || '%'
+                OR hc.ACTIVITY LIKE '%' || #{searchValue} || '%'
+            )
+        </if>
+    </sql>
+
+    <!-- Fragment 6: Advanced search conditions -->
+    <sql id="advancedSearchConditions">
+        <if test="searchParams.contractNo != null and searchParams.contractNo != ''">
+            AND hc.CONTRACT_NO LIKE '%' || #{searchParams.contractNo} || '%'
+        </if>
+        <if test="searchParams.personId != null and searchParams.personId != ''">
+            AND hc.PERSON_ID LIKE '%' || #{searchParams.personId} || '%'
+        </if>
+        <if test="searchParams.empId != null and searchParams.empId != ''">
+            AND he.EMPID LIKE '%' || #{searchParams.empId} || '%'
+        </if>
+        <if test="searchParams.contractType != null and searchParams.contractType != ''">
+            AND hc.CONTRACT_TYPE = #{searchParams.contractType}
+        </if>
+        <if test="searchParams.department != null and searchParams.department != ''">
+            AND he.DEPTNO LIKE '%' || #{searchParams.department} || '%'
+        </if>
+        <if test="searchParams.workPosition != null and searchParams.workPosition != ''">
+            AND hc.WORK_POSITION LIKE '%' || #{searchParams.workPosition} || '%'
+        </if>
+        <if test="searchParams.startDateFrom != null and searchParams.startDateFrom != ''">
+            AND TRUNC(hc.START_CONTRACT_DATE) &gt;= TO_DATE(#{searchParams.startDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.startDateTo != null and searchParams.startDateTo != ''">
+            AND TRUNC(hc.START_CONTRACT_DATE) &lt;= TO_DATE(#{searchParams.startDateTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.endDateFrom != null and searchParams.endDateFrom != ''">
+            AND TRUNC(hc.END_CONTRACT_DATE) &gt;= TO_DATE(#{searchParams.endDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.endDateTo != null and searchParams.endDateTo != ''">
+            AND TRUNC(hc.END_CONTRACT_DATE) &lt;= TO_DATE(#{searchParams.endDateTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.activity != null and searchParams.activity != ''">
+            AND hc.ACTIVITY = #{searchParams.activity}
+        </if>
+        <if test="searchParams.salaryFrom != null and searchParams.salaryFrom != ''">
+            AND hc.SALARY &gt;= #{searchParams.salaryFrom}
+        </if>
+        <if test="searchParams.salaryTo != null and searchParams.salaryTo != ''">
+            AND hc.SALARY &lt;= #{searchParams.salaryTo}
+        </if>
+    </sql>
+
+    <!-- Fragment 7: Direct parameter search conditions (for export) -->
+    <sql id="directSearchConditions">
+        <if test="searchParams.contractNo != null and searchParams.contractNo != ''">
+            AND hc.CONTRACT_NO LIKE '%' || #{searchParams.contractNo} || '%'
+        </if>
+        <if test="searchParams.personId != null and searchParams.personId != ''">
+            AND hc.PERSON_ID LIKE '%' || #{searchParams.personId} || '%'
+        </if>
+        <if test="searchParams.empId != null and searchParams.empId != ''">
+            AND he.EMPID LIKE '%' || #{searchParams.empId} || '%'
+        </if>
+        <if test="searchParams.contractType != null and searchParams.contractType != ''">
+            AND hc.CONTRACT_TYPE = #{searchParams.contractType}
+        </if>
+        <if test="searchParams.department != null and searchParams.department != ''">
+            AND he.DEPTNO LIKE '%' || #{searchParams.department} || '%'
+        </if>
+        <if test="searchParams.workPosition != null and searchParams.workPosition != ''">
+            AND hc.WORK_POSITION LIKE '%' || #{searchParams.workPosition} || '%'
+        </if>
+        <if test="searchParams.startDateFrom != null and searchParams.startDateFrom != ''">
+            AND TRUNC(hc.START_CONTRACT_DATE) &gt;= TO_DATE(#{searchParams.startDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.startDateTo != null and searchParams.startDateTo != ''">
+            AND TRUNC(hc.START_CONTRACT_DATE) &lt;= TO_DATE(#{searchParams.startDateTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.endDateFrom != null and searchParams.endDateFrom != ''">
+            AND TRUNC(hc.END_CONTRACT_DATE) &gt;= TO_DATE(#{searchParams.endDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.endDateTo != null and searchParams.endDateTo != ''">
+            AND TRUNC(hc.END_CONTRACT_DATE) &lt;= TO_DATE(#{searchParams.endDateTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="searchParams.activity != null and searchParams.activity != ''">
+            AND hc.ACTIVITY = #{searchParams.activity}
+        </if>
+        <if test="searchParams.salaryFrom != null and searchParams.salaryFrom != ''">
+            AND hc.SALARY &gt;= #{searchParams.salaryFrom}
+        </if>
+        <if test="searchParams.salaryTo != null and searchParams.salaryTo != ''">
+            AND hc.SALARY &lt;= #{searchParams.salaryTo}
+        </if>
+    </sql>
+
+    <!-- Fragment 8: Dynamic ORDER BY clause -->
+    <sql id="dynamicOrderBy">
+        <choose>
+            <when test="orderColumn != null and orderColumn != ''">
+                <choose>
+                    <when test="orderColumn == 'contractNo'">hc.CONTRACT_NO</when>
+                    <when test="orderColumn == 'personId'">hc.PERSON_ID</when>
+                    <when test="orderColumn == 'contractName'">hc.CONTRACT_NAME</when>
+                    <when test="orderColumn == 'contractType'">hc.CONTRACT_TYPE</when>
+                    <when test="orderColumn == 'startContractDate'">hc.START_CONTRACT_DATE</when>
+                    <when test="orderColumn == 'endContractDate'">hc.END_CONTRACT_DATE</when>
+                    <when test="orderColumn == 'deptno'">he.DEPTNO</when>
+                    <when test="orderColumn == 'workPosition'">hc.WORK_POSITION</when>
+                    <when test="orderColumn == 'salary'">hc.SALARY</when>
+                    <when test="orderColumn == 'activity'">hc.ACTIVITY</when>
+                    <when test="orderColumn == 'createDate'">hc.CREATE_DATE</when>
+                    <otherwise>hc.CREATE_DATE</otherwise>
+                </choose>
+                <choose>
+                    <when test="orderDir == 'asc'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>hc.CREATE_DATE DESC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- ============================================ -->
+    <!-- QUERIES - Sử dụng fragments -->
+    <!-- ============================================ -->
+
+    <!-- Get all contracts -->
+    <select id="getAllContracts" resultMap="HrContractResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        ORDER BY hc.CREATE_DATE DESC
+    </select>
+
+    <!-- Get contracts with pagination (Oracle 12c+) -->
+    <select id="getContractsWithPagination" resultMap="HrContractResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        ORDER BY hc.CREATE_DATE DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- Count total contracts -->
+    <select id="countContracts" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+    </select>
+
+    <!-- Search contracts by keyword -->
+    <select id="searchContracts" resultMap="HrContractResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        AND (
+            CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword})) || '%'
+            OR he.EMPID LIKE '%' || #{keyword} || '%'
+            OR hc.CONTRACT_NO LIKE '%' || #{keyword} || '%'
+            OR hc.CONTRACT_NAME LIKE '%' || #{keyword} || '%'
+            OR hc.WORK_POSITION LIKE '%' || #{keyword} || '%'
+        )
+        ORDER BY hc.CREATE_DATE DESC
+    </select>
+
+    <!-- Search contracts with multiple conditions (for export) -->
+    <select id="searchContractsWithConditions" resultMap="HrContractResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="directSearchConditions"/>
+        ORDER BY hc.CREATE_DATE DESC
+    </select>
+
+    <!-- Get contract by contract number -->
+    <select id="getContractByContractNo" resultMap="HrContractResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE hc.CONTRACT_NO = #{contractNo}
+    </select>
+
+    <!-- DataTables server-side processing - Get contracts with search and sort -->
+    <select id="getContractsForDataTables" resultMap="HrContractResultMap">
+        SELECT * FROM (
+            SELECT 
+                <include refid="baseColumns"/>,
+                get_global_name(hc.CONTRACT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) as CONTRACT_TYPE_NAME,
+                <include refid="employeeColumns"/>,
+                ROW_NUMBER() OVER (ORDER BY <include refid="dynamicOrderBy"/>) as rn
+            <include refid="baseFromClause"/>
+            <include refid="baseWhereClause"/>
+            <include refid="keywordSearchConditions"/>
+            <include refid="advancedSearchConditions"/>
+        )
+        WHERE rn BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <!-- DataTables server-side processing - Count contracts after filtering -->
+    <select id="countContractsForDataTables" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="keywordSearchConditions"/>
+        <include refid="advancedSearchConditions"/>
+    </select>
+
+    <!-- ============================================ -->
+    <!-- INSERT, UPDATE, DELETE operations -->
+    <!-- ============================================ -->
+
+    <!-- Update contract - Dynamic UPDATE (chỉ update field có giá trị) -->
+    <update id="updateContract">
+        UPDATE HR_CONTRACT 
+        <set>
+            <if test="personId != null">
+                PERSON_ID = #{personId},
+            </if>
+            <if test="contractTypeCode != null">
+                CONTRACT_TYPE_CODE = #{contractTypeCode},
+            </if>
+            <if test="startContractDate != null">
+                START_CONTRACT_DATE = #{startContractDate},
+            </if>
+            <if test="endContractDate != null">
+                END_CONTRACT_DATE = #{endContractDate},
+            </if>
+            <if test="remark != null">
+                REMARK = #{remark},
+            </if>
+            <if test="workTime != null">
+                WORK_TIME = #{workTime},
+            </if>
+            <if test="workPosition != null">
+                WORK_POSITION = #{workPosition},
+            </if>
+            <if test="workContent != null">
+                WORK_CONTENT = #{workContent},
+            </if>
+            <if test="salary != null">
+                SALARY = #{salary},
+            </if>
+            <if test="deptno != null">
+                DEPTNO = #{deptno},
+            </if>
+            <if test="positionNo != null">
+                POSITION_NO = #{positionNo},
+            </if>
+            <if test="postGradeNo != null">
+                POST_GRADE_NO = #{postGradeNo},
+            </if>
+            <if test="workHourType != null">
+                WORK_HOUR_TYPE = #{workHourType},
+            </if>
+            <if test="totalPeriod != null">
+                TOTAL_PERIOD = #{totalPeriod},
+            </if>
+            <if test="contractName != null">
+                CONTRACT_NAME = #{contractName},
+            </if>
+            <if test="changeDate != null">
+                CHANGE_DATE = #{changeDate},
+            </if>
+            <if test="contractType != null">
+                CONTRACT_TYPE = #{contractType},
+            </if>
+            <if test="totalPeriod08 != null">
+                TOTAL_PERIOD08 = #{totalPeriod08},
+            </if>
+            <if test="activity != null">
+                ACTIVITY = #{activity},
+            </if>
+            <!-- Audit fields - luôn update -->
+            UPDATE_DATE = #{updateDate},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{updatedIp}
+        </set>
+        WHERE CONTRACT_NO = #{contractNo}
+    </update>
+
+    <!-- Add new contract -->
+    <insert id="addContract" parameterType="com.ait.hrm.contract.model.HrContract">
+        INSERT INTO HR_CONTRACT (
+            CONTRACT_NO,
+            PERSON_ID,
+            CONTRACT_TYPE_CODE,
+            START_CONTRACT_DATE,
+            END_CONTRACT_DATE,
+            REMARK,
+            WORK_TIME,
+            WORK_POSITION,
+            WORK_CONTENT,
+            SALARY,
+            DEPTNO,
+            POSITION_NO,
+            POST_GRADE_NO,
+            WORK_HOUR_TYPE,
+            TOTAL_PERIOD,
+            CONTRACT_NAME,
+            CHANGE_DATE,
+            CONTRACT_TYPE,
+            TOTAL_PERIOD08,
+            ACTIVITY,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATED_BY,
+            UPDATED_IP,
+            ORDERNO
+        ) VALUES (
+            HR_CONTRACT_SEQ.NEXTVAL,
+            #{personId},
+            #{contractTypeCode},
+            #{startContractDate},
+            #{endContractDate},
+            #{remark},
+            #{workTime},
+            #{workPosition},
+            #{workContent},
+            #{salary},
+            #{deptno},
+            #{positionNo},
+            #{postGradeNo},
+            #{workHourType},
+            #{totalPeriod},
+            #{contractName},
+            #{changeDate},
+            #{contractType},
+            #{totalPeriod08},
+            #{activity},
+            #{createDate},
+            #{adminID, jdbcType=VARCHAR},
+            #{createdIp},
+            #{updateDate},
+            #{adminID, jdbcType=VARCHAR},
+            #{updatedIp},
+            #{orderno}
+        )
+    </insert>
+
+    <!-- Delete contract -->
+    <delete id="deleteContract">
+        DELETE FROM HR_CONTRACT 
+        WHERE CONTRACT_NO = #{contractNo}
+    </delete>
+
+
+    <!-- Count expiring contracts -->
+    <select id="countExpiringContracts" resultType="int">
+        SELECT COUNT(*)
+        FROM HR_CONTRACT hc
+        WHERE hc.ACTIVITY = 'ACTIVE'
+        AND TRUNC(hc.END_CONTRACT_DATE) BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + #{days}
+    </select>
+
+</mapper>

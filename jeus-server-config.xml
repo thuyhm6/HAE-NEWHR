@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JEUS 8 Server Configuration for HR-11 Application
+    JDK 21 + Spring Boot 3.5.5
+    ================================================
+    File này là tài liệu tham khảo cấu hình JEUS.
+    Cấu hình thực tế trên JEUS server phải được set qua:
+      - JEUS WebAdmin Console (http://JEUS_HOST:9736/webadmin)
+      - hoặc jeusadmin CLI
+-->
+
+<server>
+    <name>adminServer</name>
+
+    <!-- HTTP Listener -->
+    <http-listener>
+        <name>http-listener-1</name>
+        <port>8080</port>
+        <host>0.0.0.0</host>
+        <thread-pool>
+            <min-threads>10</min-threads>
+            <max-threads>200</max-threads>
+            <queue-size>1000</queue-size>
+        </thread-pool>
+        <keep-alive-timeout>30</keep-alive-timeout>
+        <max-keep-alive-requests>100</max-keep-alive-requests>
+    </http-listener>
+
+    <!--
+        Application Configuration
+        path: đường dẫn TƯƠNG ĐỐI hoặc TUYỆT ĐỐI tới thư mục exploded WAR
+        → Thư mục này chứa toàn bộ sourcecode copy vào C:\tmaxsoft\jeus8\resource\HR-11\
+    -->
+    <application>
+        <name>HR-11</name>
+        <path>C:\tmaxsoft\jeus8\resource\HR-11</path>
+        <context-root>/HR-11</context-root>
+        <auto-start>true</auto-start>
+        <deployment-order>1</deployment-order>
+    </application>
+
+    <!--
+        JVM Configuration for JDK 21
+        Cấu hình này phải được thêm vào JVM options của JEUS server
+        trong WebAdmin: Servers > adminServer > JVM Options
+        hoặc file: C:\tmaxsoft\jeus8\domains\<domain>\servers\adminServer\config.xml
+    -->
+    <jvm-options>
+        <!-- Memory -->
+        <option>-Xms512m</option>
+        <option>-Xmx2048m</option>
+
+        <!-- GC: ZGC cho JDK 21 low-latency -->
+        <option>-XX:+UseZGC</option>
+        <option>-XX:MaxGCPauseMillis=200</option>
+
+        <!-- BẮT BUỘC: add-opens cho Spring Boot 3.x + JDK 21 -->
+        <option>--add-opens=java.base/java.lang=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.util=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.io=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.nio=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.net=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/java.math=ALL-UNNAMED</option>
+        <option>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</option>
+        <option>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</option>
+
+        <!-- System -->
+        <option>-Djava.awt.headless=true</option>
+        <option>-Dfile.encoding=UTF-8</option>
+        <option>-Dstdout.encoding=UTF-8</option>
+        <option>-Duser.timezone=Asia/Ho_Chi_Minh</option>
+
+        <!-- Spring Boot profile & Virtual Threads -->
+        <option>-Dspring.profiles.active=prod</option>
+        <option>-Dspring.threads.virtual.enabled=true</option>
+    </jvm-options>
+
+    <!-- Logging -->
+    <log-config>
+        <log-file>C:\tmaxsoft\jeus8\domains\adminDomain\logs\server.log</log-file>
+        <log-level>INFO</log-level>
+        <max-file-size>10MB</max-file-size>
+        <max-backup-files>10</max-backup-files>
+        <console-output>true</console-output>
+    </log-config>
+
+    <!-- Session -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+</server>

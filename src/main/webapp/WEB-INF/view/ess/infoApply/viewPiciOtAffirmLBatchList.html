@@ -1,0 +1,1001 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="pioab_searchForm" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="pioab_searchEmpKeyword" class="form-label" th:text="#{empSearch.field.keyword}">Mã nhân viên / Họ tên</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="pioab_searchEmpKeyword"
+                                    th:placeholder="#{empSearch.placeholder.keyword}" placeholder="Nhập mã hoặc tên nhân viên"
+                                    onkeydown="if(event.key==='Enter'){event.preventDefault();pioabOpenEmpSearch();}">
+                                <input type="hidden" id="pioab_searchEmpId">
+                                <input type="hidden" id="pioab_searchEmpName">
+                                <button class="btn btn-outline-secondary" type="button" onclick="pioabOpenEmpSearch()" title="Tìm nhân viên">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="pioab_searchFromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
+                            <input type="date" class="form-control" id="pioab_searchFromDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="pioab_searchToDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
+                            <input type="date" class="form-control" id="pioab_searchToDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="pioab_searchAffirmFlag" class="form-label" th:text="#{arOtf.affirmFlag}">Trạng thái đơn tăng ca</label>
+                            <select class="form-select" id="pioab_searchAffirmFlag">
+                                <option value="" th:text="#{common.all}">Tất cả</option>
+                                <option value="14014309" th:text="#{arOtf.affirmFlag.waitApprove}">Chờ duyệt</option>
+                                <option value="14014308" th:text="#{arOtf.affirmFlag.approved}">Đã duyệt</option>
+                                <option value="14014307" th:text="#{arOtf.affirmFlag.approving}">Đang duyệt</option>
+                                <option value="14014306" th:text="#{arOtf.affirmFlag.sent}">Gửi</option>
+                                <option value="14014310" th:text="#{arOtf.status.cancelled}">Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="pioab_searchConfirmFlag" class="form-label" th:text="#{arOtf.confirmFlag}">Trạng thái xác nhận</label>
+                            <select class="form-select" id="pioab_searchConfirmFlag">
+                                <option value="" th:text="#{common.all}">Tất cả</option>
+                                <option value="0" th:text="#{arOtf.confirmFlag.notConfirmed}">Chưa xác nhận</option>
+                                <option value="1" th:text="#{arOtf.confirmFlag.confirmed}">Đã xác nhận</option>
+                                <option value="2" th:text="#{arOtf.confirmFlag.rejected}">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex flex-wrap gap-1">
+                            <button type="button" class="btn btn-primary" onclick="pioabSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tìm kiếm</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="pioabClearSearch()">
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="pioabAddEmptyRow()">
+                                <i class="bx bx-plus"></i> <span th:text="#{common.addNew}">Thêm mới</span>
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="pioabSaveChecked()">
+                                <i class="bx bx-save"></i> <span th:text="#{common.save}">Lưu</span>
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="pioabCancelBatch()">
+                                <i class="bx bx-x-circle"></i> <span th:text="#{arOtf.cancelBatch}">Hủy bỏ</span>
+                            </button>
+                            <button type="button" class="btn btn-info text-white" onclick="pioabDownloadTemplate()">
+                                <i class="bx bx-download"></i> <span th:text="#{common.downloadTemplate}">Tải File Mẫu</span>
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="pioabOpenImportModal()">
+                                <i class="bx bx-upload"></i> <span th:text="#{common.importExcel}">Import Excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table id="pioab_dataTable" class="table table-striped table-bordered table-hover"
+                            style="min-width: 2120px;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th><input type="checkbox" id="pioab_checkAll" onclick="pioabToggleCheckAll(this)"></th>
+                                    <th>No</th>
+                                    <th style="width:250px;min-width:250px;max-width:250px;" th:text="#{common.empName}">Nhân viên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{arOtf.otType}">Loại tăng ca</th>
+                                    <th style="width:120px;min-width:120px;max-width:120px;" th:text="#{arOtf.otDate}">Ngày tăng ca</th>
+                                    <th style="width:250px;min-width:150px;max-width:150px;" th:text="#{arOtf.fromHour}">Từ giờ</th>
+                                    <th style="width:150px;min-width:150px;max-width:150px;" th:text="#{arOtf.toHour}">Đến giờ</th>
+                                    <th th:text="#{ps.col.indoorTime}">Giờ vào</th>
+                                    <th th:text="#{ps.col.outdoorTime}">Giờ ra</th>
+                                    <th th:text="#{common.hours}">Số giờ</th>
+                                    <th th:text="#{impOt.deductYn}">Báo cơm / Nghỉ ngơi (30')</th>
+                                    <th style="width:250px;min-width:250px;max-width:250px;" th:text="#{common.reason}">Lý do</th>
+                                    <th th:text="#{arOtf.otTotalMonth}">Tổng tăng ca tháng này</th>
+                                    <th th:text="#{arOtf.otTotalYear}">Tổng tăng ca năm này</th>
+                                    <th th:text="#{common.status}">Trạng thái</th>
+                                    <th th:text="#{common.creator}">Người tạo</th>
+                                    <th th:text="#{common.updater}">Người sửa</th>
+                                    <th th:text="#{common.approver}">Người duyệt</th>
+                                    <th th:text="#{common.action}">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtModal}"></th:block>
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtScript}"></th:block>
+    <script th:inline="javascript">
+        var _pioab_i18n = {
+            selectEmp: /*[[#{arOtf.selectEmp}]]*/ 'Chọn NV...',
+            msgNotSelectEmp: /*[[#{arOtf.msg.notSelectEmp}]]*/ 'Chưa chọn nhân viên',
+            msgNotSelectDate: /*[[#{arOtf.msg.notSelectDate}]]*/ 'Chưa chọn ngày tăng ca',
+            msgNotEnterTime: /*[[#{arOtf.msg.notEnterTime}]]*/ 'Chưa nhập giờ tăng ca',
+            msgNoHour: /*[[#{arOtf.msg.noHour}]]*/ 'Không tính được số giờ tăng ca',
+            noEmpComp: /*[[#{arOtf.noEmpComp}]]*/ 'Chưa có component tìm nhân viên.',
+            importResult: /*[[#{arOtf.importResult}]]*/ 'Kết quả nhập',
+            cancelApply: /*[[#{arOtf.cancelApply}]]*/ 'Hủy đơn',
+            statusCancelled: /*[[#{arOtf.status.cancelled}]]*/ 'Đã hủy',
+            confirmCancelApply: /*[[#{arOtf.msg.confirmCancelApply}]]*/ 'Bạn có chắc chắn muốn hủy đơn tăng ca này không?',
+            msgNotCheckCancel: /*[[#{arOtf.msg.notCheckCancel}]]*/ 'Vui lòng tích chọn ô hủy đơn trước khi thực hiện',
+            cancelApplySuccess: /*[[#{arOtf.msg.cancelApplySuccess}]]*/ 'Hủy đơn tăng ca thành công',
+            confirmCancelBatch: /*[[#{arOtf.msg.confirmCancelBatch}]]*/ 'Bạn có chắc chắn muốn hủy {n} đơn tăng ca đã chọn không?',
+            cancelBatchSuccess: /*[[#{arOtf.msg.cancelBatchSuccess}]]*/ 'Đã hủy thành công {n} đơn tăng ca',
+            noCancelSelected: /*[[#{arOtf.msg.noCancelSelected}]]*/ 'Vui lòng chọn ít nhất một đơn tăng ca để hủy',
+            confirmResubmit: /*[[#{arOtf.msg.confirmResubmit}]]*/ 'Đơn này đã được duyệt. Lưu sẽ xóa đơn hiện tại và tạo lại đơn mới. Bạn có muốn tiếp tục không?',
+            resubmitSuccess: /*[[#{arOtf.msg.resubmitSuccess}]]*/ 'Đã lưu lại đơn tăng ca thành công',
+            msgNoCheckedRows: 'Vui lòng chọn ít nhất một dòng để lưu',
+            saveBatchSuccess: 'Lưu thành công {n} dòng',
+            saveBatchFailed: 'Một số dòng lưu thất bại'
+        };
+
+        var _pioab_table;
+        var _pioab_addedRows = [];
+        var _pioab_pageBooted = false;
+        var _pioab_rowEventsBound = false;
+
+        function pioabFormatDate(dateObj) {
+            var y = dateObj.getFullYear();
+            var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var d = String(dateObj.getDate()).padStart(2, '0');
+            return [y, m, d].join('-');
+        }
+
+        function pioabInitDate() {
+            var now = new Date();
+            var day = now.getDay() || 7;
+            var monday = new Date(now);
+            monday.setDate(now.getDate() - day + 1);
+            var sunday = new Date(now);
+            sunday.setDate(now.getDate() - day + 7);
+            $('#pioab_searchFromDate').val(pioabFormatDate(monday));
+            $('#pioab_searchToDate').val(pioabFormatDate(sunday));
+        }
+
+        function pioabEscHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function pioabNormalizeDateTimeValue(rawValue) {
+            if (!rawValue) return '';
+            var normalized = String(rawValue).trim().replace('T', ' ');
+            var parts = normalized.split(' ');
+            if (parts.length < 2) return '';
+            var datePart = parts[0];
+            var timeParts = parts[1].split(':');
+            if (timeParts.length < 2) return '';
+            var hour = (timeParts[0] || '00').padStart(2, '0');
+            var minute = (timeParts[1] || '00').padStart(2, '0');
+            return datePart + ' ' + hour + ':' + minute;
+        }
+
+        function pioabSplitDateTimeValue(rawValue) {
+            var normalized = pioabNormalizeDateTimeValue(rawValue);
+            if (!normalized) return null;
+            var parts = normalized.split(' ');
+            if (parts.length < 2) return null;
+            return { datePart: parts[0], timePart: parts[1] };
+        }
+
+        window.pioabValidateMinutes = function (input) {
+            if (!input || !input.value) return;
+            var normalized = pioabNormalizeDateTimeValue(input.value);
+            if (!normalized) return;
+            var parts = normalized.split(' ');
+            var datePart = parts[0];
+            var timeParts = parts[1].split(':');
+            if (timeParts.length < 2) return;
+            var hour = timeParts[0];
+            var minute = parseInt(timeParts[1], 10);
+            var allowedMinutes = [0, 2, 15, 17, 30, 32, 45, 47];
+            if (allowedMinutes.indexOf(minute) === -1) {
+                var closestMinute = 0;
+                for (var i = allowedMinutes.length - 1; i >= 0; i--) {
+                    if (minute >= allowedMinutes[i]) { closestMinute = allowedMinutes[i]; break; }
+                }
+                var formattedMinute = closestMinute < 10 ? '0' + closestMinute : closestMinute;
+                input.value = datePart + ' ' + hour + ':' + formattedMinute;
+                toastr && toastr.warning('Minute không hợp lệ, hệ thống đã tự động điều chỉnh về ' + formattedMinute);
+            } else {
+                input.value = datePart + ' ' + hour + ':' + (minute < 10 ? '0' + minute : minute);
+            }
+        };
+
+        window.pioabNormalizeDateTimePickerValue = function (input, currentValue) {
+            return pioabNormalizeDateTimeValue(currentValue);
+        };
+
+        window.pioabHandleDateTimePickerApply = function (input) {
+            pioabValidateMinutes(input);
+        };
+
+        function pioabInitInputPlugins(container) {
+            if (typeof initDateRangePickers === 'function') initDateRangePickers(container);
+        }
+
+        window.pioabDownloadTemplate = function () {
+            window.location.href = '/sy/excel/api/downloadTemplate?templateName=OvertimeApply_add_Template';
+        };
+
+        window.pioabOpenImportModal = function () {
+            ExcelImport.open('/sy/excel/api/importTemplate?templateName=OvertimeApply_add_Template', function (res) {
+                if (_pioab_table) _pioab_table.ajax.reload(null, false);
+                if (typeof tabSystem !== 'undefined' && tabSystem && typeof tabSystem.openTab === 'function') {
+                    tabSystem.openTab('/ar/attendanceMintenance/viewImportOtTempList', _pioab_i18n.importResult);
+                } else {
+                    window.open('/ar/attendanceMintenance/viewImportOtTempList', '_blank');
+                }
+            });
+        };
+
+        function pioabParseDateTime(dateValue, timeValue) {
+            var dateTimeParts = pioabSplitDateTimeValue(timeValue);
+            if (dateTimeParts) return new Date(dateTimeParts.datePart + 'T' + dateTimeParts.timePart + ':00');
+            if (!dateValue || !timeValue) return null;
+            return new Date(dateValue + 'T' + timeValue + ':00');
+        }
+
+        function pioabCalcApplyHour(dateValue, fromTime, toTime) {
+            var start = pioabParseDateTime(dateValue, fromTime);
+            var end = pioabParseDateTime(dateValue, toTime);
+            if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) return '';
+            if (end < start) end.setDate(end.getDate() + 1);
+            var diffMinutes = Math.round((end - start) / 60000);
+            if (diffMinutes < 0) return '';
+            var hours = (diffMinutes / 60).toFixed(2);
+            return hours.replace(/\.00$/, '').replace(/(\.\d*[1-9])0$/, '$1');
+        }
+
+        function pioabGetRowData($tr) {
+            if (!_pioab_table) return null;
+            return _pioab_table.row($tr).data() || null;
+        }
+
+        function pioabCollectRowTimes($tr) {
+            var fromDateTime = pioabNormalizeDateTimeValue($tr.find('.pioab-in-from').val());
+            var toDateTime = pioabNormalizeDateTimeValue($tr.find('.pioab-in-to').val());
+            return {
+                fromDateTime: fromDateTime,
+                toDateTime: toDateTime,
+                fromParts: pioabSplitDateTimeValue(fromDateTime),
+                toParts: pioabSplitDateTimeValue(toDateTime)
+            };
+        }
+
+        function pioabSyncRowData($tr) {
+            var rowData = pioabGetRowData($tr);
+            if (!rowData) return null;
+            var timeInfo = pioabCollectRowTimes($tr);
+            var applyOtDate = $tr.find('.pioab-in-date').val() || rowData.applyOtDate || '';
+            if (timeInfo.fromParts && timeInfo.fromParts.datePart) {
+                applyOtDate = timeInfo.fromParts.datePart;
+                $tr.find('.pioab-in-date').val(applyOtDate);
+            }
+            rowData.personId = ($tr.find('.pioab-in-personid').val() || rowData.personId || '').trim();
+            rowData.otTypeCode = $tr.find('.pioab-in-type-code').val() || '';
+            rowData.otTypeName = $tr.find('.pioab-in-type-name').text() || rowData.otTypeName || '';
+            rowData.applyOtDate = applyOtDate;
+            rowData.otFromTime = timeInfo.fromDateTime;
+            rowData.otToTime = timeInfo.toDateTime;
+            rowData.otApplyHour = $tr.find('.pioab-apply-hour').text() || '';
+            rowData.deductYn = $tr.find('.pioab-in-deduct').is(':checked') ? '1' : '0';
+            rowData.applyOtRemark = $tr.find('.pioab-in-remark').val() || '';
+            return rowData;
+        }
+
+        function pioabApplyDefaultOtInfo($tr, info) {
+            var rowData = pioabSyncRowData($tr) || {};
+            var otTypeCode = info && info.otTypeCode ? info.otTypeCode : '';
+            var otTypeName = info && info.otTypeName ? info.otTypeName : otTypeCode;
+            var otApplyHour = info && info.otApplyHour ? info.otApplyHour : pioabCalcApplyHour(
+                rowData.applyOtDate, rowData.otFromTime, rowData.otToTime);
+            $tr.find('.pioab-in-type-code').val(otTypeCode);
+            $tr.find('.pioab-in-type-name').text(otTypeName || '');
+            $tr.find('.pioab-apply-hour').text(otApplyHour || '');
+            rowData.otTypeCode = otTypeCode;
+            rowData.otTypeName = otTypeName || '';
+            rowData.otApplyHour = otApplyHour || '';
+        }
+
+        function pioabAutoFillByEmp($tr, personId, applyOtDate) {
+            if (!personId || !applyOtDate) return;
+            var rowData = pioabGetRowData($tr);
+            if (!rowData) return;
+            var deductYn = $tr.find('.pioab-in-deduct').is(':checked') ? '1' : '0';
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/overtime/auto-fill-by-emp',
+                type: 'GET',
+                data: { personId: personId, applyOtDate: applyOtDate, deductYn: deductYn },
+                success: function (data) {
+                    if (!data) return;
+                    if (data.deptName) { rowData.deptName = data.deptName; $tr.find('td').eq(3).text(data.deptName); }
+                    rowData.otTypeCode = data.otTypeCode || '';
+                    rowData.otTypeName = data.otTypeName || '';
+                    $tr.find('.pioab-in-type-code').val(data.otTypeCode || '');
+                    $tr.find('.pioab-in-type-name').text(data.otTypeName || '');
+                    var fromVal = pioabNormalizeDateTimeValue(data.otFromTime || '');
+                    var toVal = pioabNormalizeDateTimeValue(data.otToTime || '');
+                    if (fromVal) {
+                        var $fromInput = $tr.find('.pioab-in-from');
+                        $fromInput.val(fromVal);
+                        rowData.otFromTime = fromVal;
+                        if (typeof initDateRangePickers === 'function') initDateRangePickers($fromInput[0]);
+                    }
+                    if (toVal) {
+                        var $toInput = $tr.find('.pioab-in-to');
+                        $toInput.val(toVal);
+                        rowData.otToTime = toVal;
+                        if (typeof initDateRangePickers === 'function') initDateRangePickers($toInput[0]);
+                    }
+                    var applyHour = data.otApplyHour || '';
+                    if (!applyHour && fromVal && toVal) applyHour = pioabCalcApplyHour(applyOtDate, fromVal, toVal);
+                    $tr.find('.pioab-apply-hour').text(applyHour || '');
+                    rowData.otApplyHour = applyHour || '';
+                }
+            });
+        }
+
+        function pioabFetchAndShowOtTotals($tr, personId, applyOtDate) {
+            if (!personId || !applyOtDate) return;
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/overtime/ot-totals',
+                type: 'GET',
+                data: { personId: personId, applyOtDate: applyOtDate },
+                success: function (data) {
+                    if (!data) return;
+                    $tr.find('.pioab-total-month').text(data.otTotalMonth || '');
+                    $tr.find('.pioab-total-year').text(data.otTotalYear || '');
+                    var rowData = _pioab_table ? _pioab_table.row($tr).data() : null;
+                    if (rowData) {
+                        rowData.otTotalMonth = data.otTotalMonth || '';
+                        rowData.otTotalYear = data.otTotalYear || '';
+                    }
+                }
+            });
+        }
+
+        function pioabResolveDefaultOtInfo($tr) {
+            var rowData = pioabSyncRowData($tr);
+            if (!rowData) return;
+            var personId = rowData.personId || '';
+            var fromParts = pioabSplitDateTimeValue(rowData.otFromTime);
+            var toParts = pioabSplitDateTimeValue(rowData.otToTime);
+            var applyOtDate = rowData.applyOtDate || (fromParts ? fromParts.datePart : '');
+            var otFromTime = fromParts ? fromParts.timePart : '';
+            var otToTime = toParts ? toParts.timePart : '';
+            if (!personId || !applyOtDate || !otFromTime || !otToTime) {
+                $tr.find('.pioab-in-type-code').val('');
+                $tr.find('.pioab-in-type-name').text('');
+                $tr.find('.pioab-apply-hour').text(pioabCalcApplyHour(applyOtDate, rowData.otFromTime, rowData.otToTime));
+                rowData.otTypeCode = '';
+                rowData.otTypeName = '';
+                return;
+            }
+            var requestKey = [personId, applyOtDate, otFromTime, otToTime, rowData.deductYn || '0'].join('|');
+            $tr.data('pioabResolveKey', requestKey);
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/overtime/default-info',
+                type: 'GET',
+                data: { personId: personId, applyOtDate: applyOtDate, otFromTime: otFromTime, otToTime: otToTime, deductYn: rowData.deductYn || '0' },
+                success: function (res) {
+                    if ($tr.data('pioabResolveKey') !== requestKey) return;
+                    pioabApplyDefaultOtInfo($tr, res || {});
+                },
+                error: function () {
+                    if ($tr.data('pioabResolveKey') !== requestKey) return;
+                    $tr.find('.pioab-apply-hour').text(pioabCalcApplyHour(applyOtDate, otFromTime, otToTime));
+                }
+            });
+        }
+
+        function pioabUpdateRowState($tr, shouldResolveDefault) {
+            var dateValue = $tr.find('.pioab-in-date').val();
+            var fromTime = $tr.find('.pioab-in-from').val();
+            var toTime = $tr.find('.pioab-in-to').val();
+            $tr.find('.pioab-apply-hour').text(pioabCalcApplyHour(dateValue, fromTime, toTime) || '');
+            pioabSyncRowData($tr);
+            if (shouldResolveDefault) pioabResolveDefaultOtInfo($tr);
+        }
+
+        function pioabBindRowEvents() {
+            if (_pioab_rowEventsBound) return;
+            _pioab_rowEventsBound = true;
+            $('#pioab_dataTable tbody').off('input.pioab', '.pioab-in-date, .pioab-in-from, .pioab-in-to, .pioab-in-remark');
+            $('#pioab_dataTable tbody').off('change.pioab', '.pioab-in-date, .pioab-in-from, .pioab-in-to, .pioab-in-deduct');
+            $('#pioab_dataTable tbody').on('input.pioab', '.pioab-in-date, .pioab-in-from, .pioab-in-to, .pioab-in-remark', function () {
+                pioabUpdateRowState($(this).closest('tr'), false);
+            });
+            $('#pioab_dataTable tbody').on('change.pioab', '.pioab-in-from, .pioab-in-to', function () {
+                pioabUpdateRowState($(this).closest('tr'), true);
+            });
+            $('#pioab_dataTable tbody').on('change.pioab', '.pioab-in-date', function () {
+                var $tr = $(this).closest('tr');
+                var newDate = $(this).val();
+                var rowData = pioabGetRowData($tr);
+                var personId = ($tr.find('.pioab-in-personid').val() || '').trim();
+                if (rowData && rowData.isNew && personId) {
+                    pioabAutoFillByEmp($tr, personId, newDate);
+                    pioabFetchAndShowOtTotals($tr, personId, newDate);
+                    return;
+                }
+                pioabUpdateRowState($tr, true);
+                if (personId && newDate) pioabFetchAndShowOtTotals($tr, personId, newDate);
+            });
+            $('#pioab_dataTable tbody').on('change.pioab', '.pioab-in-deduct', function () {
+                var $tr = $(this).closest('tr');
+                pioabSyncRowData($tr);
+                pioabResolveDefaultOtInfo($tr);
+            });
+        }
+
+        function pioabGetSearchParams() {
+            return {
+                empId: $('#pioab_searchEmpId').val(),
+                localName: $('#pioab_searchEmpName').val(),
+                fromDate: $('#pioab_searchFromDate').val(),
+                toDate: $('#pioab_searchToDate').val(),
+                affirmFlag: $('#pioab_searchAffirmFlag').val(),
+                confirmFlag: $('#pioab_searchConfirmFlag').val()
+            };
+        }
+
+        function pioabInitTable() {
+            var hasFixedColumns = !!($.fn.dataTable && $.fn.dataTable.FixedColumns);
+            _pioab_table = $('#pioab_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                autoWidth: false,
+                scrollY: 'calc(100vh - 280px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                order: [],
+                processing: true,
+                columnDefs: [
+                    { targets: 0,  width: '30px',  orderable: false },
+                    { targets: 1,  width: '15px' },
+                    { targets: 2,  width: '180px' },
+                    { targets: 3,  width: '140px' },
+                    { targets: 4,  width: '100px' },
+                    { targets: 5,  width: '120px' },
+                    { targets: 6,  width: '260px' },
+                    { targets: 7,  width: '260px' },
+                    { targets: 8,  width: '80px' },
+                    { targets: 9,  width: '80px' },
+                    { targets: 10, width: '60px' },
+                    { targets: 11, width: '80px',  orderable: false },
+                    { targets: 12, width: '320px' },
+                    { targets: 13, width: '110px', orderable: false },
+                    { targets: 14, width: '110px', orderable: false },
+                    { targets: 15, width: '120px' },
+                    { targets: 16, width: '100px' },
+                    { targets: 17, width: '100px' },
+                    { targets: 18, width: '180px' },
+                    { targets: 19, width: '130px' }
+                ],
+                fixedColumns: hasFixedColumns ? { leftColumns: 3 } : false,
+                initComplete: function () {
+                    this.api().columns.adjust();
+                    pioabBindRowEvents();
+                    pioabInitInputPlugins('#pioab_dataTable_wrapper');
+                },
+                drawCallback: function () {
+                    pioabInitInputPlugins('#pioab_dataTable_wrapper');
+                },
+                ajax: {
+                    url: '/ar/attendanceMintenance/api/overtime/list',
+                    dataSrc: function (json) {
+                        return _pioab_addedRows.concat(json || []);
+                    },
+                    data: function (d) {
+                        $.extend(d, pioabGetSearchParams());
+                    }
+                },
+                columns: [
+                    {
+                        data: null, orderable: false, className: 'text-center',
+                        render: function (data, type, row) {
+                            if (!row.isNew) {
+                                var cancelableFlags = ['14014306', '14014307', '14014308'];
+                                if (cancelableFlags.indexOf(String(row.affirmFlag || '')) === -1) {
+                                    return '';
+                                }
+                            }
+                            return '<input type="checkbox" class="pioab-row-chk"' + (row.isNew ? ' checked' : '') + '>';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) { return meta.row + 1; }
+                    },
+                    {
+                        data: 'empId',
+                        render: function (data, type, row) {
+                            if (row.isNew) {
+                                return '<div class="input-group input-group-sm">'
+                                    + '<input type="text" class="form-control pioab-in-empname" placeholder="' + _pioab_i18n.selectEmp + '" onkeydown="pioabEmpInputKeydown(event,this)">'
+                                    + '<input type="hidden" class="pioab-in-personid">'
+                                    + '<button class="btn btn-outline-secondary" type="button" onclick="pioabPickEmp(this)"><i class="bx bx-search"></i></button>'
+                                    + '</div>';
+                            }
+                            var personIdVal = pioabEscHtml(row.personId || '');
+                            var applyNo = row.applyNo || '';
+                            var applyType = String(row.otTypeCode || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                            var rowLabel = (data || '') + ' - ' + (row.localName || '');
+                            var clickText = applyNo
+                                ? '<a href="javascript:void(0)" onclick="pioabOpenApplyDetail(\'' + applyNo + '\', \'' + applyType + '\')">' + rowLabel + '</a>'
+                                : rowLabel;
+                            return clickText
+                                + '<input type="hidden" class="pioab-in-personid" value="' + personIdVal + '">'
+                                + '<input type="hidden" class="pioab-in-empname" value="' + pioabEscHtml((row.empId || '') + ' - ' + (row.localName || '')) + '">';
+                        }
+                    },
+                    { data: 'deptName', render: function (data) { return data || ''; } },
+                    {
+                        data: 'otTypeCode',
+                        render: function (data, type, row) {
+                            return '<span class="pioab-in-type-name">' + pioabEscHtml(row.otTypeName || data || '') + '</span>'
+                                + '<input type="hidden" class="pioab-in-type-code" value="' + pioabEscHtml(data || '') + '">';
+                        }
+                    },
+                    {
+                        data: 'applyOtDate',
+                        render: function (data) {
+                            return '<input type="text" class="form-control form-control-sm pioab-in-date js-daterangepicker" '
+                                + 'data-drp-format="YYYY-MM-DD" data-drp-trigger-change="true" '
+                                + 'value="' + pioabEscHtml(data || '') + '" placeholder="YYYY-MM-DD">';
+                        }
+                    },
+                    {
+                        data: 'otFromTime',
+                        render: function (data) {
+                            return '<input type="text" class="form-control form-control-sm pioab-in-from js-daterangepicker" '
+                                + 'data-drp-format="YYYY-MM-DD HH:mm" data-drp-time="true" data-drp-24h="true" '
+                                + 'data-drp-time-increment="1" data-drp-trigger-change="true" '
+                                + 'data-drp-normalize="pioabNormalizeDateTimePickerValue" '
+                                + 'data-drp-on-apply="pioabHandleDateTimePickerApply" '
+                                + 'value="' + pioabEscHtml(data || '') + '" placeholder="YYYY-MM-DD HH:mm">';
+                        }
+                    },
+                    {
+                        data: 'otToTime',
+                        render: function (data) {
+                            return '<input type="text" class="form-control form-control-sm pioab-in-to js-daterangepicker" '
+                                + 'data-drp-format="YYYY-MM-DD HH:mm" data-drp-time="true" data-drp-24h="true" '
+                                + 'data-drp-time-increment="1" data-drp-trigger-change="true" '
+                                + 'data-drp-normalize="pioabNormalizeDateTimePickerValue" '
+                                + 'data-drp-on-apply="pioabHandleDateTimePickerApply" '
+                                + 'value="' + pioabEscHtml(data || '') + '" placeholder="YYYY-MM-DD HH:mm">';
+                        }
+                    },
+                    {
+                        data: 'indoorTime', className: 'text-center align-middle',
+                        render: function (data) { return pioabEscHtml(data || ''); }
+                    },
+                    {
+                        data: 'outdoorTime', className: 'text-center align-middle',
+                        render: function (data) { return pioabEscHtml(data || ''); }
+                    },
+                    {
+                        data: 'otApplyHour', className: 'text-end align-middle',
+                        render: function (data) {
+                            return '<span class="pioab-apply-hour">' + pioabEscHtml(data || '') + '</span>';
+                        }
+                    },
+                    {
+                        data: 'deductYn', className: 'text-center align-middle',
+                        render: function (data) {
+                            return '<input type="checkbox" class="pioab-in-deduct"' + ((data === '1' || data === 1) ? ' checked' : '') + '>';
+                        }
+                    },
+                    {
+                        data: 'applyOtRemark',
+                        render: function (data) {
+                            return '<input type="text" class="form-control form-control-sm pioab-in-remark" value="' + pioabEscHtml(data || '') + '">';
+                        }
+                    },
+                    {
+                        data: 'otTotalMonth', className: 'text-center align-middle',
+                        render: function (data) {
+                            return '<span class="pioab-total-month">' + pioabEscHtml(data || '') + '</span>';
+                        }
+                    },
+                    {
+                        data: 'otTotalYear', className: 'text-center align-middle',
+                        render: function (data) {
+                            return '<span class="pioab-total-year">' + pioabEscHtml(data || '') + '</span>';
+                        }
+                    },
+                    {
+                        data: 'affirmFlag',
+                        render: function (data) {
+                            if (!data || data === '0') return 'Chưa lưu';
+                            if (data === '14014306') return '<span class="badge bg-warning text-dark">Lưu tạm</span>';
+                            if (data === '14014307') return '<span class="badge bg-info">Đang duyệt</span>';
+                            if (data === '14014308') return '<span class="badge bg-success">Đã duyệt</span>';
+                            if (data === '14014309') return '<span class="badge bg-danger">Từ chối</span>';
+                            if (data === '14014310') return '<span class="badge bg-secondary">' + _pioab_i18n.statusCancelled + '</span>';
+                            return data || '';
+                        }
+                    },
+                    {
+                        data: 'createdBy',
+                        render: function (data, type, row) {
+                            if (row.isNew) return '';
+                            return (data || '') + '<br><small class="text-muted">' + (row.createDate || '') + '</small>';
+                        }
+                    },
+                    {
+                        data: 'updatedBy',
+                        render: function (data, type, row) {
+                            if (row.isNew) return '';
+                            return (data || '') + '<br><small class="text-muted">' + (row.updateDate || '') + '</small>';
+                        }
+                    },
+                    { data: 'affirmStr', render: function (data) { return data || ''; } },
+                    {
+                        data: null, className: 'text-center',
+                        render: function (data, type, row) {
+                            if (row.isNew) {
+                                var newRowId = String(row._newRowId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                                return '<button class="btn btn-sm btn-danger" onclick="pioabRemoveNewRow(this, \'' + newRowId + '\')" title="Xóa dòng">'
+                                    + '<i class="bx bx-trash"></i></button>';
+                            }
+                            var rowPersonId = String(row.personId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                            if (row.affirmFlag === '14014308') {
+                                return '<button class="btn btn-sm btn-warning" title="' + _pioab_i18n.confirmResubmit + '" onclick="pioabResubmitLine(this, \'' + (row.applyNo || '') + '\', \'' + rowPersonId + '\')">'
+                                    + '<i class="bx bx-save"></i></button>';
+                            }
+                            return '';
+                        }
+                    }
+                ]
+            });
+        }
+
+        function pioabBootPage() {
+            if (_pioab_pageBooted) return;
+            if (!document.getElementById('pioab_dataTable')) { setTimeout(pioabBootPage, 30); return; }
+            _pioab_pageBooted = true;
+            pioabInitDate();
+            pioabInitTable();
+        }
+
+        function pioabBuildSaveContext($tr, applyNo, rowPersonId) {
+            var rowData = pioabSyncRowData($tr) || _pioab_table.row($tr).data();
+            var timeInfo = pioabCollectRowTimes($tr);
+            var personId = ($tr.find('.pioab-in-personid').val() || rowData.personId || rowPersonId || '').trim();
+            rowData.personId = personId;
+            return {
+                rowData: rowData,
+                personId: personId,
+                localName: rowData.localName || '',
+                empId: rowData.empId || '',
+                otTypeCode: $tr.find('.pioab-in-type-code').val(),
+                applyOtDate: (timeInfo.fromParts && timeInfo.fromParts.datePart) || $tr.find('.pioab-in-date').val(),
+                otFromTime: timeInfo.fromDateTime || '',
+                otToTime: timeInfo.toDateTime || '',
+                otApplyHour: $tr.find('.pioab-apply-hour').text() || pioabCalcApplyHour(
+                    (timeInfo.fromParts && timeInfo.fromParts.datePart) || $tr.find('.pioab-in-date').val(),
+                    timeInfo.fromDateTime, timeInfo.toDateTime),
+                applyOtRemark: $tr.find('.pioab-in-remark').val()
+            };
+        }
+
+        function pioabValidateSaveContext(ctx) {
+            if (!ctx.personId)    { toastr && toastr.warning(_pioab_i18n.msgNotSelectEmp);  return false; }
+            if (!ctx.applyOtDate) { toastr && toastr.warning(_pioab_i18n.msgNotSelectDate); return false; }
+            if (!ctx.otFromTime || !ctx.otToTime) { toastr && toastr.warning(_pioab_i18n.msgNotEnterTime); return false; }
+            if (!ctx.otApplyHour) { toastr && toastr.warning(_pioab_i18n.msgNoHour); return false; }
+            return true;
+        }
+
+        function pioabBuildSavePayload(applyNo, ctx) {
+            return {
+                applyNo: applyNo,
+                personId: ctx.personId,
+                localName: ctx.localName,
+                empId: ctx.empId,
+                otTypeNo: '31',
+                otTypeCode: ctx.otTypeCode,
+                applyOtDate: ctx.applyOtDate,
+                otFromTime: ctx.otFromTime,
+                otToTime: ctx.otToTime,
+                otApplyHour: ctx.otApplyHour,
+                applyOtRemark: ctx.applyOtRemark,
+                deductYn: ctx.rowData.deductYn || '0'
+            };
+        }
+
+        window.pioabSearchData = function () {
+            _pioab_addedRows = [];
+            if (_pioab_table) _pioab_table.ajax.reload();
+        };
+
+        window.pioabClearSearch = function () {
+            $('#pioab_searchForm')[0].reset();
+            pioabInitDate();
+            _pioab_addedRows = [];
+            if (_pioab_table) _pioab_table.ajax.reload();
+        };
+
+        window.pioabAddEmptyRow = function () {
+            var newRow = {
+                isNew: true,
+                _newRowId: Date.now() + '_' + Math.floor(Math.random() * 1e6),
+                applyNo: '', empId: '', localName: '', personId: '', deptName: '',
+                otTypeCode: '', applyOtDate: pioabFormatDate(new Date()),
+                otFromTime: '', otToTime: '', indoorTime: '', outdoorTime: '',
+                otApplyHour: '', applyOtRemark: '', otTotalMonth: '', otTotalYear: '',
+                affirmFlag: '', affirmStr: '', createdBy: '', updatedBy: '', deductYn: '0'
+            };
+            _pioab_addedRows.unshift(newRow);
+            if (_pioab_table) {
+                var currentData = _pioab_table.data().toArray();
+                _pioab_table.clear().rows.add([newRow].concat(currentData)).draw();
+            }
+        };
+
+        window.pioabOpenEmpSearch = function () {
+            EmployeeSearchModal.open(function (emp) {
+                $('#pioab_searchEmpId').val(emp.empId);
+                $('#pioab_searchEmpName').val(emp.localName);
+                $('#pioab_searchEmpKeyword').val(emp.empId + ' - ' + emp.localName);
+            }, $('#pioab_searchEmpKeyword').val());
+            $('#esm_empOffice').val('15119');
+        };
+
+        $('#pioab_searchEmpKeyword').on('input', function () {
+            $('#pioab_searchEmpId').val('');
+            $('#pioab_searchEmpName').val('');
+        });
+
+        window.pioabPickEmp = function (btn, keyword) {
+            if (typeof EmployeeSearchModal !== 'undefined') {
+                EmployeeSearchModal.open(function (emp) {
+                    var $tr = $(btn).closest('tr');
+                    var rowData = _pioab_table.row($tr).data();
+                    $tr.find('.pioab-in-personid').val(emp.personId);
+                    $tr.find('.pioab-in-empname').val(emp.empId + ' - ' + emp.localName);
+                    rowData.personId = emp.personId;
+                    rowData.empId = emp.empId;
+                    rowData.localName = emp.localName;
+                    rowData.deptName = emp.deptName || '';
+                    $tr.find('td').eq(3).text(emp.deptName || '');
+                    var applyOtDate = $tr.find('.pioab-in-date').val() || pioabFormatDate(new Date());
+                    pioabAutoFillByEmp($tr, emp.personId, applyOtDate);
+                    pioabFetchAndShowOtTotals($tr, emp.personId, applyOtDate);
+                }, keyword || '');
+                $('#esm_empOffice').val('15119');
+            } else {
+                alert(_pioab_i18n.noEmpComp);
+            }
+        };
+
+        window.pioabEmpInputKeydown = function (e, input) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                var keyword = $(input).val().trim();
+                $(input).closest('.input-group').find('button').each(function () {
+                    pioabPickEmp(this, keyword); return false;
+                });
+            }
+        };
+
+        window.pioabOpenApplyDetail = function (applyNo, applyType) {
+            vaotOpenApplyDetail(applyNo, applyType);
+        };
+
+        window.pioabToggleCheckAll = function (chkAll) {
+            $('#pioab_dataTable tbody tr').each(function () {
+                $(this).find('.pioab-row-chk').prop('checked', $(chkAll).is(':checked'));
+            });
+        };
+
+        window.pioabRemoveNewRow = function (btn, newRowId) {
+            _pioab_addedRows = _pioab_addedRows.filter(function (r) { return r._newRowId !== newRowId; });
+            if (_pioab_table) {
+                _pioab_table.rows(function (idx, data) { return data && data._newRowId === newRowId; }).remove().draw(false);
+            }
+        };
+
+        function pioabCheckBatchTimeOverlap(payloadItems) {
+            for (var i = 0; i < payloadItems.length; i++) {
+                for (var j = i + 1; j < payloadItems.length; j++) {
+                    var a = payloadItems[i].payload, b = payloadItems[j].payload;
+                    if (a.personId !== b.personId) continue;
+                    if (!a.otFromTime || !a.otToTime || !b.otFromTime || !b.otToTime) continue;
+                    var aFrom = new Date(a.otFromTime.replace(' ', 'T') + ':00');
+                    var aTo   = new Date(a.otToTime.replace(' ', 'T') + ':00');
+                    var bFrom = new Date(b.otFromTime.replace(' ', 'T') + ':00');
+                    var bTo   = new Date(b.otToTime.replace(' ', 'T') + ':00');
+                    if (isNaN(aFrom.getTime()) || isNaN(aTo.getTime()) || isNaN(bFrom.getTime()) || isNaN(bTo.getTime())) continue;
+                    if (aTo <= aFrom) aTo.setDate(aTo.getDate() + 1);
+                    if (bTo <= bFrom) bTo.setDate(bTo.getDate() + 1);
+                    if (aFrom < bTo && bFrom < aTo) return true;
+                }
+            }
+            return false;
+        }
+
+        window.pioabSaveChecked = function () {
+            var rows = [];
+            $('#pioab_dataTable tbody tr').each(function () {
+                var $tr = $(this);
+                if ($tr.find('.pioab-row-chk').is(':checked')) {
+                    var rowData = _pioab_table ? _pioab_table.row($tr).data() : null;
+                    if (rowData) rows.push({ $tr: $tr, rowData: rowData });
+                }
+            });
+            if (rows.length === 0) { toastr && toastr.warning(_pioab_i18n.msgNoCheckedRows); return; }
+
+            var payloads = [];
+            for (var i = 0; i < rows.length; i++) {
+                var item = rows[i];
+                var ctx = pioabBuildSaveContext(item.$tr, item.rowData.applyNo || '', item.rowData.personId || '');
+                if (!pioabValidateSaveContext(ctx)) return;
+                payloads.push({
+                    payload: pioabBuildSavePayload(item.rowData.applyNo || '', ctx),
+                    isNew: !!item.rowData.isNew,
+                    newRowId: item.rowData._newRowId || null,
+                    isResubmit: !item.rowData.isNew && item.rowData.affirmFlag === '14014308'
+                });
+            }
+
+            if (pioabCheckBatchTimeOverlap(payloads)) {
+                toastr && toastr.error('Các dòng dữ liệu bị trùng nhau về thời gian, xin kiểm tra lại!');
+                return;
+            }
+
+            ProcessingModal.show();
+            var totalRows = payloads.length;
+            var saveItems = payloads.filter(function (it) { return !it.isResubmit; });
+            var resubmitItems = payloads.filter(function (it) { return it.isResubmit; });
+            var callsRemaining = (saveItems.length > 0 ? 1 : 0) + resubmitItems.length;
+            var errors = [], successNewRowIds = [];
+
+            function onCallDone() {
+                if (--callsRemaining === 0) pioabFinalizeBatchSave(totalRows, errors, successNewRowIds);
+            }
+
+            if (saveItems.length > 0) {
+                $.ajax({
+                    url: '/ar/attendanceMintenance/api/overtime/saveBatch',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(saveItems.map(function (it) { return it.payload; })),
+                    success: function (res) {
+                        if (res && res.success) {
+                            saveItems.forEach(function (it) { if (it.newRowId) successNewRowIds.push(it.newRowId); });
+                        } else {
+                            errors.push((res && res.error) || 'Lỗi lưu dữ liệu');
+                        }
+                        onCallDone();
+                    },
+                    error: function () { errors.push('Lỗi khi gửi dữ liệu'); onCallDone(); }
+                });
+            }
+
+            resubmitItems.forEach(function (item) {
+                $.ajax({
+                    url: '/ar/attendanceMintenance/api/overtime/resubmit',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(item.payload),
+                    success: function (res) {
+                        if (res && res.success) {
+                            if (item.newRowId) successNewRowIds.push(item.newRowId);
+                        } else {
+                            errors.push((res && res.error) || 'Lỗi lưu dữ liệu');
+                        }
+                        onCallDone();
+                    },
+                    error: function () { errors.push('Lỗi khi gửi dữ liệu'); onCallDone(); }
+                });
+            });
+        };
+
+        function pioabFinalizeBatchSave(total, errors, successNewRowIds) {
+            ProcessingModal.hide();
+            successNewRowIds.forEach(function (id) {
+                _pioab_addedRows = _pioab_addedRows.filter(function (r) { return r._newRowId !== id; });
+            });
+            if (errors.length > 0) {
+                errors.forEach(function (msg) { toastr && toastr.error(msg); });
+            } else {
+                toastr && toastr.success(_pioab_i18n.saveBatchSuccess.replace('{n}', total));
+                if (_pioab_table) _pioab_table.ajax.reload(null, false);
+            }
+        }
+
+        window.pioabCancelBatch = function () {
+            if (!_pioab_table) return;
+            var applyNos = [];
+            _pioab_table.rows().every(function () {
+                var rowData = this.data();
+                var $row = $(this.node());
+                if ($row.find('.pioab-row-chk').is(':checked') && rowData && rowData.applyNo && !rowData.isNew) {
+                    applyNos.push(rowData.applyNo);
+                }
+            });
+            if (applyNos.length === 0) {
+                toastr && toastr.warning(_pioab_i18n.noCancelSelected);
+                return;
+            }
+            if (!confirm(_pioab_i18n.confirmCancelBatch.replace('{n}', applyNos.length))) {
+                return;
+            }
+            ProcessingModal.show();
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/overtime/cancel-batch',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ applyNos: applyNos }),
+                success: function (res) {
+                    ProcessingModal.hide();
+                    if (res && res.success) {
+                        toastr && toastr.success(_pioab_i18n.cancelBatchSuccess.replace('{n}', res.count || applyNos.length));
+                        if (_pioab_table) _pioab_table.ajax.reload(null, false);
+                    } else {
+                        toastr && toastr.error((res && res.error) || 'Lỗi khi hủy đơn');
+                    }
+                },
+                error: function () {
+                    ProcessingModal.hide();
+                    toastr && toastr.error('Lỗi khi gửi yêu cầu hủy đơn');
+                }
+            });
+        };
+
+        window.pioabResubmitLine = function (btn, applyNo, rowPersonId) {
+            if (!confirm(_pioab_i18n.confirmResubmit)) return;
+            var $tr = $(btn).closest('tr');
+            var ctx = pioabBuildSaveContext($tr, applyNo, rowPersonId);
+            if (!pioabValidateSaveContext(ctx)) return;
+            var $btn = $(btn);
+            var originalHtml = $btn.html();
+            $btn.html('<i class="bx bx-loader bx-spin"></i>').prop('disabled', true);
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/overtime/resubmit',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(pioabBuildSavePayload(applyNo, ctx)),
+                success: function (res) {
+                    $btn.html(originalHtml).prop('disabled', false);
+                    if (res && res.success) {
+                        toastr && toastr.success(res.message || _pioab_i18n.resubmitSuccess);
+                        if (_pioab_table) _pioab_table.ajax.reload(null, false);
+                    } else {
+                        toastr && toastr.error((res && res.error) || 'Lỗi lưu dữ liệu');
+                    }
+                },
+                error: function () {
+                    $btn.html(originalHtml).prop('disabled', false);
+                    toastr && toastr.error('Lỗi khi gửi dữ liệu');
+                }
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', pioabBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(pioabBootPage);
+        } else {
+            pioabBootPage();
+        }
+    </script>
+</template>

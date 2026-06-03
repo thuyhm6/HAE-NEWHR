@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.org.orgManage.mapper.OrgCostCenterMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.org.orgManage.model.OrgCostCenter">
+        <id column="SEQ" property="seq" jdbcType="VARCHAR" />
+        <result column="CPNY_ID" property="cpnyId" jdbcType="VARCHAR" />
+        <result column="CODE_NO" property="codeNo" jdbcType="VARCHAR" />
+        <result column="CODE_NAME" property="codeName" jdbcType="VARCHAR" />
+        <result column="CODE_ENG_NAME" property="codeEngName" jdbcType="VARCHAR" />
+        <result column="REMARK" property="remark" jdbcType="VARCHAR" />
+        <result column="START_DATE" property="startDate" jdbcType="VARCHAR" />
+        <result column="END_DATE" property="endDate" jdbcType="VARCHAR" />
+        <result column="COUNTRY" property="country" jdbcType="VARCHAR" />
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR" />
+        <result column="ACTIVITY" property="activity" jdbcType="VARCHAR" />
+        <result column="ORDERNO" property="orderNo" jdbcType="DECIMAL" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="CREATED_BY" property="createdBy" jdbcType="VARCHAR" />
+        <result column="CREATED_IP" property="createdIp" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR" />
+        <result column="UPDATED_IP" property="updatedIp" jdbcType="VARCHAR" />
+        <result column="BUSINESS_SCOPE" property="businessScope" jdbcType="VARCHAR" />
+        <result column="PROFIT_CENTER" property="profitCenter" jdbcType="VARCHAR" />
+        <result column="CODE_KOREAN_NAME" property="codeKoreanName" jdbcType="VARCHAR" />
+        <result column="CODE_VIETNAMESE_NAME" property="codeVietnameseName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        SEQ, CPNY_ID, CODE_NO, CODE_NAME, CODE_ENG_NAME, REMARK, START_DATE, END_DATE,
+        COUNTRY, ADDRESS, ACTIVITY, ORDERNO, CREATE_DATE, CREATED_BY, CREATED_IP,
+        UPDATE_DATE, UPDATED_BY, UPDATED_IP, BUSINESS_SCOPE, PROFIT_CENTER,
+        CODE_KOREAN_NAME, CODE_VIETNAMESE_NAME
+    </sql>
+
+    <select id="selectList" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM ORG_COST_CENTER
+        <where>
+            <if test="codeNo != null and codeNo != ''">
+                AND UPPER(CODE_NO) LIKE '%' || UPPER(#{codeNo}) || '%'
+            </if>
+            <if test="codeName != null and codeName != ''">
+                AND (UPPER(CODE_NAME) LIKE '%' || UPPER(#{codeName}) || '%' 
+                  OR UPPER(CODE_ENG_NAME) LIKE '%' || UPPER(#{codeName}) || '%')
+            </if>
+        </where>
+        ORDER BY ORDERNO, CODE_NO
+    </select>
+    
+    <select id="selectBySeq" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM ORG_COST_CENTER
+        WHERE SEQ = #{seq}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.org.orgManage.model.OrgCostCenter">
+        INSERT INTO ORG_COST_CENTER (
+            SEQ, CPNY_ID, CODE_NO, CODE_NAME, CODE_ENG_NAME, REMARK, 
+            START_DATE, END_DATE, COUNTRY, ADDRESS, ACTIVITY, ORDERNO, 
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP,
+            BUSINESS_SCOPE, PROFIT_CENTER, CODE_KOREAN_NAME, CODE_VIETNAMESE_NAME
+        ) VALUES (
+            ORG_COST_CENTER_SEQ.NEXTVAL, #{cpnyId, jdbcType=VARCHAR}, #{codeNo}, #{codeName}, #{codeEngName}, #{remark}, 
+            #{startDate}, #{endDate}, #{country}, #{address}, #{activity}, #{orderNo}, 
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{createdIp}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{updatedIp},
+            #{businessScope}, #{profitCenter}, #{codeKoreanName}, #{codeVietnameseName}
+        )
+    </insert>
+    
+    <update id="update" parameterType="com.ait.org.orgManage.model.OrgCostCenter">
+        UPDATE ORG_COST_CENTER
+        SET 
+            CODE_NO = #{codeNo},
+            CODE_NAME = #{codeName},
+            CODE_ENG_NAME = #{codeEngName},
+            REMARK = #{remark},
+            START_DATE = #{startDate},
+            END_DATE = #{endDate},
+            COUNTRY = #{country},
+            ADDRESS = #{address},
+            ACTIVITY = #{activity},
+            ORDERNO = #{orderNo},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{updatedIp},
+            BUSINESS_SCOPE = #{businessScope},
+            PROFIT_CENTER = #{profitCenter},
+            CODE_KOREAN_NAME = #{codeKoreanName},
+            CODE_VIETNAMESE_NAME = #{codeVietnameseName}
+        WHERE SEQ = #{seq}
+    </update>
+    
+    <delete id="delete">
+        UPDATE ORG_COST_CENTER SET ACTIVITY = '0' WHERE SEQ = #{seq} 
+    </delete>
+
+</mapper>

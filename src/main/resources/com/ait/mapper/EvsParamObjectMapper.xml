@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsParamObjectMapper">
+
+    <resultMap id="EvsParamObjectResultMap" type="com.ait.evs.manage.dto.EvsParamObjectDto">
+        <id     column="SEQ"        property="seq"        jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ" property="resumeSeq"  jdbcType="VARCHAR" />
+        <result column="EVS_TYPE"   property="evsType"    jdbcType="VARCHAR" />
+        <result column="EVS_TYPE_NAME" property="evsTypeName" jdbcType="VARCHAR" />
+        <result column="CODE_NO"    property="codeNo"     jdbcType="VARCHAR" />
+        <result column="CODE_NAME"  property="codeName"   jdbcType="VARCHAR" />
+        <result column="FORMULA"    property="formula"    jdbcType="VARCHAR" />
+        <result column="FORMULA_NAME" property="formulaName" jdbcType="VARCHAR" />
+        <result column="IS_INCLUDE" property="isInclude"  jdbcType="VARCHAR" />
+        <result column="EVS_GRADE"  property="evsGrade"   jdbcType="VARCHAR" />
+        <result column="EVS_GRADE_NAME" property="evsGradeName" jdbcType="VARCHAR" />
+        <result column="ACTIVITY"   property="activity"   jdbcType="VARCHAR" />
+        <result column="ORDER_NO"   property="orderNo"    jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR" />
+        <result column="CREATED_BY"  property="createdBy"  jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"  property="updatedBy"  jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsParamObjectDto"
+            resultMap="EvsParamObjectResultMap">
+        SELECT epo.SEQ,
+               epo.RESUME_SEQ,
+               epo.EVS_TYPE,
+               GET_CODE_NAME(epo.EVS_TYPE,#{lang, jdbcType=VARCHAR}) EVS_TYPE_NAME,
+               epo.CODE_NO,
+               epo.CODE_NAME,
+               epo.FORMULA,
+               (SELECT CODE_NAME FROM EVS_FORMULA WHERE SEQ = epo.FORMULA) FORMULA_NAME,
+               epo.IS_INCLUDE,
+               epo.EVS_GRADE,
+               GET_CODE_NAME(epo.EVS_GRADE,#{lang, jdbcType=VARCHAR}) EVS_GRADE_NAME,
+               epo.ACTIVITY,
+               TO_CHAR(epo.ORDERNO)                               AS ORDER_NO,
+               TO_CHAR(epo.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+               GET_UPDATED_INFO(epo.CREATED_BY) || ' ' || epo.CREATED_IP AS CREATED_BY,
+               TO_CHAR(epo.UPDATE_DATE, 'YYYY-MM-DD HH24:MI')    AS UPDATE_DATE,
+               GET_UPDATED_INFO(epo.UPDATED_BY) || ' ' || epo.UPDATED_IP AS UPDATED_BY
+        FROM EVS_PARAM_OBJECT epo
+        WHERE ACTIVITY != 2
+        <if test="resumeSeq != null and resumeSeq != ''">
+            AND epo.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        </if>
+        ORDER BY epo.SEQ
+    </select>
+
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_PARAM_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsParamObjectDto">
+        INSERT INTO EVS_PARAM_OBJECT (
+            SEQ, RESUME_SEQ, EVS_TYPE, CODE_NO, CODE_NAME,
+            FORMULA, IS_INCLUDE, EVS_GRADE, ACTIVITY, ORDERNO,
+            CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,       jdbcType=VARCHAR},
+            #{resumeSeq, jdbcType=VARCHAR},
+            #{evsType,   jdbcType=VARCHAR},
+            #{codeNo,    jdbcType=VARCHAR},
+            #{codeName,  jdbcType=VARCHAR},
+            #{formula,   jdbcType=VARCHAR},
+            NVL(#{isInclude, jdbcType=VARCHAR},0),
+            #{evsGrade,  jdbcType=VARCHAR},
+            1,
+            <choose><when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR},</when><otherwise>200,</otherwise></choose>
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsParamObjectDto">
+        UPDATE EVS_PARAM_OBJECT
+        SET EVS_TYPE    = #{evsType,   jdbcType=VARCHAR},
+            CODE_NO     = #{codeNo,    jdbcType=VARCHAR},
+            CODE_NAME   = #{codeName,  jdbcType=VARCHAR},
+            FORMULA     = GET_CODE_NO(#{formulaName, jdbcType=VARCHAR},'',#{lang, jdbcType=VARCHAR},'EVS_FORMULA'),
+            IS_INCLUDE  = NVL(#{isInclude, jdbcType=VARCHAR},0),
+            EVS_GRADE   = #{evsGrade,  jdbcType=VARCHAR},
+            UPDATED_BY  = #{adminID,   jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,   jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteBySeq">
+        UPDATE EVS_PARAM_OBJECT
+        SET UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ACTIVITY = 2,
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

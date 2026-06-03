@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.workgroup.mapper.PersonShiftMapper">
+
+    <select id="selectPersonShift" resultType="com.ait.ess.workgroup.dto.PersonShiftDto">
+        SELECT
+            TO_CHAR(TO_DATE(AC.DDATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY')                                        AS ddateStr,
+            GET_GLOBAL_NAME(GET_AR_SHIFTNO(#{adminID, jdbcType=VARCHAR}, TO_CHAR(AC.DDATE, 'yyyy/mm/dd'), AC.CPNY_ID), #{lang, jdbcType=VARCHAR}) AS overTypeIdName,
+            GET_GLOBAL_NAME(SHIFT.SHIFT_NO, #{lang, jdbcType=VARCHAR})                                                           AS shiftName,
+            GET_AR_ALL_DATETYPE(#{adminID, jdbcType=VARCHAR}, AC.DDATE_STR, AC.CPNY_ID)                                         AS dateType,
+            GET_GLOBAL_NAME(GET_AR_ALL_DATETYPE(#{adminID, jdbcType=VARCHAR}, AC.DDATE_STR, AC.CPNY_ID), #{lang, jdbcType=VARCHAR})               AS dateName,
+            TO_CHAR(
+                TO_DATE(GET_AR_SHIFT_START_TIME(#{adminID, jdbcType=VARCHAR}, AC.DDATE_STR, AC.CPNY_ID), 'YYYY-MM-DD HH24:MI'),
+                'DD/MM/YYYY HH24:MI'
+            )                                                                                                   AS shiftStartTime,
+            TO_CHAR(
+                TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID, jdbcType=VARCHAR}, AC.DDATE_STR, AC.CPNY_ID), 'YYYY-MM-DD HH24:MI'),
+                'DD/MM/YYYY HH24:MI'
+            )                                                                                                   AS shiftEndTime,
+            GET_AR_MAC_TIME(#{adminID, jdbcType=VARCHAR},AC.DDATE_STR,'IN') INDOOR_TIME,
+            GET_AR_MAC_TIME(#{adminID, jdbcType=VARCHAR},AC.DDATE_STR,'OUT') OUTDOOR_TIME
+        FROM AR_CALENDER AC
+        JOIN AR_SHIFT020 SHIFT
+          ON GET_AR_SHIFTNO(#{adminID, jdbcType=VARCHAR}, AC.DDATE_STR, AC.CPNY_ID) = SHIFT.SHIFT_NO
+        WHERE AC.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND AC.DDATE_STR &gt;= TO_CHAR(TO_DATE(#{startDate}, 'YYYY-MM-DD'), 'YYYY/MM/DD')
+          AND AC.DDATE_STR &lt;= TO_CHAR(TO_DATE(#{endDate},   'YYYY-MM-DD'), 'YYYY/MM/DD')
+        GROUP BY AC.DDATE_STR, SHIFT.SHIFT_NO, AC.CPNY_ID, AC.OVERTYPEID, AC.DDATE
+        ORDER BY AC.DDATE_STR
+    </select>
+
+</mapper>

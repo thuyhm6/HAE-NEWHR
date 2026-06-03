@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrRewardMapper">
+
+    <resultMap id="HrRewardResultMap" type="com.ait.hrm.empinfo.model.HrReward">
+        <id property="rewardNo" column="REWARD_NO"/>
+        <result property="personId" column="PERSON_ID"/>
+        <result property="rewardType" column="REWARD_TYPE"/>
+        <result property="rewardDate" column="REWARD_DATE"/>
+        <result property="rewardCnpy" column="REWARD_CNPY"/>
+        <result property="reward" column="REWARD"/>
+        <result property="rewardTypeCode" column="REWARD_TYPE_CODE"/>
+        <result property="rewardPayDate" column="REWARD_PAY_DATE"/>
+        <result property="personnelCardInquiry" column="PERSONNEL_CARD_INQUIRY"/>
+        <result property="payAppearIsnot" column="PAY_APPEAR_ISNOT"/>
+        <result property="lineId" column="LINE_ID"/>
+        <result property="otherType" column="OTHER_TYPE"/>
+        <result property="remarks" column="REMARKS"/>
+        <result property="activity" column="ACTIVITY"/>
+        
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="updatedDate" column="UPDATED_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        
+        <!-- Joined fields -->
+        <result property="empId" column="EMPID"/>
+        <result property="localName" column="LOCAL_NAME"/>
+        <result property="deptName" column="DEPT_NAME"/>
+    </resultMap>
+
+    <select id="searchReward" resultMap="HrRewardResultMap">
+        SELECT 
+            t1.*,
+            t2.EMPID,
+            t2.LOCAL_NAME,
+            t3.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_REWARD t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE 1=1 AND (t1.ACTIVITY = 1 OR t1.ACTIVITY IS NULL) 
+        <!-- Note: checking ACTIVITY NULL just in case legacy data -->
+        <if test="empId != null and empId != ''">
+            AND t2.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(t2.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="rewardType != null and rewardType != ''">
+            AND t1.REWARD_TYPE LIKE '%' || #{rewardType} || '%'
+        </if>
+        ORDER BY t1.REWARD_DATE DESC
+    </select>
+
+    <select id="getByPersonId" resultMap="HrRewardResultMap">
+        SELECT t1.*, t2.EMPID, t2.LOCAL_NAME, t3.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_REWARD t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE t1.PERSON_ID = #{personId} AND (t1.ACTIVITY = 1 OR t1.ACTIVITY IS NULL)
+        ORDER BY t1.REWARD_DATE DESC
+    </select>
+
+    <select id="getById" resultMap="HrRewardResultMap">
+        SELECT 
+            t1.*,
+            t2.EMPID,
+            t2.LOCAL_NAME,
+            t3.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_REWARD t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE t1.REWARD_NO = #{rewardNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.hrm.empinfo.model.HrReward">
+        INSERT INTO HR_REWARD (
+            REWARD_NO, PERSON_ID, REWARD_TYPE, REWARD_DATE, REWARD_CNPY,
+            REWARD, REWARD_TYPE_CODE, REWARD_PAY_DATE, PERSONNEL_CARD_INQUIRY,
+            PAY_APPEAR_ISNOT, LINE_ID, OTHER_TYPE, REMARKS,
+            ACTIVITY,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATED_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            HR_REWARD_SEQ.NEXTVAL, #{personId}, #{rewardType}, #{rewardDate}, #{rewardCnpy},
+            #{reward}, #{rewardTypeCode}, #{rewardPayDate}, #{personnelCardInquiry},
+            #{payAppearIsnot}, #{lineId}, #{otherType}, #{remarks},
+            1,
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.hrm.empinfo.model.HrReward">
+        UPDATE HR_REWARD
+        SET 
+            PERSON_ID = #{personId},
+            REWARD_TYPE = #{rewardType},
+            REWARD_DATE = #{rewardDate},
+            REWARD_CNPY = #{rewardCnpy},
+            REWARD = #{reward},
+            REWARD_TYPE_CODE = #{rewardTypeCode},
+            REWARD_PAY_DATE = #{rewardPayDate},
+            PERSONNEL_CARD_INQUIRY = #{personnelCardInquiry},
+            PAY_APPEAR_ISNOT = #{payAppearIsnot},
+            LINE_ID = #{lineId},
+            OTHER_TYPE = #{otherType},
+            REMARKS = #{remarks},
+            UPDATED_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE REWARD_NO = #{rewardNo}
+    </update>
+
+    <delete id="delete">
+        UPDATE HR_REWARD 
+        SET ACTIVITY = 0,
+            UPDATED_DATE = SYSDATE, 
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}, 
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR} 
+        WHERE REWARD_NO = #{rewardNo}
+    </delete>
+
+</mapper>

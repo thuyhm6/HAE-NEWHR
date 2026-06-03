@@ -1,0 +1,482 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="soa_pageWrapper">
+
+            <!-- Thông tin nhân viên -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
+
+            <!-- Form xin tăng ca -->
+            <div class="card mb-3">
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:15%;">
+                            <col style="width:35%;">
+                            <col style="width:15%;">
+                            <col style="width:35%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.applyDate}">Ngày</th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm js-daterangepicker"
+                                        id="soa_applyDate"
+                                        data-drp-format="YYYY-MM-DD"
+                                        data-drp-auto-update-input="false"
+                                        data-drp-on-apply="soaOnDateApply"
+                                        autocomplete="off"
+                                        style="width:140px;">
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.otStatus}">Tình hình tăng ca</th>
+                                <td>
+                                    <div id="soa_otStats" class="small text-muted">--</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.otStartTimeLabel}">Thời gian bắt đầu tăng ca</th>
+                                <td class="d-flex align-items-center gap-2">
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="soa_otFromTime" style="width:200px;"
+                                        data-drp-trigger-change="true" onchange="soaCalcDuration()">
+                                    ~
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="soa_otToTime" style="width:200px;"
+                                        data-drp-trigger-change="true" onchange="soaCalcDuration()">
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.otType}">Hình thức tăng ca</th>
+                                <td>
+                                    <span id="soa_dateTypeName" class="form-control-plaintext form-control-sm">--</span>
+                                    <input type="hidden" id="soa_dateTypeCode" value="">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.inOutTime}">Thời gian vào ra</th>
+                                <td>
+                                    <span class="small" th:text="#{essOt.inTime}">Thời gian vào: </span><span id="soa_indoorTime" class="fw-semibold">**:**</span><br>
+                                    <span class="small" th:text="#{essOt.outTime}">Thời gian ra: </span><span id="soa_outdoorTime" class="fw-semibold">**:**</span>
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.shift}">Ca</th>
+                                <td>
+                                    <span id="soa_shiftName" class="small text-muted">--</span>
+                                    <span id="soa_workTime" class="small text-muted">--</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.duration}">Thời lượng</th>
+                                <td id="soa_duration">--</td>
+                                <th class="table-light text-center" th:text="#{essOt.mealBreak}">Bảo cơm / Nghỉ ngơi (30')</th>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="soa_mealCheck" onchange="soaCalcDuration()">
+                                        <label class="form-check-label" for="soa_mealCheck" th:text="#{essOt.yes}">Có</label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Lý do</th>
+                                <td colspan="3">
+                                    <textarea class="form-control form-control-sm" id="soa_reason"
+                                        rows="3" style="resize:vertical;"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Danh sách người phê duyệt -->
+            <div class="card mb-3">
+                <div class="card-header py-2 fw-bold">Danh sách người phê duyệt</div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:60px;">STT</th>
+                                <th>Người duyệt</th>
+                                <th style="width:120px;">Mã nhân viên</th>
+                                <th>Phòng ban</th>
+                                <th>Chức danh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="soa_approvalBody">
+                            <tr><td colspan="5" class="text-center text-muted">Chọn ngày tăng ca để xem người phê duyệt</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Nút xin phép -->
+            <div class="text-end mb-3">
+                <button type="button" class="btn btn-primary" id="soa_submitBtn" onclick="soaSubmit()">Xin phép</button>
+            </div>
+
+        </div><!-- /#soa_pageWrapper -->
+    </div><!-- /.row -->
+</div>
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{fragments/essEmpInfoCard :: script}"></th:block>
+    <script th:inline="javascript">
+        var _soa_personId  = '';
+        var _soa_localName = '';
+        var _soa_empId     = '';
+        var _soa_pageBooted = false;
+
+        var _soa_otTotalMonth     = 0;
+        var _soa_otTotalYear      = 0;
+        var _soa_otLimitMonth     = 40;
+        var _soa_otLimitYear      = 300;
+        var _soa_otLimitEnabled   = false;
+        var _soa_otLimit100Enabled = false;
+        var _soa_otLength         = 0; // lưu kết quả GET_OT_LENGTH_SPC từ backend
+
+        function soaEscHtml(v) {
+            if (v == null) return '';
+            return String(v)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ── Trích xuất HH:MI từ chuỗi "YYYY-MM-DD HH:MI" hoặc "HH:MI" ──────
+        function soaExtractTime(dtStr) {
+            if (!dtStr) return '';
+            var idx = dtStr.indexOf(' ');
+            return idx > -1 ? dtStr.substring(idx + 1) : dtStr;
+        }
+
+        // ── Set value cho input daterangepicker và sync picker state ─────────
+        function soaSetPickerVal(selector, value) {
+            var $input = $(selector);
+            $input.val(value || '');
+            var picker = $input.data('daterangepicker');
+            if (!picker || !value) return;
+            var m = moment(value, 'YYYY-MM-DD HH:mm');
+            if (m.isValid()) {
+                picker.setStartDate(m);
+                picker.setEndDate(m);
+            }
+        }
+
+        // ── Tính thời lượng qua backend GET_OT_LENGTH_SPC ───────────────────
+        function soaCalcDuration() {
+            var dateApi = $('#soa_applyDate').val();
+            var fromVal = $('#soa_otFromTime').val();
+            var toVal   = $('#soa_otToTime').val();
+            if (!dateApi || !fromVal || !toVal) {
+                _soa_otLength = 0;
+                $('#soa_duration').text('--');
+                return;
+            }
+            var deductYn = $('#soa_mealCheck').prop('checked') ? '1' : '0';
+            $.ajax({
+                url : '/ess/infoApply/api/otDuration',
+                type: 'GET',
+                data: {
+                    applyOtDate: dateApi,
+                    otFromTime : fromVal,
+                    otToTime   : toVal,
+                    deductYn   : deductYn
+                },
+                success: function(d) {
+                    var len = d && d.OT_LENGTH != null ? parseFloat(d.OT_LENGTH) : 0;
+                    _soa_otLength = isNaN(len) ? 0 : len;
+                    $('#soa_duration').text(_soa_otLength > 0 ? _soa_otLength + ' h' : '--');
+                },
+                error: function() {
+                    _soa_otLength = 0;
+                    $('#soa_duration').text('--');
+                }
+            });
+        }
+
+        // ── Callback datepicker ──────────────────────────────────────────────
+        window.soaOnDateApply = function() {
+            var dateApi = $('#soa_applyDate').val();
+            if (!dateApi) return;
+            soaLoadDateInfo(dateApi);
+            soaLoadApprovers(dateApi);
+        };
+
+        // ── Load thông tin ngày tăng ca ──────────────────────────────────────
+        function soaLoadDateInfo(dateApi) {
+            $('#soa_shiftName'   ).text('Đang tải...');
+            $('#soa_workTime'    ).text('');
+            $('#soa_indoorTime'  ).text('**:**');
+            $('#soa_outdoorTime' ).text('**:**');
+            $('#soa_dateTypeName').text('...');
+            $('#soa_otStats'     ).text('...');
+            $('#soa_dateTypeCode').val('');
+
+            $.ajax({
+                url : '/ess/infoApply/api/otDateInfo',
+                type: 'GET',
+                data: { applyDate: dateApi },
+                success: function(d) {
+                    if (!d) { soaClearDateInfo(); return; }
+
+                    // Ca làm việc
+                    $('#soa_shiftName').text(d.SHIFT_NAME || '--');
+                    var shiftStartDisp = soaExtractTime(d.SHIFT_START_TIME || '');
+                    var shiftEndDisp   = soaExtractTime(d.SHIFT_END_TIME   || '');
+                    $('#soa_workTime').text(shiftStartDisp && shiftEndDisp ? shiftStartDisp + '~' + shiftEndDisp : '--');
+
+                    // Giờ vào / ra thực tế
+                    $('#soa_indoorTime' ).text(d.INDOOR_TIME  || '**:**');
+                    $('#soa_outdoorTime').text(d.OUTDOOR_TIME || '**:**');
+
+                    // Hình thức tăng ca (dùng GET_OT_TYPE_CODE)
+                    var otTypeCode = String(d.OT_TYPE_CODE || '');
+                    $('#soa_dateTypeName').text(d.OT_TYPE_NAME || '--');
+                    $('#soa_dateTypeCode').val(otTypeCode);
+
+                    // Set datetime tăng ca theo loại OT
+                    if (otTypeCode === '32') {
+                        // Nghỉ lễ / cuối tuần: bắt đầu từ giờ kết thúc ca, kết thúc = + 2h
+                        if (d.SHIFT_END_TIME) {
+                            soaSetPickerVal('#soa_otFromTime', d.SHIFT_END_TIME);
+                            var fromDt = new Date(d.SHIFT_END_TIME);
+                            if (!isNaN(fromDt)) {
+                                fromDt.setHours(fromDt.getHours() + 2);
+                                var toStr = fromDt.getFullYear() + '-'
+                                    + String(fromDt.getMonth() + 1).padStart(2, '0') + '-'
+                                    + String(fromDt.getDate()).padStart(2, '0') + ' '
+                                    + String(fromDt.getHours()).padStart(2, '0') + ':'
+                                    + String(fromDt.getMinutes()).padStart(2, '0');
+                                soaSetPickerVal('#soa_otToTime', toStr);
+                            }
+                        }
+                    } else {
+                        // Các loại khác: bắt đầu từ đầu ca, kết thúc ở cuối ca
+                        if (d.SHIFT_START_TIME) soaSetPickerVal('#soa_otFromTime', d.SHIFT_START_TIME);
+                        if (d.SHIFT_END_TIME)   soaSetPickerVal('#soa_otToTime',   d.SHIFT_END_TIME);
+                    }
+
+                    // Thống kê tăng ca
+                    _soa_otTotalMonth      = parseFloat(d.OT_TOTAIL_MONTH) || 0;
+                    _soa_otTotalYear       = parseFloat(d.OT_TOTAIL)       || 0;
+                    _soa_otLimitEnabled    = String(d.OT_LIMIT)     === '1';
+                    _soa_otLimit100Enabled = String(d.OT_LIMIT_100) === '1';
+
+                    var monthInfo = 'Tháng này: ' + soaFmt(d.OT_TOTAIL_MONTH) + 'h'
+                        + '&nbsp;&nbsp;Ngày thường: ' + soaFmt(d.WEEKDAY_OT_TOTAIL) + 'h'
+                        + (_soa_otLimitEnabled
+                            ? '&nbsp;&nbsp;Tối đa: ' + _soa_otLimitMonth + 'h <span class="text-danger">(có giới hạn)</span>'
+                            : '&nbsp;&nbsp;<span class="text-success">(không giới hạn tháng)</span>');
+                    var yearInfo = 'Năm nay: ' + soaFmt(d.OT_TOTAIL) + 'h'
+                        + (_soa_otLimit100Enabled
+                            ? '&nbsp;&nbsp;Tối đa: ' + _soa_otLimitYear + 'h <span class="text-danger">(có giới hạn)</span>'
+                            : '&nbsp;&nbsp;<span class="text-success">(không giới hạn năm)</span>');
+                    $('#soa_otStats').html(monthInfo + '<br>' + yearInfo);
+
+                    soaCalcDuration();
+                },
+                error: function() { soaClearDateInfo(); }
+            });
+        }
+
+        function soaFmt(v) { return (v == null || v === '') ? '0' : v; }
+
+        function soaClearDateInfo() {
+            $('#soa_shiftName'   ).text('--');
+            $('#soa_workTime'    ).text('--');
+            $('#soa_indoorTime'  ).text('**:**');
+            $('#soa_outdoorTime' ).text('**:**');
+            $('#soa_dateTypeName').text('--');
+            $('#soa_dateTypeCode').val('');
+            $('#soa_otStats'     ).text('--');
+            _soa_otTotalMonth      = 0;
+            _soa_otTotalYear       = 0;
+            _soa_otLimitEnabled    = false;
+            _soa_otLimit100Enabled = false;
+            _soa_otLength          = 0;
+        }
+
+        // ── Load người phê duyệt ─────────────────────────────────────────────
+        function soaLoadApprovers(dateApi) {
+            if (!_soa_personId) return;
+            var otTypeCode = $('#soa_dateTypeCode').val() || '';
+            var $tbody = $('#soa_approvalBody');
+            $tbody.html('<tr><td colspan="5" class="text-center text-muted">Đang tải...</td></tr>');
+
+            // Tính số giờ xin tăng ca để truyền vào approvers
+            var fromDt = new Date($('#soa_otFromTime').val());
+            var toDt   = new Date($('#soa_otToTime').val());
+            var diff = (!isNaN(fromDt) && !isNaN(toDt) && toDt > fromDt)
+                ? (toDt - fromDt) / 3600000 : 0;
+
+            $.post('/ar/attendanceMintenance/api/leaveApply/approvers', {
+                applyTypeNo  : '31',
+                personId     : _soa_personId,
+                applyTypeCode: otTypeCode,
+                applyLength  : String(diff)
+            }, function(data) {
+                if (!data || !data.length) {
+                    $tbody.html('<tr><td colspan="5" class="text-center text-muted">Không có người phê duyệt</td></tr>');
+                    return;
+                }
+                var html = '';
+                var stt  = 0;
+                data.forEach(function(item) {
+                    if (String(item.affirmLevel) === '0') return;
+                    stt++;
+                    html += '<tr>'
+                        + '<td class="text-center">' + soaEscHtml(item.affirmLevel || stt) + '</td>'
+                        + '<td>' + soaEscHtml(item.localName || '') + '</td>'
+                        + '<td class="text-center">' + soaEscHtml(item.empId || '') + '</td>'
+                        + '<td>' + soaEscHtml(item.deptName || '') + '</td>'
+                        + '<td>' + soaEscHtml(item.postionName || item.positionName || '') + '</td>'
+                        + '</tr>';
+                });
+                $tbody.html(html || '<tr><td colspan="5" class="text-center text-muted">Không có người phê duyệt</td></tr>');
+            }).fail(function() {
+                $tbody.html('<tr><td colspan="5" class="text-center text-danger">Lỗi tải người phê duyệt</td></tr>');
+            });
+        }
+
+        // ── Submit ───────────────────────────────────────────────────────────
+        window.soaSubmit = function() {
+            var dateApi  = $('#soa_applyDate').val();
+            var fromVal  = $('#soa_otFromTime').val(); // YYYY-MM-DDTHH:MM
+            var toVal    = $('#soa_otToTime').val();   // YYYY-MM-DDTHH:MM
+            if (!dateApi)              { toastr && toastr.warning('Vui lòng chọn ngày tăng ca.'); return; }
+            if (!_soa_personId)        { toastr && toastr.warning('Chưa tải thông tin nhân viên.'); return; }
+            if (!fromVal || !toVal)    { toastr && toastr.warning('Vui lòng nhập thời gian tăng ca.'); return; }
+
+            var fromDt  = new Date(fromVal);
+            var toDt    = new Date(toVal);
+            if (isNaN(fromDt) || isNaN(toDt) || toDt <= fromDt) {
+                toastr && toastr.warning('Thời gian kết thúc phải sau thời gian bắt đầu.');
+                return;
+            }
+
+            // Chuyển sang "YYYY-MM-DD HH:MM" gửi lên server
+            var fromTime = fromVal;
+            var toTime   = toVal;
+
+            var durationText = $('#soa_duration').text();
+            if (!durationText || durationText === '--') { toastr && toastr.warning('Thời lượng không hợp lệ.'); return; }
+
+            var otTypeCode = $('#soa_dateTypeCode').val() || '';
+            if (!otTypeCode) { toastr && toastr.warning('Chưa xác định loại tăng ca. Vui lòng chọn lại ngày tăng ca.'); return; }
+
+            var otApplyHour = _soa_otLength > 0 ? String(_soa_otLength) : '0';
+            if (!otApplyHour || parseFloat(otApplyHour) <= 0) {
+                toastr && toastr.warning('Số giờ tăng ca phải lớn hơn 0.');
+                return;
+            }
+            var applyHourNum = parseFloat(otApplyHour) || 0;
+            if (_soa_otLimitEnabled && (applyHourNum + _soa_otTotalMonth > _soa_otLimitMonth)) {
+                toastr && toastr.warning(
+                    'Tổng tăng ca tháng này sẽ là ' + (applyHourNum + _soa_otTotalMonth).toFixed(1) + 'h, vượt quá giới hạn ' + _soa_otLimitMonth + 'h!'
+                );
+                return;
+            }
+            if (_soa_otLimit100Enabled && (applyHourNum + _soa_otTotalYear > _soa_otLimitYear)) {
+                toastr && toastr.warning(
+                    'Tổng tăng ca năm nay sẽ là ' + (applyHourNum + _soa_otTotalYear).toFixed(1) + 'h, vượt quá giới hạn ' + _soa_otLimitYear + 'h!'
+                );
+                return;
+            }
+
+            var payload = {
+                applyNo      : '',
+                personId     : _soa_personId,
+                localName    : _soa_localName,
+                empId        : _soa_empId,
+                otTypeNo     : '31',
+                otTypeCode   : $('#soa_dateTypeCode').val() || '',
+                applyOtDate  : dateApi,
+                otFromTime   : fromTime,
+                otToTime     : toTime,
+                otApplyHour  : otApplyHour,
+                applyOtRemark: $('#soa_reason').val() || '',
+                deductYn     : $('#soa_mealCheck').prop('checked') ? '1' : '0'
+            };
+
+            var $btn  = $('#soa_submitBtn');
+            var oHtml = $btn.html();
+            $btn.html('<span class="spinner-border spinner-border-sm"></span>').prop('disabled', true);
+
+            $.ajax({
+                url        : '/ar/attendanceMintenance/api/overtime/save',
+                type       : 'POST',
+                contentType: 'application/json',
+                data       : JSON.stringify(payload),
+                success: function(res) {
+                    $btn.html(oHtml).prop('disabled', false);
+                    if (res && res.success) {
+                        toastr && toastr.success(res.message || 'Xin tăng ca thành công!');
+                        soaResetForm();
+                    } else {
+                        toastr && toastr.error(res && res.error ? res.error : 'Lỗi khi gửi đơn!');
+                    }
+                },
+                error: function() {
+                    $btn.html(oHtml).prop('disabled', false);
+                    toastr && toastr.error('Lỗi kết nối khi gửi đơn!');
+                }
+            });
+        };
+
+        function soaResetForm() {
+            $('#soa_applyDate').val('');
+            $('#soa_otFromTime').val('');
+            $('#soa_otToTime').val('');
+            $('#soa_reason').val('');
+            $('#soa_mealCheck').prop('checked', false);
+            soaClearDateInfo();
+            soaCalcDuration();
+            $('#soa_approvalBody').html('<tr><td colspan="5" class="text-center text-muted">Chọn ngày tăng ca để xem người phê duyệt</td></tr>');
+        }
+
+        // ── Boot ─────────────────────────────────────────────────────────────
+        function soaBootPage() {
+            if (_soa_pageBooted) return;
+            if (!document.getElementById('soa_applyDate')) { setTimeout(soaBootPage, 30); return; }
+            _soa_pageBooted = true;
+
+            loadEssEmpInfoCard();
+
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#soa_pageWrapper');
+            }
+
+            // Set ngày mặc định = hôm nay (YYYY-MM-DD)
+            var now  = new Date();
+            var dd   = String(now.getDate()).padStart(2, '0');
+            var mm   = String(now.getMonth() + 1).padStart(2, '0');
+            var yyyy = now.getFullYear();
+            var todayApi = yyyy + '-' + mm + '-' + dd;
+            $('#soa_applyDate').val(todayApi);
+
+            // Load thông tin nhân viên để lấy personId
+            $.ajax({
+                url: '/ess/empinfo/api/personalInfo/myInfo',
+                type: 'GET',
+                success: function(data) {
+                    if (!data) return;
+                    _soa_personId  = data.personId  || '';
+                    _soa_localName = data.localName  || '';
+                    _soa_empId     = data.empId      || '';
+                    soaLoadDateInfo(todayApi);
+                    soaLoadApprovers(todayApi);
+                }
+            });
+
+            soaCalcDuration();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', soaBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(soaBootPage);
+        } else {
+            soaBootPage();
+        }
+    </script>
+</template>

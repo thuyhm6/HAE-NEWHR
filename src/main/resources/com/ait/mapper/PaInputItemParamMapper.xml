@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.salary.mapper.PaInputItemParamMapper">
+
+    <resultMap id="PaInputItemParamResultMap" type="com.ait.pa.salary.dto.PaInputItemParamDto">
+        <result column="PARAM_NO"              property="paramNo"             jdbcType="VARCHAR" />
+        <result column="ID"                    property="id"                  jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD"        property="distinctField"       jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD_2ND"    property="distinctField2nd"    jdbcType="VARCHAR" />
+        <result column="PARAM_ITEM_NO"         property="paramItemNo"         jdbcType="VARCHAR" />
+        <result column="DEFAULT_VAL"           property="defaultVal"          jdbcType="VARCHAR" />
+        <result column="PARAM_ITEM_ID"         property="paramItemId"         jdbcType="VARCHAR" />
+        <result column="ALIAS_NAME"            property="aliasName"           jdbcType="VARCHAR" />
+        <result column="CPNY_ID"               property="cpnyId"              jdbcType="VARCHAR" />
+        <result column="CPNY_NAME"             property="cpnyName"            jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD_NAME"   property="distinctFieldName"   jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD_2ND_NAME" property="distinctField2ndName" jdbcType="VARCHAR" />
+        <result column="ITEM_TYPE"             property="itemType"            jdbcType="NUMERIC" />
+        <result column="ACTIVITY"              property="activity"            jdbcType="NUMERIC" />
+    </resultMap>
+
+    <!-- ── SQL cốt lõi cho danh sách ───────────────────────────────────────── -->
+    <sql id="baseSelect">
+        SELECT T.PARAM_NO,
+               T.DISTINCT_FIELD,
+               T.DISTINCT_FIELD_2ND,
+               T.PARAM_ITEM_NO,
+               T.DEFAULT_VAL,
+               PI.PARAM_ITEM_ID,
+               SY3.CONTENT          AS ALIAS_NAME,
+               T.CPNY_ID,
+               T.CPNY_ID            AS CPNY_NAME,
+               SY1.CONTENT          AS DISTINCT_FIELD_NAME,
+               SY2.CONTENT          AS DISTINCT_FIELD_2ND_NAME,
+               PI.ITEM_TYPE,
+               T.ACTIVITY
+          FROM PA_PARAM_ITEM_PARAM T,
+               PA_PARAM_ITEM       PI,
+               SY_GLOBAL_NAME      SY1,
+               SY_GLOBAL_NAME      SY2,
+               SY_GLOBAL_NAME      SY3,
+               PA_DISTINCT_LIST    PA1,
+               PA_DISTINCT_LIST    PA2
+         WHERE T.PARAM_ITEM_NO = PI.PARAM_ITEM_NO
+           AND T.DISTINCT_FIELD = PA1.DISTINCT_FIELD(+)
+           AND T.CPNY_ID = PA1.CPNY_ID(+)
+           AND PA1.ID = SY1.NO(+)
+           AND SY1.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+           AND T.CPNY_ID = PA2.CPNY_ID(+)
+           AND PA2.ID = SY2.NO(+)
+           AND SY2.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.PARAM_ITEM_NO = SY3.NO(+)
+           AND SY3.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY = 1
+           AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </sql>
+
+    <!-- ── Điều kiện tìm kiếm bổ sung ──────────────────────────────────────── -->
+    <sql id="whereSearch">
+        <if test="itemTypeSearch != null">
+            AND PI.ITEM_TYPE = #{itemTypeSearch, jdbcType=NUMERIC}
+        </if>
+        <if test="aliasNameSearch != null and aliasNameSearch != ''">
+            AND (PI.PARAM_ITEM_ID LIKE '%' || #{aliasNameSearch, jdbcType=VARCHAR} || '%'
+              OR SY3.CONTENT      LIKE '%' || #{aliasNameSearch, jdbcType=VARCHAR} || '%')
+        </if>
+    </sql>
+
+    <!-- ── Đếm tổng số bản ghi ──────────────────────────────────────────────── -->
+    <select id="countList" parameterType="com.ait.pa.salary.dto.PaInputItemParamDto" resultType="long">
+        SELECT COUNT(1) FROM (
+            <include refid="baseSelect"/>
+            <include refid="whereSearch"/>
+        )
+    </select>
+
+    <!-- ── Phân trang phía server – Oracle ROWNUM ───────────────────────────── -->
+    <select id="selectListPage" parameterType="com.ait.pa.salary.dto.PaInputItemParamDto"
+            resultMap="PaInputItemParamResultMap">
+        SELECT PARAM_NO, DISTINCT_FIELD, DISTINCT_FIELD_2ND, PARAM_ITEM_NO,
+               DEFAULT_VAL, PARAM_ITEM_ID, ALIAS_NAME, CPNY_ID, CPNY_NAME,
+               DISTINCT_FIELD_NAME, DISTINCT_FIELD_2ND_NAME, ITEM_TYPE, ACTIVITY
+        FROM (
+            SELECT a.*, ROWNUM AS RN
+            FROM (
+                <include refid="baseSelect"/>
+                <include refid="whereSearch"/>
+                ORDER BY PI.ORDER_NO
+            ) a
+            WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        )
+        WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Lấy một bản ghi để chỉnh sửa ────────────────────────────────────── -->
+    <select id="selectOne" resultMap="PaInputItemParamResultMap">
+        SELECT T.PARAM_NO,
+               T.DISTINCT_FIELD,
+               T.DISTINCT_FIELD_2ND,
+               T.PARAM_ITEM_NO,
+               T.DEFAULT_VAL,
+               PI.PARAM_ITEM_ID,
+               SY3.CONTENT AS ALIAS_NAME,
+               T.CPNY_ID,
+               T.CPNY_ID   AS CPNY_NAME,
+               PI.ITEM_TYPE,
+               T.ACTIVITY
+          FROM PA_PARAM_ITEM_PARAM T,
+               PA_PARAM_ITEM       PI,
+               SY_GLOBAL_NAME      SY3
+         WHERE T.PARAM_ITEM_NO = PI.PARAM_ITEM_NO
+           AND T.PARAM_ITEM_NO = SY3.NO(+)
+           AND SY3.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.PARAM_NO = #{paramNo, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Cập nhật DISTINCT_FIELD, DISTINCT_FIELD_2ND, DEFAULT_VAL, ACTIVITY ── -->
+    <update id="updateOne" parameterType="com.ait.pa.salary.dto.PaInputItemParamDto">
+        UPDATE PA_PARAM_ITEM_PARAM
+           SET DISTINCT_FIELD     = #{distinctField,   jdbcType=VARCHAR},
+               DISTINCT_FIELD_2ND = #{distinctField2nd, jdbcType=VARCHAR},
+               DEFAULT_VAL        = #{defaultVal,      jdbcType=VARCHAR},
+               ACTIVITY           = #{activity,        jdbcType=NUMERIC},
+               UPDATED_BY         = #{adminID,         jdbcType=VARCHAR},
+               UPDATE_DATE        = SYSDATE
+         WHERE PARAM_NO = #{paramNo, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── Danh sách PA_DISTINCT_LIST để làm dropdown ──────────────────────── -->
+    <select id="selectDistinctList" parameterType="com.ait.pa.salary.dto.PaInputItemParamDto"
+            resultMap="PaInputItemParamResultMap">
+        SELECT T.ID,
+               T.DISTINCT_FIELD,
+               SY.CONTENT AS DISTINCT_FIELD_NAME,
+               T.TABLE_NAME
+          FROM PA_DISTINCT_LIST T,
+               SY_GLOBAL_NAME   SY
+         WHERE T.ID = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.TABLE_NAME = 'PA_HR_V'
+           AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND T.PARAM_FLAG = '1'
+         ORDER BY T.ORDERNO, T.ID
+    </select>
+
+    <!-- ── Xóa mềm (ACTIVITY = 0) ───────────────────────────────────────────── -->
+    <update id="deleteOne">
+        UPDATE PA_PARAM_ITEM_PARAM
+           SET ACTIVITY    = 0,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE PARAM_NO = #{paramNo, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrPersonalInfoMapper">
+
+    <!-- Result Map -->
+    <resultMap id="HrPersonalInfoResultMap" type="com.ait.hrm.empinfo.model.HrPersonalInfo">
+        <id property="personId" column="PERSON_ID"/>
+        <result property="finalDegreeCode" column="FINAL_DEGREE_CODE"/>
+        <result property="finalDegreeName" column="FINAL_DEGREE_NAME"/>
+        <result property="sexCode" column="SEXCODE"/>
+        <result property="dob" column="DOB"/>
+        <result property="nationCode" column="NATION_CODE"/>
+        <result property="nationName" column="NATION_NAME"/>
+        <result property="nationalityCode" column="NATIONALITY_CODE"/>
+        <result property="nationalityName" column="NATIONALITY_NAME"/>
+        <result property="maritalStatusCode" column="MARITAL_STATUS_CODE"/>
+        <result property="maritalStatusName" column="MARITAL_STATUS_NAME"/>
+        <result property="weddingDate" column="WEDDING_DATE"/>
+        <result property="idcardNo" column="IDCARD_NO"/>
+        <result property="homeAddress" column="HOME_ADDRESS"/>
+        <result property="email" column="EMAIL"/>
+        <result property="regTypeCode" column="REG_TYPE_CODE"/>
+        <result property="regPlace" column="REG_PLACE"/>
+        <result property="officePhone" column="OFFICE_PHONE"/>
+        <result property="homePhone" column="HOME_PHONE"/>
+        <result property="cellphone" column="CELLPHONE"/>
+        <result property="photoPath" column="PHOTO_PATH"/>
+        <result property="houseTp" column="HOUSE_TP"/>
+        <result property="weddDate" column="WEDD_DATE"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="orderNo" column="ORDERNO"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="residentialDistinction" column="RESIDENTIAL_DISTINCTION"/>
+        <result property="existSingle" column="EXIST_SINGLE"/>
+        <result property="singId" column="SING_ID"/>
+        <result property="companyPhone" column="COMPANY_PHONE"/>
+        <result property="emailSecond" column="EMAIL_SECOND"/>
+        <result property="fileLocation" column="FILE_LOCATION"/>
+        <result property="fileEnter" column="FILE_ENTER"/>
+        <result property="fileOut" column="FILE_OUT"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        <result property="contactPhone" column="CONTACT_PHONE"/>
+        <result property="ext" column="EXT"/>
+        <result property="interested" column="INTERESTED"/>
+        <result property="oldDepartment" column="OLD_DEPARTMENT"/>
+        <result property="marriageSupplement" column="MARRIAGE_SUPPLEMENT"/>
+        <result property="characterCode" column="CHARACTER_CODE"/>
+        <result property="safeTypeCode" column="SAFE_TYPE_CODE"/>
+        <result property="politicalStatus" column="POLITICAL_STATUS"/>
+        <result property="childrenCode" column="CHILDREN_CODE"/>
+        <result property="safeAddressCode" column="SAFE_ADDRESS_CODE"/>
+        <result property="insuranceDistinguish" column="INSURANCE_DISTINGUISH"/>
+        <result property="idcardExpireDate" column="IDCARD_EXPIRE_DATE"/>
+        <result property="longTerm" column="LONG_TERM"/>
+        <result property="remark" column="REMARK"/>
+        <result property="groupResidence" column="GROUP_RESIDENCE"/>
+        <result property="insuranceXz" column="INSURANCE_XZ"/>
+        <result property="documentType" column="DOCUMENT_TYPE"/>
+        <result property="religion" column="RELIGION"/>
+        <result property="origin" column="ORIGIN"/>
+        <result property="idcardStartDate" column="IDCARD_START_DATE"/>
+        <result property="becomeRegularEvaluate" column="BECOME_REGULAR_EVALUATE"/>
+        <result property="politicalOutlook" column="POLITICAL_OUTLOOK"/>
+        <result property="issuingAuthority" column="ISSUING_AUTHORITY"/>
+        <result property="cvUpdateStatus" column="CV_UPDATE_STATUS"/>
+        <result property="armyOrNot" column="ARMY_OR_NOT"/>
+        <result property="obstacleOrNot" column="OBSTACLE_OR_NOT"/>
+        <result property="graduationAchievement" column="GRADUATION_ACHIEVEMENT"/>
+        <result property="averageScore" column="AVERAGE_SCORE"/>
+        <result property="languageAbility" column="LANGUAGE_ABILITY"/>
+        <result property="height" column="HEIGHT"/>
+        <result property="weight" column="WEIGHT"/>
+        <result property="personSupplierCompany" column="PERSON_SUPPLIER_COMPANY"/>
+    </resultMap>
+
+    <!-- ============================================ -->
+    <!-- SQL FRAGMENTS - Tái sử dụng -->
+    <!-- ============================================ -->
+
+    <!-- Fragment 1: Base columns SELECT -->
+    <sql id="baseColumns">
+        hp.PERSON_ID,
+        hp.FINAL_DEGREE_CODE,
+        GET_GLOBAL_NAME(hp.FINAL_DEGREE_CODE, #{lang, jdbcType=VARCHAR}) as FINAL_DEGREE_NAME,
+        hp.SEXCODE,
+        GET_GLOBAL_NAME(hp.SEXCODE, #{lang, jdbcType=VARCHAR}) as SEX_NAME,
+        hp.DOB,
+        hp.NATION_CODE,
+        GET_GLOBAL_NAME(hp.NATION_CODE, #{lang, jdbcType=VARCHAR}) as NATION_NAME,
+        hp.NATIONALITY_CODE,
+        GET_GLOBAL_NAME(hp.NATIONALITY_CODE, #{lang, jdbcType=VARCHAR}) as NATIONALITY_NAME,
+        hp.MARITAL_STATUS_CODE,
+        GET_GLOBAL_NAME(hp.MARITAL_STATUS_CODE, #{lang, jdbcType=VARCHAR}) as MARITAL_STATUS_NAME,
+        hp.WEDDING_DATE,
+        hp.IDCARD_NO,
+        hp.HOME_ADDRESS,
+        hp.EMAIL,
+        hp.REG_TYPE_CODE,
+        hp.REG_PLACE,
+        hp.OFFICE_PHONE,
+        hp.HOME_PHONE,
+        hp.CELLPHONE,
+        hp.PHOTO_PATH,
+        hp.HOUSE_TP,
+        hp.WEDD_DATE,
+        hp.CREATE_DATE,
+        hp.CREATED_BY,
+        hp.UPDATE_DATE,
+        hp.UPDATED_BY,
+        hp.ORDERNO,
+        hp.ACTIVITY,
+        hp.RESIDENTIAL_DISTINCTION,
+        hp.EXIST_SINGLE,
+        hp.SING_ID,
+        hp.COMPANY_PHONE,
+        hp.EMAIL_SECOND,
+        hp.FILE_LOCATION,
+        hp.FILE_ENTER,
+        hp.FILE_OUT,
+        hp.CREATED_IP,
+        hp.UPDATED_IP,
+        hp.CONTACT_PHONE,
+        hp.EXT,
+        hp.INTERESTED,
+        hp.OLD_DEPARTMENT,
+        hp.MARRIAGE_SUPPLEMENT,
+        hp.CHARACTER_CODE,
+        hp.SAFE_TYPE_CODE,
+        hp.POLITICAL_STATUS,
+        hp.CHILDREN_CODE,
+        hp.SAFE_ADDRESS_CODE,
+        hp.INSURANCE_DISTINGUISH,
+        hp.IDCARD_EXPIRE_DATE,
+        hp.LONG_TERM,
+        hp.REMARK,
+        hp.GROUP_RESIDENCE,
+        hp.INSURANCE_XZ,
+        hp.DOCUMENT_TYPE,
+        hp.RELIGION,
+        hp.ORIGIN,
+        hp.IDCARD_START_DATE,
+        hp.BECOME_REGULAR_EVALUATE,
+        hp.POLITICAL_OUTLOOK,
+        hp.ISSUING_AUTHORITY,
+        hp.CV_UPDATE_STATUS,
+        hp.ARMY_OR_NOT,
+        hp.OBSTACLE_OR_NOT,
+        hp.GRADUATION_ACHIEVEMENT,
+        hp.AVERAGE_SCORE,
+        hp.LANGUAGE_ABILITY,
+        hp.HEIGHT,
+        hp.WEIGHT,
+        hp.PERSON_SUPPLIER_COMPANY
+    </sql>
+
+    <!-- Fragment 2: Base FROM clause -->
+    <sql id="baseFromClause">
+        FROM hr_personal_info hp
+    </sql>
+
+    <!-- Fragment 3: Base WHERE clause -->
+    <sql id="baseWhereClause">
+        WHERE 1 = 1
+    </sql>
+
+    <!-- Fragment 4: Active personal info filter -->
+    <sql id="activePersonalInfoFilter">
+        AND hp.ACTIVITY = 1
+    </sql>
+
+    <!-- Fragment 5: Employee columns -->
+    <sql id="employeeColumns">
+        he.EMPID,
+        he.LOCAL_NAME,
+        he.DEPTNO,
+        he.POSITION
+    </sql>
+
+    <!-- Fragment 6: User columns -->
+    <sql id="userColumns">
+        su.USER_NO,
+        su.USER_NAME
+    </sql>
+
+    <!-- Fragment 7: Base FROM clause with Employee JOIN -->
+    <sql id="baseFromClauseWithEmployee">
+        FROM hr_personal_info hp
+        INNER JOIN hr_employee he ON hp.PERSON_ID = he.PERSON_ID
+    </sql>
+
+    <!-- Fragment 8: Base FROM clause with Employee and User JOIN -->
+    <sql id="baseFromClauseWithEmployeeAndUser">
+        FROM hr_personal_info hp
+        INNER JOIN hr_employee he ON hp.PERSON_ID = he.PERSON_ID
+        INNER JOIN sy_user su ON he.PERSON_ID = su.PERSON_ID
+    </sql>
+
+    <!-- Fragment 9: Keyword search conditions -->
+    <sql id="keywordSearchConditions">
+        <if test="searchValue != null and searchValue != ''">
+            AND (
+                UPPER(hp.PERSON_ID) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.IDCARD_NO) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.EMAIL) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.CELLPHONE) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.HOME_PHONE) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.OFFICE_PHONE) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.COMPANY_PHONE) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.HOME_ADDRESS) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.REG_PLACE) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.EMAIL_SECOND) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hp.CONTACT_PHONE) LIKE UPPER('%' || #{searchValue} || '%')
+            )
+        </if>
+    </sql>
+
+    <!-- Fragment 10: Advanced search conditions -->
+    <sql id="advancedSearchConditions">
+        <if test="searchParams != null and !searchParams.isEmpty()">
+            <if test="searchParams.personId != null and searchParams.personId != ''">
+                AND hp.PERSON_ID LIKE '%' || #{searchParams.personId} || '%'
+            </if>
+            <if test="searchParams.idcardNo != null and searchParams.idcardNo != ''">
+                AND hp.IDCARD_NO LIKE '%' || #{searchParams.idcardNo} || '%'
+            </if>
+            <if test="searchParams.email != null and searchParams.email != ''">
+                AND hp.EMAIL LIKE '%' || #{searchParams.email} || '%'
+            </if>
+            <if test="searchParams.sexCode != null and searchParams.sexCode != ''">
+                AND hp.SEXCODE = #{searchParams.sexCode}
+            </if>
+            <if test="searchParams.maritalStatusCode != null and searchParams.maritalStatusCode != ''">
+                AND hp.MARITAL_STATUS_CODE = #{searchParams.maritalStatusCode}
+            </if>
+            <if test="searchParams.nationCode != null and searchParams.nationCode != ''">
+                AND hp.NATION_CODE = #{searchParams.nationCode}
+            </if>
+            <if test="searchParams.nationalityCode != null and searchParams.nationalityCode != ''">
+                AND hp.NATIONALITY_CODE = #{searchParams.nationalityCode}
+            </if>
+            <if test="searchParams.finalDegreeCode != null and searchParams.finalDegreeCode != ''">
+                AND hp.FINAL_DEGREE_CODE = #{searchParams.finalDegreeCode}
+            </if>
+            <if test="searchParams.activity != null and searchParams.activity != ''">
+                AND hp.ACTIVITY = #{searchParams.activity}
+            </if>
+            <if test="searchParams.dobFrom != null and searchParams.dobFrom != ''">
+                AND TRUNC(hp.DOB) &gt;= TO_DATE(#{searchParams.dobFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.dobTo != null and searchParams.dobTo != ''">
+                AND TRUNC(hp.DOB) &lt;= TO_DATE(#{searchParams.dobTo}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.weddingDateFrom != null and searchParams.weddingDateFrom != ''">
+                AND TRUNC(hp.WEDDING_DATE) &gt;= TO_DATE(#{searchParams.weddingDateFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.weddingDateTo != null and searchParams.weddingDateTo != ''">
+                AND TRUNC(hp.WEDDING_DATE) &lt;= TO_DATE(#{searchParams.weddingDateTo}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.createDateFrom != null and searchParams.createDateFrom != ''">
+                AND TRUNC(hp.CREATE_DATE) &gt;= TO_DATE(#{searchParams.createDateFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.createDateTo != null and searchParams.createDateTo != ''">
+                AND TRUNC(hp.CREATE_DATE) &lt;= TO_DATE(#{searchParams.createDateTo}, 'YYYY-MM-DD')
+            </if>
+        </if>
+    </sql>
+
+    <!-- Fragment 11: Direct parameter search conditions (for export) -->
+    <sql id="directSearchConditions">
+        <if test="personId != null and personId != ''">
+            AND hp.PERSON_ID LIKE '%' || #{personId} || '%'
+        </if>
+        <if test="idcardNo != null and idcardNo != ''">
+            AND hp.IDCARD_NO LIKE '%' || #{idcardNo} || '%'
+        </if>
+        <if test="email != null and email != ''">
+            AND hp.EMAIL LIKE '%' || #{email} || '%'
+        </if>
+        <if test="sexCode != null and sexCode != ''">
+            AND hp.SEXCODE = #{sexCode}
+        </if>
+        <if test="maritalStatusCode != null and maritalStatusCode != ''">
+            AND hp.MARITAL_STATUS_CODE = #{maritalStatusCode}
+        </if>
+        <if test="nationCode != null and nationCode != ''">
+            AND hp.NATION_CODE = #{nationCode}
+        </if>
+        <if test="nationalityCode != null and nationalityCode != ''">
+            AND hp.NATIONALITY_CODE = #{nationalityCode}
+        </if>
+        <if test="finalDegreeCode != null and finalDegreeCode != ''">
+            AND hp.FINAL_DEGREE_CODE = #{finalDegreeCode}
+        </if>
+        <if test="activity != null and activity != ''">
+            AND hp.ACTIVITY = #{activity}
+        </if>
+        <if test="dobFrom != null and dobFrom != ''">
+            AND TRUNC(hp.DOB) &gt;= TO_DATE(#{dobFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="dobTo != null and dobTo != ''">
+            AND TRUNC(hp.DOB) &lt;= TO_DATE(#{dobTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="weddingDateFrom != null and weddingDateFrom != ''">
+            AND TRUNC(hp.WEDDING_DATE) &gt;= TO_DATE(#{weddingDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="weddingDateTo != null and weddingDateTo != ''">
+            AND TRUNC(hp.WEDDING_DATE) &lt;= TO_DATE(#{weddingDateTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="createDateFrom != null and createDateFrom != ''">
+            AND TRUNC(hp.CREATE_DATE) &gt;= TO_DATE(#{createDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="createDateTo != null and createDateTo != ''">
+            AND TRUNC(hp.CREATE_DATE) &lt;= TO_DATE(#{createDateTo}, 'YYYY-MM-DD')
+        </if>
+    </sql>
+
+    <!-- Fragment 12: Dynamic ORDER BY clause -->
+    <sql id="dynamicOrderBy">
+        <choose>
+            <when test="orderColumn != null and orderColumn != ''">
+                <choose>
+                    <when test="orderColumn == 'personId'">hp.PERSON_ID</when>
+                    <when test="orderColumn == 'idcardNo'">hp.IDCARD_NO</when>
+                    <when test="orderColumn == 'email'">hp.EMAIL</when>
+                    <when test="orderColumn == 'cellphone'">hp.CELLPHONE</when>
+                    <when test="orderColumn == 'dob'">hp.DOB</when>
+                    <when test="orderColumn == 'sexCode'">hp.SEXCODE</when>
+                    <when test="orderColumn == 'maritalStatusCode'">hp.MARITAL_STATUS_CODE</when>
+                    <when test="orderColumn == 'nationCode'">hp.NATION_CODE</when>
+                    <when test="orderColumn == 'nationalityCode'">hp.NATIONALITY_CODE</when>
+                    <when test="orderColumn == 'finalDegreeCode'">hp.FINAL_DEGREE_CODE</when>
+                    <when test="orderColumn == 'activity'">hp.ACTIVITY</when>
+                    <when test="orderColumn == 'createDate'">hp.CREATE_DATE</when>
+                    <when test="orderColumn == 'updateDate'">hp.UPDATE_DATE</when>
+                    <otherwise>hp.PERSON_ID</otherwise>
+                </choose>
+                <choose>
+                    <when test="orderDir == 'asc'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>hp.PERSON_ID ASC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- ============================================ -->
+    <!-- QUERIES - Sử dụng fragments -->
+    <!-- ============================================ -->
+
+    <!-- Get all personal info -->
+    <select id="findAll" resultMap="HrPersonalInfoResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activePersonalInfoFilter"/>
+        ORDER BY hp.PERSON_ID ASC
+    </select>
+
+    <!-- Get personal info with pagination (Oracle 12c+) -->
+    <select id="getPersonalInfoWithPagination" resultMap="HrPersonalInfoResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activePersonalInfoFilter"/>
+        ORDER BY hp.PERSON_ID ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- Count total personal info -->
+    <select id="countPersonalInfo" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activePersonalInfoFilter"/>
+    </select>
+
+    <!-- Get personal info by PERSON_ID -->
+    <select id="findByPersonId" resultMap="HrPersonalInfoResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE hp.PERSON_ID = #{personId}
+        <include refid="activePersonalInfoFilter"/>
+    </select>
+
+    <!-- Get personal info by EMPID (with employee join) -->
+    <select id="findByempId" resultMap="HrPersonalInfoResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClauseWithEmployee"/>
+        <include refid="baseWhereClause"/>
+        AND he.EMPID = #{empId}
+        AND hp.ACTIVITY = 1
+        AND he.ACTIVITY = 1
+    </select>
+
+    <!-- Get personal info by USER_NO (with employee and user join) -->
+    <select id="findByUserNo" resultMap="HrPersonalInfoResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClauseWithEmployeeAndUser"/>
+        <include refid="baseWhereClause"/>
+        AND su.USER_NO = #{userNo}
+        AND hp.ACTIVITY = 1
+        AND he.ACTIVITY = 1
+        AND su.ACTIVITY = 1
+    </select>
+
+    <!-- Search personal info by keyword -->
+    <select id="searchPersonalInfo" resultMap="HrPersonalInfoResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activePersonalInfoFilter"/>
+        AND (
+            UPPER(hp.PERSON_ID) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(hp.IDCARD_NO) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(hp.EMAIL) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(hp.CELLPHONE) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(hp.HOME_ADDRESS) LIKE UPPER('%' || #{keyword} || '%')
+        )
+        ORDER BY hp.PERSON_ID ASC
+    </select>
+
+    <!-- Search personal info with multiple conditions (for export) -->
+    <select id="searchPersonalInfoWithConditions" resultMap="HrPersonalInfoResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="directSearchConditions"/>
+        ORDER BY hp.PERSON_ID ASC
+    </select>
+
+    <!-- DataTables server-side processing - Get personal info with search and sort -->
+    <select id="getPersonalInfoForDataTables" resultMap="HrPersonalInfoResultMap">
+        SELECT * FROM (
+            SELECT 
+                <include refid="baseColumns"/>,
+                ROW_NUMBER() OVER (ORDER BY <include refid="dynamicOrderBy"/>) as rn
+            <include refid="baseFromClause"/>
+            <include refid="baseWhereClause"/>
+            <include refid="keywordSearchConditions"/>
+            <include refid="advancedSearchConditions"/>
+        )
+        WHERE rn BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <!-- DataTables server-side processing - Count personal info after filtering -->
+    <select id="countPersonalInfoForDataTables" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="keywordSearchConditions"/>
+        <include refid="advancedSearchConditions"/>
+    </select>
+
+    <!-- ============================================ -->
+    <!-- INSERT, UPDATE, DELETE operations -->
+    <!-- ============================================ -->
+
+    <!-- Add new personal info -->
+    <insert id="insert" parameterType="com.ait.hrm.empinfo.model.HrPersonalInfo">
+        INSERT INTO hr_personal_info (
+            PERSON_ID, FINAL_DEGREE_CODE, SEXCODE, DOB, NATION_CODE, NATIONALITY_CODE,
+            MARITAL_STATUS_CODE, WEDDING_DATE, IDCARD_NO, HOME_ADDRESS, EMAIL,
+            REG_TYPE_CODE, REG_PLACE, OFFICE_PHONE, HOME_PHONE, CELLPHONE, PHOTO_PATH,
+            HOUSE_TP, WEDD_DATE, CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY,
+            ORDERNO, ACTIVITY, RESIDENTIAL_DISTINCTION, EXIST_SINGLE, SING_ID,
+            COMPANY_PHONE, EMAIL_SECOND, FILE_LOCATION, FILE_ENTER, FILE_OUT,
+            CREATED_IP, UPDATED_IP, CONTACT_PHONE, EXT, INTERESTED, OLD_DEPARTMENT,
+            MARRIAGE_SUPPLEMENT, CHARACTER_CODE, SAFE_TYPE_CODE, POLITICAL_STATUS,
+            CHILDREN_CODE, SAFE_ADDRESS_CODE, INSURANCE_DISTINGUISH, IDCARD_EXPIRE_DATE,
+            LONG_TERM, REMARK, GROUP_RESIDENCE, INSURANCE_XZ, DOCUMENT_TYPE, RELIGION,
+            ORIGIN, IDCARD_START_DATE, BECOME_REGULAR_EVALUATE, POLITICAL_OUTLOOK,
+            ISSUING_AUTHORITY, CV_UPDATE_STATUS, ARMY_OR_NOT, OBSTACLE_OR_NOT,
+            GRADUATION_ACHIEVEMENT, AVERAGE_SCORE, LANGUAGE_ABILITY, HEIGHT, WEIGHT,
+            PERSON_SUPPLIER_COMPANY
+        ) VALUES (
+            #{personId}, #{finalDegreeCode}, #{sexCode}, #{dob}, #{nationCode}, #{nationalityCode},
+            #{maritalStatusCode}, #{weddingDate}, #{idcardNo}, #{homeAddress}, #{email},
+            #{regTypeCode}, #{regPlace}, #{officePhone}, #{homePhone}, #{cellphone}, #{photoPath},
+            #{houseTp}, #{weddDate}, #{createDate}, #{adminID, jdbcType=VARCHAR}, #{updateDate}, #{adminID, jdbcType=VARCHAR},
+            #{orderNo}, #{activity}, #{residentialDistinction}, #{existSingle}, #{singId},
+            #{companyPhone}, #{emailSecond}, #{fileLocation}, #{fileEnter}, #{fileOut},
+            #{createdIp}, #{updatedIp}, #{contactPhone}, #{ext}, #{interested}, #{oldDepartment},
+            #{marriageSupplement}, #{characterCode}, #{safeTypeCode}, #{politicalStatus},
+            #{childrenCode}, #{safeAddressCode}, #{insuranceDistinguish}, #{idcardExpireDate},
+            #{longTerm}, #{remark}, #{groupResidence}, #{insuranceXz}, #{documentType}, #{religion},
+            #{origin}, #{idcardStartDate}, #{becomeRegularEvaluate}, #{politicalOutlook},
+            #{issuingAuthority}, #{cvUpdateStatus}, #{armyOrNot}, #{obstacleOrNot},
+            #{graduationAchievement}, #{averageScore}, #{languageAbility}, #{height}, #{weight},
+            #{personSupplierCompany}
+        )
+    </insert>
+
+    <!-- Update personal info - Dynamic UPDATE (chỉ update field có giá trị) -->
+    <update id="update">
+        UPDATE hr_personal_info 
+        <set>
+            <if test="finalDegreeCode != null">
+                FINAL_DEGREE_CODE = #{finalDegreeCode},
+            </if>
+            <if test="sexCode != null">
+                SEXCODE = #{sexCode},
+            </if>
+            <if test="dob != null">
+                DOB = #{dob},
+            </if>
+            <if test="nationCode != null">
+                NATION_CODE = #{nationCode},
+            </if>
+            <if test="nationalityCode != null">
+                NATIONALITY_CODE = #{nationalityCode},
+            </if>
+            <if test="maritalStatusCode != null">
+                MARITAL_STATUS_CODE = #{maritalStatusCode},
+            </if>
+            <if test="weddingDate != null">
+                WEDDING_DATE = #{weddingDate},
+            </if>
+            <if test="idcardNo != null">
+                IDCARD_NO = #{idcardNo},
+            </if>
+            <if test="homeAddress != null">
+                HOME_ADDRESS = #{homeAddress},
+            </if>
+            <if test="email != null">
+                EMAIL = #{email},
+            </if>
+            <if test="regTypeCode != null">
+                REG_TYPE_CODE = #{regTypeCode},
+            </if>
+            <if test="regPlace != null">
+                REG_PLACE = #{regPlace},
+            </if>
+            <if test="officePhone != null">
+                OFFICE_PHONE = #{officePhone},
+            </if>
+            <if test="homePhone != null">
+                HOME_PHONE = #{homePhone},
+            </if>
+            <if test="cellphone != null">
+                CELLPHONE = #{cellphone},
+            </if>
+            <if test="photoPath != null">
+                PHOTO_PATH = #{photoPath},
+            </if>
+            <if test="houseTp != null">
+                HOUSE_TP = #{houseTp},
+            </if>
+            <if test="weddDate != null">
+                WEDD_DATE = #{weddDate},
+            </if>
+            <if test="residentialDistinction != null">
+                RESIDENTIAL_DISTINCTION = #{residentialDistinction},
+            </if>
+            <if test="existSingle != null">
+                EXIST_SINGLE = #{existSingle},
+            </if>
+            <if test="singId != null">
+                SING_ID = #{singId},
+            </if>
+            <if test="companyPhone != null">
+                COMPANY_PHONE = #{companyPhone},
+            </if>
+            <if test="emailSecond != null">
+                EMAIL_SECOND = #{emailSecond},
+            </if>
+            <if test="fileLocation != null">
+                FILE_LOCATION = #{fileLocation},
+            </if>
+            <if test="fileEnter != null">
+                FILE_ENTER = #{fileEnter},
+            </if>
+            <if test="fileOut != null">
+                FILE_OUT = #{fileOut},
+            </if>
+            <if test="contactPhone != null">
+                CONTACT_PHONE = #{contactPhone},
+            </if>
+            <if test="ext != null">
+                EXT = #{ext},
+            </if>
+            <if test="interested != null">
+                INTERESTED = #{interested},
+            </if>
+            <if test="oldDepartment != null">
+                OLD_DEPARTMENT = #{oldDepartment},
+            </if>
+            <if test="marriageSupplement != null">
+                MARRIAGE_SUPPLEMENT = #{marriageSupplement},
+            </if>
+            <if test="characterCode != null">
+                CHARACTER_CODE = #{characterCode},
+            </if>
+            <if test="safeTypeCode != null">
+                SAFE_TYPE_CODE = #{safeTypeCode},
+            </if>
+            <if test="politicalStatus != null">
+                POLITICAL_STATUS = #{politicalStatus},
+            </if>
+            <if test="childrenCode != null">
+                CHILDREN_CODE = #{childrenCode},
+            </if>
+            <if test="safeAddressCode != null">
+                SAFE_ADDRESS_CODE = #{safeAddressCode},
+            </if>
+            <if test="insuranceDistinguish != null">
+                INSURANCE_DISTINGUISH = #{insuranceDistinguish},
+            </if>
+            <if test="idcardExpireDate != null">
+                IDCARD_EXPIRE_DATE = #{idcardExpireDate},
+            </if>
+            <if test="longTerm != null">
+                LONG_TERM = #{longTerm},
+            </if>
+            <if test="remark != null">
+                REMARK = #{remark},
+            </if>
+            <if test="groupResidence != null">
+                GROUP_RESIDENCE = #{groupResidence},
+            </if>
+            <if test="insuranceXz != null">
+                INSURANCE_XZ = #{insuranceXz},
+            </if>
+            <if test="documentType != null">
+                DOCUMENT_TYPE = #{documentType},
+            </if>
+            <if test="religion != null">
+                RELIGION = #{religion},
+            </if>
+            <if test="origin != null">
+                ORIGIN = #{origin},
+            </if>
+            <if test="idcardStartDate != null">
+                IDCARD_START_DATE = #{idcardStartDate},
+            </if>
+            <if test="becomeRegularEvaluate != null">
+                BECOME_REGULAR_EVALUATE = #{becomeRegularEvaluate},
+            </if>
+            <if test="politicalOutlook != null">
+                POLITICAL_OUTLOOK = #{politicalOutlook},
+            </if>
+            <if test="issuingAuthority != null">
+                ISSUING_AUTHORITY = #{issuingAuthority},
+            </if>
+            <if test="cvUpdateStatus != null">
+                CV_UPDATE_STATUS = #{cvUpdateStatus},
+            </if>
+            <if test="armyOrNot != null">
+                ARMY_OR_NOT = #{armyOrNot},
+            </if>
+            <if test="obstacleOrNot != null">
+                OBSTACLE_OR_NOT = #{obstacleOrNot},
+            </if>
+            <if test="graduationAchievement != null">
+                GRADUATION_ACHIEVEMENT = #{graduationAchievement},
+            </if>
+            <if test="averageScore != null">
+                AVERAGE_SCORE = #{averageScore},
+            </if>
+            <if test="languageAbility != null">
+                LANGUAGE_ABILITY = #{languageAbility},
+            </if>
+            <if test="height != null">
+                HEIGHT = #{height},
+            </if>
+            <if test="weight != null">
+                WEIGHT = #{weight},
+            </if>
+            <if test="personSupplierCompany != null">
+                PERSON_SUPPLIER_COMPANY = #{personSupplierCompany},
+            </if>
+            <if test="activity != null">
+                ACTIVITY = #{activity},
+            </if>
+            <!-- Audit fields - luôn update -->
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        </set>
+        WHERE PERSON_ID = #{personId}
+    </update>
+
+    <!-- Delete personal info -->
+    <delete id="deleteByPersonId">
+        DELETE FROM hr_personal_info 
+        WHERE PERSON_ID = #{personId}
+    </delete>
+
+    <!-- ============================================ -->
+    <!-- UTILITY QUERIES -->
+    <!-- ============================================ -->
+
+    <!-- Check if personal info exists and is active by PERSON_ID -->
+    <select id="existsAndActiveByPersonId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_personal_info 
+        WHERE PERSON_ID = #{personId}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Check if personal info exists by PERSON_ID -->
+    <select id="existsByPersonId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_personal_info 
+        WHERE PERSON_ID = #{personId}
+    </select>
+
+    <!-- Check if ID card number exists -->
+    <select id="existsByIdcardNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_personal_info 
+        WHERE IDCARD_NO = #{idcardNo}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Check if email exists -->
+    <select id="existsByEmail" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_personal_info 
+        WHERE EMAIL = #{email}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Get distinct sex codes -->
+    <select id="getDistinctSexCodes" resultType="String">
+        SELECT DISTINCT SEXCODE 
+        FROM hr_personal_info 
+        WHERE ACTIVITY = 1 AND SEXCODE IS NOT NULL
+        ORDER BY SEXCODE
+    </select>
+
+    <!-- Get distinct marital status codes -->
+    <select id="getDistinctMaritalStatusCodes" resultType="String">
+        SELECT DISTINCT MARITAL_STATUS_CODE 
+        FROM hr_personal_info 
+        WHERE ACTIVITY = 1 AND MARITAL_STATUS_CODE IS NOT NULL
+        ORDER BY MARITAL_STATUS_CODE
+    </select>
+
+    <!-- Get distinct nation codes -->
+    <select id="getDistinctNationCodes" resultType="String">
+        SELECT DISTINCT NATION_CODE 
+        FROM hr_personal_info 
+        WHERE ACTIVITY = 1 AND NATION_CODE IS NOT NULL
+        ORDER BY NATION_CODE
+    </select>
+
+    <!-- Get distinct nationality codes -->
+    <select id="getDistinctNationalityCodes" resultType="String">
+        SELECT DISTINCT NATIONALITY_CODE 
+        FROM hr_personal_info 
+        WHERE ACTIVITY = 1 AND NATIONALITY_CODE IS NOT NULL
+        ORDER BY NATIONALITY_CODE
+    </select>
+
+    <!-- Get distinct final degree codes -->
+    <select id="getDistinctFinalDegreeCodes" resultType="String">
+        SELECT DISTINCT FINAL_DEGREE_CODE 
+        FROM hr_personal_info 
+        WHERE ACTIVITY = 1 AND FINAL_DEGREE_CODE IS NOT NULL
+        ORDER BY FINAL_DEGREE_CODE
+    </select>
+
+    <!-- Get personal info statistics -->
+    <select id="getPersonalInfoStats" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as totalRecords,
+            SUM(CASE WHEN ACTIVITY = 1 THEN 1 ELSE 0 END) as activeRecords,
+            SUM(CASE WHEN SEXCODE = 'M' THEN 1 ELSE 0 END) as maleCount,
+            SUM(CASE WHEN SEXCODE = 'F' THEN 1 ELSE 0 END) as femaleCount,
+            SUM(CASE WHEN MARITAL_STATUS_CODE = 'S' THEN 1 ELSE 0 END) as singleCount,
+            SUM(CASE WHEN MARITAL_STATUS_CODE = 'M' THEN 1 ELSE 0 END) as marriedCount
+        FROM hr_personal_info
+    </select>
+
+</mapper>

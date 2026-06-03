@@ -1,0 +1,336 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- ===== Thông tin cơ bản ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white py-2">
+                    <strong><i class="bx bx-briefcase me-1"></i><span th:text="#{epi.section.workInfo}">Thông tin Công việc</span></strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.fullName}">Họ tên</th>
+                                <td id="wi_localName"></td>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.empId}">Mã nhân viên</th>
+                                <td id="wi_empId"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{epi.field.department}">Phòng ban</th>
+                                <td id="wi_deptName"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.position}">Chức vụ</th>
+                                <td id="wi_dutyName"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Quyết định nhân sự ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2">
+                    <strong><i class="bx bx-transfer me-1"></i><span th:text="#{epi.section.hrDecision}">Quyết định nhân sự</span></strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:140px;" th:text="#{epi.field.period}">Thời gian</th>
+                                <th th:text="#{epi.field.decision}">Quyết định</th>
+                                <th th:text="#{epi.field.reason}">Lý do</th>
+                                <th th:text="#{epi.field.department}">Phòng ban</th>
+                                <th th:text="#{epi.field.work}">Công việc</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wi_insideBody">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Kinh nghiệm ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bx bx-buildings me-1"></i><span th:text="#{epi.section.workExp}">Kinh nghiệm</span></strong>
+                    <button type="button" class="btn btn-sm btn-success" onclick="openWorkExpModal(null)">
+                        <i class="bx bx-plus me-1"></i><span th:text="#{epi.btn.addNew}">Thêm mới</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{epi.field.cpnyName}">Tên công ty</th>
+                                <th style="width:120px;" th:text="#{epi.field.startDate}">Ngày vào làm</th>
+                                <th style="width:120px;" th:text="#{epi.field.endDate}">Ngày thôi việc</th>
+                                <th th:text="#{epi.field.reason}">Lý do</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wi_workExpBody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== Modal: Thêm/Sửa Kinh nghiệm ===== -->
+    <div class="modal fade" id="modalWorkExp" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalWorkExpTitle">
+                        <i class="bx bx-buildings me-1"></i><span th:text="#{epi.modal.workExp}">Kinh nghiệm làm việc</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="we_workExpNo">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold"><span th:text="#{epi.field.cpnyName}">Tên công ty</span> <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="we_cpnyName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.department}">Tên bộ phận</label>
+                            <input type="text" class="form-control form-control-sm" id="we_deptName">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.startMonth}">Ngày vào làm (MM/YYYY)</label>
+                            <input type="text" class="form-control form-control-sm" id="we_startMonth"
+                                th:placeholder="#{epi.field.startMonth}" placeholder="VD: 01/2020">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.endMonth}">Ngày thôi việc (MM/YYYY)</label>
+                            <input type="text" class="form-control form-control-sm" id="we_endMonth"
+                                th:placeholder="#{epi.field.endMonth}" placeholder="VD: 12/2022">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.position}">Chức vụ</label>
+                            <input type="text" class="form-control form-control-sm" id="we_position">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.resignReason}">Lý do nghỉ việc</label>
+                            <input type="text" class="form-control form-control-sm" id="we_resignReason">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.witness}">Người làm chứng</label>
+                            <input type="text" class="form-control form-control-sm" id="we_witness">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
+                            <textarea class="form-control form-control-sm" id="we_remark" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-end">
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm me-1"
+                            data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveWorkExp()">
+                            <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        (function () {
+            var i18n = {
+                noData:            /*[[#{epi.msg.noData}]]*/ 'Không có dữ liệu',
+                loading:           /*[[#{common.loading}]]*/ 'Đang tải...',
+                loadErrWorkInfo:   /*[[#{epi.msg.loadError.workInfo}]]*/ 'Lỗi tải dữ liệu công việc',
+                loadErrWorkExp:    /*[[#{epi.msg.loadError.workExp}]]*/ 'Lỗi tải dữ liệu kinh nghiệm',
+                validateCpnyName:  /*[[#{epi.msg.validate.cpnyName}]]*/ 'Vui lòng nhập Tên công ty!',
+                saveSuccess:       /*[[#{epi.msg.saveSuccess}]]*/ 'Cập nhật thành công!',
+                addSuccess:        /*[[#{epi.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+                systemError:       /*[[#{epi.msg.systemError}]]*/ 'Lỗi hệ thống',
+                titleAddWorkExp:   /*[[#{epi.modal.addWorkExp}]]*/ 'Thêm mới kinh nghiệm',
+                titleEditWorkExp:  /*[[#{epi.modal.editWorkExp}]]*/ 'Cập nhật kinh nghiệm'
+            };
+
+            var currentWorkExpList = [];
+
+            function setText(id, val) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = val || '';
+            }
+
+            function showToast(msg, type) {
+                var container = document.getElementById('wi_toast_container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'wi_toast_container';
+                    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;min-width:250px;';
+                    document.body.appendChild(container);
+                }
+                var toast = document.createElement('div');
+                toast.className = 'alert alert-' + (type || 'info') + ' alert-dismissible fade show shadow-sm py-2';
+                toast.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                container.appendChild(toast);
+                setTimeout(function () { if (toast.parentNode) toast.remove(); }, 3500);
+            }
+
+            // ===== Thông tin cơ bản =====
+            function loadBasicInfo() {
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/myInfo',
+                    type: 'GET',
+                    success: function (data) {
+                        if (!data) return;
+                        setText('wi_localName', data.localName);
+                        setText('wi_empId', data.empId);
+                        setText('wi_deptName', data.deptName);
+                        setText('wi_dutyName', data.dutyName);
+                    }
+                });
+            }
+
+            // ===== Quyết định nhân sự =====
+            function loadInsideExperience() {
+                $.ajax({
+                    url: '/ess/empinfo/api/workInfo/myInsideExperience',
+                    type: 'GET',
+                    success: function (list) {
+                        var tbody = document.getElementById('wi_insideBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">' + i18n.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item) {
+                            html += '<tr>' +
+                                '<td>' + (item.startDate || '') + '</td>' +
+                                '<td>' + (item.transCode || '') + '</td>' +
+                                '<td></td>' +
+                                '<td>' + (item.deptName || '') + '</td>' +
+                                '<td>' + (item.mainBusiness || item.postGrade || '') + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('wi_insideBody').innerHTML =
+                            '<tr><td colspan="5" class="text-center text-danger">' + i18n.loadErrWorkInfo + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Kinh nghiệm =====
+            function loadWorkExperience() {
+                $.ajax({
+                    url: '/ess/empinfo/api/workInfo/myWorkExperience',
+                    type: 'GET',
+                    success: function (list) {
+                        currentWorkExpList = list || [];
+                        var tbody = document.getElementById('wi_workExpBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">' + i18n.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item, i) {
+                            html += '<tr style="cursor:pointer;" onclick="openWorkExpModal(' + i + ')">' +
+                                '<td><a href="javascript:void(0)" class="text-primary">' + (item.cpnyName || '') + '</a></td>' +
+                                '<td>' + (item.startMonth || item.startDate || '') + '</td>' +
+                                '<td>' + (item.endMonth || item.endDate || '') + '</td>' +
+                                '<td>' + (item.resignReason || '') + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('wi_workExpBody').innerHTML =
+                            '<tr><td colspan="4" class="text-center text-danger">' + i18n.loadErrWorkExp + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Modal: Kinh nghiệm =====
+            window.openWorkExpModal = function (indexOrNull) {
+                var isNew = indexOrNull === null;
+                document.getElementById('modalWorkExpTitle').innerHTML =
+                    '<i class="bx bx-buildings me-1"></i>' + (isNew ? i18n.titleAddWorkExp : i18n.titleEditWorkExp);
+
+                if (isNew) {
+                    document.getElementById('we_workExpNo').value = '';
+                    document.getElementById('we_cpnyName').value = '';
+                    document.getElementById('we_deptName').value = '';
+                    document.getElementById('we_startMonth').value = '';
+                    document.getElementById('we_endMonth').value = '';
+                    document.getElementById('we_position').value = '';
+                    document.getElementById('we_resignReason').value = '';
+                    document.getElementById('we_witness').value = '';
+                    document.getElementById('we_remark').value = '';
+                } else {
+                    var item = currentWorkExpList[indexOrNull];
+                    document.getElementById('we_workExpNo').value = item.workExpNo || '';
+                    document.getElementById('we_cpnyName').value = item.cpnyName || '';
+                    document.getElementById('we_deptName').value = item.deptName || '';
+                    document.getElementById('we_startMonth').value = item.startMonth || item.startDate || '';
+                    document.getElementById('we_endMonth').value = item.endMonth || item.endDate || '';
+                    document.getElementById('we_position').value = item.position || '';
+                    document.getElementById('we_resignReason').value = item.resignReason || '';
+                    document.getElementById('we_witness').value = item.witness || '';
+                    document.getElementById('we_remark').value = item.remark || '';
+                }
+
+                new bootstrap.Modal(document.getElementById('modalWorkExp')).show();
+            };
+
+            window.saveWorkExp = function () {
+                var cpnyName = document.getElementById('we_cpnyName').value;
+                if (!cpnyName) {
+                    showToast(i18n.validateCpnyName, 'danger');
+                    return;
+                }
+                var workExpNo = document.getElementById('we_workExpNo').value;
+                var payload = {
+                    workExpNo: workExpNo ? parseInt(workExpNo) : null,
+                    cpnyName: cpnyName,
+                    deptName: document.getElementById('we_deptName').value || null,
+                    startMonth: document.getElementById('we_startMonth').value || null,
+                    endMonth: document.getElementById('we_endMonth').value || null,
+                    position: document.getElementById('we_position').value || null,
+                    resignReason: document.getElementById('we_resignReason').value || null,
+                    witness: document.getElementById('we_witness').value || null,
+                    remark: document.getElementById('we_remark').value || null
+                };
+                $.ajax({
+                    url: '/ess/empinfo/api/workInfo/saveWorkExperience',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        bootstrap.Modal.getInstance(document.getElementById('modalWorkExp')).hide();
+                        showToast(workExpNo ? i18n.saveSuccess : i18n.addSuccess, 'success');
+                        loadWorkExperience();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.systemError;
+                        showToast(msg, 'danger');
+                    }
+                });
+            };
+
+            $(document).ready(function () {
+                loadBasicInfo();
+                loadInsideExperience();
+                loadWorkExperience();
+            });
+        })();
+    </script>
+</template>

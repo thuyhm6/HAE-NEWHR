@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsResumeMapper">
+
+    <resultMap id="EvsResumeResultMap" type="com.ait.evs.manage.dto.EvsResumeDto">
+        <id     column="SEQ"             property="seq"            jdbcType="VARCHAR" />
+        <result column="EVS_TYPE"        property="evsType"        jdbcType="VARCHAR" />
+        <result column="RESUME_NAME"     property="resumeName"     jdbcType="VARCHAR" />
+        <result column="REMARK"          property="remark"         jdbcType="VARCHAR" />
+        <result column="EVS_CYCLE"       property="evsCycle"       jdbcType="VARCHAR" />
+        <result column="EVS_CYCLE_NAME"  property="evsCycleName"   jdbcType="VARCHAR" />
+        <result column="EVS_YEAR"        property="evsYear"        jdbcType="VARCHAR" />
+        <result column="EVS_MONTH"       property="evsMonth"       jdbcType="VARCHAR" />
+        <result column="EVS_MONTH_NAME"  property="evsMonthName"   jdbcType="VARCHAR" />
+        <result column="STANDARD_DATE"   property="standardDate"   jdbcType="VARCHAR" />
+        <result column="EVS_START_DATE"  property="evsStartDate"   jdbcType="VARCHAR" />
+        <result column="EVS_END_DATE"    property="evsEndDate"     jdbcType="VARCHAR" />
+        <result column="ACTIVITY"        property="activity"       jdbcType="VARCHAR" />
+        <result column="ACTIVITY_NAME"   property="activityName"   jdbcType="VARCHAR" />
+        <result column="EVS_LEVEL"       property="evsLevel"       jdbcType="VARCHAR" />
+        <result column="EVS_LEVEL_NAME"  property="evsLevelName"   jdbcType="VARCHAR" />
+        <result column="COPY_OBJECT"     property="copyObject"     jdbcType="VARCHAR" />
+        <result column="COPY_OBJECT_NAME" property="copyObjectName" jdbcType="VARCHAR" />
+        <result column="TARGET_LEVEL"    property="targetLevel"    jdbcType="VARCHAR" />
+        <result column="ORDER_NO"        property="orderNo"        jdbcType="VARCHAR" />
+        <result column="CREATE_DATE"     property="createDate"     jdbcType="VARCHAR" />
+        <result column="CREATED_BY"      property="createdBy"      jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"     property="updateDate"     jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"      property="updatedBy"      jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="EvsResumeCopyResultMap" type="com.ait.evs.manage.dto.EvsResumeDto">
+        <id     column="SEQ"         property="seq"        jdbcType="VARCHAR" />
+        <result column="RESUME_NAME" property="resumeName" jdbcType="VARCHAR" />
+        <result column="EVS_YEAR"    property="evsYear"    jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Danh sách đánh giá (loại bỏ bản ghi đã xóa ACTIVITY=0) -->
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsResumeDto"
+            resultMap="EvsResumeResultMap">
+        SELECT R.SEQ,
+               R.EVS_TYPE,
+               R.RESUME_NAME,
+               R.REMARK,
+               R.EVS_CYCLE,
+               GET_GLOBAL_NAME(R.EVS_CYCLE, #{lang, jdbcType=VARCHAR})  AS EVS_CYCLE_NAME,
+               R.EVS_YEAR,
+               R.EVS_MONTH,
+               GET_GLOBAL_NAME(R.EVS_MONTH, #{lang, jdbcType=VARCHAR})  AS EVS_MONTH_NAME,
+               TO_CHAR(R.STANDARD_DATE, 'DD/MM/YYYY')                  AS STANDARD_DATE,
+               R.EVS_START_DATE,
+               R.EVS_END_DATE,
+               R.ACTIVITY,
+               CASE R.ACTIVITY
+                   WHEN '2' THEN 'Chuẩn bị'
+                   WHEN '3' THEN 'Tiến hành'
+                   WHEN '4' THEN 'Hoàn thành'
+                   WHEN '1' THEN 'Hoàn thành'
+                   ELSE R.ACTIVITY
+               END                                                       AS ACTIVITY_NAME,
+               R.EVS_LEVEL,
+               GET_GLOBAL_NAME(R.EVS_LEVEL, #{lang, jdbcType=VARCHAR})  AS EVS_LEVEL_NAME,
+               R.COPY_OBJECT,
+               R.TARGET_LEVEL,
+               TO_CHAR(R.ORDER_NO)                                       AS ORDER_NO,
+               TO_CHAR(R.CREATE_DATE, 'DD/MM/YYYY HH24:MI')             AS CREATE_DATE,
+               R.CREATED_BY,
+               TO_CHAR(R.UPDATE_DATE, 'DD/MM/YYYY HH24:MI')             AS UPDATE_DATE,
+               R.UPDATED_BY
+        FROM EVS_RESUME_INFO R
+        WHERE R.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+          AND R.ACTIVITY != '0'
+        <if test="yearSearch != null and yearSearch != ''">
+            AND R.EVS_YEAR = #{yearSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="evsType != null and evsType != ''">
+            AND R.EVS_TYPE = #{evsType, jdbcType=VARCHAR}
+        </if>
+        <if test="cycleSearch != null and cycleSearch != ''">
+            AND R.EVS_CYCLE = #{cycleSearch, jdbcType=VARCHAR}
+        </if>
+        ORDER BY R.ORDER_NO, R.EVS_YEAR DESC, R.STANDARD_DATE DESC
+    </select>
+
+    <!-- Chi tiết 1 bản ghi -->
+    <select id="selectOne" resultMap="EvsResumeResultMap">
+        SELECT R.SEQ,
+               R.EVS_TYPE,
+               R.RESUME_NAME,
+               R.REMARK,
+               R.EVS_CYCLE,
+               GET_GLOBAL_NAME(R.EVS_CYCLE, #{lang, jdbcType=VARCHAR})  AS EVS_CYCLE_NAME,
+               R.EVS_YEAR,
+               R.EVS_MONTH,
+               GET_GLOBAL_NAME(R.EVS_MONTH, #{lang, jdbcType=VARCHAR})  AS EVS_MONTH_NAME,
+               TO_CHAR(R.STANDARD_DATE, 'DD/MM/YYYY')                  AS STANDARD_DATE,
+               R.EVS_START_DATE,
+               R.EVS_END_DATE,
+               R.ACTIVITY,
+               CASE R.ACTIVITY
+                   WHEN '2' THEN 'Chuẩn bị'
+                   WHEN '3' THEN 'Tiến hành'
+                   WHEN '4' THEN 'Hoàn thành'
+                   WHEN '1' THEN 'Hoàn thành'
+                   ELSE R.ACTIVITY
+               END                                                       AS ACTIVITY_NAME,
+               R.EVS_LEVEL,
+               GET_GLOBAL_NAME(R.EVS_LEVEL, #{lang, jdbcType=VARCHAR})  AS EVS_LEVEL_NAME,
+               R.COPY_OBJECT,
+               R.TARGET_LEVEL,
+               TO_CHAR(R.ORDER_NO)                                       AS ORDER_NO,
+               TO_CHAR(R.CREATE_DATE, 'DD/MM/YYYY HH24:MI')             AS CREATE_DATE,
+               R.CREATED_BY,
+               TO_CHAR(R.UPDATE_DATE, 'DD/MM/YYYY HH24:MI')             AS UPDATE_DATE,
+               R.UPDATED_BY
+        FROM EVS_RESUME_INFO R
+        WHERE R.SEQ = #{seq, jdbcType=VARCHAR}
+    </select>
+
+    <!-- Lấy SEQ mới từ sequence -->
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_RESUME_INFO_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <!-- Thêm mới (ACTIVITY=2: Chuẩn bị) -->
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsResumeDto">
+        INSERT INTO EVS_RESUME_INFO (
+            SEQ, EVS_TYPE, RESUME_NAME, REMARK, EVS_CYCLE, EVS_YEAR, EVS_MONTH,
+            STANDARD_DATE, EVS_START_DATE, EVS_END_DATE,
+            ACTIVITY, EVS_LEVEL, COPY_OBJECT, TARGET_LEVEL, ORDER_NO,
+            CPNY_ID, CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,          jdbcType=VARCHAR},
+            #{evsType,      jdbcType=VARCHAR},
+            #{resumeName,   jdbcType=VARCHAR},
+            #{remark,       jdbcType=VARCHAR},
+            #{evsCycle,     jdbcType=VARCHAR},
+            #{evsYear,      jdbcType=VARCHAR},
+            #{evsMonth,     jdbcType=VARCHAR},
+            <choose>
+                <when test="standardDate != null and standardDate != ''">
+                    TO_DATE(#{standardDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            #{evsStartDate, jdbcType=VARCHAR},
+            #{evsEndDate,   jdbcType=VARCHAR},
+            '2',
+            #{evsLevel,     jdbcType=VARCHAR},
+            #{copyObject,   jdbcType=VARCHAR},
+            #{targetLevel,  jdbcType=VARCHAR},
+            <choose>
+                <when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR},</when>
+                <otherwise>200,</otherwise>
+            </choose>
+            #{cpnyId,   jdbcType=VARCHAR},
+            #{adminID,  jdbcType=VARCHAR},
+            #{adminIP,  jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- Cập nhật -->
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsResumeDto">
+        UPDATE EVS_RESUME_INFO
+        SET RESUME_NAME    = #{resumeName,   jdbcType=VARCHAR},
+            REMARK         = #{remark,       jdbcType=VARCHAR},
+            EVS_CYCLE      = #{evsCycle,     jdbcType=VARCHAR},
+            EVS_YEAR       = #{evsYear,      jdbcType=VARCHAR},
+            EVS_MONTH      = #{evsMonth,     jdbcType=VARCHAR},
+            STANDARD_DATE  = <choose>
+                                 <when test="standardDate != null and standardDate != ''">
+                                     TO_DATE(#{standardDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+                                 </when>
+                                 <otherwise>NULL</otherwise>
+                             </choose>,
+            EVS_START_DATE = #{evsStartDate, jdbcType=VARCHAR},
+            EVS_END_DATE   = #{evsEndDate,   jdbcType=VARCHAR},
+            EVS_LEVEL      = #{evsLevel,     jdbcType=VARCHAR},
+            COPY_OBJECT    = #{copyObject,   jdbcType=VARCHAR},
+            TARGET_LEVEL   = #{targetLevel,  jdbcType=VARCHAR},
+            ORDER_NO       = <choose>
+                                 <when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR}</when>
+                                 <otherwise>ORDER_NO</otherwise>
+                             </choose>,
+            UPDATED_BY     = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP     = #{adminIP,  jdbcType=VARCHAR},
+            UPDATE_DATE    = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Xóa mềm (ACTIVITY=0) -->
+    <update id="delete">
+        UPDATE EVS_RESUME_INFO
+        SET ACTIVITY    = '0',
+            UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Sao chép cấu hình đánh giá từ đối tượng gốc sang SEQ mới -->
+    <update id="callInitEvsParam" statementType="CALLABLE">
+        {call PKG_EVS_PROCESS.PR_INIT_EVS_PARAM(
+            #{seq,     mode=IN,  jdbcType=VARCHAR},
+            #{adminID, mode=IN,  jdbcType=VARCHAR},
+            #{adminIP, mode=IN,  jdbcType=VARCHAR},
+            #{cpnyId,  mode=IN,  jdbcType=VARCHAR},
+            #{message, mode=OUT, jdbcType=VARCHAR}
+        )}
+    </update>
+
+    <!-- Danh sách để chọn sao chép đối tượng -->
+    <select id="selectEvsResumeList" resultMap="EvsResumeCopyResultMap">
+        SELECT SEQ, RESUME_NAME, EVS_YEAR
+        FROM EVS_RESUME_INFO
+        WHERE CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+          AND EVS_TYPE = #{evsType, jdbcType=VARCHAR}
+          AND ACTIVITY != '0'
+          <if test="evsLevel != null and evsLevel != ''">
+            AND PKG_EVS_PROCESS.GET_EVS_LIMIT(#{adminID, jdbcType=VARCHAR}, SEQ, #{evsLevel, jdbcType=VARCHAR}) != 0
+          </if>
+        ORDER BY EVS_YEAR DESC, STANDARD_DATE DESC
+    </select>
+
+</mapper>

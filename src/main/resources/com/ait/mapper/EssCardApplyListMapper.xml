@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.infoApplyLeave.mapper.EssCardApplyListMapper">
+
+    <resultMap id="EssCardApplyListResultMap" type="com.ait.ess.infoApplyLeave.dto.EssCardApplyListDto">
+        <id  property="applyNo"         column="APPLY_NO" />
+        <result property="personId"      column="PERSON_ID" />
+        <result property="arDateStr"     column="AR_DATE_STR" />
+        <result property="itemNo"        column="ITEM_NO" />
+        <result property="itemName"      column="ITEM_NAME" />
+        <result property="indoorTime"    column="INDOOR_TIME" />
+        <result property="outdoorTime"   column="OUTDOOR_TIME" />
+        <result property="fromTime"      column="FROM_TIME" />
+        <result property="toTime"        column="TO_TIME" />
+        <result property="shiftName"     column="SHIFT_NAME" />
+        <result property="workTime"      column="WORK_TIME" />
+        <result property="applyReason"   column="APPLY_REASON" />
+        <result property="affirmFlag"    column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="hrComment"     column="HR_COMMENT" />
+        <result property="workHour"      column="WORK_HOUR" />
+    </resultMap>
+
+    <select id="selectMyCardApplyList" resultMap="EssCardApplyListResultMap">
+        SELECT
+            TO_CHAR(EC.APPLY_NO) AS APPLY_NO,
+            EC.PERSON_ID,
+            TO_CHAR(TO_DATE(EC.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY') AS AR_DATE_STR,
+            EC.ITEM_NO,
+            GET_GLOBAL_NAME(EC.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+            GET_AR_MAC_TIME(EC.PERSON_ID, EC.AR_DATE_STR, 'IN')  AS INDOOR_TIME,
+            GET_AR_MAC_TIME(EC.PERSON_ID, EC.AR_DATE_STR, 'OUT') AS OUTDOOR_TIME,
+            TO_CHAR(EC.FROM_TIME, 'DD/MM/YYYY HH24:MI') AS FROM_TIME,
+            TO_CHAR(EC.TO_TIME,   'DD/MM/YYYY HH24:MI') AS TO_TIME,
+            GET_GLOBAL_NAME(
+                GET_AR_SHIFTNO(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}),
+                #{lang, jdbcType=VARCHAR}
+            ) AS SHIFT_NAME,
+            NVL(TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'DD/MM/YYYY HH24:MI'), '')
+            || '~' ||
+            NVL(TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'DD/MM/YYYY HH24:MI'), '')
+            AS WORK_TIME,
+            EC.APPLY_REASON,
+            EC.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(EC.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            EC.HR_COMMENT,
+            TO_CHAR(EC.WORK_HOUR) AS WORK_HOUR
+        FROM ESS_CARD_APPLY_TB EC
+        WHERE EC.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND EC.ITEM_NO IN ('141443', '141441', '141442', '14015448')
+          AND EC.ACTIVITY = 1
+        <if test="affirmFlagSearch != null and affirmFlagSearch != ''">
+            AND EC.AFFIRM_FLAG = #{affirmFlagSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND EC.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND EC.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        ORDER BY EC.AR_DATE_STR DESC, EC.CREATE_DATE DESC, EC.APPLY_NO DESC
+    </select>
+
+    <select id="countLockedByArDetail" resultType="int">
+        SELECT COUNT(1)
+        FROM AR_DETAIL_HTSV D
+        JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
+        WHERE ESS.APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
+        AND D.LOCK_YN = 'Y'
+    </select>
+
+    <select id="countLockedByDeptManage" resultType="int">
+        SELECT COUNT(1)
+        FROM AR_DEPARTMENT_MANAGE AD
+        JOIN HR_EMPLOYEE HE ON HE.DEPTNO = AD.DEPT_NO
+        JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE ESS.APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+        AND TO_CHAR(ESS.APPLY_TIME, 'YYYY-MM-DD') = AD.LOCK_DATE
+        AND (AD.LOCK_ATTEN_EX_FLAG = '1' OR AD.LOCK_ATTEN_EX_NIGHT_FLAG = '1')
+    </select>
+
+    <update id="cancelMyCardApplyList">
+        UPDATE ESS_CARD_APPLY_TB
+        SET ACTIVITY    = 0,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP, jdbcType=VARCHAR}
+        WHERE PERSON_ID  = #{adminID, jdbcType=VARCHAR}
+          AND AFFIRM_FLAG = '14014306'
+          AND TO_CHAR(APPLY_NO) IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+</mapper>

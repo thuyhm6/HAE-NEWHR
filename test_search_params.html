@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Search Parameters</title>
+</head>
+<body>
+    <h1>Test Search Parameters</h1>
+    
+    <form id="testForm">
+        <div>
+            <label>Emp Name:</label>
+            <input type="text" id="searchEmpName" value="Test Name">
+        </div>
+        <div>
+            <label>Emp Code:</label>
+            <input type="text" id="searchEmpCode" value="EMP001">
+        </div>
+        <div>
+            <label>Department:</label>
+            <input type="text" id="searchDepartment" value="IT">
+        </div>
+        <div>
+            <label>Position:</label>
+            <input type="text" id="searchPosition" value="Developer">
+        </div>
+        <div>
+            <label>Create Date From:</label>
+            <input type="date" id="searchCreateDateFrom" value="2024-01-01">
+        </div>
+        <div>
+            <label>Create Date To:</label>
+            <input type="date" id="searchCreateDateTo" value="2024-12-31">
+        </div>
+        <div>
+            <label>Activity:</label>
+            <select id="searchActivity">
+                <option value="">Tất cả</option>
+                <option value="ACTIVE" selected>Hoạt động</option>
+                <option value="INACTIVE">Không hoạt động</option>
+            </select>
+        </div>
+        <div>
+            <label>OT Flag:</label>
+            <select id="searchOtFlag">
+                <option value="">Tất cả</option>
+                <option value="Y" selected>Có OT</option>
+                <option value="N">Không OT</option>
+            </select>
+        </div>
+        <button type="button" onclick="testDataTablesRequest()">Test DataTables Request</button>
+    </form>
+    
+    <div id="output"></div>
+    
+    <script>
+        function testDataTablesRequest() {
+            // Simulate DataTables request data
+            var d = {
+                draw: 1,
+                start: 0,
+                length: 10,
+                search: { value: "", regex: false },
+                order: [{ column: 0, dir: "asc" }],
+                columns: []
+            };
+            
+            console.log('DataTables request data before adding search params:', d);
+            
+            // Add search form parameters to searchParams object
+            if (!d.searchParams) {
+                d.searchParams = {};
+            }
+            
+            // Add search form parameters
+            d.searchParams.empName = document.getElementById('searchEmpName').value;
+            d.searchParams.empCode = document.getElementById('searchEmpCode').value;
+            d.searchParams.department = document.getElementById('searchDepartment').value;
+            d.searchParams.position = document.getElementById('searchPosition').value;
+            d.searchParams.createDateFrom = document.getElementById('searchCreateDateFrom').value;
+            d.searchParams.createDateTo = document.getElementById('searchCreateDateTo').value;
+            d.searchParams.activity = document.getElementById('searchActivity').value;
+            d.searchParams.otFlag = document.getElementById('searchOtFlag').value;
+            
+            console.log('DataTables request data after adding search params:', d);
+            console.log('Search params:', d.searchParams);
+            
+            var jsonData = JSON.stringify(d, null, 2);
+            document.getElementById('output').innerHTML = '<pre>' + jsonData + '</pre>';
+        }
+    </script>
+</body>
+</html>

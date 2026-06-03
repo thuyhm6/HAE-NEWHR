@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArItemMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArItem">
+        <id column="ITEM_NO" property="itemNo" />
+        <result column="SHORT_NAME" property="shortName" />
+        <result column="DESCRIPTION" property="description" />
+        <result column="UNIT" property="unit" />
+        <result column="ITEM_GROUP_CODE" property="itemGroupCode" />
+        <result column="ITEM_ID_MAPPING" property="itemIdMapping" />
+        <result column="ITEM_ID" property="itemId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="ORDERNO_SST" property="ordernoSst" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArItemDto" extends="BaseResultMap">
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+    </resultMap>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT a.*,
+               gvi.CONTENT AS NAME_VI,
+               gen.CONTENT AS NAME_EN,
+               gzh.CONTENT AS NAME_ZH,
+               gko.CONTENT AS NAME_KO
+        FROM AR_ITEM a
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        <where>
+            <if test="itemNo != null and itemNo != ''">
+                AND (
+                    a.ITEM_NO LIKE '%' || #{itemNo} || '%' OR 
+                    gvi.CONTENT LIKE '%' || #{itemNo} || '%' OR
+                    gen.CONTENT LIKE '%' || #{itemNo} || '%' OR
+                    gzh.CONTENT LIKE '%' || #{itemNo} || '%' OR
+                    gko.CONTENT LIKE '%' || #{itemNo} || '%' OR
+                    a.SHORT_NAME LIKE '%' || #{itemNo} || '%' OR
+                    a.ITEM_ID LIKE '%' || #{itemNo} || '%'
+                )
+            </if>
+        </where>
+        ORDER BY a.ORDERNO, a.ITEM_NO
+    </select>
+
+    <select id="selectByItemNo" resultMap="BaseResultMap">
+        SELECT *
+        FROM AR_ITEM
+        WHERE ITEM_NO = #{itemNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArItem">
+        INSERT INTO AR_ITEM (
+            ITEM_NO, 
+            SHORT_NAME, 
+            DESCRIPTION, 
+            UNIT, 
+            ITEM_GROUP_CODE, 
+            ITEM_ID_MAPPING, 
+            ITEM_ID, 
+            CREATE_DATE, 
+            CREATED_BY, 
+            UPDATE_DATE, 
+            UPDATED_BY, 
+            ACTIVITY, 
+            ORDERNO,
+            ORDERNO_SST
+        ) VALUES (
+            #{itemNo},
+            #{shortName, jdbcType=VARCHAR},
+            #{description, jdbcType=VARCHAR},
+            #{unit, jdbcType=VARCHAR},
+            #{itemGroupCode, jdbcType=VARCHAR},
+            #{itemIdMapping, jdbcType=VARCHAR},
+            #{itemId, jdbcType=VARCHAR},
+            SYSDATE,
+            #{createdBy, jdbcType=VARCHAR},
+            SYSDATE,
+            #{updatedBy, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC},
+            #{orderno, jdbcType=NUMERIC},
+            #{ordernoSst, jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArItem">
+        UPDATE AR_ITEM
+        <set>
+            <if test="shortName != null">
+                SHORT_NAME = #{shortName, jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                DESCRIPTION = #{description, jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null">
+                UNIT = #{unit, jdbcType=VARCHAR},
+            </if>
+            <if test="itemGroupCode != null">
+                ITEM_GROUP_CODE = #{itemGroupCode, jdbcType=VARCHAR},
+            </if>
+            <if test="itemIdMapping != null">
+                ITEM_ID_MAPPING = #{itemIdMapping, jdbcType=VARCHAR},
+            </if>
+            <if test="itemId != null">
+                ITEM_ID = #{itemId, jdbcType=VARCHAR},
+            </if>
+            <if test="activity != null">
+                ACTIVITY = #{activity, jdbcType=NUMERIC},
+            </if>
+            <if test="orderno != null">
+                ORDERNO = #{orderno, jdbcType=NUMERIC},
+            </if>
+            <if test="ordernoSst != null">
+                ORDERNO_SST = #{ordernoSst, jdbcType=NUMERIC},
+            </if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{updatedBy, jdbcType=VARCHAR}
+        </set>
+        WHERE ITEM_NO = #{itemNo}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM AR_ITEM WHERE ITEM_NO = #{itemNo}
+    </delete>
+
+</mapper>

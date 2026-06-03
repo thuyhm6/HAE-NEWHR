@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrQualificationMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.hrm.empinfo.model.HrQualification">
+        <id column="QUAL_NO" property="qualNo" />
+        <result column="PERSON_ID" property="personId" />
+        <result column="QUAL_NAME" property="qualName" />
+        <result column="DATE_OBTAINED" property="dateObtained" />
+        <result column="QUAL_CARD_NO" property="qualCardNo" />
+        <result column="QUAL_INSTITUTE" property="qualInstitute" />
+        <result column="VALIDITY_DATE" property="validityDate" />
+        <result column="ACQUISITION_MODES" property="acquisitionModes" />
+        <result column="QUAL_LEVEL" property="qualLevel" />
+        <result column="PAYMENTALLOWANCE_Y_N" property="paymentAllowanceYN" />
+        <result column="QUAL_REMARK" property="qualRemark" />
+        <result column="QUAL_GRADE" property="qualGrade" />
+        <result column="QUAL_SUBMIT_DATE" property="qualSubmitDate" />
+        <result column="QUAL_NAME_CODE" property="qualNameCode" />
+        <result column="QUAL_GRADE_CODE" property="qualGradeCode" />
+        <result column="FILE_NAME" property="fileName" />
+        <result column="FILE_URL" property="fileUrl" />
+        <result column="ORDERNO" property="orderNo" />
+        <result column="ACTIVITY" property="activity" />
+        
+        <!-- Audit Fields -->
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="UPDATED_IP" property="updatedIp" />
+        
+        <!-- Joined Fields -->
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+    </resultMap>
+
+    <select id="searchQualification" resultMap="BaseResultMap">
+        SELECT 
+            q.*,
+            e.EMPID,
+            e.LOCAL_NAME
+        FROM HR_QUALIFICATION q
+        INNER JOIN HR_EMPLOYEE e ON q.PERSON_ID = e.PERSON_ID
+        WHERE q.ACTIVITY = 1
+          AND e.ACTIVITY = 1
+        <if test="empId != null and empId != ''">
+            AND e.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="qualName != null and qualName != ''">
+            AND q.QUAL_NAME LIKE '%' || #{qualName} || '%'
+        </if>
+        ORDER BY q.DATE_OBTAINED DESC
+    </select>
+
+    <select id="getByPersonId" resultMap="BaseResultMap">
+        SELECT q.*, e.EMPID, e.LOCAL_NAME
+        FROM HR_QUALIFICATION q
+        LEFT JOIN HR_EMPLOYEE e ON q.PERSON_ID = e.PERSON_ID
+        WHERE q.PERSON_ID = #{personId} AND q.ACTIVITY = 1
+        ORDER BY q.DATE_OBTAINED DESC
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT 
+            q.*,
+            e.EMPID,
+            e.LOCAL_NAME
+        FROM HR_QUALIFICATION q
+        LEFT JOIN HR_EMPLOYEE e ON q.PERSON_ID = e.PERSON_ID
+        WHERE q.QUAL_NO = #{qualNo}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO HR_QUALIFICATION (
+            QUAL_NO, PERSON_ID, QUAL_NAME, DATE_OBTAINED, QUAL_CARD_NO,
+            QUAL_INSTITUTE, VALIDITY_DATE, ACQUISITION_MODES, QUAL_LEVEL,
+            PAYMENTALLOWANCE_Y_N, QUAL_REMARK, QUAL_GRADE, QUAL_SUBMIT_DATE,
+            QUAL_NAME_CODE, QUAL_GRADE_CODE, FILE_NAME, FILE_URL, ORDERNO,
+            CREATE_DATE, CREATED_BY, CREATED_IP, ACTIVITY
+        ) VALUES (
+            hr_qualification_apply_seq.NEXTVAL, #{personId}, #{qualName}, #{dateObtained}, #{qualCardNo},
+            #{qualInstitute}, #{validityDate}, #{acquisitionModes}, #{qualLevel},
+            #{paymentAllowanceYN}, #{qualRemark}, #{qualGrade}, #{qualSubmitDate},
+            #{qualNameCode}, #{qualGradeCode}, #{fileName}, #{fileUrl}, #{orderNo},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{createdIp}, 1
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE HR_QUALIFICATION
+        SET 
+            QUAL_NAME = #{qualName},
+            DATE_OBTAINED = #{dateObtained},
+            QUAL_CARD_NO = #{qualCardNo},
+            QUAL_INSTITUTE = #{qualInstitute},
+            VALIDITY_DATE = #{validityDate},
+            ACQUISITION_MODES = #{acquisitionModes},
+            QUAL_LEVEL = #{qualLevel},
+            PAYMENTALLOWANCE_Y_N = #{paymentAllowanceYN},
+            QUAL_REMARK = #{qualRemark},
+            QUAL_GRADE = #{qualGrade},
+            QUAL_SUBMIT_DATE = #{qualSubmitDate},
+            QUAL_NAME_CODE = #{qualNameCode},
+            QUAL_GRADE_CODE = #{qualGradeCode},
+            FILE_NAME = #{fileName},
+            FILE_URL = #{fileUrl},
+            ORDERNO = #{orderNo},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{updatedIp}
+        WHERE QUAL_NO = #{qualNo}
+    </update>
+
+    <update id="delete">
+        UPDATE HR_QUALIFICATION
+        SET ACTIVITY = 0,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{updatedIp}
+        WHERE QUAL_NO = #{qualNo}
+    </update>
+
+</mapper>

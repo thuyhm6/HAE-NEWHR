@@ -1,0 +1,860 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrEmployeeMapper">
+
+    <!-- Result Map -->
+    <resultMap id="HrEmployeeResultMap" type="com.ait.hrm.empinfo.model.HrEmployee">
+        <id column="EMPID" property="empId"/>
+        <result column="CHINESE_PINYIN" property="chinesePinyin"/>
+        <result column="ENGLISH_NAME" property="englishName"/>
+        <result column="POSITION_NO" property="positionNo"/>
+        <result column="POST_GRADE_NO" property="postGradeNo"/>
+        <result column="DATE_STARTED" property="dateStarted"/>
+        <result column="END_PROBATION_DATE" property="endProbationDate"/>
+        <result column="EMP_TYPE_CODE" property="empTypeCode"/>
+        <result column="CPNY_ID" property="cpnyId"/>
+        <result column="PERSON_ID" property="personId"/>
+        <result column="DEPTNO" property="deptNo"/>
+        <result column="LOCAL_NAME" property="localName"/>
+        <result column="WORK_AREA" property="workArea"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ACTIVITY" property="activity"/>
+        <result column="MAIN_BUSINESS" property="mainBusiness"/>
+        <result column="EXPERIENCE" property="experience"/>
+        <result column="UPDATED_IP" property="updatedIp"/>
+        <result column="CREATED_IP" property="createdIp"/>
+        <result column="KOREAN_NAME" property="koreanName"/>
+        <result column="EMP_COMMON_TYPE_CODE" property="empCommonTypeCode"/>
+        <result column="STANDARD_POSITION" property="standardPosition"/>
+        <result column="DUTY_NO" property="dutyNo"/>
+        <result column="POST_NO" property="postNo"/>
+        <result column="STATUS_CODE" property="statusCode"/>
+        <result column="DATE_LEFT" property="dateLeft"/>
+        <result column="ID_CARD_NO" property="idCardNo"/>
+        <result column="SHIFT_NO" property="shiftNo"/>
+        <result column="EMP_OFFICE" property="empOffice"/>
+        <result column="INCUMBENCY" property="incumbency"/>
+        <result column="PROMOTION_DAY" property="promotionDay"/>
+        <result column="POST_FAMILY" property="postFamily"/>
+        <result column="AFFIRM_WORK_AGE" property="affirmWorkAge"/>
+        <result column="WORK_HOUR_TYPE" property="workHourType"/>
+        <result column="DIRECT_INDIRECT_DISTINCTION" property="directIndirectDistinction"/>
+        <result column="RECRUIT_TYPE" property="recruitType"/>
+        <result column="INSURANCE_TYPE" property="insuranceType"/>
+        <result column="INSURANCE_AREA" property="insuranceArea"/>
+        <result column="FILENUMBER" property="filenumber"/>
+        <result column="EMPLOYEE_OWNED" property="employeeOwned"/>
+        <result column="WAGE_TYPE" property="wageType"/>
+        <result column="POSITION" property="position"/>
+        <result column="DATE_LAST_UP" property="dateLastUp"/>
+        <result column="RECOMMEND" property="recommend"/>
+        <result column="DATE_GROUP_ENTRY" property="dateGroupEntry"/>
+        <result column="LAST_HAOFENG_DATE" property="lastHaofengDate"/>
+        <result column="ASSIGNMENT_INFORMATION" property="assignmentInformation"/>
+        <result column="COST_CENTER" property="costCenter"/>
+        <result column="PAY_STEP_NO" property="payStepNo"/>
+        <result column="PHONE_CARD_NO" property="phoneCardNo"/>
+        <result column="LIZHIREASON" property="lizhireason"/>
+        <result column="SOCIAL_DIFFERENTIATION" property="socialDifferentiation"/>
+        <result column="IS_PROBATION" property="isProbation"/>
+        <result column="PERSON_SUPPLIER_COMPANY" property="personSupplierCompany"/>
+        <result column="OT_LIMIT" property="otLimit"/>
+        <result column="OT_LIMIT_100" property="otLimit100"/>
+        <result column="UPDATED_OT_LIMIT_BY" property="updatedOtLimitBy"/>
+        <result column="UPDATE_OT_LIMIT_DATE" property="updateOtLimitDate"/>
+    </resultMap>
+
+    <!-- ============================================ -->
+    <!-- SQL FRAGMENTS - Tái sử dụng -->
+    <!-- ============================================ -->
+
+    <!-- Fragment 1: Base columns SELECT -->
+    <sql id="baseColumns">
+        he.EMPID,
+        he.CHINESE_PINYIN,
+        he.ENGLISH_NAME,
+        he.POSITION_NO,
+        he.POST_GRADE_NO,
+        he.DATE_STARTED,
+        he.END_PROBATION_DATE,
+        he.EMP_TYPE_CODE,
+        he.CPNY_ID,
+        he.PERSON_ID,
+        he.DEPTNO,
+        he.LOCAL_NAME,
+        he.WORK_AREA,
+        he.CREATE_DATE,
+        he.CREATED_BY,
+        he.UPDATE_DATE,
+        he.UPDATED_BY,
+        he.ACTIVITY,
+        he.MAIN_BUSINESS,
+        he.EXPERIENCE,
+        he.UPDATED_IP,
+        he.CREATED_IP,
+        he.KOREAN_NAME,
+        he.EMP_COMMON_TYPE_CODE,
+        he.STANDARD_POSITION,
+        he.DUTY_NO,
+        he.POST_NO,
+        he.STATUS_CODE,
+        he.DATE_LEFT,
+        he.ID_CARD_NO,
+        he.SHIFT_NO,
+        he.EMP_OFFICE,
+        he.INCUMBENCY,
+        he.PROMOTION_DAY,
+        he.POST_FAMILY,
+        he.AFFIRM_WORK_AGE,
+        he.WORK_HOUR_TYPE,
+        he.DIRECT_INDIRECT_DISTINCTION,
+        he.RECRUIT_TYPE,
+        he.INSURANCE_TYPE,
+        he.INSURANCE_AREA,
+        he.FILENUMBER,
+        he.EMPLOYEE_OWNED,
+        he.WAGE_TYPE,
+        he.POSITION,
+        he.DATE_LAST_UP,
+        he.RECOMMEND,
+        he.DATE_GROUP_ENTRY,
+        he.LAST_HAOFENG_DATE,
+        he.ASSIGNMENT_INFORMATION,
+        he.COST_CENTER,
+        he.PAY_STEP_NO,
+        he.PHONE_CARD_NO,
+        he.LIZHIREASON,
+        he.SOCIAL_DIFFERENTIATION,
+        he.IS_PROBATION,
+        he.PERSON_SUPPLIER_COMPANY,
+        he.OT_LIMIT,
+        he.OT_LIMIT_100,
+        he.UPDATED_OT_LIMIT_BY,
+        he.UPDATE_OT_LIMIT_DATE
+    </sql>
+
+    <!-- Fragment 2: Base FROM clause -->
+    <sql id="baseFromClause">
+        FROM hr_employee he
+    </sql>
+
+    <!-- Fragment 3: Base WHERE clause -->
+    <sql id="baseWhereClause">
+        WHERE 1 = 1
+    </sql>
+
+    <!-- Fragment 4: Active employees filter -->
+    <sql id="activeEmployeesFilter">
+        AND he.ACTIVITY = 1
+    </sql>
+
+    <!-- Fragment 5: Keyword search conditions -->
+    <sql id="keywordSearchConditions">
+        <if test="searchValue != null and searchValue != ''">
+            AND (
+                UPPER(he.EMPID) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.PERSON_ID) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.LOCAL_NAME) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.ENGLISH_NAME) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.KOREAN_NAME) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.CHINESE_PINYIN) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.POSITION) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.DEPTNO) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.WORK_AREA) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.ID_CARD_NO) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(he.CPNY_ID) LIKE UPPER('%' || #{searchValue} || '%')
+            )
+        </if>
+    </sql>
+
+    <!-- Fragment 6: Advanced search conditions -->
+    <sql id="advancedSearchConditions">
+        <if test="searchParams != null and !searchParams.isEmpty()">
+            <if test="searchParams.empId != null and searchParams.empId != ''">
+                AND he.EMPID LIKE '%' || #{searchParams.empId} || '%'
+            </if>
+            <if test="searchParams.personId != null and searchParams.personId != ''">
+                AND he.PERSON_ID LIKE '%' || #{searchParams.personId} || '%'
+            </if>
+            <if test="searchParams.localName != null and searchParams.localName != ''">
+                AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchParams.localName})) || '%'
+            </if>
+            <if test="searchParams.deptNo != null and searchParams.deptNo != ''">
+                AND he.DEPTNO LIKE '%' || #{searchParams.deptNo} || '%'
+            </if>
+            <if test="searchParams.cpnyId != null and searchParams.cpnyId != ''">
+                AND he.CPNY_ID = #{searchParams.cpnyId}
+            </if>
+            <if test="searchParams.position != null and searchParams.position != ''">
+                AND he.POSITION LIKE '%' || #{searchParams.position} || '%'
+            </if>
+            <if test="searchParams.empTypeCode != null and searchParams.empTypeCode != ''">
+                AND he.EMP_TYPE_CODE = #{searchParams.empTypeCode}
+            </if>
+            <if test="searchParams.statusCode != null and searchParams.statusCode != ''">
+                AND he.STATUS_CODE = #{searchParams.statusCode}
+            </if>
+            <if test="searchParams.workArea != null and searchParams.workArea != ''">
+                AND he.WORK_AREA = #{searchParams.workArea}
+            </if>
+            <if test="searchParams.activity != null and searchParams.activity != ''">
+                AND he.ACTIVITY = #{searchParams.activity}
+            </if>
+            <if test="searchParams.isProbation != null and searchParams.isProbation != ''">
+                AND he.IS_PROBATION = #{searchParams.isProbation}
+            </if>
+            <if test="searchParams.incumbency != null and searchParams.incumbency != ''">
+                AND he.INCUMBENCY = #{searchParams.incumbency}
+            </if>
+            <if test="searchParams.dateStartedFrom != null and searchParams.dateStartedFrom != ''">
+                AND TRUNC(he.DATE_STARTED) &gt;= TO_DATE(#{searchParams.dateStartedFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.dateStartedTo != null and searchParams.dateStartedTo != ''">
+                AND TRUNC(he.DATE_STARTED) &lt;= TO_DATE(#{searchParams.dateStartedTo}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.dateLeftFrom != null and searchParams.dateLeftFrom != ''">
+                AND TRUNC(he.DATE_LEFT) &gt;= TO_DATE(#{searchParams.dateLeftFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.dateLeftTo != null and searchParams.dateLeftTo != ''">
+                AND TRUNC(he.DATE_LEFT) &lt;= TO_DATE(#{searchParams.dateLeftTo}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.createDateFrom != null and searchParams.createDateFrom != ''">
+                AND TRUNC(he.CREATE_DATE) &gt;= TO_DATE(#{searchParams.createDateFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.createDateTo != null and searchParams.createDateTo != ''">
+                AND TRUNC(he.CREATE_DATE) &lt;= TO_DATE(#{searchParams.createDateTo}, 'YYYY-MM-DD')
+            </if>
+        </if>
+    </sql>
+
+    <!-- Fragment 7: Direct parameter search conditions (for export) -->
+    <sql id="directSearchConditions">
+        <if test="empId != null and empId != ''">
+            AND he.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="personId != null and personId != ''">
+            AND he.PERSON_ID LIKE '%' || #{personId} || '%'
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+            AND he.DEPTNO LIKE '%' || #{deptNo} || '%'
+        </if>
+        <if test="cpnyId != null and cpnyId != ''">
+            AND he.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+        <if test="position != null and position != ''">
+            AND he.POSITION LIKE '%' || #{position} || '%'
+        </if>
+        <if test="empTypeCode != null and empTypeCode != ''">
+            AND he.EMP_TYPE_CODE = #{empTypeCode}
+        </if>
+        <if test="statusCode != null and statusCode != ''">
+            AND he.STATUS_CODE = #{statusCode}
+        </if>
+        <if test="workArea != null and workArea != ''">
+            AND he.WORK_AREA = #{workArea}
+        </if>
+        <if test="activity != null and activity != ''">
+            AND he.ACTIVITY = #{activity}
+        </if>
+        <if test="isProbation != null and isProbation != ''">
+            AND he.IS_PROBATION = #{isProbation}
+        </if>
+        <if test="incumbency != null and incumbency != ''">
+            AND he.INCUMBENCY = #{incumbency}
+        </if>
+        <if test="dateStartedFrom != null and dateStartedFrom != ''">
+            AND TRUNC(he.DATE_STARTED) &gt;= TO_DATE(#{dateStartedFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="dateStartedTo != null and dateStartedTo != ''">
+            AND TRUNC(he.DATE_STARTED) &lt;= TO_DATE(#{dateStartedTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="dateLeftFrom != null and dateLeftFrom != ''">
+            AND TRUNC(he.DATE_LEFT) &gt;= TO_DATE(#{dateLeftFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="dateLeftTo != null and dateLeftTo != ''">
+            AND TRUNC(he.DATE_LEFT) &lt;= TO_DATE(#{dateLeftTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="createDateFrom != null and createDateFrom != ''">
+            AND TRUNC(he.CREATE_DATE) &gt;= TO_DATE(#{createDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="createDateTo != null and createDateTo != ''">
+            AND TRUNC(he.CREATE_DATE) &lt;= TO_DATE(#{createDateTo}, 'YYYY-MM-DD')
+        </if>
+    </sql>
+
+    <!-- Fragment 8: Dynamic ORDER BY clause -->
+    <sql id="dynamicOrderBy">
+        <choose>
+            <when test="orderColumn != null and orderColumn != ''">
+                <choose>
+                    <when test="orderColumn == 'empId'">he.EMPID</when>
+                    <when test="orderColumn == 'personId'">he.PERSON_ID</when>
+                    <when test="orderColumn == 'localName'">he.LOCAL_NAME</when>
+                    <when test="orderColumn == 'englishName'">he.ENGLISH_NAME</when>
+                    <when test="orderColumn == 'koreanName'">he.KOREAN_NAME</when>
+                    <when test="orderColumn == 'deptNo'">he.DEPTNO</when>
+                    <when test="orderColumn == 'position'">he.POSITION</when>
+                    <when test="orderColumn == 'dateStarted'">he.DATE_STARTED</when>
+                    <when test="orderColumn == 'dateLeft'">he.DATE_LEFT</when>
+                    <when test="orderColumn == 'empTypeCode'">he.EMP_TYPE_CODE</when>
+                    <when test="orderColumn == 'statusCode'">he.STATUS_CODE</when>
+                    <when test="orderColumn == 'workArea'">he.WORK_AREA</when>
+                    <when test="orderColumn == 'activity'">he.ACTIVITY</when>
+                    <when test="orderColumn == 'createDate'">he.CREATE_DATE</when>
+                    <when test="orderColumn == 'updateDate'">he.UPDATE_DATE</when>
+                    <otherwise>he.EMPID</otherwise>
+                </choose>
+                <choose>
+                    <when test="orderDir == 'asc'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>he.EMPID ASC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- ============================================ -->
+    <!-- QUERIES - Sử dụng fragments -->
+    <!-- ============================================ -->
+
+    <!-- Get all employees -->
+    <select id="findAll" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeEmployeesFilter"/>
+        ORDER BY he.EMPID ASC
+    </select>
+
+    <!-- Get employees with pagination (Oracle 12c+) -->
+    <select id="getEmployeesWithPagination" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeEmployeesFilter"/>
+        ORDER BY he.EMPID ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- Count total employees -->
+    <select id="countEmployees" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeEmployeesFilter"/>
+    </select>
+
+    <!-- Get employee by PERSON_ID -->
+    <select id="findByPersonId" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE he.PERSON_ID = #{personId}
+    </select>
+
+    <!-- Get employee by EMPID -->
+    <select id="findByEmpId" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE he.EMPID = #{empId}
+    </select>
+
+    <!-- Get employees by DEPTNO -->
+    <select id="findByDeptNo" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        AND he.DEPTNO = #{deptNo}
+        <include refid="activeEmployeesFilter"/>
+        ORDER BY he.EMPID ASC
+    </select>
+
+    <!-- Get employees by CPNY_ID -->
+    <select id="findByCpnyId" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        AND he.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <include refid="activeEmployeesFilter"/>
+        ORDER BY he.DEPTNO ASC, he.EMPID ASC
+    </select>
+
+    <!-- Search employees by multiple criteria -->
+    <select id="searchEmployees" resultType="com.ait.hrm.empinfo.dto.EmployeeSearchResponse">
+        SELECT
+            he.PERSON_ID as personId,
+            he.EMPID as empId,
+            he.LOCAL_NAME as localName,
+            he.DEPTNO as deptNo,
+            get_dept_name(he.DEPTNO, #{lang, jdbcType=VARCHAR}) as deptName,
+            he.POSITION as position
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <choose>
+            <when test="empOffice != null and empOffice != ''">
+                AND he.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                <include refid="activeEmployeesFilter"/>
+            </otherwise>
+        </choose>
+        <if test="empId != null and empId != ''">
+            AND he.EMPID LIKE '%' || #{empId, jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName, jdbcType=VARCHAR})) || '%'
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+            AND he.DEPTNO LIKE '%' || #{deptNo, jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="deptCodes != null and deptCodes.size() > 0">
+            AND he.DEPTNO IN
+            <foreach collection="deptCodes" item="code" open="(" separator="," close=")">
+                #{code, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (he.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        AND EXISTS (
+              SELECT B1.DEPTID
+              FROM HR_DEPARTMENT B1
+              WHERE B1.DEPTNO = he.DEPTNO
+              START WITH B1.DEPTNO IN (
+                  SELECT HRD.DEPTID
+                  FROM HR_DEPARTMENT HRD
+                  WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+              )
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT ASI.DEPTNO
+              FROM AR_SUPERVISOR_INFO ASI
+              WHERE ASI.DEPTNO = he.DEPTNO
+                AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          )
+        ORDER BY he.EMPID ASC
+    </select>
+
+    <!-- Search employees by keyword -->
+    <select id="searchByKeyword" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeEmployeesFilter"/>
+        AND (
+            UPPER(he.EMPID) LIKE UPPER('%' || #{keyword} || '%')
+            OR CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword})) || '%'
+            OR UPPER(he.POSITION) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(he.DEPTNO) LIKE UPPER('%' || #{keyword} || '%')
+        )
+        ORDER BY he.EMPID ASC
+    </select>
+
+    <!-- Search employees with multiple conditions (for export) -->
+    <select id="searchEmployeesWithConditions" resultMap="HrEmployeeResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="directSearchConditions"/>
+        ORDER BY he.EMPID ASC
+    </select>
+
+    <!-- Get employee search response for autocomplete -->
+    <select id="searchEmployeesForAutocomplete" resultType="com.ait.hrm.empinfo.dto.EmployeeSearchResponse">
+        SELECT 
+            he.PERSON_ID as personId,
+            he.EMPID as empId,
+            he.LOCAL_NAME as localName,
+            he.DEPTNO as deptNo,
+            he.POSITION as position
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeEmployeesFilter"/>
+        <if test="empId != null and empId != ''">
+            AND he.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+            AND he.DEPTNO LIKE '%' || #{deptNo} || '%'
+        </if>
+        ORDER BY he.EMPID
+        <![CDATA[ AND ROWNUM &lt;= 20 ]]>
+    </select>
+
+    <!-- DataTables server-side processing - Get employees with search and sort -->
+    <select id="getEmployeesForDataTables" resultMap="HrEmployeeResultMap">
+        SELECT * FROM (
+            SELECT 
+                <include refid="baseColumns"/>,
+                ROW_NUMBER() OVER (ORDER BY <include refid="dynamicOrderBy"/>) as rn
+            <include refid="baseFromClause"/>
+            <include refid="baseWhereClause"/>
+            <include refid="keywordSearchConditions"/>
+            <include refid="advancedSearchConditions"/>
+        )
+        WHERE rn BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <!-- DataTables server-side processing - Count employees after filtering -->
+    <select id="countEmployeesForDataTables" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="keywordSearchConditions"/>
+        <include refid="advancedSearchConditions"/>
+    </select>
+
+    <!-- ============================================ -->
+    <!-- INSERT, UPDATE, DELETE operations -->
+    <!-- ============================================ -->
+
+    <!-- Add new employee -->
+    <insert id="insert" parameterType="com.ait.hrm.empinfo.model.HrEmployee">
+        INSERT INTO hr_employee (
+            EMPID, CHINESE_PINYIN, ENGLISH_NAME, POSITION_NO, POST_GRADE_NO,
+            DATE_STARTED, END_PROBATION_DATE, EMP_TYPE_CODE, CPNY_ID, PERSON_ID,
+            DEPTNO, LOCAL_NAME, WORK_AREA, CREATE_DATE, CREATED_BY, UPDATE_DATE,
+            UPDATED_BY, ACTIVITY, MAIN_BUSINESS, EXPERIENCE, UPDATED_IP, CREATED_IP,
+            KOREAN_NAME, EMP_COMMON_TYPE_CODE, STANDARD_POSITION, DUTY_NO, POST_NO,
+            STATUS_CODE, DATE_LEFT, ID_CARD_NO, SHIFT_NO, EMP_OFFICE, INCUMBENCY,
+            PROMOTION_DAY, POST_FAMILY, AFFIRM_WORK_AGE, WORK_HOUR_TYPE,
+            DIRECT_INDIRECT_DISTINCTION, RECRUIT_TYPE, INSURANCE_TYPE, INSURANCE_AREA,
+            FILENUMBER, EMPLOYEE_OWNED, WAGE_TYPE, POSITION, DATE_LAST_UP, RECOMMEND,
+            DATE_GROUP_ENTRY, LAST_HAOFENG_DATE, ASSIGNMENT_INFORMATION, COST_CENTER,
+            PAY_STEP_NO, PHONE_CARD_NO, LIZHIREASON, SOCIAL_DIFFERENTIATION,
+            IS_PROBATION, PERSON_SUPPLIER_COMPANY, OT_LIMIT, OT_LIMIT_100,
+            UPDATED_OT_LIMIT_BY, UPDATE_OT_LIMIT_DATE
+        ) VALUES (
+            #{empId}, #{chinesePinyin}, #{englishName}, #{positionNo}, #{postGradeNo},
+            #{dateStarted}, #{endProbationDate}, #{empTypeCode}, #{cpnyId, jdbcType=VARCHAR}, #{personId},
+            #{deptNo}, #{localName}, #{workArea}, #{createDate}, #{adminID, jdbcType=VARCHAR}, #{updateDate},
+            #{adminID, jdbcType=VARCHAR}, #{activity}, #{mainBusiness}, #{experience}, #{updatedIp}, #{createdIp},
+            #{koreanName}, #{empCommonTypeCode}, #{standardPosition}, #{dutyNo}, #{postNo},
+            #{statusCode}, #{dateLeft}, #{idCardNo}, #{shiftNo}, #{empOffice}, #{incumbency},
+            #{promotionDay}, #{postFamily}, #{affirmWorkAge}, #{workHourType},
+            #{directIndirectDistinction}, #{recruitType}, #{insuranceType}, #{insuranceArea},
+            #{filenumber}, #{employeeOwned}, #{wageType}, #{position}, #{dateLastUp}, #{recommend},
+            #{dateGroupEntry}, #{lastHaofengDate}, #{assignmentInformation}, #{costCenter},
+            #{payStepNo}, #{phoneCardNo}, #{lizhireason}, #{socialDifferentiation},
+            #{isProbation}, #{personSupplierCompany}, #{otLimit}, #{otLimit100},
+            #{updatedOtLimitBy}, #{updateOtLimitDate}
+        )
+    </insert>
+
+    <!-- Update employee - Dynamic UPDATE (chỉ update field có giá trị) -->
+    <update id="update">
+        UPDATE hr_employee 
+        <set>
+            <if test="chinesePinyin != null">
+                CHINESE_PINYIN = #{chinesePinyin},
+            </if>
+            <if test="englishName != null">
+                ENGLISH_NAME = #{englishName},
+            </if>
+            <if test="positionNo != null">
+                POSITION_NO = #{positionNo},
+            </if>
+            <if test="postGradeNo != null">
+                POST_GRADE_NO = #{postGradeNo},
+            </if>
+            <if test="dateStarted != null">
+                DATE_STARTED = #{dateStarted},
+            </if>
+            <if test="endProbationDate != null">
+                END_PROBATION_DATE = #{endProbationDate},
+            </if>
+            <if test="empTypeCode != null">
+                EMP_TYPE_CODE = #{empTypeCode},
+            </if>
+            <if test="cpnyId != null">
+                CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            </if>
+            <if test="deptNo != null">
+                DEPTNO = #{deptNo},
+            </if>
+            <if test="localName != null">
+                LOCAL_NAME = #{localName},
+            </if>
+            <if test="workArea != null">
+                WORK_AREA = #{workArea},
+            </if>
+            <if test="koreanName != null">
+                KOREAN_NAME = #{koreanName},
+            </if>
+            <if test="empCommonTypeCode != null">
+                EMP_COMMON_TYPE_CODE = #{empCommonTypeCode},
+            </if>
+            <if test="standardPosition != null">
+                STANDARD_POSITION = #{standardPosition},
+            </if>
+            <if test="dutyNo != null">
+                DUTY_NO = #{dutyNo},
+            </if>
+            <if test="postNo != null">
+                POST_NO = #{postNo},
+            </if>
+            <if test="statusCode != null">
+                STATUS_CODE = #{statusCode},
+            </if>
+            <if test="dateLeft != null">
+                DATE_LEFT = #{dateLeft},
+            </if>
+            <if test="idCardNo != null">
+                ID_CARD_NO = #{idCardNo},
+            </if>
+            <if test="shiftNo != null">
+                SHIFT_NO = #{shiftNo},
+            </if>
+            <if test="empOffice != null">
+                EMP_OFFICE = #{empOffice},
+            </if>
+            <if test="incumbency != null">
+                INCUMBENCY = #{incumbency},
+            </if>
+            <if test="promotionDay != null">
+                PROMOTION_DAY = #{promotionDay},
+            </if>
+            <if test="postFamily != null">
+                POST_FAMILY = #{postFamily},
+            </if>
+            <if test="affirmWorkAge != null">
+                AFFIRM_WORK_AGE = #{affirmWorkAge},
+            </if>
+            <if test="workHourType != null">
+                WORK_HOUR_TYPE = #{workHourType},
+            </if>
+            <if test="directIndirectDistinction != null">
+                DIRECT_INDIRECT_DISTINCTION = #{directIndirectDistinction},
+            </if>
+            <if test="recruitType != null">
+                RECRUIT_TYPE = #{recruitType},
+            </if>
+            <if test="insuranceType != null">
+                INSURANCE_TYPE = #{insuranceType},
+            </if>
+            <if test="insuranceArea != null">
+                INSURANCE_AREA = #{insuranceArea},
+            </if>
+            <if test="filenumber != null">
+                FILENUMBER = #{filenumber},
+            </if>
+            <if test="employeeOwned != null">
+                EMPLOYEE_OWNED = #{employeeOwned},
+            </if>
+            <if test="wageType != null">
+                WAGE_TYPE = #{wageType},
+            </if>
+            <if test="position != null">
+                POSITION = #{position},
+            </if>
+            <if test="dateLastUp != null">
+                DATE_LAST_UP = #{dateLastUp},
+            </if>
+            <if test="recommend != null">
+                RECOMMEND = #{recommend},
+            </if>
+            <if test="dateGroupEntry != null">
+                DATE_GROUP_ENTRY = #{dateGroupEntry},
+            </if>
+            <if test="lastHaofengDate != null">
+                LAST_HAOFENG_DATE = #{lastHaofengDate},
+            </if>
+            <if test="assignmentInformation != null">
+                ASSIGNMENT_INFORMATION = #{assignmentInformation},
+            </if>
+            <if test="costCenter != null">
+                COST_CENTER = #{costCenter},
+            </if>
+            <if test="payStepNo != null">
+                PAY_STEP_NO = #{payStepNo},
+            </if>
+            <if test="phoneCardNo != null">
+                PHONE_CARD_NO = #{phoneCardNo},
+            </if>
+            <if test="lizhireason != null">
+                LIZHIREASON = #{lizhireason},
+            </if>
+            <if test="socialDifferentiation != null">
+                SOCIAL_DIFFERENTIATION = #{socialDifferentiation},
+            </if>
+            <if test="isProbation != null">
+                IS_PROBATION = #{isProbation},
+            </if>
+            <if test="personSupplierCompany != null">
+                PERSON_SUPPLIER_COMPANY = #{personSupplierCompany},
+            </if>
+            <if test="otLimit != null">
+                OT_LIMIT = #{otLimit},
+            </if>
+            <if test="otLimit100 != null">
+                OT_LIMIT_100 = #{otLimit100},
+            </if>
+            <if test="updatedOtLimitBy != null">
+                UPDATED_OT_LIMIT_BY = #{updatedOtLimitBy},
+            </if>
+            <if test="updateOtLimitDate != null">
+                UPDATE_OT_LIMIT_DATE = #{updateOtLimitDate},
+            </if>
+            <if test="mainBusiness != null">
+                MAIN_BUSINESS = #{mainBusiness},
+            </if>
+            <if test="experience != null">
+                EXPERIENCE = #{experience},
+            </if>
+            <if test="activity != null">
+                ACTIVITY = #{activity},
+            </if>
+            <!-- Audit fields - luôn update -->
+            UPDATE_DATE = #{updateDate},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{updatedIp}
+        </set>
+        WHERE EMPID = #{empId}
+    </update>
+
+    <!-- Delete employee -->
+    <delete id="deleteByEmpId">
+        DELETE FROM hr_employee 
+        WHERE EMPID = #{empId}
+    </delete>
+
+    <!-- ============================================ -->
+    <!-- UTILITY QUERIES -->
+    <!-- ============================================ -->
+
+    <!-- Check if employee exists and is active by PERSON_ID -->
+    <select id="existsAndActiveByPersonId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_employee 
+        WHERE PERSON_ID = #{personId}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Check if employee exists by EMPID -->
+    <select id="existsByEmpId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_employee 
+        WHERE EMPID = #{empId}
+    </select>
+
+    <!-- Check if employee exists by PERSON_ID -->
+    <select id="existsByPersonId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_employee 
+        WHERE PERSON_ID = #{personId}
+    </select>
+
+    <!-- Check if deptno exists in hr_employee -->
+    <select id="existsDeptNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_employee 
+        WHERE DEPTNO = #{deptNo}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Get distinct employee types -->
+    <select id="getDistinctEmpTypes" resultType="String">
+        SELECT DISTINCT EMP_TYPE_CODE 
+        FROM hr_employee 
+        WHERE ACTIVITY = 1 AND EMP_TYPE_CODE IS NOT NULL
+        ORDER BY EMP_TYPE_CODE
+    </select>
+
+    <!-- Get distinct status codes -->
+    <select id="getDistinctStatusCodes" resultType="String">
+        SELECT DISTINCT STATUS_CODE 
+        FROM hr_employee 
+        WHERE ACTIVITY = 1 AND STATUS_CODE IS NOT NULL
+        ORDER BY STATUS_CODE
+    </select>
+
+    <!-- Get distinct work areas -->
+    <select id="getDistinctWorkAreas" resultType="String">
+        SELECT DISTINCT WORK_AREA 
+        FROM hr_employee 
+        WHERE ACTIVITY = 1 AND WORK_AREA IS NOT NULL
+        ORDER BY WORK_AREA
+    </select>
+
+    <!-- Get distinct positions -->
+    <select id="getDistinctPositions" resultType="String">
+        SELECT DISTINCT POSITION 
+        FROM hr_employee 
+        WHERE ACTIVITY = 1 AND POSITION IS NOT NULL
+        ORDER BY POSITION
+    </select>
+
+    <!-- Thống kê nhân viên theo từng tháng trong năm được chỉ định -->
+    <resultMap id="EmpMonthlyStatsResultMap" type="com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto">
+        <result column="MONTH_NUM"        property="monthNum"/>
+        <result column="EMP_COUNT"        property="empCount"/>
+        <result column="NEW_JOINER_COUNT" property="newJoinerCount"/>
+        <result column="LEAVER_COUNT"     property="leaverCount"/>
+    </resultMap>
+
+    <select id="selectEmpMonthlyStats" resultMap="EmpMonthlyStatsResultMap">
+        SELECT
+            m.MONTH_NUM,
+            (
+                SELECT COUNT(*)
+                FROM hr_employee e
+                WHERE e.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND TRUNC(e.DATE_STARTED) &lt;= m.MONTH_END
+                  AND (e.DATE_LEFT IS NULL OR TRUNC(e.DATE_LEFT) &gt; m.MONTH_END)
+            ) AS EMP_COUNT,
+            (
+                SELECT COUNT(*)
+                FROM hr_employee n
+                WHERE n.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND TRUNC(n.DATE_STARTED) &gt;= m.MONTH_START
+                  AND TRUNC(n.DATE_STARTED) &lt;= m.MONTH_END
+            ) AS NEW_JOINER_COUNT,
+            (
+                SELECT COUNT(*)
+                FROM hr_employee lv
+                WHERE lv.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND lv.DATE_LEFT IS NOT NULL
+                  AND TRUNC(lv.DATE_LEFT) &gt;= m.MONTH_START
+                  AND TRUNC(lv.DATE_LEFT) &lt;= m.MONTH_END
+            ) AS LEAVER_COUNT
+        FROM (
+            SELECT
+                LEVEL AS MONTH_NUM,
+                TRUNC(ADD_MONTHS(TO_DATE(TO_CHAR(#{year, jdbcType=INTEGER}) || '-01-01', 'YYYY-MM-DD'), LEVEL - 1), 'MM') AS MONTH_START,
+                LAST_DAY(ADD_MONTHS(TO_DATE(TO_CHAR(#{year, jdbcType=INTEGER}) || '-01-01', 'YYYY-MM-DD'), LEVEL - 1))    AS MONTH_END
+            FROM DUAL
+            CONNECT BY LEVEL &lt;= 12
+        ) m
+        ORDER BY m.MONTH_NUM
+    </select>
+
+    <!-- Get employee statistics by department -->
+    <select id="getEmployeeStatsByDept" resultType="java.util.Map">
+        SELECT 
+            DEPTNO as deptNo,
+            COUNT(*) as totalEmployees,
+            SUM(CASE WHEN ACTIVITY = 1 THEN 1 ELSE 0 END) as activeEmployees,
+            SUM(CASE WHEN IS_PROBATION = 'Y' THEN 1 ELSE 0 END) as probationEmployees
+        FROM hr_employee 
+        WHERE DEPTNO IS NOT NULL
+        GROUP BY DEPTNO
+        ORDER BY DEPTNO
+    </select>
+
+</mapper>

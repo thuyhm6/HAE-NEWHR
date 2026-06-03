@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.sys.mapper.MenuMapper">
+
+    <resultMap id="MenuResultMap" type="com.ait.sy.sys.dto.MenuDTO">
+        <id column="MENU_NO" property="menuNo" />
+        <result column="MENU_PARENT_NO" property="menuParentNo" />
+        <result column="MENU_CODE" property="menuCode" />
+        <result column="MENU_NAME" property="menuName" />
+        <result column="MENU_IMG" property="menuImg" />
+        <result column="MENU_URL" property="menuUrl" />
+        <result column="DEPTH" property="depth" />
+        <result column="ORDER_NO" property="orderNo" />
+        <result column="ACTIVITY" property="activity" />
+    </resultMap>
+
+    <sql id="MenuSelectColumns">
+        m.MENU_NO,
+        m.MENU_PARENT_NO,
+        m.MENU_CODE,
+        GET_GLOBAL_NAME(m.MENU_NO, #{lang, jdbcType=VARCHAR}) AS MENU_NAME,
+        m.MENU_IMG,
+        m.MENU_URL,
+        m.DEPTH,
+        m.ORDERNO AS ORDER_NO,
+        m.ACTIVITY
+    </sql>
+
+    <sql id="MenuPermissionJoin">
+        FROM SY_MENU m
+        JOIN SY_MENU_PARAM mp ON m.MENU_NO = mp.MENU_NO AND mp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        INNER JOIN SY_ROLE_RELATION rr ON m.MENU_NO = rr.MENU_NO
+        INNER JOIN SY_ROLE r ON rr.ROLE_NO = r.ROLE_NO
+        INNER JOIN SY_ROLE_GROUP_RELATION rgr ON rr.ROLE_NO = rgr.ROLE_NO
+        INNER JOIN SY_USER_RELATION ur ON rgr.ROLE_GROUP_NO = ur.ROLE_GROUP_NO
+    </sql>
+
+    <sql id="MenuPermissionWhereBySysType">
+        WHERE ur.USER_NO = #{userNo, jdbcType=VARCHAR}
+          AND m.ACTIVITY = 1
+          AND rr.ACTIVITY = 1
+          AND r.ACTIVITY = 1
+          AND rgr.ACTIVITY = 1
+          AND ur.ACTIVITY = 1
+          AND rr.SELECTR = 1
+          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = #{sysType, jdbcType=VARCHAR}
+    </sql>
+
+    <select id="getMenusByUserPermission" resultMap="MenuResultMap">
+        SELECT DISTINCT
+        <include refid="MenuSelectColumns" />
+        <include refid="MenuPermissionJoin" />
+        WHERE ur.USER_NO = #{userNo, jdbcType=VARCHAR}
+          AND m.ACTIVITY = 1
+          AND rr.ACTIVITY = 1
+          AND r.ACTIVITY = 1
+          AND rgr.ACTIVITY = 1
+          AND ur.ACTIVITY = 1
+          AND rr.SELECTR = 1
+          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+        ORDER BY m.DEPTH, m.ORDERNO
+    </select>
+
+    <select id="getMenusByUserPermissionBySysType" resultMap="MenuResultMap">
+        SELECT DISTINCT
+        <include refid="MenuSelectColumns" />
+        <include refid="MenuPermissionJoin" />
+        <include refid="MenuPermissionWhereBySysType" />
+        ORDER BY m.DEPTH, m.ORDERNO
+    </select>
+
+    <select id="getMenusByUserPermissionWithLanguage" resultMap="MenuResultMap">
+        SELECT DISTINCT
+            m.MENU_NO,
+            m.MENU_PARENT_NO,
+            m.MENU_CODE,
+            GET_GLOBAL_NAME(m.MENU_NO, #{language, jdbcType=VARCHAR}) AS MENU_NAME,
+            m.MENU_IMG,
+            m.MENU_URL,
+            m.DEPTH,
+            m.ORDERNO AS ORDER_NO,
+            m.ACTIVITY
+        <include refid="MenuPermissionJoin" />
+        WHERE ur.USER_NO = #{userNo, jdbcType=VARCHAR}
+          AND m.ACTIVITY = 1
+          AND rr.ACTIVITY = 1
+          AND r.ACTIVITY = 1
+          AND rgr.ACTIVITY = 1
+          AND ur.ACTIVITY = 1
+          AND rr.SELECTR = 1
+          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+        ORDER BY m.DEPTH, m.ORDERNO
+    </select>
+
+    <select id="getRootMenusByUserPermission" resultMap="MenuResultMap">
+        SELECT DISTINCT
+        <include refid="MenuSelectColumns" />
+        <include refid="MenuPermissionJoin" />
+        WHERE ur.USER_NO = #{userNo, jdbcType=VARCHAR}
+          AND m.ACTIVITY = 1
+          AND rr.ACTIVITY = 1
+          AND r.ACTIVITY = 1
+          AND rgr.ACTIVITY = 1
+          AND ur.ACTIVITY = 1
+          AND rr.SELECTR = 1
+          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+          AND m.MENU_PARENT_NO = '2417'
+        ORDER BY m.ORDERNO
+    </select>
+
+    <select id="getChildMenusByUserPermission" resultMap="MenuResultMap">
+        SELECT DISTINCT
+        <include refid="MenuSelectColumns" />
+        <include refid="MenuPermissionJoin" />
+        WHERE ur.USER_NO = #{userNo, jdbcType=VARCHAR}
+          AND m.ACTIVITY = 1
+          AND rr.ACTIVITY = 1
+          AND r.ACTIVITY = 1
+          AND rgr.ACTIVITY = 1
+          AND ur.ACTIVITY = 1
+          AND rr.SELECTR = 1
+          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+          AND m.MENU_PARENT_NO = #{parentMenuNo, jdbcType=VARCHAR}
+        ORDER BY m.ORDERNO
+    </select>
+
+    <select id="countMenusByUserPermissionBySysType" resultType="int">
+        SELECT COUNT(DISTINCT m.MENU_NO)
+        <include refid="MenuPermissionJoin" />
+        <include refid="MenuPermissionWhereBySysType" />
+    </select>
+
+</mapper>

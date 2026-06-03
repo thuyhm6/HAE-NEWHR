@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context 
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://mybatis.org/schema/mybatis-spring 
+           http://mybatis.org/schema/mybatis-spring.xsd">
+
+    <!-- Component Scanning -->
+    <context:component-scan base-package="com.ait"/>
+    
+    <!-- Property Placeholder -->
+    <context:property-placeholder location="classpath:application.properties, WEB-INF/conf/database.properties"/>
+    
+    <!-- Data Source Configuration -->
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="jdbcUrl" value="${db.url}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+        
+        <!-- Connection Pool Settings -->
+        <property name="minimumIdle" value="${db.minIdle}"/>
+        <property name="maximumPoolSize" value="${db.maxActive}"/>
+        <property name="connectionTimeout" value="${db.connectionTimeout}"/>
+        <property name="idleTimeout" value="${db.maxIdle}"/>
+        <property name="maxLifetime" value="1800000"/>
+        <property name="leakDetectionThreshold" value="60000"/>
+        
+        <!-- Oracle Specific Settings -->
+        <property name="connectionTestQuery" value="${db.validationQuery}"/>
+        <property name="autoCommit" value="${db.defaultAutoCommit}"/>
+    </bean>
+    
+    <!-- Transaction Manager -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    <!-- Enable Transaction Management -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    
+    <!-- MyBatis SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="WEB-INF/conf/mybatis-config.xml"/>
+        <property name="mapperLocations" value="classpath:com/ait/mapper/*.xml"/>
+        <property name="typeAliasesPackage" value="com.ait,com.ait.dto,com.ait.entity"/>
+    </bean>
+    
+    <!-- MyBatis Mapper Scanner -->
+    <mybatis:scan base-package="com.ait" annotation="org.apache.ibatis.annotations.Mapper" factory-ref="sqlSessionFactory"/>
+    
+    <!-- View Resolver for Thymeleaf -->
+    <bean id="templateResolver" class="org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver">
+        <property name="prefix" value="/WEB-INF/view/"/>
+        <property name="suffix" value=".html"/>
+        <property name="templateMode" value="HTML"/>
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="cacheable" value="false"/>
+    </bean>
+    
+    <bean id="templateEngine" class="org.thymeleaf.spring6.SpringTemplateEngine">
+        <property name="templateResolver" ref="templateResolver"/>
+        <property name="enableSpringELCompiler" value="true"/>
+    </bean>
+    
+    <bean class="org.thymeleaf.spring6.view.ThymeleafViewResolver">
+        <property name="templateEngine" ref="templateEngine"/>
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="order" value="1"/>
+    </bean>
+    
+    <!-- Static Resource Handler -->
+    <bean class="org.springframework.web.servlet.resource.ResourceHttpRequestHandler">
+        <property name="locations">
+            <list>
+                <value>/assets/</value>
+                <value>/static/</value>
+            </list>
+        </property>
+    </bean>
+    
+</beans>

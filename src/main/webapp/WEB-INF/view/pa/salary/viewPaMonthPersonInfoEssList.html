@@ -1,0 +1,574 @@
+<div th:fragment="content">
+
+    <!-- ── Thanh điều kiện tìm kiếm ─────────────────────────────────────────── -->
+    <div class="card mb-2 no-print">
+        <div class="card-body py-2 px-3">
+            <div class="row g-2 align-items-end">
+
+                <div class="col-md-5">
+                    <label class="form-label mb-1 small fw-semibold" th:text="#{pa.monthPersonInfo.paySchedule}">Kế hoạch trả lương</label>
+                    <select id="vpmpi_payScheduleNo" class="form-select form-select-sm select2"></select>
+                </div>
+
+                <div class="col-md-4 d-flex gap-1 align-items-end">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="vpmpiSearch()">
+                        <i class="bi bi-search"></i>
+                        <span th:text="#{pa.monthPersonInfo.search}">Tra cứu</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="vpmpi_btnPrint"
+                            onclick="vpmpiPrint()" style="display:none;">
+                        <i class="bi bi-printer"></i>
+                        <span th:text="#{pa.monthPersonInfo.print}">In</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Khu vực hiển thị phiếu lương ─────────────────────────────────────── -->
+    <div id="vpmpi_loadingArea" class="text-center py-5" style="display:none;">
+        <div class="spinner-border text-primary" role="status" style="width:3rem;height:3rem;"></div>
+        <div class="mt-2 text-muted" th:text="#{pa.monthPersonInfo.loading}">Đang tải phiếu lương...</div>
+    </div>
+
+    <div id="vpmpi_noData" class="text-center py-5 text-muted" style="display:none;">
+        <i class="bi bi-inbox fs-1"></i>
+        <div class="mt-2" th:text="#{pa.monthPersonInfo.noData}">Không có dữ liệu</div>
+    </div>
+
+    <div id="vpmpi_printArea">
+        <!-- Phiếu lương được render bằng JavaScript -->
+    </div>
+
+</div>
+
+<!-- ── Scripts ────────────────────────────────────────────────────────────────── -->
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vpmpi_msgSelectSchedule = /*[[#{pa.monthPersonInfo.msgSelectSchedule}]]*/  'Vui lòng chọn kế hoạch trả lương!';
+        var vpmpi_msgNoData         = /*[[#{pa.monthPersonInfo.noData}]]*/             'Không có dữ liệu';
+        var vpmpi_msgLoading        = /*[[#{pa.monthPersonInfo.loading}]]*/            'Đang tải phiếu lương...';
+        var vpmpi_labelEmpName      = /*[[#{pa.monthPersonInfo.empName}]]*/            'Họ tên';
+        var vpmpi_labelEmpId        = /*[[#{pa.monthPersonInfo.empId}]]*/              'Mã nhân viên';
+        var vpmpi_labelDept         = /*[[#{pa.monthPersonInfo.dept}]]*/               'Phòng ban';
+        var vpmpi_labelEmpType      = /*[[#{pa.monthPersonInfo.empType}]]*/            'Loại nhân viên';
+        var vpmpi_labelEmpGroup     = /*[[#{pa.monthPersonInfo.empGroup}]]*/           'Nhóm nhân viên';
+        var vpmpi_labelPosition     = /*[[#{pa.monthPersonInfo.position}]]*/           'Chức vụ';
+        var vpmpi_labelGrade        = /*[[#{pa.monthPersonInfo.grade}]]*/              'Chức danh';
+        var vpmpi_labelWorkStatus   = /*[[#{pa.monthPersonInfo.workStatus}]]*/         'Loại hợp đồng';
+        var vpmpi_labelDependent    = /*[[#{pa.monthPersonInfo.dependent}]]*/          'Số người phụ thuộc';
+        var vpmpi_labelBankName     = /*[[#{pa.monthPersonInfo.bankName}]]*/           'Ngân hàng';
+        var vpmpi_labelAccountNo    = /*[[#{pa.monthPersonInfo.accountNo}]]*/          'Tài khoản';
+        var vpmpi_labelSocialInsuranceNo = /*[[#{pa.monthPersonInfo.socialInsuranceNo}]]*/ 'Số thẻ bảo hiểm xã hội';
+        var vpmpi_labelStdItems     = /*[[#{pa.monthPersonInfo.standardItems}]]*/      'Hạng mục tiêu chuẩn';
+        var vpmpi_labelItemName     = /*[[#{pa.monthPersonInfo.itemName}]]*/           'Hạng mục';
+        var vpmpi_labelAmount       = /*[[#{pa.monthPersonInfo.amount}]]*/             'Số tiền';
+        var vpmpi_labelAttendance   = /*[[#{pa.monthPersonInfo.attendanceItems}]]*/    'Chấm công chi tiết';
+        var vpmpi_labelSalary       = /*[[#{pa.monthPersonInfo.salaryItems}]]*/        'Lương chi tiết';
+        var vpmpi_labelDeduction    = /*[[#{pa.monthPersonInfo.deductionItems}]]*/     'Khoản trừ chi tiết';
+        var vpmpi_labelAttItem      = /*[[#{pa.monthPersonInfo.attendanceItem}]]*/     'Hạng mục chấm công';
+        var vpmpi_labelValue        = /*[[#{pa.monthPersonInfo.value}]]*/              'Giá trị';
+        var vpmpi_labelSalaryItem   = /*[[#{pa.monthPersonInfo.salaryItem}]]*/         'Hạng mục';
+        var vpmpi_labelDeductItem   = /*[[#{pa.monthPersonInfo.deductionItem}]]*/      'Hạng mục';
+        var vpmpi_labelTotal        = /*[[#{pa.monthPersonInfo.total}]]*/              'Tổng';
+        var vpmpi_labelNetSalary    = /*[[#{pa.monthPersonInfo.netSalary}]]*/          'Lương thực lĩnh';
+        var vpmpi_labelOtherItems   = /*[[#{pa.monthPersonInfo.otherItems}]]*/         'Hạng mục khác';
+        var vpmpi_labelNote         = /*[[#{pa.monthPersonInfo.note}]]*/               '※ Mọi thắc mắc về nội dung trên phiếu lương, vui lòng liên hệ phòng Nhân sự!';
+        var vpmpi_labelSlipTitle    = /*[[#{pa.monthPersonInfo.slipTitle}]]*/          'PHIẾU LƯƠNG THÁNG';
+        var vpmpi_labelSection      = /*[[#{pa.monthPersonInfo.basicInfo}]]*/          'Thông tin Cơ bản';
+        var vpmpi_labelAccount      = /*[[#{pa.monthPersonInfo.account}]]*/            'Tài khoản';
+
+        var vpmpi_currentEmpOpinion = '';
+
+        /* ── Định dạng số ─────────────────────────────────────────────────── */
+        function vpmpiFormatNumber(val) {
+            if (val === null || val === undefined || val === '') return '';
+            var num = parseFloat(String(val).replace(/,/g, ''));
+            if (isNaN(num)) return '';
+            return num.toLocaleString('vi-VN');
+        }
+
+        /* ── Lấy tháng/năm từ HR_END_DATE (YYYY-MM-DD hoặc YYYY/MM/DD) ── */
+        function vpmpiGetMonthYear(hrEndDate) {
+            if (!hrEndDate) return '';
+            var parts = String(hrEndDate).split(/[-\/]/);
+            if (parts.length >= 2) {
+                return parts[1] + '-' + parts[0];
+            }
+            return hrEndDate;
+        }
+
+        /* ── Tính tổng danh sách items ──────────────────────────────────── */
+        function vpmpiSum(items) {
+            if (!items || items.length === 0) return 0;
+            return items.reduce(function (acc, item) {
+                return acc + (parseFloat(item.itemValue) || 0);
+            }, 0);
+        }
+
+        /* ── Escape HTML ─────────────────────────────────────────────────── */
+        function vpmpiEsc(str) {
+            return $('<span>').text(str || '').html();
+        }
+
+        /* ── Render một phiếu lương ──────────────────────────────────────── */
+        function vpmpiRenderStub(emp) {
+            var monthYear   = vpmpiGetMonthYear(emp.hrEndDate);
+            var totalSal    = vpmpiSum(emp.salaryItems);
+            var totalDeduct = vpmpiSum(emp.deductionItems);
+            var netSalary   = totalSal - totalDeduct;
+
+            var maxRows = Math.max(
+                (emp.attendanceItems  || []).length,
+                (emp.salaryItems      || []).length,
+                (emp.deductionItems   || []).length
+            );
+
+            /* ── Bảng 3 cột: Chấm công / Lương / Khoản trừ ── */
+            var tripleRows = '';
+            for (var r = 0; r < maxRows; r++) {
+                var att    = (emp.attendanceItems  || [])[r] || null;
+                var sal    = (emp.salaryItems      || [])[r] || null;
+                var deduct = (emp.deductionItems   || [])[r] || null;
+
+                tripleRows +=
+                    '<tr>' +
+                    '<td>' + (att    ? vpmpiEsc(att.itemName)     : '') + '</td>' +
+                    '<td class="text-end">' + (att    ? vpmpiFormatNumber(att.itemValue)    : '') + '</td>' +
+                    '<td>' + (sal    ? vpmpiEsc(sal.itemName)     : '') + '</td>' +
+                    '<td class="text-end">' + (sal    ? vpmpiFormatNumber(sal.itemValue)    : '') + '</td>' +
+                    '<td>' + (deduct ? vpmpiEsc(deduct.itemName)  : '') + '</td>' +
+                    '<td class="text-end">' + (deduct ? vpmpiFormatNumber(deduct.itemValue) : '') + '</td>' +
+                    '</tr>';
+            }
+
+            /* ── Hạng mục tiêu chuẩn ── */
+            var stdRows = '';
+            $.each(emp.standardItems || [], function (i, item) {
+                stdRows +=
+                    '<tr>' +
+                    '<td>' + vpmpiEsc(item.itemName) + '</td>' +
+                    '<td class="text-end">' + vpmpiFormatNumber(item.itemValue) + '</td>' +
+                    '</tr>';
+            });
+
+            /* ── Hạng mục khác ── */
+            var otherRows = '';
+            $.each(emp.otherItems || [], function (i, item) {
+                if (item.returnValue || item.remark) {
+                    otherRows +=
+                        '<tr>' +
+                        '<td>' + vpmpiEsc(item.remark) + '</td>' +
+                        '<td class="text-end">' + vpmpiFormatNumber(item.returnValue) + '</td>' +
+                        '</tr>';
+                }
+            });
+
+            var html =
+                '<div class="vpmpi-pay-stub">' +
+
+                /* Header */
+                '<div class="vpmpi-stub-header">' +
+                '<div class="vpmpi-logo"><img src="/assets/images/logo.png" alt="Logo"><span class="vpmpi-title">' + vpmpi_labelSlipTitle + ' ' + vpmpiEsc(monthYear) + '</span></div>' +
+                '</div>' +
+
+                /* Thông tin cơ bản */
+                '<div class="vpmpi-section-title">' + vpmpi_labelSection + '</div>' +
+                '<table class="vpmpi-info-table">' +
+                '<tr>' +
+                '<th>' + vpmpi_labelEmpName   + '</th><td>' + vpmpiEsc(emp.localName)     + '</td>' +
+                '<th>' + vpmpi_labelEmpId     + '</th><td>' + vpmpiEsc(emp.empId)         + '</td>' +
+                '<th>' + vpmpi_labelDept      + '</th><td>' + vpmpiEsc(emp.deptName)      + '</td>' +
+                '<th>' + vpmpi_labelEmpType   + '</th><td>' + vpmpiEsc(emp.empTypeName)   + '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<th>' + vpmpi_labelEmpGroup  + '</th><td>' + vpmpiEsc(emp.postFamily)    + '</td>' +
+                '<th>' + vpmpi_labelPosition  + '</th><td>' + vpmpiEsc(emp.positionName)  + '</td>' +
+                '<th>' + vpmpi_labelGrade     + '</th><td>' + vpmpiEsc(emp.postGrade)     + '</td>' +
+                '<th>' + vpmpi_labelWorkStatus + '</th><td>' + vpmpiEsc(emp.empOfficeName) + '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<th colspan="2">' + vpmpi_labelDependent + '</th><td colspan="6">' + (emp.dependentCount || 0) + '</td>' +
+                '</tr>' +
+                '<tr>' +
+                '<th colspan="2">' + vpmpi_labelSocialInsuranceNo + '</th><td colspan="6">' + vpmpiEsc(emp.socialInsuranceNo || '') + '</td>' +
+                '</tr>' +
+                '</table>' +
+
+                /* Tài khoản */
+                '<div class="vpmpi-section-title">' + vpmpi_labelAccount + '</div>' +
+                '<table class="vpmpi-detail-table">' +
+                '<thead><tr>' +
+                '<th class="text-center">' + vpmpi_labelBankName + '</th>' +
+                '<th class="text-center">' + vpmpi_labelAccountNo + '</th>' +
+                '</tr></thead>' +
+                '<tbody><tr>' +
+                '<td class="text-center">' + vpmpiEsc(emp.bankName || '') + '</td>' +
+                '<td class="text-center">' + vpmpiEsc(emp.bankAccountNo || emp.accountNo || '') + '</td>' +
+                '</tr></tbody>' +
+                '</table>';
+
+            /* Hạng mục tiêu chuẩn - chỉ render nếu có dữ liệu */
+            if ((emp.standardItems || []).length > 0) {
+                html +=
+                    '<div class="vpmpi-section-title">' + vpmpi_labelStdItems + '</div>' +
+                    '<table class="vpmpi-detail-table">' +
+                    '<thead><tr>' +
+                    '<th>' + vpmpi_labelItemName + '</th>' +
+                    '<th class="text-end">' + vpmpi_labelAmount + '</th>' +
+                    '</tr></thead>' +
+                    '<tbody>' + stdRows + '</tbody>' +
+                    '</table>';
+            }
+
+            /* Bảng 3 cột chi tiết */
+            html +=
+                '<table class="vpmpi-triple-table">' +
+                '<thead><tr>' +
+                '<th colspan="2" class="text-center vpmpi-att-header">&#9632; ' + vpmpi_labelAttendance + '</th>' +
+                '<th colspan="2" class="text-center vpmpi-sal-header">&#9632; ' + vpmpi_labelSalary + '</th>' +
+                '<th colspan="2" class="text-center vpmpi-ded-header">&#9632; ' + vpmpi_labelDeduction + '</th>' +
+                '</tr>' +
+                '<tr>' +
+                '<th>' + vpmpi_labelAttItem    + '</th><th class="text-end">' + vpmpi_labelValue  + '</th>' +
+                '<th>' + vpmpi_labelSalaryItem + '</th><th class="text-end">' + vpmpi_labelAmount + '</th>' +
+                '<th>' + vpmpi_labelDeductItem + '</th><th class="text-end">' + vpmpi_labelAmount + '</th>' +
+                '</tr></thead>' +
+                '<tbody>' + (tripleRows || '<tr><td colspan="6" class="text-center text-muted">-</td></tr>') + '</tbody>' +
+                '<tfoot><tr>' +
+                '<td colspan="2"></td>' +
+                '<td class="fw-bold">' + vpmpi_labelTotal + '</td>' +
+                '<td class="text-end fw-bold">' + vpmpiFormatNumber(totalSal) + '</td>' +
+                '<td class="fw-bold">' + vpmpi_labelTotal + '</td>' +
+                '<td class="text-end fw-bold">' + vpmpiFormatNumber(totalDeduct) + '</td>' +
+                '</tr></tfoot>' +
+                '</table>' +
+
+                /* Lương thực lĩnh */
+                '<table class="vpmpi-net-table">' +
+                '<tr>' +
+                '<td class="fw-bold">' + vpmpi_labelNetSalary + '</td>' +
+                '<td class="text-end fw-bold">' + vpmpiFormatNumber(netSalary) + '</td>' +
+                '</tr>' +
+                '</table>';
+
+            /* Hạng mục khác */
+            if (otherRows) {
+                html +=
+                    '<div class="vpmpi-section-title">' + vpmpi_labelOtherItems + '</div>' +
+                    '<table class="vpmpi-detail-table">' +
+                    '<tbody>' + otherRows + '</tbody>' +
+                    '</table>';
+            }
+
+            /* Ghi chú */
+            html +=
+                '<div class="vpmpi-note">' + vpmpiEsc(vpmpi_currentEmpOpinion || vpmpi_labelNote) + '</div>' +
+                '</div>';
+
+            return html;
+        }
+
+        /* ── Tải danh sách kế hoạch trả lương đã mở ─────────────────────── */
+        function vpmpiLoadScheduleList() {
+            $.ajax({
+                url: '/pa/salary/api/monthPersonInfo/payScheduleOpen',
+                type: 'GET',
+                success: function (list) {
+                    var $sel = $('#vpmpi_payScheduleNo');
+                    $sel.find('option:not(:first)').remove();
+                    if (list && list.length > 0) {
+                        $.each(list, function (i, item) {
+                            $sel.append($('<option>', {
+                                value: item.payScheduleNo,
+                                text: item.payDate + (item.salaryDistinName ? ' ' + item.salaryDistinName : ''),
+                                'data-emp-opinion': item.empOpinion || ''
+                            }));
+                        });
+                        $sel.val(list[0].payScheduleNo);
+                        if ($.fn.select2) $sel.trigger('change.select2');
+                    }
+                },
+                error: function () {
+                    if (typeof toastr !== 'undefined') toastr.warning('Không thể tải danh sách kế hoạch trả lương!');
+                }
+            });
+        }
+
+        /* ── Tìm kiếm phiếu lương cá nhân ───────────────────────────────── */
+        window.vpmpiSearch = function () {
+            var payScheduleNo = $('#vpmpi_payScheduleNo').val();
+            if (!payScheduleNo) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning(vpmpi_msgSelectSchedule);
+                } else {
+                    alert(vpmpi_msgSelectSchedule);
+                }
+                return;
+            }
+
+            var lang = $('html').attr('lang') || 'vi';
+
+            $('#vpmpi_loadingArea').show();
+            $('#vpmpi_noData').hide();
+            $('#vpmpi_printArea').empty();
+            $('#vpmpi_btnPrint').hide();
+
+            $.ajax({
+                url: '/pa/salary/api/monthPersonInfo/payStub/load',
+                type: 'GET',
+                data: {
+                    payScheduleNo: payScheduleNo,
+                    lang:          lang
+                },
+                success: function (list) {
+                    $('#vpmpi_loadingArea').hide();
+                    if (!list || list.length === 0) {
+                        $('#vpmpi_noData').show();
+                        return;
+                    }
+                    vpmpi_currentEmpOpinion = $('#vpmpi_payScheduleNo option:selected').data('emp-opinion') || '';
+                    var html = '';
+                    $.each(list, function (i, emp) {
+                        html += vpmpiRenderStub(emp);
+                    });
+                    $('#vpmpi_printArea').html(html);
+                    $('#vpmpi_btnPrint').show();
+                },
+                error: function (err) {
+                    $('#vpmpi_loadingArea').hide();
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : err.responseText;
+                    if (typeof toastr !== 'undefined') toastr.error(msg); else alert(msg);
+                }
+            });
+        };
+
+        /* ── In phiếu lương ──────────────────────────────────────────────── */
+        var VPMPI_PRINT_CSS = [
+            '@page { size:A4 portrait; margin:8mm; }',
+            '*, *::before, *::after { box-sizing:border-box; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }',
+            'html, body { width:194mm; margin:0 auto; padding:0; background:#fff; font-family:Arial,sans-serif; font-size:10px; color:#111; }',
+            'table { max-width:100% !important; word-break:break-word; }',
+            '.vpmpi-pay-stub { width:100%; max-width:194mm; margin:0 auto; padding:4mm 0; background:#fff; page-break-after:always; break-after:page; overflow:hidden; }',
+            '.vpmpi-pay-stub:last-child { page-break-after:avoid; break-after:avoid; }',
+            '.vpmpi-stub-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; border-bottom:2.5px solid #922b21; padding-bottom:6px; }',
+            '.vpmpi-logo { font-size:12px; font-weight:bold; color:#922b21; line-height:1.4; min-width:100px; }',
+            '.vpmpi-logo img { height:32px; margin-right:6px; vertical-align:middle; }',
+            '.vpmpi-title { font-size:15px; font-weight:bold; text-align:center; flex:1; color:#1a1a2e; letter-spacing:1px; }',
+            '.vpmpi-section-title { background:#922b21; color:#fff; font-weight:bold; padding:2px 6px; margin:6px 0 0 0; font-size:10px; }',
+            '.vpmpi-section-title::before { content:"\\25A0 "; }',
+            '.vpmpi-info-table { width:100%; border-collapse:collapse; table-layout:fixed; }',
+            '.vpmpi-info-table th { background:#f2e0e0; color:#333; font-weight:bold; padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; text-align:center; overflow:hidden; white-space:nowrap; }',
+            '.vpmpi-info-table td { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; background:#fff; overflow:hidden; word-break:break-word; }',
+            '.vpmpi-detail-table { width:100%; border-collapse:collapse; }',
+            '.vpmpi-detail-table th { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; background:#f2e0e0; color:#333; font-weight:bold; text-align:center; }',
+            '.vpmpi-detail-table td { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; background:#fff; }',
+            '.vpmpi-detail-table tbody tr:nth-child(even) td { background:#fafafa; }',
+            '.vpmpi-triple-table { width:100%; border-collapse:collapse; margin-top:6px; table-layout:fixed; }',
+            '.vpmpi-triple-table th, .vpmpi-triple-table td { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; overflow:hidden; word-break:break-word; }',
+            '.vpmpi-att-header { background:#1a5276; color:#fff; font-weight:bold; width:18%; }',
+            '.vpmpi-sal-header { background:#922b21; color:#fff; font-weight:bold; width:18%; }',
+            '.vpmpi-ded-header { background:#1a5276; color:#fff; font-weight:bold; width:18%; }',
+            '.vpmpi-triple-table thead tr:nth-child(2) th { background:#f2e0e0; color:#333; font-weight:bold; text-align:center; }',
+            '.vpmpi-triple-table tbody td { background:#fff; }',
+            '.vpmpi-triple-table tbody tr:nth-child(even) td { background:#fafafa; }',
+            '.vpmpi-triple-table tfoot td { background:#ececec; font-weight:bold; border:1px solid #c8c8c8; }',
+            '.vpmpi-net-table { width:100%; border-collapse:collapse; margin-bottom:6px; }',
+            '.vpmpi-net-table td { padding:5px 8px; border:1.5px solid #999; background:#fef9e7; font-size:12px; font-weight:bold; color:#111; }',
+            '.vpmpi-note { font-size:9px; color:#555; margin-top:8px; font-style:italic; border-top:1px dashed #ccc; padding-top:4px; }',
+            '.text-end { text-align:right !important; }',
+            '.text-center { text-align:center !important; }',
+            '.fw-bold { font-weight:bold !important; }'
+        ].join('\n');
+
+        window.vpmpiPrint = function () {
+            var printArea = document.getElementById('vpmpi_printArea');
+            if (!printArea || !printArea.innerHTML.trim()) {
+                var msg = 'Không có phiếu lương để in!';
+                if (typeof toastr !== 'undefined') toastr.warning(msg); else alert(msg);
+                return;
+            }
+            var printWin = window.open('', '_blank');
+            printWin.document.write(
+                '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+                '<style>' + VPMPI_PRINT_CSS + '</style>' +
+                '</head><body>' +
+                printArea.innerHTML +
+                '</body></html>'
+            );
+            printWin.document.close();
+            printWin.onload = function () {
+                printWin.focus();
+                printWin.print();
+                printWin.close();
+            };
+        };
+
+        /* ── Boot ────────────────────────────────────────────────────────── */
+        $(document).ready(function () {
+            if ($.fn.select2) {
+                $('#vpmpi_payScheduleNo').select2({ width: '100%', allowClear: true });
+            }
+            vpmpiLoadScheduleList();
+        });
+    </script>
+
+    <style>
+        /* ── Layout phiếu lương A4 ── */
+        .vpmpi-pay-stub {
+            width: 210mm;
+            margin: 0 auto 24px auto;
+            padding: 10mm 12mm;
+            background: #fff;
+            border: 1px solid #bbb;
+            box-shadow: 0 2px 10px rgba(0,0,0,.12);
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+            color: #111;
+            page-break-after: always;
+        }
+        .vpmpi-pay-stub:last-child {
+            page-break-after: avoid;
+            margin-bottom: 0;
+        }
+
+        /* ── Header ── */
+        .vpmpi-stub-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 2.5px solid #922b21;
+            padding-bottom: 8px;
+        }
+        .vpmpi-logo {
+            font-size: 14px;
+            font-weight: bold;
+            color: #922b21;
+            line-height: 1.4;
+            min-width: 120px;
+        }
+        .vpmpi-logo small { font-size: 10px; font-weight: normal; color: #555; display: block; }
+        .vpmpi-logo img { height: 32px; margin-right: 6px; vertical-align: middle; }
+        .vpmpi-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+            color: #1a1a2e;
+            letter-spacing: 1px;
+        }
+
+        /* ── Section title ── */
+        .vpmpi-section-title {
+            background: #922b21;
+            color: #fff;
+            font-weight: bold;
+            padding: 3px 8px;
+            margin: 8px 0 0 0;
+            font-size: 11px;
+        }
+        .vpmpi-section-title::before { content: '\25A0 '; }
+
+        /* ── Bảng thông tin cơ bản ── */
+        .vpmpi-info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .vpmpi-info-table th {
+            background: #f2e0e0;
+            color: #333;
+            font-weight: bold;
+            padding: 4px 8px;
+            border: 1px solid #c8c8c8;
+            white-space: nowrap;
+            font-size: 10px;
+            text-align: center;
+        }
+        .vpmpi-info-table td {
+            padding: 4px 8px;
+            border: 1px solid #c8c8c8;
+            font-size: 10px;
+            background: #fff;
+        }
+
+        /* ── Bảng chi tiết 2 cột ── */
+        .vpmpi-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .vpmpi-detail-table th {
+            padding: 4px 8px;
+            border: 1px solid #c8c8c8;
+            font-size: 10px;
+            background: #f2e0e0;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+        }
+        .vpmpi-detail-table td {
+            padding: 3px 8px;
+            border: 1px solid #c8c8c8;
+            font-size: 10px;
+            background: #fff;
+        }
+        .vpmpi-detail-table tbody tr:nth-child(even) td { background: #fafafa; }
+
+        /* ── Bảng 3 cột chấm công / lương / khoản trừ ── */
+        .vpmpi-triple-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .vpmpi-triple-table th, .vpmpi-triple-table td {
+            padding: 5px 6px;
+            border: 1px solid #c8c8c8;
+            font-size: 10px;
+        }
+        .vpmpi-att-header { background: #1a5276; color: #fff; font-weight: bold; }
+        .vpmpi-sal-header { background: #922b21; color: #fff; font-weight: bold; }
+        .vpmpi-ded-header { background: #1a5276; color: #fff; font-weight: bold; }
+        .vpmpi-triple-table thead tr:nth-child(2) th {
+            background: #f2e0e0;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+        }
+        .vpmpi-triple-table tbody td { background: #fff; }
+        .vpmpi-triple-table tbody tr:nth-child(even) td { background: #fafafa; }
+        .vpmpi-triple-table tfoot td {
+            background: #ececec;
+            font-weight: bold;
+            border: 1px solid #c8c8c8;
+        }
+
+        /* ── Lương thực lĩnh ── */
+        .vpmpi-net-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+        .vpmpi-net-table td {
+            padding: 6px 10px;
+            border: 1.5px solid #999;
+            background: #fef9e7;
+            font-size: 13px;
+            font-weight: bold;
+            color: #111;
+        }
+
+        /* ── Ghi chú ── */
+        .vpmpi-note {
+            font-size: 10px;
+            color: #555;
+            margin-top: 10px;
+            font-style: italic;
+            border-top: 1px dashed #ccc;
+            padding-top: 6px;
+        }
+
+        @page { size: A4; margin: 8mm; }
+    </style>
+</template>
+</div>

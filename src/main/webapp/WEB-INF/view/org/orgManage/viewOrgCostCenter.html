@@ -1,0 +1,322 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <!-- Search Form -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body p-1">
+                                    <form class="searchForm" id="costCenter_searchForm">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label class="form-label">Mã chi phí</label>
+                                                <input type="text" class="form-control" id="costCenter_searchCodeNo"
+                                                    placeholder="Nhập mã chi phí">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label">Tên chi phí</label>
+                                                <input type="text" class="form-control" id="costCenter_searchName"
+                                                    placeholder="Nhập tên chi phí">
+                                            </div>
+                                            <div class="col-md-6 d-flex align-items-end">
+                                                <button type="button" class="btn btn-success" id="costCenter_btnAdd">
+                                                    <i class="bx bx-plus me-1"></i> Thêm mới
+                                                </button>
+                                                <button type="button" class="btn btn-primary ms-2"
+                                                    id="costCenter_btnSearch">
+                                                    <i class="bx bx-search me-1"></i> Tìm kiếm
+                                                </button>
+                                                <button type="button" class="btn btn-secondary ms-2"
+                                                    id="costCenter_btnClear">
+                                                    <i class="bx bx-x me-1"></i> Xóa bộ lọc
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="costCenter_table" class="table table-striped table-hover w-100">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã chi phí</th>
+                                    <th>Tên tiếng Việt</th>
+                                    <th>Tên tiếng Anh</th>
+                                    <th>Ghi chú</th>
+                                    <th>Ngày bắt đầu</th>
+                                    <th>Ngày kết thúc</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="costCenter_modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="costCenter_modalTitle">Thêm mới Trung tâm chi phí</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="costCenter_form">
+                        <input type="hidden" id="costCenter_seq">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Mã chi phí <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="costCenter_codeNo" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Thứ tự</label>
+                                <input type="number" class="form-control" id="costCenter_orderNo">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên tiếng Việt</label>
+                                <input type="text" class="form-control" id="costCenter_codeName">
+                                <!-- Maps to CODE_NAME? Or CODE_VIETNAMESE_NAME? User said standard fields. Mapping to codeName (Chinese/Local) -->
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tên tiếng Anh</label>
+                                <input type="text" class="form-control" id="costCenter_codeEngName">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên tiếng Hàn</label>
+                                <input type="text" class="form-control" id="costCenter_codeKoreanName">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tên tiếng Việt quy định</label>
+                                <input type="text" class="form-control" id="costCenter_codeVietnameseName">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày bắt đầu</label>
+                                <input type="text" class="form-control" id="costCenter_startDate"
+                                    placeholder="YYYY-MM-DD">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày kết thúc</label>
+                                <input type="text" class="form-control" id="costCenter_endDate"
+                                    placeholder="YYYY-MM-DD">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Quốc gia</label>
+                                <input type="text" class="form-control" id="costCenter_country">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Trạng thái</label>
+                                <input type="text" class="form-control" id="costCenter_activity">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ</label>
+                            <input type="text" class="form-control" id="costCenter_address">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phạm vi kinh doanh (Business Scope)</label>
+                            <textarea class="form-control" id="costCenter_businessScope" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Trung tâm lợi nhuận (Profit Center)</label>
+                            <textarea class="form-control" id="costCenter_profitCenter" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="costCenter_remark" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="costCenter_btnSave">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template id="fragmentScripts">
+        <script th:inline="none">
+            $(document).ready(function () {
+                var table;
+
+                // Init DataTable
+                if ($.fn.DataTable) {
+                    table = $('#costCenter_table').DataTable({
+                        destroy: true,
+                        scrollY: "calc(100vh - 280px)",
+                        scrollCollapse: true,
+                        paging: true,
+                        searching: false, // Custom search
+                        lengthChange: true,
+                        pageLength: 20,
+                        columnDefs: [
+                            { "width": "3%", "targets": 0 },   // Cột STT cố định nhỏ
+                            { "width": "5%", "targets": -1 }  // Cột Trạng thái cố định
+                        ],
+                        dom: 'Blfrtip',
+                        buttons: ['excel', 'pdf', 'print'],
+                        ajax: {
+                            url: '/org/api/costCenter/list',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: function (d) {
+                                return JSON.stringify({
+                                    codeNo: $('#costCenter_searchCodeNo').val(),
+                                    codeName: $('#costCenter_searchName').val()
+                                });
+                            },
+                            dataSrc: 'data'
+                        },
+                        columns: [
+                            { data: null, render: (d, t, r, m) => m.row + 1 },
+                            { data: 'codeNo' },
+                            { data: 'codeName' }, // Assuming this holds the primary Local Name
+                            { data: 'codeEngName' },
+                            { data: 'remark' },
+                            { data: 'startDate' },
+                            { data: 'endDate' },
+                            {
+                                data: 'activity',
+                                render: function (d) {
+                                    // Assuming '1' or 'Active' based on convention, displaying raw for now if unsure
+                                    return d;
+                                }
+                            },
+                            {
+                                data: null,
+                                render: function (data, type, row) {
+                                    return `<div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-warning btn-edit" data-seq="${row.seq}"><i class="bx bx-edit"></i></button>
+                                        <button class="btn btn-outline-danger btn-delete" data-seq="${row.seq}"><i class="bx bx-trash"></i></button>
+                                    </div>`;
+                                }
+                            }
+                        ],
+                        language: {
+                            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
+                        }
+                    });
+                }
+
+                $('#costCenter_btnSearch').click(function () {
+                    table.ajax.reload();
+                });
+
+                $('#costCenter_btnClear').click(function () {
+                    $('#costCenter_searchForm')[0].reset();
+                    table.ajax.reload();
+                });
+
+                $('#costCenter_btnAdd').click(function () {
+                    $('#costCenter_modalTitle').text('Thêm mới Trung tâm chi phí');
+                    $('#costCenter_form')[0].reset();
+                    $('#costCenter_seq').val('');
+                    $('#costCenter_modal').modal('show');
+                });
+
+                $('#costCenter_table').on('click', '.btn-edit', function () {
+                    var rowData = table.row($(this).parents('tr')).data();
+                    $('#costCenter_modalTitle').text('Cập nhật Trung tâm chi phí');
+                    $('#costCenter_seq').val(rowData.seq);
+                    $('#costCenter_codeNo').val(rowData.codeNo);
+                    $('#costCenter_codeName').val(rowData.codeName);
+                    $('#costCenter_codeEngName').val(rowData.codeEngName);
+                    $('#costCenter_codeKoreanName').val(rowData.codeKoreanName);
+                    $('#costCenter_codeVietnameseName').val(rowData.codeVietnameseName);
+                    $('#costCenter_startDate').val(rowData.startDate);
+                    $('#costCenter_endDate').val(rowData.endDate);
+                    $('#costCenter_country').val(rowData.country);
+                    $('#costCenter_address').val(rowData.address);
+                    $('#costCenter_activity').val(rowData.activity);
+                    $('#costCenter_orderNo').val(rowData.orderNo);
+                    $('#costCenter_remark').val(rowData.remark);
+                    $('#costCenter_businessScope').val(rowData.businessScope);
+                    $('#costCenter_profitCenter').val(rowData.profitCenter);
+
+                    $('#costCenter_modal').modal('show');
+                });
+
+                $('#costCenter_table').on('click', '.btn-delete', function () {
+                    var seq = $(this).data('seq');
+                    if (!confirm('Bạn có chắc chắn muốn xóa?')) return;
+
+                    $.ajax({
+                        url: '/org/api/costCenter/delete',
+                        type: 'POST',
+                        data: { seq: seq },
+                        success: function (res) {
+                            if (typeof toastr !== 'undefined') toastr.success(res.message);
+                            else alert(res.message);
+                            table.ajax.reload();
+                        },
+                        error: function (xhr) {
+                            alert('Lỗi: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
+                        }
+                    });
+                });
+
+                $('#costCenter_btnSave').click(function () {
+                    var payload = {
+                        seq: $('#costCenter_seq').val(),
+                        codeNo: $('#costCenter_codeNo').val(),
+                        codeName: $('#costCenter_codeName').val(),
+                        codeEngName: $('#costCenter_codeEngName').val(),
+                        codeKoreanName: $('#costCenter_codeKoreanName').val(),
+                        codeVietnameseName: $('#costCenter_codeVietnameseName').val(),
+                        startDate: $('#costCenter_startDate').val(),
+                        endDate: $('#costCenter_endDate').val(),
+                        country: $('#costCenter_country').val(),
+                        address: $('#costCenter_address').val(),
+                        activity: $('#costCenter_activity').val(),
+                        orderNo: $('#costCenter_orderNo').val(),
+                        remark: $('#costCenter_remark').val(),
+                        businessScope: $('#costCenter_businessScope').val(),
+                        profitCenter: $('#costCenter_profitCenter').val()
+                    };
+
+                    if (!payload.codeNo) {
+                        alert('Vui lòng nhập Mã chi phí');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: '/org/api/costCenter/save',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(payload),
+                        success: function (res) {
+                            if (typeof toastr !== 'undefined') toastr.success(res.message);
+                            else alert(res.message);
+                            $('#costCenter_modal').modal('hide');
+                            table.ajax.reload();
+                        },
+                        error: function (xhr) {
+                            alert('Lỗi: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
+                        }
+                    });
+                });
+            });
+        </script>
+    </template>
+</div>

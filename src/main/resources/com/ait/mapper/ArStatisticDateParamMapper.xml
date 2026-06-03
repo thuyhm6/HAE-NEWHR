@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArStatisticDateParamMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArStatisticDateParam">
+        <id column="PARAM_NO" jdbcType="VARCHAR" property="paramNo" />
+        <result column="STAT_NO" jdbcType="VARCHAR" property="statNo" />
+        <result column="CPNY_ID" jdbcType="VARCHAR" property="cpnyId" />
+        <result column="START_DATE" jdbcType="DATE" property="startDate" />
+        <result column="END_DATE" jdbcType="DATE" property="endDate" />
+        <result column="CREATE_DATE" jdbcType="TIMESTAMP" property="createDate" />
+        <result column="CREATED_BY" jdbcType="VARCHAR" property="createdBy" />
+        <result column="UPDATE_DATE" jdbcType="TIMESTAMP" property="updateDate" />
+        <result column="UPDATED_BY" jdbcType="VARCHAR" property="updatedBy" />
+        <result column="ACTIVITY" jdbcType="NUMERIC" property="activity" />
+        <result column="ORDERNO" jdbcType="NUMERIC" property="orderno" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        PARAM_NO, STAT_NO, CPNY_ID, TO_CHAR(START_DATE, 'YYYY-MM-DD') as START_DATE, TO_CHAR(END_DATE, 'YYYY-MM-DD') as END_DATE, 
+        CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ACTIVITY, ORDERNO
+    </sql>
+
+    <!-- Tìm kiếm -->
+    <select id="selectCycleParams" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM AR_STATISTIC_DATE_PARAM
+        <where>
+            <if test="cpnyId != null and cpnyId != ''">
+                AND CPNY_ID LIKE '%' || #{cpnyId, jdbcType=VARCHAR} || '%'
+            </if>
+            <if test="statNo != null and statNo != ''">
+                AND STAT_NO LIKE '%' || #{statNo} || '%'
+            </if>
+        </where>
+        ORDER BY CPNY_ID, ORDERNO, STAT_NO
+    </select>
+
+    <!-- Chi tiết -->
+    <select id="selectCycleParamById" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM AR_STATISTIC_DATE_PARAM
+        WHERE PARAM_NO = #{paramNo}
+    </select>
+
+    <!-- Thêm mới -->
+    <insert id="insertCycleParam" parameterType="com.ait.ar.attendanceSettings.model.ArStatisticDateParam">
+        <!-- Lấy giá trị seq tự tăng -->
+        <selectKey keyProperty="paramNo" resultType="java.lang.String" order="BEFORE">
+            SELECT TO_CHAR(AR_STATISTIC_DATE_PARAM_SEQ.NEXTVAL) FROM DUAL
+        </selectKey>
+
+        INSERT INTO AR_STATISTIC_DATE_PARAM (
+            PARAM_NO, 
+            STAT_NO, 
+            CPNY_ID, 
+            START_DATE, 
+            END_DATE, 
+            ACTIVITY, 
+            ORDERNO, 
+            CREATE_DATE, 
+            CREATED_BY, 
+            UPDATE_DATE, 
+            UPDATED_BY
+        ) VALUES (
+            #{paramNo},
+            #{statNo},
+            #{cpnyId, jdbcType=VARCHAR},
+            <choose>
+                <when test="startDate != null and startDate != ''">TO_DATE(#{startDate}, 'YYYY-MM-DD')</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
+            <choose>
+                <when test="endDate != null and endDate != ''">TO_DATE(#{endDate}, 'YYYY-MM-DD')</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
+            #{activity, jdbcType=NUMERIC},
+            #{orderno, jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- Cập nhật -->
+    <update id="updateCycleParam" parameterType="com.ait.ar.attendanceSettings.model.ArStatisticDateParam">
+        UPDATE AR_STATISTIC_DATE_PARAM
+        <set>
+            <if test="statNo != null">
+                STAT_NO = #{statNo},
+            </if>
+            <if test="cpnyId != null">
+                CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            </if>
+            <choose>
+                <when test="startDate != null and startDate != ''">
+                    START_DATE = TO_DATE(#{startDate}, 'YYYY-MM-DD'),
+                </when>
+                <when test="startDate == ''">
+                    START_DATE = NULL,
+                </when>
+            </choose>
+            <choose>
+                <when test="endDate != null and endDate != ''">
+                    END_DATE = TO_DATE(#{endDate}, 'YYYY-MM-DD'),
+                </when>
+                <when test="endDate == ''">
+                    END_DATE = NULL,
+                </when>
+            </choose>
+            <if test="activity != null">
+                ACTIVITY = #{activity, jdbcType=NUMERIC},
+            </if>
+            <if test="orderno != null">
+                ORDERNO = #{orderno, jdbcType=NUMERIC},
+            </if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        </set>
+        WHERE PARAM_NO = #{paramNo}
+    </update>
+
+    <!-- Xóa -->
+    <delete id="deleteCycleParam">
+        DELETE FROM AR_STATISTIC_DATE_PARAM WHERE PARAM_NO = #{paramNo}
+    </delete>
+
+</mapper>

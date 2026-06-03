@@ -1,0 +1,535 @@
+<div th:fragment="content">
+    <div class="row h-100">
+
+        <!-- ── Panel trái: danh sách hạng mục ──────────────────────────────── -->
+        <div class="col-md-3 border-end p-0 bg-white d-flex flex-column" style="height: calc(100vh - 160px);">
+            <div class="px-3 py-2 bg-light border-bottom flex-shrink-0">
+                <h6 class="mb-0 fw-bold" th:text="#{pa.formula.itemList}">Hạng mục tính</h6>
+            </div>
+            <div id="vpf_itemList" class="overflow-auto flex-grow-1">
+                <!-- Loaded by AJAX -->
+            </div>
+        </div>
+
+        <!-- ── Panel phải: danh sách công thức ─────────────────────────────── -->
+        <div class="col-md-9 p-3">
+            <div class="card" style="height: calc(100vh - 170px);">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light py-2">
+                    <h6 class="mb-0 text-primary fw-bold" id="vpf_selectedLabel"
+                        th:text="#{pa.formula.formulaConfig}">Cấu hình công thức</h6>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-success btn-sm" onclick="vpfOpenAddModal()">
+                            <i class="bi bi-plus-circle"></i>
+                            <span th:text="#{pa.formula.addNew}">Thêm mới</span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="vpfDeleteSelected()">
+                            <i class="bi bi-trash"></i>
+                            <span th:text="#{pa.formula.delete}">Xóa</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-2 overflow-auto">
+                    <div class="table-responsive">
+                        <table id="vpf_table"
+                               class="table table-striped table-bordered table-hover table-sm"
+                               style="width:100%; cursor:pointer;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;">
+                                        <input type="checkbox" id="vpf_checkAll">
+                                    </th>
+                                    <th class="text-center" style="width:40px;"
+                                        th:text="#{pa.formula.no}">STT</th>
+                                    <th class="text-center" style="width:130px;"
+                                        th:text="#{pa.formula.conditionSeq}">Trình tự tính</th>
+                                    <th th:text="#{pa.formula.condition}">Điều kiện</th>
+                                    <th th:text="#{pa.formula.formular}">Công thức</th>
+                                    <th style="width:180px;" th:text="#{pa.formula.description}">Mô tả</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Modal Thêm / Sửa công thức ─────────────────────────────────────────── -->
+<div class="modal fade" id="vpf_modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vpf_modalTitle" th:text="#{pa.formula.addTitle}">
+                    Thêm mới công thức</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="vpf_form">
+                    <input type="hidden" id="vpf_formularNo">
+
+                    <div class="alert alert-info py-2 mb-3">
+                        <strong th:text="#{pa.formula.configItem}">Hạng mục đang cấu hình:</strong>
+                        <span id="vpf_modalItemName" class="ms-1 fw-semibold"></span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="vpf_condition" class="form-label"
+                                   th:text="#{pa.formula.conditionLabel}">Điều kiện (Condition)</label>
+                            <textarea class="form-control" id="vpf_condition" rows="2"
+                                      style="font-family: monospace; font-size: 0.875rem;"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="vpf_formular" class="form-label">
+                                <span th:text="#{pa.formula.formularLabel}">Công thức (Formular)</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="vpf_formular" rows="2" required
+                                      style="font-family: monospace; font-size: 0.875rem;"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="vpf_description" class="form-label"
+                                   th:text="#{pa.formula.descriptionLabel}">Mô tả (Description)</label>
+                            <textarea class="form-control" id="vpf_description" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- ── Panel Công cụ ──────────────────────────────────────────── -->
+                <div class="border rounded mt-3 overflow-hidden">
+                    <div class="px-3 py-2 bg-secondary text-white d-flex align-items-center">
+                        <i class="bi bi-tools me-2"></i>
+                        <strong th:text="#{pa.formula.toolPanel}">Công cụ</strong>
+                    </div>
+                    <div class="row g-0 bg-white">
+                        <div class="col-3 border-end">
+                            <div class="px-2 py-1 border-bottom fw-semibold small text-center bg-light"
+                                 th:text="#{pa.formula.toolParamItem}">Danh sách mục nhập</div>
+                            <div id="vpf_toolParamList" class="overflow-auto" style="height:180px;"></div>
+                        </div>
+                        <div class="col-3 border-end">
+                            <div class="px-2 py-1 border-bottom fw-semibold small text-center bg-light"
+                                 th:text="#{pa.formula.toolSalaryItem}">Danh sách hạng mục lương</div>
+                            <div id="vpf_toolSalaryList" class="overflow-auto" style="height:180px;"></div>
+                        </div>
+                        <div class="col-3 border-end">
+                            <div class="px-2 py-1 border-bottom fw-semibold small text-center bg-light"
+                                 th:text="#{pa.formula.toolAttendanceItem}">Hạng mục chấm công</div>
+                            <div id="vpf_toolAttendList" class="overflow-auto" style="height:180px;"></div>
+                        </div>
+                        <div class="col-3">
+                            <div class="px-2 py-1 border-bottom fw-semibold small text-center bg-light"
+                                 th:text="#{pa.formula.toolFixedParam}">Tham số cố định</div>
+                            <div id="vpf_toolFixedList" class="overflow-auto" style="height:180px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="vpfSaveData()">
+                    <i class="bi bi-save"></i>
+                    <span th:text="#{common.save}">Lưu</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Scripts ─────────────────────────────────────────────────────────────── -->
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vpf_table           = null;
+        var vpf_currentItemNo   = '';
+        var vpf_currentItemName = '';
+        var vpf_lastFocusedField = 'formular'; // 'condition' hoặc 'formular'
+        var vpf_itemNameMap = {}; // ITEM_ID → ITEM_NAME
+
+        var vpf_msgSelectItemFirst  = /*[[#{pa.formula.selectItemFirst}]]*/ 'Vui lòng chọn Hạng mục ở bên trái trước!';
+        var vpf_msgFormularRequired = /*[[#{pa.formula.formularRequired}]]*/ 'Vui lòng nhập nội dung công thức!';
+        var vpf_msgConfirmDelete    = /*[[#{pa.formula.confirmDelete}]]*/ 'Bạn có chắc chắn muốn xóa công thức đã chọn?';
+        var vpf_msgSelectOne        = /*[[#{pa.formula.selectOne}]]*/ 'Vui lòng chọn đúng một bản ghi để sửa!';
+        var vpf_msgSelectRequired   = /*[[#{pa.formula.selectRequired}]]*/ 'Vui lòng chọn ít nhất một bản ghi!';
+        var vpf_msgAddTitle         = /*[[#{pa.formula.addTitle}]]*/ 'Thêm mới công thức';
+        var vpf_msgEditTitle        = /*[[#{pa.formula.editTitle}]]*/ 'Cập nhật công thức';
+
+        function vpfReplaceItemIds(expr) {
+            if (!expr) return '';
+            // \S+ = mỗi token phân cách bởi dấu cách, không cắt bởi _ hay ký tự khác
+            // → S_POSITION_ALLOW_SP được tra cứu nguyên vẹn, không bị chia nhỏ
+            return expr.replace(/\S+/g, function (token) {
+                var name = vpf_itemNameMap[token];
+                return (name && name !== token)
+                    ? '<span class="text-primary fw-semibold" title="' + token + '">' + name + '</span>'
+                    : token;
+            });
+        }
+
+        function loadVpfAllItemNames(callback) {
+            $.ajax({
+                url: '/pa/salary/formula/api/allItemNames',
+                type: 'GET',
+                success: function (data) {
+                    vpf_itemNameMap = {};
+                    $.each(data, function (i, item) {
+                        if (item.itemId && item.itemName) {
+                            vpf_itemNameMap[item.itemId] = item.itemName;
+                        }
+                    });
+                    if (typeof callback === 'function') callback();
+                },
+                error: function () {
+                    console.warn('Không tải được danh sách ITEM_NAME');
+                    if (typeof callback === 'function') callback();
+                }
+            });
+        }
+
+        $(document).ready(function () {
+
+            loadVpfItemList();
+            loadVpfToolItems();
+            loadVpfAllItemNames();
+
+            $('#vpf_condition').on('focus', function () { vpf_lastFocusedField = 'condition'; });
+            $('#vpf_formular').on('focus',  function () { vpf_lastFocusedField = 'formular'; });
+
+            vpf_table = $('#vpf_table').DataTable({
+                destroy: true,
+                scrollY: 'calc(100vh - 360px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 20,
+                lengthMenu: [10, 20, 50, 100],
+                processing: true,
+                serverSide: true,
+                autoWidth: false,
+                scrollX: true,
+                columnDefs: [
+                    { targets: 0, width: '36px',  className: 'text-center', orderable: false },
+                    { targets: 1, width: '40px',  className: 'text-center', orderable: false },
+                    { targets: 2, width: '130px', className: 'text-center', orderable: false }
+                ],
+                ajax: {
+                    url: '/pa/salary/formula/api/list',
+                    type: 'GET',
+                    data: function (d) {
+                        d.itemNo = vpf_currentItemNo;
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            return '<input type="checkbox" class="vpf_rowCheck"'
+                                + ' data-formularno="' + row.formularNo + '">';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    {
+                        data: 'conditionSeq',
+                        defaultContent: '',
+                        render: function (data, type, row) {
+                            if (type !== 'display') return data;
+                            var seqVal = (data != null ? data : '');
+                            // maxSeq = seq cao nhất → đầu danh sách DESC → ẩn mũi tên lên
+                            // minSeq = seq thấp nhất → cuối danh sách DESC → ẩn mũi tên xuống
+                            var upBtn = '';
+                            var downBtn = '';
+                            if (row.maxSeq == null || data !== row.maxSeq) {
+                                upBtn = '<button type="button"'
+                                    + ' class="btn btn-sm p-0 px-1 border-0 text-success vpf_btnUp"'
+                                    + ' data-formularno="' + row.formularNo + '"'
+                                    + ' data-itemno="' + row.itemNo + '" title="Lên">'
+                                    + '<i class="bi bi-arrow-up-circle-fill fs-6"></i></button>';
+                            }
+                            if (row.minSeq == null || data !== row.minSeq) {
+                                downBtn = '<button type="button"'
+                                    + ' class="btn btn-sm p-0 px-1 border-0 text-primary vpf_btnDown"'
+                                    + ' data-formularno="' + row.formularNo + '"'
+                                    + ' data-itemno="' + row.itemNo + '" title="Xuống">'
+                                    + '<i class="bi bi-arrow-down-circle-fill fs-6"></i></button>';
+                            }
+                            return '<span class="me-1">' + seqVal + '</span>' + upBtn + downBtn;
+                        }
+                    },
+                    {
+                        data: 'condition',
+                        defaultContent: '',
+                        render: function (data, type, row) {
+                            if (type !== 'display') return data || '';
+                            return data ? vpfReplaceItemIds(data) : '';
+                        }
+                    },
+                    {
+                        data: 'formular',
+                        defaultContent: '',
+                        render: function (data, type, row) {
+                            if (type !== 'display') return data || '';
+                            return data ? vpfReplaceItemIds(data) : '';
+                        }
+                    },
+                    { data: 'description', defaultContent: '' }
+                ],
+                drawCallback: function () {
+                    $('#vpf_checkAll').off('change').on('change', function () {
+                        $('.vpf_rowCheck').prop('checked', $(this).is(':checked'));
+                    });
+
+                    $('#vpf_table tbody')
+                        .off('click', '.vpf_btnUp, .vpf_btnDown')
+                        .on('click', '.vpf_btnUp, .vpf_btnDown', function (e) {
+                            e.stopPropagation();
+                            var formularNo = $(this).data('formularno');
+                            var itemNo     = $(this).data('itemno');
+                            var direction  = $(this).hasClass('vpf_btnUp') ? 'up' : 'down';
+                            vpfSwapSeq(formularNo, itemNo, direction);
+                        });
+
+                    $('#vpf_table tbody')
+                        .off('click', 'tr')
+                        .on('click', 'tr', function (e) {
+                            if ($(e.target).is(':checkbox, button, i')) return;
+                            var checkbox = $(this).find('.vpf_rowCheck');
+                            var formularNo = checkbox.data('formularno');
+                            if (!formularNo) return;
+                            vpfOpenEditModal(formularNo);
+                        });
+                }
+            });
+        });
+
+        function vpfBuildToolList(containerId, items) {
+            if (!items || items.length === 0) {
+                $('#' + containerId).html(
+                    '<div class="text-muted small p-2 text-center">-</div>');
+                return;
+            }
+            var html = '';
+            $.each(items, function (i, item) {
+                var id   = $('<span>').text(item.itemId   || '').html();
+                var name = $('<span>').text(item.itemName || item.itemId || '').html();
+                html += '<div class="vpf_tool-item px-2 py-1 border-bottom small"'
+                      + ' style="cursor:pointer; user-select:none;"'
+                      + ' data-itemid="' + id + '">'
+                      + '<span class="text-primary text-truncate d-block" title="' + id + '">'
+                      + name + '</span>'
+                      + '</div>';
+            });
+            $('#' + containerId).html(html);
+        }
+
+        function loadVpfToolItems() {
+            $.ajax({
+                url: '/pa/salary/formula/api/toolItems',
+                type: 'GET',
+                success: function (data) {
+                    vpfBuildToolList('vpf_toolParamList',  data.paramItems      || []);
+                    vpfBuildToolList('vpf_toolSalaryList', data.salaryItems     || []);
+                    vpfBuildToolList('vpf_toolAttendList', data.attendanceItems || []);
+                    vpfBuildToolList('vpf_toolFixedList',  data.fixedParams     || []);
+
+                    $('.vpf_tool-item').on('click', function () {
+                        var itemId = $(this).data('itemid');
+                        var targetId = vpf_lastFocusedField === 'condition'
+                            ? 'vpf_condition' : 'vpf_formular';
+                        var el = document.getElementById(targetId);
+                        var start = el.selectionStart;
+                        var end   = el.selectionEnd;
+                        var val   = el.value;
+                        el.value = val.substring(0, start) + itemId + val.substring(end);
+                        el.selectionStart = el.selectionEnd = start + itemId.length;
+                        el.focus();
+                    });
+                },
+                error: function () {
+                    console.warn('Không tải được danh sách công cụ công thức');
+                }
+            });
+        }
+
+        function loadVpfItemList() {
+            $.ajax({
+                url: '/pa/salary/formula/api/itemList',
+                type: 'GET',
+                success: function (data) {
+                    if (!data || data.length === 0) {
+                        $('#vpf_itemList').html(
+                            '<div class="text-muted small p-3">Không có dữ liệu</div>');
+                        return;
+                    }
+                    var html = '';
+                    $.each(data, function (i, item) {
+                        var itemNo   = item.itemNo   || '';
+                        var itemName = item.itemName || itemNo;
+                        html += '<div class="vpf_item-row d-flex align-items-center'
+                              + ' px-3 py-2 border-bottom"'
+                              + ' style="cursor:pointer;"'
+                              + ' data-itemno="' + itemNo + '"'
+                              + ' data-itemname="' + $('<span>').text(itemName).html() + '">'
+                              + '<i class="bx bxs-file me-2 text-warning flex-shrink-0"></i>'
+                              + '<span class="small text-truncate">' + $('<span>').text(itemName).html() + '</span>'
+                              + '</div>';
+                    });
+                    $('#vpf_itemList').html(html);
+
+                    $('#vpf_itemList').off('click', '.vpf_item-row')
+                        .on('click', '.vpf_item-row', function () {
+                            $('.vpf_item-row').removeClass('bg-primary text-white');
+                            $(this).addClass('bg-primary text-white');
+                            vpf_currentItemNo   = $(this).data('itemno');
+                            vpf_currentItemName = $(this).data('itemname');
+                            $('#vpf_selectedLabel').text(vpf_currentItemName);
+                            if (vpf_table) vpf_table.ajax.reload();
+                        });
+                },
+                error: function () {
+                    $('#vpf_itemList').html(
+                        '<div class="text-danger small p-3">Lỗi khi tải danh sách hạng mục</div>');
+                }
+            });
+        }
+
+        window.vpfOpenAddModal = function () {
+            if (!vpf_currentItemNo) {
+                toastr ? toastr.warning(vpf_msgSelectItemFirst) : alert(vpf_msgSelectItemFirst);
+                return;
+            }
+            $('#vpf_modalTitle').text(vpf_msgAddTitle);
+            $('#vpf_form')[0].reset();
+            $('#vpf_formularNo').val('');
+            $('#vpf_modalItemName').text(vpf_currentItemName + ' (' + vpf_currentItemNo + ')');
+            new bootstrap.Modal(document.getElementById('vpf_modal')).show();
+        };
+
+        window.vpfEditSelected = function () {
+            var selected = [];
+            $('.vpf_rowCheck:checked').each(function () {
+                selected.push($(this).data('formularno'));
+            });
+            if (selected.length !== 1) {
+                toastr ? toastr.warning(vpf_msgSelectOne) : alert(vpf_msgSelectOne);
+                return;
+            }
+            vpfOpenEditModal(selected[0]);
+        };
+
+        window.vpfOpenEditModal = function (formularNo) {
+            $.ajax({
+                url: '/pa/salary/formula/api/' + formularNo,
+                type: 'GET',
+                success: function (data) {
+                    $('#vpf_modalTitle').text(vpf_msgEditTitle);
+                    $('#vpf_formularNo').val(data.formularNo);
+                    $('#vpf_condition').val(data.condition   || '');
+                    $('#vpf_formular').val(data.formular     || '');
+                    $('#vpf_description').val(data.description || '');
+                    $('#vpf_modalItemName').text(vpf_currentItemName + ' (' + vpf_currentItemNo + ')');
+                    new bootstrap.Modal(document.getElementById('vpf_modal')).show();
+                },
+                error: function () {
+                    toastr ? toastr.error('Lỗi khi tải dữ liệu!') : alert('Lỗi khi tải dữ liệu!');
+                }
+            });
+        };
+
+        window.vpfSaveData = function () {
+            var formularVal = $('#vpf_formular').val();
+            if (!formularVal || !formularVal.trim()) {
+                toastr ? toastr.warning(vpf_msgFormularRequired) : alert(vpf_msgFormularRequired);
+                return;
+            }
+            var formularNoVal = $('#vpf_formularNo').val();
+            var isEdit = formularNoVal !== '';
+            var payload = {
+                formularNo:  isEdit ? parseInt(formularNoVal) : null,
+                itemNo:      vpf_currentItemNo,
+                condition:   $('#vpf_condition').val(),
+                formular:    formularVal,
+                description: $('#vpf_description').val()
+            };
+            $.ajax({
+                url:  isEdit ? '/pa/salary/formula/api/update'
+                             : '/pa/salary/formula/api/insert',
+                type: isEdit ? 'PUT' : 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    toastr ? toastr.success(res.message) : alert(res.message);
+                    var modal = bootstrap.Modal.getInstance(
+                        document.getElementById('vpf_modal'));
+                    if (modal) modal.hide();
+                    vpf_table.ajax.reload(null, false);
+                },
+                error: function (err) {
+                    var msg = (err.responseJSON && err.responseJSON.error)
+                        ? err.responseJSON.error : 'Lỗi không xác định';
+                    toastr ? toastr.error(msg) : alert(msg);
+                }
+            });
+        };
+
+        window.vpfDeleteSelected = function () {
+            var selected = [];
+            $('.vpf_rowCheck:checked').each(function () {
+                selected.push($(this).data('formularno'));
+            });
+            if (selected.length === 0) {
+                toastr ? toastr.warning(vpf_msgSelectRequired) : alert(vpf_msgSelectRequired);
+                return;
+            }
+            if (!confirm(vpf_msgConfirmDelete)) return;
+
+            var deleteNext = function (index) {
+                if (index >= selected.length) {
+                    toastr ? toastr.success('Xóa thành công') : alert('Xóa thành công');
+                    vpf_table.ajax.reload(null, false);
+                    return;
+                }
+                $.ajax({
+                    url: '/pa/salary/formula/api/delete/' + selected[index],
+                    type: 'DELETE',
+                    success: function () { deleteNext(index + 1); },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error)
+                            ? err.responseJSON.error : 'Lỗi khi xóa';
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+            deleteNext(0);
+        };
+
+        window.vpfSwapSeq = function (formularNo, itemNo, direction) {
+            $.ajax({
+                url: '/pa/salary/formula/api/swapSeq',
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    formularNo: String(formularNo),
+                    itemNo:     itemNo,
+                    direction:  direction
+                }),
+                success: function () {
+                    vpf_table.ajax.reload(null, false);
+                },
+                error: function (err) {
+                    var msg = (err.responseJSON && err.responseJSON.error)
+                        ? err.responseJSON.error : 'Lỗi không xác định';
+                    toastr ? toastr.error(msg) : alert(msg);
+                }
+            });
+        };
+    </script>
+</template>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsScoreMapper">
+
+    <resultMap id="EvsScoreResultMap" type="com.ait.evs.manage.dto.EvsScoreDto">
+        <id     column="SEQ"             property="seq"           jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ"      property="resumeSeq"     jdbcType="VARCHAR" />
+        <result column="SCORE_TYPE"      property="scoreType"     jdbcType="VARCHAR" />
+        <result column="NO"              property="no"            jdbcType="VARCHAR" />
+        <result column="NAME"            property="name"          jdbcType="VARCHAR" />
+        <result column="DEPTNO"         property="deptNo"        jdbcType="VARCHAR" />
+        <result column="DEPTNAME"       property="deptName"      jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO"   property="postGradeNo"   jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR" />
+        <result column="A"               property="a"             jdbcType="VARCHAR" />
+        <result column="B"               property="b"             jdbcType="VARCHAR" />
+        <result column="C"               property="c"             jdbcType="VARCHAR" />
+        <result column="D"               property="d"             jdbcType="VARCHAR" />
+        <result column="E"               property="e"             jdbcType="VARCHAR" />
+        <result column="N"               property="n"             jdbcType="VARCHAR" />
+        <result column="O"               property="o"             jdbcType="VARCHAR" />
+        <result column="S"               property="s"             jdbcType="VARCHAR" />
+        <result column="SUM_SCORE"       property="sum"           jdbcType="VARCHAR" />
+        <result column="ACTIVITY"        property="activity"      jdbcType="VARCHAR" />
+        <result column="CREATE_DATE"     property="createDate"    jdbcType="VARCHAR" />
+        <result column="CREATED_BY"      property="createdBy"     jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"     property="updateDate"    jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"      property="updatedBy"     jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="selectColumns">
+        es.SEQ,
+        es.RESUME_SEQ,
+        es.SCORE_TYPE,
+        es.NO,
+        es.NAME,
+        es.DEPTNO,
+        es.DEPTNAME,
+        es.POST_GRADE_NO,
+        es.POST_GRADE_NAME,
+        TO_CHAR(es.A)   AS A,
+        TO_CHAR(es.B)   AS B,
+        TO_CHAR(es.C)   AS C,
+        TO_CHAR(es.D)   AS D,
+        TO_CHAR(es.E)   AS E,
+        TO_CHAR(es.N)   AS N,
+        TO_CHAR(es.O)   AS O,
+        TO_CHAR(es.S)   AS S,
+        TO_CHAR(NVL(es.A,0)+NVL(es.B,0)+NVL(es.C,0)+NVL(es.D,0)
+               +NVL(es.E,0)+NVL(es.N,0)+NVL(es.O,0)+NVL(es.S,0)) AS SUM_SCORE,
+        es.ACTIVITY,
+        TO_CHAR(es.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+        GET_UPDATED_INFO(es.CREATED_BY) || ' ' || es.CREATED_IP AS CREATED_BY,
+        TO_CHAR(es.UPDATE_DATE, 'YYYY-MM-DD HH24:MI')    AS UPDATE_DATE,
+        GET_UPDATED_INFO(es.UPDATED_BY) || ' ' || es.UPDATED_IP AS UPDATED_BY
+    </sql>
+
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsScoreDto"
+            resultMap="EvsScoreResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EVS_SCORE es
+        WHERE es.ACTIVITY != 2
+        <if test="resumeSeq != null and resumeSeq != ''">
+            AND es.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        </if>
+        <if test="scoreTypeSearch != null and scoreTypeSearch != ''">
+            AND es.SCORE_TYPE = #{scoreTypeSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="activitySearch != null and activitySearch != ''">
+            AND es.ACTIVITY = #{activitySearch, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_NUMBER(es.SEQ)
+    </select>
+
+    <select id="selectOne" resultMap="EvsScoreResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EVS_SCORE es
+        WHERE es.SEQ     = #{seq,    jdbcType=VARCHAR}
+    </select>
+
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_SCORE_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsScoreDto">
+        INSERT INTO EVS_SCORE (
+            SEQ, RESUME_SEQ, SCORE_TYPE, NO, NAME,
+            DEPTNO, DEPTNAME, POST_GRADE_NO, POST_GRADE_NAME,
+            A, B, C, D, E, N, O, S,
+            ACTIVITY, CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,           jdbcType=VARCHAR},
+            #{resumeSeq,     jdbcType=VARCHAR},
+            #{scoreType,     jdbcType=VARCHAR},
+            #{no,            jdbcType=VARCHAR},
+            #{name,          jdbcType=VARCHAR},
+            #{deptNo,        jdbcType=VARCHAR},
+            #{deptName,      jdbcType=VARCHAR},
+            #{postGradeNo,   jdbcType=VARCHAR},
+            #{postGradeName, jdbcType=VARCHAR},
+            #{a,             jdbcType=VARCHAR},
+            #{b,             jdbcType=VARCHAR},
+            #{c,             jdbcType=VARCHAR},
+            #{d,             jdbcType=VARCHAR},
+            #{e,             jdbcType=VARCHAR},
+            #{n,             jdbcType=VARCHAR},
+            #{o,             jdbcType=VARCHAR},
+            #{s,             jdbcType=VARCHAR},
+            NVL(#{activity, jdbcType=VARCHAR}, '1'),
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsScoreDto">
+        UPDATE EVS_SCORE
+        SET SCORE_TYPE      = #{scoreType,     jdbcType=VARCHAR},
+            NO              = #{no,            jdbcType=VARCHAR},
+            NAME            = #{name,          jdbcType=VARCHAR},
+            DEPTNO         = #{deptNo,        jdbcType=VARCHAR},
+            DEPTNAME        = #{deptName,      jdbcType=VARCHAR},
+            POST_GRADE_NO   = #{postGradeNo,   jdbcType=VARCHAR},
+            POST_GRADE_NAME = #{postGradeName, jdbcType=VARCHAR},
+            A               = NVL(#{a,             jdbcType=VARCHAR}, '0'),
+            B               = NVL(#{b,             jdbcType=VARCHAR}, '0'),
+            C               = NVL(#{c,             jdbcType=VARCHAR}, '0'),
+            D               = NVL(#{d,             jdbcType=VARCHAR}, '0'),
+            E               = NVL(#{e,             jdbcType=VARCHAR}, '0'),
+            N               = NVL(#{n,             jdbcType=VARCHAR}, '0'),
+            O               = NVL(#{o,             jdbcType=VARCHAR}, '0'),
+            S               = NVL(#{s,             jdbcType=VARCHAR}, '0'),
+            ACTIVITY        = NVL(#{activity,  jdbcType=VARCHAR}, '1'),
+            UPDATED_BY      = #{adminID,       jdbcType=VARCHAR},
+            UPDATED_IP      = #{adminIP,       jdbcType=VARCHAR},
+            UPDATE_DATE     = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteBySeq">
+        UPDATE EVS_SCORE
+        SET ACTIVITY    = 2,
+            UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

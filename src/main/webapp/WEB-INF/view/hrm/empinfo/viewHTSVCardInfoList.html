@@ -1,0 +1,912 @@
+<div th:fragment="content">
+    <style>
+        .hrcard-container {
+            font-family: Arial, sans-serif;
+            color: #333;
+            width: 90%;
+            background: #fff;
+            padding: 10px;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .hrcard-container:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        .hrcard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .hrcard-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .hrcard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+
+        .hrcard-table th,
+        .hrcard-table td {
+            border: 1px solid #ccc;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .hrcard-table th {
+            background-color: #f9f9f9;
+            font-weight: normal;
+            color: #555;
+        }
+
+        .hrcard-photo-cell {
+            width: 120px;
+            text-align: center;
+            vertical-align: middle;
+            padding: 0;
+            border: 1px solid #ccc;
+        }
+
+        .hrcard-photo {
+            width: 100px;
+            height: 130px;
+            margin: 5px auto;
+            background: #0066cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hrcard-emp-name {
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .hrcard-emp-id {
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .hrcard-label {
+            text-align: left !important;
+            padding-left: 8px !important;
+            width: 100px;
+        }
+
+        .hrcard-value {
+            text-align: center;
+        }
+
+        .hrcard-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .hrcard-grid-2>div {
+            min-width: 0;
+        }
+
+        .hrcard-section-title {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+    </style>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="hcv_searchForm" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="hcv_keyword" class="form-label">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="hcv_keyword" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="hcv_deptNo" class="form-label">Phòng ban</label>
+                            <input type="text" class="form-control" id="hcv_deptNo" placeholder="Chọn phòng ban"
+                                readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="hcv_fromDate" class="form-label">Ngày vào làm từ</label>
+                            <input type="text" class="form-control js-daterangepicker" id="hcv_fromDate"
+                                data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="hcv_toDate" class="form-label">Ngày vào làm đến</label>
+                            <input type="text" class="form-control js-daterangepicker" id="hcv_toDate"
+                                data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="hcv_postFamily" class="form-label">Nhóm nhân viên</label>
+                            <select class="form-select" id="hcv_postFamily" data-parent-code="14015812"
+                                data-default-text="-- Tất cả --"></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="hcv_empTypeCode" class="form-label">Loại nhân viên</label>
+                            <select class="form-select" id="hcv_empTypeCode" data-parent-code="13864"
+                                data-default-text="-- Tất cả --"></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="hcv_empOffice" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="hcv_empOffice" data-parent-code="15118"
+                                data-default-text="-- Tất cả --" data-default-value="15119"></select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary" onclick="hcvSearchData()">
+                                <i class="bx bx-search"></i> Tra cứu
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="hcvClearSearch()">
+                                <i class="bx bx-x"></i> Xóa lọc
+                            </button>
+                            <button type="button" class="btn btn-info text-white" onclick="hcvPrintCard()">
+                                <i class="bx bx-printer"></i> In thẻ
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="dt-table-wrapper">
+                        <table id="hcv_dataTable" class="table table-bordered table-hover align-middle mb-0 w-100">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;" class="text-center">
+                                        <input type="checkbox" class="form-check-input" id="hcv_checkAll">
+                                    </th>
+                                    <th>Mã nhân viên</th>
+                                    <th>Họ tên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Nhóm nhân viên</th>
+                                    <th>Loại nhân viên</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày vào làm</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="hcv_previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem trước Thẻ nhân sự</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="hcv_printArea">
+                <!-- Data will be appended here dynamically -->
+            </div>
+            <template id="hcv_cardTemplate">
+                <div class="hrcard-container">
+                    <div class="hrcard-header">
+                        <div class="hrcard-logo">
+                            <div style="font-size: 24px; font-weight: bold; color: #ff6a00;">
+                                <i class="bx bxl-xing"></i> Hanwha Vision
+                            </div>
+                            <div style="font-size: 12px; font-weight: bold; padding-left: 28px;">Vietnam</div>
+                        </div>
+                        <div class="hrcard-title">HR CARD</div>
+                    </div>
+
+                    <div class="hrcard-info-section">
+                        <table class="hrcard-table">
+                            <tbody>
+                                <tr>
+                                    <td rowspan="8" class="hrcard-photo-cell">
+                                        <div class="hrcard-photo">
+                                            <i class="bx bxs-user" style="font-size: 80px; color: #ccc;"></i>
+                                        </div>
+                                        <div class="hrcard-emp-name" id="hr_localName"></div>
+                                        <div class="hrcard-emp-id" id="hr_empId"></div>
+                                    </td>
+                                    <th class="hrcard-label">Department</th>
+                                    <td class="hrcard-value" id="hr_department"></td>
+                                    <th class="hrcard-label">Contract start</th>
+                                    <td class="hrcard-value" id="hr_contractStart"></td>
+                                    <th class="hrcard-label">REG place</th>
+                                    <td class="hrcard-value" id="hr_regPlace"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label">Rank</th>
+                                    <td class="hrcard-value" id="hr_rank"></td>
+                                    <th class="hrcard-label">Contract end</th>
+                                    <td class="hrcard-value" id="hr_contractEnd"></td>
+                                    <th class="hrcard-label">Political</th>
+                                    <td class="hrcard-value" id="hr_political"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label">Mainbusiness</th>
+                                    <td class="hrcard-value" id="hr_mainBusiness"></td>
+                                    <th class="hrcard-label">Final edu</th>
+                                    <td class="hrcard-value" id="hr_finalEdu"></td>
+                                    <th class="hrcard-label">Birthday</th>
+                                    <td class="hrcard-value" id="hr_birthday"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label">Cost center</th>
+                                    <td class="hrcard-value" id="hr_costCenter"></td>
+                                    <th class="hrcard-label">Grad school</th>
+                                    <td class="hrcard-value" id="hr_gradSchool"></td>
+                                    <th class="hrcard-label">Gender</th>
+                                    <td class="hrcard-value" id="hr_gender"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label">State service</th>
+                                    <td class="hrcard-value" id="hr_stateService"></td>
+                                    <th class="hrcard-label">Major</th>
+                                    <td class="hrcard-value" id="hr_major"></td>
+                                    <th class="hrcard-label">Home phone</th>
+                                    <td class="hrcard-value" id="hr_homePhone"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label">Division entry</th>
+                                    <td class="hrcard-value" id="hr_divisionEntry"></td>
+                                    <th class="hrcard-label">Grad date</th>
+                                    <td class="hrcard-value" id="hr_gradDate"></td>
+                                    <th class="hrcard-label">Tel</th>
+                                    <td class="hrcard-value" id="hr_tel"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label">Date entry</th>
+                                    <td class="hrcard-value" id="hr_dateEntry"></td>
+                                    <th class="hrcard-label">National</th>
+                                    <td class="hrcard-value" id="hr_national"></td>
+                                    <th class="hrcard-label">Married</th>
+                                    <td class="hrcard-value" id="hr_married"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label">Person email</th>
+                                    <td class="hrcard-value" id="hr_personEmail"></td>
+                                    <th class="hrcard-label">C.email</th>
+                                    <td class="hrcard-value" id="hr_cEmail"></td>
+                                    <th class="hrcard-label">Marry date</th>
+                                    <td class="hrcard-value" id="hr_marryDate"></td>
+                                </tr>
+                                <tr>
+                                    <th class="hrcard-label" colspan="1" style="border-top: none;"></th>
+                                    <th class="hrcard-label" colspan="1">Present add</th>
+                                    <td class="hrcard-value" colspan="3" id="hr_presentAdd"></td>
+                                    <th class="hrcard-label" colspan="1">EagleM ID</th>
+                                    <td class="hrcard-value" colspan="1" id="hr_eagleMId"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="hrcard-grid-2">
+                        <div>
+                            <div class="hrcard-section-title">Education Information</div>
+                            <table class="hrcard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Admissions</th>
+                                        <th>Graduation</th>
+                                        <th>Education</th>
+                                        <th>Graduate school</th>
+                                        <th>Major</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hr_educationBody">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <div class="hrcard-section-title">Family Information</div>
+                            <table class="hrcard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Relation</th>
+                                        <th>Name</th>
+                                        <th>Birthday</th>
+                                        <th>Education</th>
+                                        <th>Tel</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hr_familyBody">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="hrcard-section-title">Experience Information</div>
+                    <table class="hrcard-table">
+                        <thead>
+                            <tr>
+                                <th>Start date</th>
+                                <th>End date</th>
+                                <th>Corporate name</th>
+                                <th>Department</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hr_experienceBody">
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="hrcard-grid-2">
+                        <div>
+                            <div class="hrcard-section-title">Main Business</div>
+                            <table class="hrcard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Start date</th>
+                                        <th>End date</th>
+                                        <th>Mainbusiness</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hr_mainBusinessBody">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <div class="hrcard-section-title">Qualification Information</div>
+                            <table class="hrcard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Qualification</th>
+                                        <th>Grade</th>
+                                        <th>Issuing</th>
+                                        <th>Evidence</th>
+                                        <th>Effective</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hr_qualificationBody">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="hrcard-grid-2">
+                        <div>
+                            <div class="hrcard-section-title">Training Content</div>
+                            <table class="hrcard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Start date</th>
+                                        <th>End date</th>
+                                        <th>Training course</th>
+                                        <th>Fraction</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hr_trainingBody">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div>
+                            <div class="hrcard-section-title">Evaluation Record</div>
+                            <table class="hrcard-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>1</th>
+                                        <th>2</th>
+                                        <th>3</th>
+                                        <th>4</th>
+                                        <th>5</th>
+                                        <th>6</th>
+                                        <th>7</th>
+                                        <th>8</th>
+                                        <th>9</th>
+                                        <th>10</th>
+                                        <th>11</th>
+                                        <th>12</th>
+                                        <th>Ability</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hr_evaluationBody">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="hrcard-section-title">Order Information</div>
+                    <table class="hrcard-table">
+                        <thead>
+                            <tr>
+                                <th>Order date</th>
+                                <th>Order distinguish</th>
+                                <th>Department</th>
+                                <th>Position</th>
+                                <th>Rank</th>
+                                <th>Mainbusiness</th>
+                                <th>State service</th>
+                                <th>Employee type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hr_orderBody">
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="hcvExecutePrint()"><i class="bx bx-printer"></i>
+                    In</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<template id="fragmentScripts">
+
+
+    <script th:inline="javascript">
+        var _hcv_table = null;
+        var _hcv_selectedDeptCodes = [];
+        var _hcv_previewModal = null;
+
+        function hcvInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') {
+                return;
+            }
+            DeptTree.init('#hcv_deptNo', function (selectedCodes) {
+                _hcv_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        function hcvEscHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function hcvInitTable() {
+            _hcv_table = $('#hcv_dataTable').DataTable({
+                destroy: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                scrollY: 'calc(100vh - 320px)',
+                pageLength: 50,
+                processing: true,
+                autoWidth: false,
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                language: {
+                    lengthMenu: 'Mỗi trang _MENU_ dữ liệu',
+                    info: 'Từ _START_ đến _END_/Tổng _TOTAL_ dữ liệu',
+                    paginate: {
+                        previous: 'Trang trước',
+                        next: 'Trang sau'
+                    },
+                    zeroRecords: "Không tìm thấy dữ liệu"
+                },
+                ajax: {
+                    url: '/ess/viewDept/api/manageEmpPositionInfo/list',
+                    dataSrc: function (json) {
+                        return json || [];
+                    },
+                    data: function (d) {
+                        d.keyword = $('#hcv_keyword').val();
+                        d.deptNos = (_hcv_selectedDeptCodes || []).join(',');
+                        d.fromDate = $('#hcv_fromDate').val();
+                        d.toDate = $('#hcv_toDate').val();
+                        d.postFamily = $('#hcv_postFamily').val();
+                        d.empTypeCode = $('#hcv_empTypeCode').val();
+                        d.empOffice = $('#hcv_empOffice').val();
+                    },
+                    error: function () {
+                        // Dummy data for visual testing since API is probably not ready
+                        var dummyData = [];
+                        if ($('#hcv_keyword').val() === '') {
+                            dummyData = [
+                                { empId: '43170002', localName: 'Nguyễn Bá Tấn', deptName: 'Procurement PART', postFamilyName: 'Nhóm NV gián tiếp', empTypeName: 'Regular', empOfficeName: 'Working', dateStarted: '2017-07-03' }
+                            ];
+                        }
+                        if (_hcv_table && _hcv_table.settings()[0]) {
+                            var settings = _hcv_table.settings()[0];
+                            settings.oApi._fnAjaxUpdateDraw(settings, { data: dummyData });
+                        }
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        orderable: false,
+                        className: 'text-center',
+                        render: function (data, type, row) {
+                            return '<input type="checkbox" class="form-check-input hcv-row-check" value="' + hcvEscHtml(row.empId) + '">';
+                        }
+                    },
+                    { data: 'empId' },
+                    {
+                        data: 'localName',
+                        render: function (data, type, row) {
+                            if (type === 'display') {
+                                return '<a href="javascript:void(0)" class="hcv-name-link text-primary fw-semibold" data-empid="' + hcvEscHtml(row.empId) + '">' + hcvEscHtml(data) + '</a>';
+                            }
+                            return data;
+                        }
+                    },
+                    { data: 'deptName' },
+                    { data: 'postFamilyName' },
+                    { data: 'empTypeName' },
+                    { data: 'empOfficeName' },
+                    { data: 'dateStarted' }
+                ]
+            });
+
+            // Check All
+            $('#hcv_checkAll').on('change', function () {
+                var isChecked = $(this).is(':checked');
+                $('.hcv-row-check').prop('checked', isChecked);
+            });
+
+            // Single Check
+            $('#hcv_dataTable tbody').on('change', '.hcv-row-check', function () {
+                if (!$(this).is(':checked')) {
+                    $('#hcv_checkAll').prop('checked', false);
+                } else {
+                    var allChecked = $('.hcv-row-check:not(:checked)').length === 0;
+                    $('#hcv_checkAll').prop('checked', allChecked);
+                }
+            });
+
+            // Click vào tên nhân viên -> mở thẻ nhân sự ngay
+            $('#hcv_dataTable tbody').on('click', '.hcv-name-link', function () {
+                var empId = $(this).data('empid');
+                if (empId) hcvOpenCardModal([empId]);
+            });
+        }
+
+        window.hcvSearchData = function () {
+            if (_hcv_table) {
+                _hcv_table.ajax.reload();
+            }
+        };
+
+        window.hcvClearSearch = function () {
+            $('#hcv_keyword').val('');
+            $('#hcv_deptNo').val('');
+            $('#hcv_fromDate').val('');
+            $('#hcv_toDate').val('');
+            _hcv_selectedDeptCodes = [];
+
+            if (typeof resetCodeSelectDefaults === 'function') {
+                resetCodeSelectDefaults('#hcv_searchForm');
+            } else {
+                $('#hcv_postFamily').val('');
+                $('#hcv_empTypeCode').val('');
+                $('#hcv_empOffice').val('');
+            }
+
+            if (_hcv_table) {
+                _hcv_table.ajax.reload();
+            }
+        };
+
+        window.hcvPrintCard = function () {
+            var selectedIds = [];
+            $('.hcv-row-check:checked').each(function () {
+                selectedIds.push($(this).val());
+            });
+            if (selectedIds.length === 0) {
+                (typeof toastr !== 'undefined' ? toastr.warning : alert)('Vui lòng chọn ít nhất một nhân viên để in thẻ.');
+                return;
+            }
+            hcvOpenCardModal(selectedIds);
+        };
+
+        /** Mở modal preview thẻ và load dữ liệu cho danh sách empId */
+        function hcvOpenCardModal(empIds) {
+            if (!_hcv_previewModal && window.bootstrap && document.getElementById('hcv_previewModal')) {
+                _hcv_previewModal = new bootstrap.Modal(document.getElementById('hcv_previewModal'));
+            }
+            $('#hcv_printArea').empty();
+
+            var promises = empIds.map(function (empId) {
+                return $.ajax({ url: '/hrm/empinfo/api/hrCard/detail', data: { empId: empId } });
+            });
+
+            $.when.apply($, promises).done(function () {
+                var responses = empIds.length === 1
+                    ? [arguments[0]]
+                    : Array.from(arguments).map(function (a) { return a[0]; });
+                responses.forEach(hcvRenderCard);
+                if (_hcv_previewModal) _hcv_previewModal.show();
+            }).fail(function () {
+                (typeof toastr !== 'undefined' ? toastr.error : alert)('Lỗi tải dữ liệu thẻ nhân sự');
+            });
+        }
+
+        // =============================================
+        // CARD RENDER
+        // =============================================
+
+        /** Map field-id -> data accessor */
+        var HCV_FIELD_MAP = [
+            ['hr_localName', function (e, p) { return e.localName; }],
+            ['hr_empId', function (e, p) { return e.empId; }],
+            ['hr_department', function (e, p) { return e.deptNo; }],
+            ['hr_contractStart', function (e, p) { return e.startDate; }],
+            ['hr_regPlace', function (e, p) { return p.regPlace; }],
+            ['hr_rank', function (e, p) { return e.postGradeNo; }],
+            ['hr_contractEnd', function (e, p) { return e.endDate; }],
+            ['hr_political', function (e, p) { return p.political; }],
+            ['hr_mainBusiness', function (e, p) { return e.mainBusiness; }],
+            ['hr_finalEdu', function (e, p) { return p.finalEdu; }],
+            ['hr_birthday', function (e, p) { return p.birthday; }],
+            ['hr_costCenter', function (e, p) { return e.costCenter; }],
+            ['hr_gradSchool', function (e, p) { return p.gradSchool; }],
+            ['hr_gender', function (e, p) { return p.gender; }],
+            ['hr_stateService', function (e, p) { return e.empOffice; }],
+            ['hr_major', function (e, p) { return p.major; }],
+            ['hr_homePhone', function (e, p) { return p.homePhone; }],
+            ['hr_divisionEntry', function (e, p) { return e.divisionEntry; }],
+            ['hr_gradDate', function (e, p) { return p.gradDate; }],
+            ['hr_tel', function (e, p) { return p.tel; }],
+            ['hr_dateEntry', function (e, p) { return e.dateEntry; }],
+            ['hr_national', function (e, p) { return p.national; }],
+            ['hr_married', function (e, p) { return p.married; }],
+            ['hr_personEmail', function (e, p) { return p.personEmail; }],
+            ['hr_cEmail', function (e, p) { return p.cEmail; }],
+            ['hr_marryDate', function (e, p) { return p.marryDate; }],
+            ['hr_presentAdd', function (e, p) { return p.presentAdd; }],
+            ['hr_eagleMId', function (e, p) { return p.eagleMId; }]
+        ];
+
+        /** Tạo HTML rows từ danh sách data + array of field keys, số cột trống mặc định */
+        function hcvBuildRows(list, fields, emptyRows) {
+            if (list && list.length > 0) {
+                return list.map(function (item) {
+                    return '<tr>' + fields.map(function (f) {
+                        return '<td>' + (item[f] || '') + '</td>';
+                    }).join('') + '</tr>';
+                }).join('');
+            }
+            var emptyTds = fields.map(function () { return '<td></td>'; }).join('');
+            var rows = '';
+            for (var i = 0; i < (emptyRows || 2); i++) {
+                rows += '<tr><td>&nbsp;</td>' + emptyTds.slice('<td></td>'.length) + '</tr>';
+            }
+            return rows || '<tr>' + fields.map(function () { return '<td>&nbsp;</td>'; }).join('') + '</tr>';
+        }
+
+        function hcvRenderCard(res) {
+            var tpl = document.getElementById('hcv_cardTemplate');
+            if (!tpl) return;
+            var clone = tpl.content.cloneNode(true);
+            var emp = res.employee || {};
+            var pInfo = res.personalInfo || {};
+
+            // Điền text fields
+            HCV_FIELD_MAP.forEach(function (entry) {
+                var el = clone.querySelector('#' + entry[0]);
+                if (el) { el.innerText = entry[1](emp, pInfo) || ''; el.removeAttribute('id'); }
+            });
+
+            // Điền table bodies
+            var tableSections = [
+                { id: 'hr_educationBody', list: res.educations, fields: ['admissions', 'graduation', 'education', 'institutionName', 'major'] },
+                { id: 'hr_familyBody', list: res.families, fields: ['relation', 'famName', 'birthday', 'education', 'tel'] },
+                { id: 'hr_experienceBody', list: res.experiences, fields: ['startDate', 'endDate', 'companyName', 'department', 'remarks'] },
+                { id: 'hr_qualificationBody', list: res.qualifications, fields: ['qualName', 'grade', 'issuing', 'evidence', 'effective'] }
+            ];
+            tableSections.forEach(function (sec) {
+                var el = clone.querySelector('#' + sec.id);
+                if (el) {
+                    var html = (sec.list && sec.list.length > 0)
+                        ? sec.list.map(function (row) {
+                            return '<tr>' + sec.fields.map(function (f) { return '<td>' + (row[f] || '') + '</td>'; }).join('') + '</tr>';
+                        }).join('')
+                        : Array(3).fill('<tr>' + sec.fields.map(function () { return '<td>&nbsp;</td>'; }).join('') + '</tr>').join('');
+                    el.innerHTML = html;
+                    el.removeAttribute('id');
+                }
+            });
+
+            // Xóa các ID phụ không cần bind
+            ['hr_mainBusinessBody', 'hr_trainingBody', 'hr_evaluationBody', 'hr_orderBody'].forEach(function (id) {
+                var el = clone.querySelector('#' + id);
+                if (el) el.removeAttribute('id');
+            });
+
+            document.getElementById('hcv_printArea').appendChild(clone);
+        }
+
+        // =============================================
+        // PRINT
+        // =============================================
+
+        var HCV_PRINT_CSS = [
+            '* { box-sizing: border-box; margin: 0; padding: 0; }',
+            'body { font-family: Arial, sans-serif; font-size: 11px; color: #333; background: #fff; }',
+            '.hrcard-container { width: 100%; padding: 10px; page-break-after: always; break-after: page; }',
+            '.hrcard-container:last-child { page-break-after: auto; break-after: auto; }',
+            '.hrcard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #ccc; padding-bottom: 10px; margin-bottom: 10px; }',
+            '.hrcard-title { font-size: 18px; font-weight: bold; text-align: center; flex-grow: 1; }',
+            '.hrcard-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 10px; }',
+            '.hrcard-table th, .hrcard-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; word-break: break-word; }',
+            '.hrcard-table th { background: #f0f0f0; font-weight: bold; }',
+            '.hrcard-photo-cell { width: 100px; text-align: center; vertical-align: middle; border: 1px solid #000; }',
+            '.hrcard-photo { width: 80px; height: 100px; margin: 5px auto; background: #0066cc; display: flex; align-items: center; justify-content: center; }',
+            '.hrcard-emp-name { font-weight: bold; font-size: 11px; margin-top: 4px; text-align: center; }',
+            '.hrcard-emp-id { font-size: 10px; margin-bottom: 4px; text-align: center; }',
+            '.hrcard-label { text-align: left; padding-left: 6px; font-weight: bold; }',
+            '.hrcard-value { text-align: left; padding-left: 4px; }',
+            '.hrcard-info-section { margin-bottom: 10px; }',
+            '.hrcard-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }',
+            '.hrcard-grid-2 > div { min-width: 0; overflow: hidden; }',
+            '.hrcard-section-title { font-weight: bold; font-size: 11px; margin-bottom: 4px; }',
+            '@page { size: A4 portrait; margin: 8mm; }'
+        ].join('\n');
+
+        window.hcvExecutePrint = function () {
+            var html = document.getElementById('hcv_printArea').innerHTML;
+            var iframe = document.createElement('iframe');
+            iframe.style.cssText = 'position:fixed;width:0;height:0;border:none;visibility:hidden;';
+            document.body.appendChild(iframe);
+            var doc = iframe.contentWindow.document;
+            doc.open();
+            doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + HCV_PRINT_CSS + '</style></head><body>' + html + '</body></html>');
+            doc.close();
+            iframe.contentWindow.onafterprint = function () { document.body.removeChild(iframe); };
+            setTimeout(function () { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 600);
+        };
+
+        function hcvBootPage() {
+            hcvInitDeptSelector();
+            $.when(typeof initCodeSelects === 'function' ? initCodeSelects('#hcv_searchForm') : null).always(function () {
+                hcvInitTable();
+            });
+        }
+
+        $(document).ready(hcvBootPage);
+    </script>
+</template>

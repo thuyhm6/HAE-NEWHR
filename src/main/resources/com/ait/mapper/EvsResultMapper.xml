@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.evs.manage.mapper.EvsResultMapper">
+
+    <!-- ── ResultMap: kết quả đánh giá đầy đủ ─────────────────────────────── -->
+    <resultMap id="EvsResultResultMap" type="com.ait.evs.manage.dto.EvsResultDto">
+        <id     column="SEQ"                  property="seq"                jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ"           property="resumeSeq"          jdbcType="VARCHAR" />
+        <result column="PERSON_ID"            property="personId"           jdbcType="VARCHAR" />
+        <result column="EMPID"                property="empid"              jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"           property="localName"          jdbcType="VARCHAR" />
+        <result column="DEPTNO"               property="deptno"             jdbcType="VARCHAR" />
+        <result column="DEPTNAME"             property="deptname"           jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO"        property="postGradeNo"        jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME"      property="postGradeName"      jdbcType="VARCHAR" />
+        <result column="MAIN_BUSINESS"        property="mainBusiness"       jdbcType="VARCHAR" />
+        <result column="MAIN_BUSINESS_NAME"   property="mainBusinessName"   jdbcType="VARCHAR" />
+        <result column="OBJECT_TYPE"          property="objectType"         jdbcType="VARCHAR" />
+        <result column="OBJECT_TYPE_NAME"     property="objectTypeName"     jdbcType="VARCHAR" />
+        <result column="DATE_STARTED"         property="dateStarted"        jdbcType="VARCHAR" />
+        <result column="ACTIVITY"             property="activity"           jdbcType="VARCHAR" />
+        <result column="ACTIVITY_NAME"        property="activityName"       jdbcType="VARCHAR" />
+        <result column="FINAL_GRADE"          property="finalGrade"         jdbcType="VARCHAR" />
+        <result column="FINAL_GRADE_OR"       property="finalGradeOr"       jdbcType="VARCHAR" />
+        <result column="FINAL_AFFIRM_CONTENT" property="finalAffirmContent" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"          property="updateDate"         jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"           property="updatedBy"          jdbcType="VARCHAR" />
+        <result column="ORDERNO"              property="orderno"            jdbcType="VARCHAR" />
+        <!-- AFFIRM_FLAG_NAME 0-4 -->
+        <result column="AFFIRM_FLAG_NAME0"    property="affirmFlagName0"    jdbcType="VARCHAR" />
+        <result column="AFFIRM_FLAG_NAME1"    property="affirmFlagName1"    jdbcType="VARCHAR" />
+        <result column="AFFIRM_FLAG_NAME2"    property="affirmFlagName2"    jdbcType="VARCHAR" />
+        <result column="AFFIRM_FLAG_NAME3"    property="affirmFlagName3"    jdbcType="VARCHAR" />
+        <result column="AFFIRM_FLAG_NAME4"    property="affirmFlagName4"    jdbcType="VARCHAR" />
+        <!-- LOCAL_NAME 0-4 -->
+        <result column="LOCAL_NAME0"          property="localName0"         jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME1"          property="localName1"         jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME2"          property="localName2"         jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME3"          property="localName3"         jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME4"          property="localName4"         jdbcType="VARCHAR" />
+        <!-- POST_GRADE_NAME 0-4 -->
+        <result column="POST_GRADE_NAME0"     property="postGradeName0"     jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME1"     property="postGradeName1"     jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME2"     property="postGradeName2"     jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME3"     property="postGradeName3"     jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME4"     property="postGradeName4"     jdbcType="VARCHAR" />
+        <!-- SEQ 0-4 (EVS_AFFIRM.SEQ) -->
+        <result column="SEQ0"                 property="seq0"               jdbcType="VARCHAR" />
+        <result column="SEQ1"                 property="seq1"               jdbcType="VARCHAR" />
+        <result column="SEQ2"                 property="seq2"               jdbcType="VARCHAR" />
+        <result column="SEQ3"                 property="seq3"               jdbcType="VARCHAR" />
+        <result column="SEQ4"                 property="seq4"               jdbcType="VARCHAR" />
+        <!-- EVS_POINT 0-4 -->
+        <result column="EVS_POINT0"           property="evsPoint0"          jdbcType="VARCHAR" />
+        <result column="EVS_POINT1"           property="evsPoint1"          jdbcType="VARCHAR" />
+        <result column="EVS_POINT2"           property="evsPoint2"          jdbcType="VARCHAR" />
+        <result column="EVS_POINT3"           property="evsPoint3"          jdbcType="VARCHAR" />
+        <result column="EVS_POINT4"           property="evsPoint4"          jdbcType="VARCHAR" />
+        <!-- EVS_GRADE 0-4 -->
+        <result column="EVS_GRADE0"           property="evsGrade0"          jdbcType="VARCHAR" />
+        <result column="EVS_GRADE1"           property="evsGrade1"          jdbcType="VARCHAR" />
+        <result column="EVS_GRADE2"           property="evsGrade2"          jdbcType="VARCHAR" />
+        <result column="EVS_GRADE3"           property="evsGrade3"          jdbcType="VARCHAR" />
+        <result column="EVS_GRADE4"           property="evsGrade4"          jdbcType="VARCHAR" />
+        <!-- AFFIRM_CONTENT 0-4 -->
+        <result column="AFFIRM_CONTENT0"      property="affirmContent0"     jdbcType="VARCHAR" />
+        <result column="AFFIRM_CONTENT1"      property="affirmContent1"     jdbcType="VARCHAR" />
+        <result column="AFFIRM_CONTENT2"      property="affirmContent2"     jdbcType="VARCHAR" />
+        <result column="AFFIRM_CONTENT3"      property="affirmContent3"     jdbcType="VARCHAR" />
+        <result column="AFFIRM_CONTENT4"      property="affirmContent4"     jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── updateFinalResult: cập nhật cấp đánh giá và ý kiến cuối ─────────── -->
+    <update id="updateFinalResult" parameterType="com.ait.evs.manage.dto.EvsResultDto">
+        UPDATE EVS_OBJECT
+           SET UPDATE_DATE         = SYSDATE,
+               UPDATED_IP          = #{adminIP,jdbcType=VARCHAR},
+               UPDATED_BY          = #{adminID,jdbcType=VARCHAR},
+               FINAL_GRADE         = #{finalGrade,jdbcType=VARCHAR},
+               FINAL_AFFIRM_CONTENT = #{finalAffirmContent,jdbcType=VARCHAR}
+         WHERE SEQ                 = #{seq,jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── selectList: danh sách kết quả đánh giá ──────────────────────────── -->
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            resultMap="EvsResultResultMap">
+        SELECT A.SEQ,
+               A.RESUME_SEQ,
+               A.PERSON_ID,
+               A.EMPID,
+               A.LOCAL_NAME,
+               A.DEPTNO,
+               GET_DEPT_NAME(A.DEPTNO, #{lang, jdbcType=VARCHAR})                        DEPTNAME,
+               A.POST_GRADE_NO,
+               A.POST_GRADE_NAME,
+               A.MAIN_BUSINESS,
+               GET_GLOBAL_NAME(A.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR})               MAIN_BUSINESS_NAME,
+               A.OBJECT_TYPE,
+               A.OBJECT_TYPE_NAME,
+               TO_CHAR(A.DATE_STARTED, 'YYYY-MM-DD')                                    DATE_STARTED,
+               A.ACTIVITY,
+               GET_CODE_NAME(A.ACTIVITY, #{lang, jdbcType=VARCHAR})                      ACTIVITY_NAME,
+               DECODE(A.FINAL_GRADE,'A','EX','B','VG','C','GD','D','NI','E','UN')        FINAL_GRADE,
+               A.FINAL_GRADE                                                             FINAL_GRADE_OR,
+               A.FINAL_AFFIRM_CONTENT,
+               TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY HH24:MI')                             UPDATE_DATE,
+               GET_UPDATED_INFO(A.UPDATED_BY) || ' ' || A.UPDATED_IP                    UPDATED_BY,
+               A.ORDERNO,
+               DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'AFFIRM_FLAG'),
+                      1, 'Evaluated', 0, 'Not_Evaluated')                               AFFIRM_FLAG_NAME0,
+               DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'AFFIRM_FLAG'),
+                      1, 'Evaluated', 0, 'Not_Evaluated')                               AFFIRM_FLAG_NAME1,
+               DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'AFFIRM_FLAG'),
+                      1, 'Evaluated', 0, 'Not_Evaluated')                               AFFIRM_FLAG_NAME2,
+               DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'AFFIRM_FLAG'),
+                      1, 'Evaluated', 0, 'Not_Evaluated')                               AFFIRM_FLAG_NAME3,
+               DECODE(PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'AFFIRM_FLAG'),
+                      1, 'Evaluated', 0, 'Not_Evaluated')                               AFFIRM_FLAG_NAME4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'LOCAL_NAME')             LOCAL_NAME0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'LOCAL_NAME')             LOCAL_NAME1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'LOCAL_NAME')             LOCAL_NAME2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'LOCAL_NAME')             LOCAL_NAME3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'LOCAL_NAME')             LOCAL_NAME4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'POST_GRADE_NAME')        POST_GRADE_NAME0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'POST_GRADE_NAME')        POST_GRADE_NAME1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'POST_GRADE_NAME')        POST_GRADE_NAME2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'POST_GRADE_NAME')        POST_GRADE_NAME3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'POST_GRADE_NAME')        POST_GRADE_NAME4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'SEQ')                    SEQ0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'SEQ')                    SEQ1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'SEQ')                    SEQ2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'SEQ')                    SEQ3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'SEQ')                    SEQ4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'EVS_POINT')              EVS_POINT0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'EVS_POINT')              EVS_POINT1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'EVS_POINT')              EVS_POINT2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'EVS_POINT')              EVS_POINT3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'EVS_POINT')              EVS_POINT4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'EVS_GRADE')              EVS_GRADE0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'EVS_GRADE')              EVS_GRADE1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'EVS_GRADE')              EVS_GRADE2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'EVS_GRADE')              EVS_GRADE3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'EVS_GRADE')              EVS_GRADE4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'AFFIRM_CONTENT') || CHR(10) ||
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'AFFIRM_CONTENT2')        AFFIRM_CONTENT0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'AFFIRM_CONTENT')         AFFIRM_CONTENT1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'AFFIRM_CONTENT')         AFFIRM_CONTENT2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'AFFIRM_CONTENT')         AFFIRM_CONTENT3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'AFFIRM_CONTENT')         AFFIRM_CONTENT4
+          FROM EVS_OBJECT A
+         WHERE A.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        <if test="deptNos != null and deptNos != ''">
+            AND A.DEPTNO IN
+            <foreach item="dno" collection="deptNos.split(',')" open="(" separator="," close=")">
+                #{dno, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="personId != null and personId != ''">
+            AND A.PERSON_ID = #{personId, jdbcType=VARCHAR}
+        </if>
+        <if test="statusFilter != null and statusFilter == 'Evaluated'">
+            AND PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'AFFIRM_FLAG') = 1
+        </if>
+        <if test="statusFilter != null and statusFilter == 'Not_Evaluated'">
+            AND PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'AFFIRM_FLAG') = 0
+        </if>
+         ORDER BY A.PERSON_ID ASC
+    </select>
+
+    <!-- ── selectProgressSummary: tiến độ đánh giá theo giai đoạn ───────────── -->
+    <select id="selectProgressSummary" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            resultType="java.util.HashMap">
+        SELECT COUNT(*)                                                                          AS TOTAL,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 0, 'AFFIRM_FLAG') = 1
+                         THEN 1 ELSE 0 END)                                                     AS SELF_COUNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRM_FLAG') = 1
+                         THEN 1 ELSE 0 END)                                                     AS L1_COUNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRM_FLAG') = 1
+                         THEN 1 ELSE 0 END)                                                     AS L2_COUNT,
+               SUM(CASE WHEN ACTIVITY IN ('DONE', 'COMPLETE', 'FINISH')
+                         THEN 1 ELSE 0 END)                                                     AS DONE_COUNT,
+               SUM(CASE WHEN ACTIVITY = 'END' THEN 1 ELSE 0 END)                               AS END_COUNT
+          FROM EVS_OBJECT
+         WHERE RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── selectGradeDistL1: phân bổ cấp đánh giá lần 1 ───────────────────── -->
+    <select id="selectGradeDistL1" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            resultType="java.util.HashMap">
+        SELECT COUNT(*)                                                                AS TOTAL,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_GRADE') = 'EX'
+                         THEN 1 ELSE 0 END)                                           AS EX_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_GRADE') = 'VG'
+                         THEN 1 ELSE 0 END)                                           AS VG_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_GRADE') = 'GD'
+                         THEN 1 ELSE 0 END)                                           AS GD_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_GRADE') = 'NI'
+                         THEN 1 ELSE 0 END)                                           AS NI_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'EVS_GRADE') = 'UN'
+                         THEN 1 ELSE 0 END)                                           AS UN_CNT
+          FROM EVS_OBJECT
+         WHERE RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+           AND PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 1, 'AFFIRM_FLAG') = 1
+    </select>
+
+    <!-- ── selectGradeDistL2: phân bổ cấp đánh giá lần 2 ───────────────────── -->
+    <select id="selectGradeDistL2" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            resultType="java.util.HashMap">
+        SELECT COUNT(*)                                                                AS TOTAL,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_GRADE') = 'EX'
+                         THEN 1 ELSE 0 END)                                           AS EX_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_GRADE') = 'VG'
+                         THEN 1 ELSE 0 END)                                           AS VG_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_GRADE') = 'GD'
+                         THEN 1 ELSE 0 END)                                           AS GD_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_GRADE') = 'NI'
+                         THEN 1 ELSE 0 END)                                           AS NI_CNT,
+               SUM(CASE WHEN PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'EVS_GRADE') = 'UN'
+                         THEN 1 ELSE 0 END)                                           AS UN_CNT
+          FROM EVS_OBJECT
+         WHERE RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+           AND PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(SEQ, 2, 'AFFIRM_FLAG') = 1
+    </select>
+
+    <!-- ── selectGradeDistHr: phân bổ cấp cuối (HR - FINAL_GRADE) ───────────── -->
+    <select id="selectGradeDistHr" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            resultType="java.util.HashMap">
+        SELECT COUNT(FINAL_GRADE)                                                       AS TOTAL,
+               SUM(CASE WHEN FINAL_GRADE = 'A' THEN 1 ELSE 0 END)                     AS EX_CNT,
+               SUM(CASE WHEN FINAL_GRADE = 'B' THEN 1 ELSE 0 END)                     AS VG_CNT,
+               SUM(CASE WHEN FINAL_GRADE = 'C' THEN 1 ELSE 0 END)                     AS GD_CNT,
+               SUM(CASE WHEN FINAL_GRADE = 'D' THEN 1 ELSE 0 END)                     AS NI_CNT,
+               SUM(CASE WHEN FINAL_GRADE = 'E' THEN 1 ELSE 0 END)                     AS UN_CNT
+          FROM EVS_OBJECT
+         WHERE RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+           AND FINAL_GRADE IS NOT NULL
+    </select>
+
+    <!-- ── selectStandardRate: tỷ lệ tiêu chuẩn từ EVS_SCORE (cột A=EX, B=VG, C=GD, D=NI, E=UN) ── -->
+    <select id="selectStandardRate" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            resultType="java.util.HashMap">
+        SELECT NVL(es.A, 0) AS EX_PCT,
+               NVL(es.B, 0) AS VG_PCT,
+               NVL(es.C, 0) AS GD_PCT,
+               NVL(es.D, 0) AS NI_PCT,
+               NVL(es.E, 0) AS UN_PCT
+          FROM EVS_SCORE es
+         WHERE es.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── callEvaluateEnd: kết thúc đánh giá ──────────────────────────────── -->
+    <update id="callEvaluateEnd" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_EVS_END(
+            #{resumeSeq, jdbcType=VARCHAR, mode=IN},
+            #{adminID,   jdbcType=VARCHAR, mode=IN},
+            #{adminIP,   jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,    jdbcType=VARCHAR, mode=IN},
+            #{message,   jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <!-- ── updateActivityBatch: cập nhật trạng thái hàng loạt ─────────────── -->
+    <update id="updateActivityBatch" parameterType="com.ait.evs.manage.dto.EvsResultDto">
+        UPDATE EVS_OBJECT
+           SET ACTIVITY    = #{status, jdbcType=VARCHAR},
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP  = #{adminIP, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE SEQ IN
+        <foreach item="s" collection="seqList" open="(" separator="," close=")">
+            #{s, jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <!-- ── callCopyGrade: sao chép / xác nhận cấp đánh giá cuối ────────────── -->
+    <update id="callCopyGrade" parameterType="com.ait.evs.manage.dto.EvsResultDto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_CONFIRM_FINAL_GRADE(
+            #{resumeSeq, jdbcType=VARCHAR, mode=IN},
+            #{adminID,   jdbcType=VARCHAR, mode=IN},
+            #{adminIP,   jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,    jdbcType=VARCHAR, mode=IN},
+            #{message,   jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+</mapper>

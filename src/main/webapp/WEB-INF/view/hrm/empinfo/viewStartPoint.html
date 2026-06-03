@@ -1,0 +1,633 @@
+<div th:fragment="content">
+    <div class="row g-0" id="vsp_pageWrapper"
+         th:data-person-id="${currentHrUser != null ? currentHrUser.personId : ''}"
+         th:data-local-name="${currentHrUser != null ? currentHrUser.employeeName : ''}">
+
+        <!-- ════════════ Panel trái: Danh sách quyết định ════════════ -->
+        <div class="col-md-4 col-lg-3 border-end d-flex flex-column" id="vsp_leftPanel" style="height:calc(100vh - 60px); min-width:260px;">
+
+            <!-- Thanh tìm kiếm nhân viên -->
+            <div class="p-2 border-bottom bg-light">
+                <div class="d-flex gap-1">
+                    <input type="text" class="form-control form-control-sm" id="vsp_searchKeyword"
+                        th:placeholder="#{vsp.search.placeholder}" placeholder="Mã/Tên nhân viên..."
+                        onkeydown="if(event.key==='Enter') vspSearchEmployee()">
+                    <button class="btn btn-primary btn-sm" onclick="vspSearchEmployee()">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thông tin nhân viên đang chọn -->
+            <div class="px-2 py-1 border-bottom bg-white" id="vsp_empHeader">
+                <div class="fw-semibold small text-truncate" id="vsp_empName"
+                     th:text="#{vsp.label.noEmployee}">-- Chưa chọn nhân viên --</div>
+                <div class="text-muted" style="font-size:.75rem;" id="vsp_empIdDisplay"></div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="d-flex align-items-center justify-content-between px-2 py-1 border-bottom bg-white">
+                <span class="small text-muted" id="vsp_listCount">0 <span th:text="#{vsp.label.decisions}">quyết định</span></span>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-success btn-sm" onclick="vspNewDecision()" title="Thêm mới">
+                        <i class="bi bi-plus-lg"></i>
+                        <span th:text="#{common.add}">Thêm</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="vspDeleteSelected()" title="Xóa">
+                        <i class="bi bi-trash"></i>
+                        <span th:text="#{common.delete}">Xóa</span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="vspExportExcel()" title="Xuất Excel">
+                        <i class="bi bi-file-earmark-excel"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danh sách quyết định -->
+            <div class="flex-grow-1" id="vsp_decisionList" style="overflow-y:auto;">
+                <div id="vsp_listBody">
+                    <div class="text-center text-muted p-3 small" id="vsp_noData">
+                        <i class="bi bi-inbox d-block fs-3 mb-1"></i>
+                        <span th:text="#{vsp.js.selectFirst}">Vui lòng tìm kiếm nhân viên trước</span>
+                    </div>
+                </div>
+                <!-- Phân trang -->
+                <div class="d-flex justify-content-center align-items-center gap-2 py-2 border-top" id="vsp_paging" style="display:none!important;">
+                    <button class="btn btn-outline-secondary btn-sm" id="vsp_btnPrev" onclick="vspPageChange(-1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span class="small" id="vsp_pageInfo">1/1</span>
+                    <button class="btn btn-outline-secondary btn-sm" id="vsp_btnNext" onclick="vspPageChange(1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════ Panel phải: Chi tiết quyết định ════════════ -->
+        <div class="col flex-grow-1 d-flex flex-column" id="vsp_rightPanel" style="height:calc(100vh - 60px); overflow:hidden;">
+
+            <!-- Header -->
+            <div class="px-3 py-2 border-bottom bg-white d-flex align-items-center justify-content-between" id="vsp_detailHeader">
+                <div>
+                    <span class="fw-semibold me-2" id="vsp_selectedTitle"
+                          th:text="#{vsp.label.selectDecision}">-- Chọn quyết định --</span>
+                    <span class="badge bg-secondary" id="vsp_selectedSeq"></span>
+                </div>
+            </div>
+
+            <!-- Form chi tiết -->
+            <div class="flex-grow-1 p-3" style="overflow-y:auto;">
+                <input type="hidden" id="vsp_seq">
+                <input type="hidden" id="vsp_personId">
+                <div class="row g-2" id="vsp_formFields">
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0 fw-semibold text-danger"
+                               th:text="#{vsp.field.startDate}">Ngày quyết định *</label>
+                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                               id="vsp_startDate" placeholder="DD/MM/YYYY"
+                               data-drp-format="DD/MM/YYYY" data-drp-single="true" data-drp-auto-apply="true">
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0 fw-semibold text-danger"
+                               th:text="#{vsp.field.transCode}">Loại quyết định *</label>
+                        <select class="form-select form-select-sm" id="vsp_transCode"
+                                data-parent-code="14013956"
+                                onchange="vspOnTransCodeChange()"></select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.transResource}">Lý do quyết định</label>
+                        <select class="form-select form-select-sm" id="vsp_transResource"></select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.deptNo}">Phòng ban</label>
+                        <input type="text" class="form-control form-control-sm" id="vsp_deptno_display"
+                               th:placeholder="#{recruit.list.placeholder.selectDept}"
+                               placeholder="-- Chọn phòng ban --"
+                               readonly style="background-color:#fff;cursor:pointer;">
+                        <input type="hidden" id="vsp_deptno">
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.empTypeCode}">Loại nhân viên</label>
+                        <select class="form-select form-select-sm" id="vsp_empTypeCode"
+                                data-parent-code="13864"></select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.postFamily}">Nhóm nhân viên</label>
+                        <select class="form-select form-select-sm" id="vsp_postFamily"
+                                data-parent-code="14015812"
+                                onchange="vspOnPostFamilyChange()"></select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.postGradeNo}">Chức vụ</label>
+                        <select class="form-select form-select-sm" id="vsp_postGradeNo"
+                                data-parent-code="400001"></select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.positionNo}">Chức danh</label>
+                        <select class="form-select form-select-sm" id="vsp_positionNo"
+                                data-parent-code="14014036"></select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.costCenter}">Mã chi phí</label>
+                        <input type="text" class="form-control form-control-sm" id="vsp_costCenter_display"
+                               th:placeholder="#{recruit.list.placeholder.selectDept}"
+                               placeholder="-- Chọn phòng ban --"
+                               readonly style="background-color:#fff;cursor:pointer;">
+                        <input type="hidden" id="vsp_costCenter">
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.position}">Vị trí</label>
+                        <select class="form-select form-select-sm" id="vsp_position"
+                                data-parent-code="14014049"></select>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.mainBusiness}">Công việc</label>
+                        <select class="form-select form-select-sm" id="vsp_mainBusiness"
+                                data-parent-code="400098"></select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small mb-0" th:text="#{vsp.field.remark}">Ghi chú</label>
+                        <textarea class="form-control form-control-sm" id="vsp_remark" rows="2" maxlength="300"></textarea>
+                    </div>
+
+                </div><!-- /.row -->
+
+                <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-primary btn-sm" onclick="vspSaveDecision()">
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div><!-- /.p-3 -->
+
+        </div><!-- /#vsp_rightPanel -->
+
+    </div><!-- /#vsp_pageWrapper -->
+
+<template id="fragmentScripts">
+<style>
+    #vsp_pageWrapper { overflow: hidden; }
+    #vsp_listBody .vsp-decision-item {
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        padding: 7px 10px;
+        transition: background .15s;
+    }
+    #vsp_listBody .vsp-decision-item:hover { background: #f0f4ff; }
+    #vsp_listBody .vsp-decision-item.selected { background: #dce8ff; border-left: 3px solid #0d6efd; }
+    #vsp_formFields .form-label { font-size: .78rem; color: #555; }
+</style>
+<script th:inline="none">
+(function () {
+    var _vsp_tabId = window._currentTabId || 'default-content';
+    window._vsp_inst = window._vsp_inst || {};
+    if (!window._vsp_inst[_vsp_tabId]) {
+        window._vsp_inst[_vsp_tabId] = {
+            currentPage: 1,
+            pageSize: 20,
+            totalRecords: 0,
+            currentPersonId: null,
+            currentEmpId: null,
+            currentLocalName: null,
+            selectedSeq: null,
+            latestSeq: null
+        };
+    }
+    var inst = window._vsp_inst[_vsp_tabId];
+
+    function vsp$(sel) { return $('#' + _vsp_tabId).find(sel); }
+    function vspEsc(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── DeptTree ──────────────────────────────────────────────────────────────
+
+    function vspGetDeptName(code) {
+        if (!code) return '';
+        if (typeof DeptTree === 'undefined') return code;
+        var list = DeptTree.getAuthDeptList();
+        var item = list && list.find(function(d){ return d.id === code; });
+        return item ? item.text : code;
+    }
+
+    function vspInitDeptTree() {
+        if (typeof DeptTree === 'undefined') return;
+        var sc = '#' + _vsp_tabId + ' ';
+        DeptTree.init(sc + '#vsp_deptno_display', function(){}, { singleSelect: true });
+        vsp$('#vsp_deptno_display').off('click').on('click', function(e) {
+            e.stopPropagation();
+            DeptTree.openFor(sc + '#vsp_deptno_display', function(codes) {
+                if (codes && codes.length > 0) {
+                    var code = codes[0];
+                    var name = vsp$('#vsp_deptno_display').val();
+                    vsp$('#vsp_deptno').val(code);
+                    // Tự động set costCenter về cùng mã phòng ban
+                    vsp$('#vsp_costCenter_display').val(name);
+                    vsp$('#vsp_costCenter').val(code);
+                } else {
+                    vsp$('#vsp_deptno').val('');
+                }
+            });
+        });
+        // vsp_costCenter_display: mở tree riêng, chỉ cập nhật costCenter
+        vsp$('#vsp_costCenter_display').off('click').on('click', function(e) {
+            e.stopPropagation();
+            DeptTree.openFor(sc + '#vsp_costCenter_display', function(codes) {
+                if (codes && codes.length > 0) {
+                    vsp$('#vsp_costCenter').val(codes[0]);
+                } else {
+                    vsp$('#vsp_costCenter').val('');
+                }
+            });
+        });
+    }
+
+    // ── Tìm kiếm nhân viên ───────────────────────────────────────────────────
+
+    window.vspSearchEmployee = function() {
+        var keyword = vsp$('#vsp_searchKeyword').val().trim();
+        $.ajax({
+            url: '/hrm/empinfo/api/startpoint/employee/search',
+            type: 'GET',
+            data: { keyword: keyword },
+            success: function(emp) {
+                inst.currentPersonId = emp.personId;
+                inst.currentEmpId = emp.empId;
+                inst.currentLocalName = emp.localName;
+                vsp$('#vsp_empName').text(emp.localName || '');
+                vsp$('#vsp_empIdDisplay').text((emp.empId || '') + (emp.deptName ? ' | ' + emp.deptName : ''));
+                vsp$('#vsp_paging').css('display', '');
+                inst.currentPage = 1;
+                vspLoadDecisionList();
+            },
+            error: function(xhr) {
+                if (xhr.status === 404) {
+                    alert(/*[[#{vsp.js.notFound}]]*/ 'Không tìm thấy nhân viên');
+                } else {
+                    alert(/*[[#{common.error}]]*/ 'Lỗi');
+                }
+            }
+        });
+    };
+
+    // ── Tải danh sách quyết định ─────────────────────────────────────────────
+
+    function vspLoadDecisionList() {
+        if (!inst.currentPersonId) return;
+        var payload = {
+            draw: inst.currentPage,
+            start: (inst.currentPage - 1) * inst.pageSize,
+            length: inst.pageSize,
+            personId: inst.currentPersonId
+        };
+        $.ajax({
+            url: '/hrm/empinfo/api/startpoint/decisions/list',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(res) {
+                inst.totalRecords = res.recordsTotal || 0;
+                vspRenderList(res.data || []);
+            },
+            error: function() { console.error('Lỗi tải danh sách quyết định'); }
+        });
+    }
+
+    function vspRenderList(rows) {
+        inst.latestSeq = rows.length > 0 ? rows[0].seq : null;
+        var totalPages = Math.max(1, Math.ceil(inst.totalRecords / inst.pageSize));
+        vsp$('#vsp_pageInfo').text(inst.currentPage + '/' + totalPages);
+        vsp$('#vsp_btnPrev').prop('disabled', inst.currentPage <= 1);
+        vsp$('#vsp_btnNext').prop('disabled', inst.currentPage >= totalPages);
+        vsp$('#vsp_listCount').html(inst.totalRecords + ' <span th:text="#{vsp.label.decisions}">quyết định</span>');
+
+        if (!rows.length) {
+            vsp$('#vsp_listBody').html(
+                '<div class="text-center text-muted p-3 small"><i class="bi bi-inbox d-block fs-3 mb-1"></i>Không có dữ liệu</div>'
+            );
+            return;
+        }
+
+        var html = '';
+        rows.forEach(function(r) {
+            var sel = (r.seq == inst.selectedSeq) ? ' selected' : '';
+            html += '<div class="vsp-decision-item' + sel + '" data-seq="' + vspEsc(r.seq) + '" onclick="vspSelectDecision(' + r.seq + ')">';
+            html += '<div class="d-flex align-items-start gap-2">';
+            html += '<input type="checkbox" class="form-check-input vsp-list-chk mt-1" data-seq="' + vspEsc(r.seq) + '" onclick="event.stopPropagation()">';
+            html += '<div class="flex-grow-1 overflow-hidden">';
+            html += '<div class="fw-semibold small text-truncate">' + vspEsc(r.transCodeName || r.transCode) + '</div>';
+            html += '<div class="text-muted" style="font-size:.75rem;">' + vspEsc(r.startDate || '') + '</div>';
+            if (r.deptno) {
+                html += '<div class="text-muted" style="font-size:.72rem;">' + vspEsc(r.deptName) + '</div>';
+            }
+            html += '</div></div></div>';
+        });
+        vsp$('#vsp_listBody').html(html);
+    }
+
+    window.vspPageChange = function(dir) {
+        var totalPages = Math.max(1, Math.ceil(inst.totalRecords / inst.pageSize));
+        inst.currentPage = Math.min(totalPages, Math.max(1, inst.currentPage + dir));
+        vspLoadDecisionList();
+    };
+
+    // ── Chọn quyết định để xem chi tiết ─────────────────────────────────────
+
+    window.vspSelectDecision = function(seq) {
+        inst.selectedSeq = seq;
+        vsp$('.vsp-decision-item').removeClass('selected');
+        vsp$('.vsp-decision-item[data-seq="' + seq + '"]').addClass('selected');
+        $.ajax({
+            url: '/hrm/empinfo/api/startpoint/decisions/detail',
+            type: 'GET',
+            data: { seq: seq },
+            success: function(d) {
+                vsp$('#vsp_seq').val(d.seq || '');
+                vsp$('#vsp_personId').val(d.personId || '');
+                vsp$('#vsp_startDate').val(d.startDate || '');
+                vsp$('#vsp_deptno').val(d.deptno || '');
+                vsp$('#vsp_deptno_display').val(vspGetDeptName(d.deptno));
+                vsp$('#vsp_employeeBelong').val(d.employeeBelong || '');
+                vsp$('#vsp_empOffice').val(d.empOffice || '');
+                vsp$('#vsp_endProbationDate').val(d.endProbationDate || '');
+                vsp$('#vsp_jobType').val(d.jobType || '');
+                vsp$('#vsp_dutyNo').val(d.dutyNo || '');
+                vsp$('#vsp_workHourType').val(d.workHourType || '');
+                vsp$('#vsp_wageType').val(d.wageType || '');
+                vsp$('#vsp_remark').val(d.remark || '');
+                vsp$('#vsp_mainBusiness').val(d.mainBusiness || '');
+                vsp$('#vsp_transResource').val(d.transResource || '');
+                vsp$('#vsp_costCenter').val(d.costCenter || '');
+                vsp$('#vsp_costCenter_display').val(vspGetDeptName(d.costCenter));
+                vsp$('#vsp_payStepNo').val(d.payStepNo || '');
+                vsp$('#vsp_position').val(d.position || '');
+                vsp$('#vsp_selectedTitle').text(d.transCodeName || d.transCode || '');
+                vsp$('#vsp_selectedSeq').text('#' + d.seq);
+                if (typeof reloadCodeSelect === 'function') {
+                    var sc = '#' + _vsp_tabId + ' ';
+                    reloadCodeSelect(sc + '#vsp_transCode', '14013956', '', d.transCode || '');
+                    reloadCodeSelect(sc + '#vsp_empTypeCode', '13864', '', d.empTypeCode || '');
+                    reloadCodeSelect(sc + '#vsp_postFamily', '14015812', '', d.postFamily || '');
+                    reloadCodeSelect(sc + '#vsp_postGradeNo', d.postFamily || '400001', '', d.postGradeNo || '');
+                    reloadCodeSelect(sc + '#vsp_positionNo', '14014036', '', d.positionNo || '');
+                    reloadCodeSelect(sc + '#vsp_transResource', d.transCode || '', '', d.transResource || '');
+                    reloadCodeSelect(sc + '#vsp_position', '14014049', '', d.position || '');
+                    reloadCodeSelect(sc + '#vsp_mainBusiness', '400098', '', d.mainBusiness || '');
+                }
+            },
+            error: function() { alert(/*[[#{common.error}]]*/ 'Lỗi'); }
+        });
+    };
+
+    // ── Thêm mới quyết định ──────────────────────────────────────────────────
+
+    function vspTodayStr() {
+        var d = new Date();
+        return String(d.getDate()).padStart(2, '0') + '/'
+             + String(d.getMonth() + 1).padStart(2, '0') + '/'
+             + d.getFullYear();
+    }
+
+    function vspSetDatePicker(selector, dateStr) {
+        var $el = vsp$(selector);
+        $el.val(dateStr);
+        var drp = $el.data('daterangepicker');
+        if (drp) { drp.setStartDate(dateStr); drp.setEndDate(dateStr); }
+    }
+
+    function vspClearAllFields() {
+        vsp$('#vsp_deptno,#vsp_deptno_display').val('');
+        vsp$('#vsp_employeeBelong,#vsp_empOffice,#vsp_endProbationDate').val('');
+        vsp$('#vsp_jobType,#vsp_dutyNo,#vsp_workHourType,#vsp_wageType').val('');
+        vsp$('#vsp_remark,#vsp_mainBusiness,#vsp_transResource').val('');
+        vsp$('#vsp_costCenter,#vsp_costCenter_display,#vsp_payStepNo,#vsp_position').val('');
+        if (typeof reloadCodeSelect === 'function') {
+            var sc = '#' + _vsp_tabId + ' ';
+            reloadCodeSelect(sc + '#vsp_transCode', '14013956', '', '');
+            reloadCodeSelect(sc + '#vsp_empTypeCode', '13864', '', '');
+            reloadCodeSelect(sc + '#vsp_postFamily', '14015812', '', '');
+            reloadCodeSelect(sc + '#vsp_postGradeNo', '400001', '', '');
+            reloadCodeSelect(sc + '#vsp_positionNo', '14014036', '', '');
+            reloadCodeSelect(sc + '#vsp_transResource', '', '', '');
+            reloadCodeSelect(sc + '#vsp_position', '14014049', '', '');
+            reloadCodeSelect(sc + '#vsp_mainBusiness', '400098', '', '');
+        }
+    }
+
+    window.vspNewDecision = function() {
+        if (!inst.currentPersonId) {
+            alert(/*[[#{vsp.js.selectFirst}]]*/ 'Vui lòng tìm kiếm nhân viên trước');
+            return;
+        }
+        inst.selectedSeq = null;
+        vsp$('.vsp-decision-item').removeClass('selected');
+        vsp$('#vsp_seq').val('');
+        vsp$('#vsp_personId').val(inst.currentPersonId);
+        vsp$('#vsp_selectedTitle').text(/*[[#{vsp.label.newDecision}]]*/ 'Quyết định mới');
+        vsp$('#vsp_selectedSeq').text('');
+
+        var today = vspTodayStr();
+
+        if (inst.latestSeq) {
+            // Fill từ quyết định mới nhất, để trống transCode và startDate = hôm nay
+            $.ajax({
+                url: '/hrm/empinfo/api/startpoint/decisions/detail',
+                type: 'GET',
+                data: { seq: inst.latestSeq },
+                success: function(d) {
+                    vsp$('#vsp_deptno').val(d.deptno || '');
+                    vsp$('#vsp_deptno_display').val(vspGetDeptName(d.deptno));
+                    vsp$('#vsp_employeeBelong').val(d.employeeBelong || '');
+                    vsp$('#vsp_empOffice').val(d.empOffice || '');
+                    vsp$('#vsp_endProbationDate').val(d.endProbationDate || '');
+                    vsp$('#vsp_jobType').val(d.jobType || '');
+                    vsp$('#vsp_dutyNo').val(d.dutyNo || '');
+                    vsp$('#vsp_workHourType').val(d.workHourType || '');
+                    vsp$('#vsp_wageType').val(d.wageType || '');
+                    vsp$('#vsp_remark').val(d.remark || '');
+                    vsp$('#vsp_costCenter').val(d.costCenter || '');
+                    vsp$('#vsp_costCenter_display').val(vspGetDeptName(d.costCenter));
+                    vsp$('#vsp_payStepNo').val(d.payStepNo || '');
+                    if (typeof reloadCodeSelect === 'function') {
+                        var sc = '#' + _vsp_tabId + ' ';
+                        reloadCodeSelect(sc + '#vsp_transCode', '14013956', '', '');
+                        reloadCodeSelect(sc + '#vsp_transResource', '', '', '');
+                        reloadCodeSelect(sc + '#vsp_empTypeCode', '13864', '', d.empTypeCode || '');
+                        reloadCodeSelect(sc + '#vsp_postFamily', '14015812', '', d.postFamily || '');
+                        reloadCodeSelect(sc + '#vsp_postGradeNo', d.postFamily || '400001', '', d.postGradeNo || '');
+                        reloadCodeSelect(sc + '#vsp_positionNo', '14014036', '', d.positionNo || '');
+                        reloadCodeSelect(sc + '#vsp_position', '14014049', '', d.position || '');
+                        reloadCodeSelect(sc + '#vsp_mainBusiness', '400098', '', d.mainBusiness || '');
+                    }
+                    vspSetDatePicker('#vsp_startDate', today);
+                },
+                error: function() {
+                    vspClearAllFields();
+                    vspSetDatePicker('#vsp_startDate', today);
+                }
+            });
+        } else {
+            vspClearAllFields();
+            vspSetDatePicker('#vsp_startDate', today);
+        }
+    };
+
+    // ── Lưu quyết định ───────────────────────────────────────────────────────
+
+    window.vspSaveDecision = function() {
+        var transCode = vsp$('#vsp_transCode').val();
+        var startDate = vsp$('#vsp_startDate').val();
+        if (!transCode || !startDate) {
+            alert(/*[[#{vsp.js.required}]]*/ 'Vui lòng nhập đầy đủ thông tin bắt buộc');
+            return;
+        }
+        var personId = vsp$('#vsp_personId').val() || inst.currentPersonId;
+        if (!personId) {
+            alert(/*[[#{vsp.js.selectFirst}]]*/ 'Vui lòng tìm kiếm nhân viên trước');
+            return;
+        }
+        var seqVal = vsp$('#vsp_seq').val();
+        var payload = {
+            seq: seqVal ? parseInt(seqVal) : null,
+            personId: personId,
+            transCode: transCode,
+            startDate: startDate,
+            deptno: vsp$('#vsp_deptno').val(),
+            empTypeCode: vsp$('#vsp_empTypeCode').val(),
+            postFamily: vsp$('#vsp_postFamily').val(),
+            postGradeNo: vsp$('#vsp_postGradeNo').val(),
+            positionNo: vsp$('#vsp_positionNo').val(),
+            employeeBelong: vsp$('#vsp_employeeBelong').val(),
+            empOffice: vsp$('#vsp_empOffice').val(),
+            endProbationDate: vsp$('#vsp_endProbationDate').val(),
+            jobType: vsp$('#vsp_jobType').val(),
+            dutyNo: vsp$('#vsp_dutyNo').val(),
+            workHourType: vsp$('#vsp_workHourType').val(),
+            wageType: vsp$('#vsp_wageType').val(),
+            mainBusiness: vsp$('#vsp_mainBusiness').val(),
+            transResource: vsp$('#vsp_transResource').val(),
+            costCenter: vsp$('#vsp_costCenter').val(),
+            payStepNo: vsp$('#vsp_payStepNo').val(),
+            position: vsp$('#vsp_position').val(),
+            remark: vsp$('#vsp_remark').val()
+        };
+        $.ajax({
+            url: '/hrm/empinfo/api/startpoint/decisions/save',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(res) {
+                if (res.success) {
+                    if (!seqVal && res.seq) {
+                        vsp$('#vsp_seq').val(res.seq);
+                        inst.selectedSeq = res.seq;
+                    }
+                    alert(res.message || /*[[#{common.success}]]*/ 'Thành công');
+                    vspLoadDecisionList();
+                } else {
+                    alert(res.message || /*[[#{common.error}]]*/ 'Lỗi');
+                }
+            },
+            error: function() { alert(/*[[#{common.error}]]*/ 'Lỗi'); }
+        });
+    };
+
+    // ── Xóa quyết định ───────────────────────────────────────────────────────
+
+    window.vspDeleteSelected = function() {
+        var seqs = [];
+        vsp$('.vsp-list-chk:checked').each(function(){ seqs.push($(this).data('seq')); });
+        if (!seqs.length) {
+            alert(/*[[#{vsp.js.selectRow}]]*/ 'Vui lòng chọn ít nhất một quyết định');
+            return;
+        }
+        if (!confirm(/*[[#{vsp.js.confirmDelete}]]*/ 'Xác nhận xóa quyết định đã chọn?')) return;
+        var promises = seqs.map(function(seq) {
+            return $.ajax({
+                url: '/hrm/empinfo/api/startpoint/decisions/delete',
+                type: 'POST',
+                data: { seq: seq }
+            });
+        });
+        $.when.apply($, promises).then(function() {
+            if (inst.selectedSeq && seqs.indexOf(inst.selectedSeq) >= 0) {
+                inst.selectedSeq = null;
+                vsp$('#vsp_seq').val('');
+                vsp$('#vsp_selectedTitle').text(/*[[#{vsp.label.selectDecision}]]*/ '-- Chọn quyết định --');
+                vsp$('#vsp_selectedSeq').text('');
+            }
+            vspLoadDecisionList();
+        });
+    };
+
+    // ── Xuất Excel ───────────────────────────────────────────────────────────
+
+    window.vspExportExcel = function() {
+        if (!inst.currentPersonId) {
+            alert(/*[[#{vsp.js.selectFirst}]]*/ 'Vui lòng tìm kiếm nhân viên trước');
+            return;
+        }
+        var url = '/hrm/empinfo/api/startpoint/decisions/export'
+            + '?personId=' + encodeURIComponent(inst.currentPersonId)
+            + '&localName=' + encodeURIComponent(inst.currentLocalName || '');
+        window.location.href = url;
+    };
+
+    // ── Reload Chức vụ khi đổi nhóm nhân viên ───────────────────────────────
+
+    window.vspOnPostFamilyChange = function() {
+        var val = vsp$('#vsp_postFamily').val();
+        if (typeof reloadCodeSelect === 'function') {
+            var sc = '#' + _vsp_tabId + ' ';
+            reloadCodeSelect(sc + '#vsp_postGradeNo', val || '400001', '', '');
+        }
+    };
+
+    // ── Reload Lý do quyết định khi đổi Loại quyết định ─────────────────────
+
+    window.vspOnTransCodeChange = function() {
+        var val = vsp$('#vsp_transCode').val();
+        if (typeof reloadCodeSelect === 'function') {
+            var sc = '#' + _vsp_tabId + ' ';
+            reloadCodeSelect(sc + '#vsp_transResource', val || '', '', '');
+        }
+    };
+
+    // ── Khởi động ────────────────────────────────────────────────────────────
+
+    $(document).ready(function() {
+        vspInitDeptTree();
+        if (typeof initDateRangePickers === 'function') {
+            var $startDate = vsp$('#vsp_startDate')[0];
+            if ($startDate) { initDateRangePickers($startDate); }
+        }
+        // Tải quyết định của user đang đăng nhập qua data attribute trên wrapper
+        var $wrapper = $('#' + _vsp_tabId).find('#vsp_pageWrapper');
+        var loginPersonId = $wrapper.data('person-id') || '';
+        var loginName     = $wrapper.data('local-name') || '';
+        if (loginPersonId) {
+            inst.currentPersonId = loginPersonId;
+            inst.currentLocalName = loginName;
+            vsp$('#vsp_empName').text(loginName);
+            vsp$('#vsp_paging').css('display', '');
+            vspLoadDecisionList();
+        }
+    });
+})();
+</script>
+</template>
+</div><!-- th:fragment="content" -->

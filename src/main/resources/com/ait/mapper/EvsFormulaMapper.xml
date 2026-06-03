@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsFormulaMapper">
+
+    <resultMap id="EvsFormulaResultMap" type="com.ait.evs.manage.dto.EvsFormulaDto">
+        <id     column="SEQ"         property="seq"         jdbcType="VARCHAR" />
+        <result column="CODE_NO"     property="codeNo"      jdbcType="VARCHAR" />
+        <result column="CODE_NAME"   property="codeName"    jdbcType="VARCHAR" />
+        <result column="FORMULA"     property="formula"     jdbcType="VARCHAR" />
+        <result column="REMARK"      property="remark"      jdbcType="VARCHAR" />
+        <result column="ACTIVITY"    property="activity"    jdbcType="VARCHAR" />
+        <result column="ORDER_NO"    property="orderNo"     jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate"  jdbcType="VARCHAR" />
+        <result column="CREATED_BY"  property="createdBy"   jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate"  jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"  property="updatedBy"   jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsFormulaDto"
+            resultMap="EvsFormulaResultMap">
+        SELECT ef.SEQ,
+               ef.CODE_NO,
+               ef.CODE_NAME,
+               ef.FORMULA,
+               ef.REMARK,
+               ef.ACTIVITY,
+               TO_CHAR(ef.ORDERNO)                               AS ORDER_NO,
+               TO_CHAR(ef.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+               GET_UPDATED_INFO(ef.CREATED_BY) || ' ' || ef.CREATED_IP AS CREATED_BY,
+               TO_CHAR(ef.UPDATE_DATE, 'YYYY-MM-DD HH24:MI')    AS UPDATE_DATE,
+               GET_UPDATED_INFO(ef.UPDATED_BY) || ' ' || ef.UPDATED_IP AS UPDATED_BY
+        FROM EVS_FORMULA ef
+        WHERE ef.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="codeNoSearch != null and codeNoSearch != ''">
+            AND ef.CODE_NO LIKE '%' || #{codeNoSearch, jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="codeNameSearch != null and codeNameSearch != ''">
+            AND ef.CODE_NAME LIKE '%' || #{codeNameSearch, jdbcType=VARCHAR} || '%'
+        </if>
+        <if test="activitySearch != null and activitySearch != ''">
+            AND ef.ACTIVITY = #{activitySearch, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_NUMBER(ef.ORDERNO) NULLS LAST, TO_NUMBER(ef.SEQ)
+    </select>
+
+    <select id="selectOne" resultMap="EvsFormulaResultMap">
+        SELECT ef.SEQ,
+               ef.CODE_NO,
+               ef.CODE_NAME,
+               ef.FORMULA,
+               ef.REMARK,
+               ef.ACTIVITY,
+               TO_CHAR(ef.ORDERNO)                               AS ORDER_NO,
+               TO_CHAR(ef.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+               GET_UPDATED_INFO(ef.CREATED_BY) || ' ' || ef.CREATED_IP AS CREATED_BY,
+               TO_CHAR(ef.UPDATE_DATE, 'YYYY-MM-DD HH24:MI')    AS UPDATE_DATE,
+               GET_UPDATED_INFO(ef.UPDATED_BY) || ' ' || ef.UPDATED_IP AS UPDATED_BY
+        FROM EVS_FORMULA ef
+        WHERE ef.SEQ     = #{seq,    jdbcType=VARCHAR}
+          AND ef.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectFormulaOptions" parameterType="com.ait.evs.manage.dto.EvsFormulaDto"
+            resultMap="EvsFormulaResultMap">
+        SELECT ef.SEQ      AS CODE_NO,
+               ef.CODE_NAME
+        FROM EVS_FORMULA ef
+        WHERE ef.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND ef.ACTIVITY = '1'
+        ORDER BY TO_NUMBER(ef.SEQ)
+    </select>
+
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_PARAM_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsFormulaDto">
+        INSERT INTO EVS_FORMULA (
+            SEQ, CODE_NO, CODE_NAME, FORMULA, REMARK,
+            ACTIVITY, ORDERNO,
+            CPNY_ID, CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,      jdbcType=VARCHAR},
+            #{codeNo,   jdbcType=VARCHAR},
+            #{codeName, jdbcType=VARCHAR},
+            #{formula,  jdbcType=VARCHAR},
+            #{remark,   jdbcType=VARCHAR},
+            NVL(#{activity, jdbcType=VARCHAR}, '1'),
+            <choose>
+                <when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR}</when>
+                <otherwise>200</otherwise>
+            </choose>,
+            #{cpnyId,  jdbcType=VARCHAR},
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsFormulaDto">
+        UPDATE EVS_FORMULA
+        SET CODE_NAME   = #{codeName,  jdbcType=VARCHAR},
+            FORMULA     = #{formula,   jdbcType=VARCHAR},
+            REMARK      = #{remark,    jdbcType=VARCHAR},
+            ACTIVITY    = NVL(#{activity, jdbcType=VARCHAR}, '1'),
+            ORDERNO     = <choose>
+                              <when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR}</when>
+                              <otherwise>ORDERNO</otherwise>
+                          </choose>,
+            UPDATED_BY  = #{adminID,   jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,   jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteBySeq">
+        UPDATE EVS_FORMULA
+        SET UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ACTIVITY = 0,
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

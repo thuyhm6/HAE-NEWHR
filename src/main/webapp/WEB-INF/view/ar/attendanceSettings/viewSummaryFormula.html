@@ -1,0 +1,383 @@
+<div th:fragment="content">
+    <div class="row h-100">
+        <!-- Left Pane: Tree -->
+        <div class="col-md-3 border-end p-3 bg-white mb-3">
+            <h5 class="mb-3">Danh sách Hạng mục</h5>
+            <div id="arStaFormula_tree" class="overflow-auto" style="height: calc(100vh - 250px);"></div>
+        </div>
+
+        <!-- Right Pane: List Formula -->
+        <div class="col-md-9 p-3">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                    <h5 class="mb-0 text-primary" id="arStaFormula_selectedParentLabel">Cấu hình công thức</h5>
+                    <button type="button" class="btn btn-success btn-sm" onclick="arStaFormulaOpenModal()">
+                        <i class="bx bx-plus"></i> Thêm mới
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="arStaFormulaTable" class="table table-striped table-bordered table-hover w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 3%">STT</th>
+                                    <th>Điều kiện</th>
+                                    <th>Công thức</th>
+                                    <th class="text-center" style="width: 100px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<div class="modal fade" id="arStaFormulaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="arStaFormulaModalTitle">Quản lý Công thức</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="arStaFormulaForm">
+                    <input type="hidden" id="arStaFormula_formularNo" name="formularNo">
+
+                    <div class="alert alert-info py-2" role="alert">
+                        <strong>Hạng mục đang cấu hình:</strong> <span id="arStaFormula_modalItemName">Chưa chọn</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label for="arStaFormula_condition" class="form-label">Điều kiện (Condition)</label>
+                            <textarea class="form-control" id="arStaFormula_condition" rows="2"
+                                placeholder="Nhập điều kiện ..."></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="arStaFormula_formularCode" class="form-label">Công thức (Formular) <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="arStaFormula_formularCode" rows="3"
+                                placeholder="Nhập công thức ..." required></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="arStaFormula_orderno" class="form-label">Sắp xếp (Orderno)</label>
+                            <input type="number" class="form-control" id="arStaFormula_orderno">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="arStaFormula_activity" class="form-label">Trạng thái (1: Hoạt động, 0:
+                                Ngừng)</label>
+                            <select class="form-select" id="arStaFormula_activity" name="activity">
+                                <option value="1">1 - Hoạt động</option>
+                                <option value="0">0 - Ngừng</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tools Section -->
+                    <div class="mt-4 border-top pt-3">
+                        <h6 class="text-secondary"><i class="bx bx-wrench"></i> Công cụ</h6>
+                        <div class="row gx-2">
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-none border">
+                                    <div class="card-header bg-light p-2 fw-bold" style="font-size: 0.9rem;">Danh sách
+                                        hạng mục chấm công</div>
+                                    <div class="card-body p-0 overflow-auto" style="height: 250px; font-size: 0.85rem;"
+                                        id="arStaFormula_toolAttItems">
+                                        <!-- Load bằng AJAX -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-none border">
+                                    <div class="card-header bg-light p-2 fw-bold" style="font-size: 0.9rem;">Bảng tổng
+                                        hợp chấm công</div>
+                                    <div class="card-body p-0 overflow-auto" style="height: 250px; font-size: 0.85rem;"
+                                        id="arStaFormula_toolStaItems">
+                                        <!-- Load bằng AJAX -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 shadow-none border">
+                                    <div class="card-header bg-light p-2 fw-bold" style="font-size: 0.9rem;">Thông tin
+                                        cơ bản</div>
+                                    <div class="card-body p-0 overflow-auto" style="height: 250px; font-size: 0.85rem;"
+                                        id="arStaFormula_toolBasicInfo">
+                                        <!-- Load bằng AJAX -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="arStaFormulaSaveData()">Lưu dữ liệu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<template id="fragmentScripts">
+    <link rel="stylesheet" href="/assets/plugins/jstree/style.min.css" />
+    <script src="/assets/plugins/jstree/jstree.min.js"></script>
+
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            var currentItemNo = '';
+            var currentItemName = '';
+
+            function loadTree() {
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/arStaFormula/treeItems',
+                    success: function (data) {
+                        if (!data || data.length === 0) {
+                            $('#arStaFormula_tree').html('<div class="text-muted p-2">Không có dữ liệu</div>');
+                            return;
+                        }
+
+                        var treeData = data.map(item => {
+                            var itemNoVal = item.itemNo || item.ITEMNO || item.ITEM_NO || '';
+                            var nameViVal = item.nameVi || item.NAMEVI || item.NAME_VI || '';
+                            var itemNameStr = nameViVal ? nameViVal : itemNoVal;
+                            return {
+                                id: itemNoVal,
+                                parent: '#',
+                                text: itemNameStr,
+                                icon: 'bx bxs-file',
+                                state: { opened: false },
+                                data: { nameStr: itemNameStr }
+                            };
+                        });
+
+                        $('#arStaFormula_tree').jstree("destroy").jstree({
+                            'core': {
+                                'data': treeData,
+                                'themes': { 'name': 'default', 'responsive': true, 'dots': false },
+                                'multiple': false,
+                                'check_callback': true
+                            },
+                            'plugins': ['search', 'types']
+                        });
+
+                        currentItemNo = '';
+                        currentItemName = '';
+                        table.clear().draw();
+                    }
+                });
+            }
+            loadTree();
+
+            var to = false;
+            $('#arStaFormula_searchTreeInput').keyup(function () {
+                if (to) clearTimeout(to);
+                to = setTimeout(function () {
+                    var v = $('#arStaFormula_searchTreeInput').val();
+                    $('#arStaFormula_tree').jstree(true).search(v);
+                }, 250);
+            });
+
+            $('#arStaFormula_tree').on("changed.jstree", function (e, data) {
+                if (data.selected.length) {
+                    currentItemNo = data.selected[0];
+                    currentItemName = data.instance.get_node(data.selected[0]).data.nameStr;
+                    $('#arStaFormula_selectedParentLabel').text('Công thức thuộc: ' + currentItemName);
+                    table.ajax.reload();
+                } else {
+                    currentItemNo = '';
+                    currentItemName = '';
+                    $('#arStaFormula_selectedParentLabel').text('Cấu hình công thức');
+                    table.clear().draw();
+                }
+            });
+
+            var table = $('#arStaFormulaTable').DataTable({
+                destroy: true,
+                scrollY: "calc(100vh - 280px)",
+                scrollX: true,
+                select: 'single',
+                scrollCollapse: true,
+                paging: true,
+                searching: true,
+                lengthChange: true,
+                pageLength: 20,
+                processing: true,
+                ajax: {
+                    url: '/ar/attendanceSettings/api/arStaFormula',
+                    dataSrc: '',
+                    data: function (d) {
+                        d.itemNo = currentItemNo;
+                    }
+                },
+                columns: [
+                    { data: null, render: function (d, t, r, m) { return m.row + 1; } },
+                    { data: 'condition' },
+                    { data: 'formular' },
+                    {
+                        data: null,
+                        className: "text-center",
+                        render: function (data, type, row) {
+                            return `
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-warning" onclick="arStaFormulaEdit(${row.formularNo})"><i class="bx bx-edit"></i></button>
+                                    <button class="btn btn-danger" onclick="arStaFormulaDelete(${row.formularNo})"><i class="bx bx-trash"></i></button>
+                                </div>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            window.arStaFormulaOpenModal = function () {
+                if (!currentItemNo) {
+                    toastr.warning('Vui lòng chọn Hạng mục ở cây bên trái trước khi thêm công thức!');
+                    return;
+                }
+                $('#arStaFormulaModalTitle').text('Thêm mới Công thức');
+                $('#arStaFormulaForm')[0].reset();
+                $('#arStaFormula_formularNo').val('');
+                $('#arStaFormula_activity').val('1');
+                $('#arStaFormula_modalItemName').text(currentItemName + ' (' + currentItemNo + ')');
+                new bootstrap.Modal(document.getElementById('arStaFormulaModal')).show();
+            };
+
+            window.arStaFormulaEdit = function (id) {
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/arStaFormula/' + id,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#arStaFormulaModalTitle').text('Cập nhật Công thức Số: ' + id);
+                        $('#arStaFormula_formularNo').val(data.formularNo);
+                        $('#arStaFormula_condition').val(data.condition);
+                        $('#arStaFormula_formularCode').val(data.formular);
+                        $('#arStaFormula_orderno').val(data.orderno);
+                        $('#arStaFormula_activity').val(data.activity !== undefined ? data.activity : 1);
+                        $('#arStaFormula_modalItemName').text(currentItemName + ' (' + currentItemNo + ')');
+                        new bootstrap.Modal(document.getElementById('arStaFormulaModal')).show();
+                    },
+                    error: function () { toastr.error('Lỗi khi tải dữ liệu!'); }
+                });
+            };
+
+            window.arStaFormulaSaveData = function () {
+                if (!currentItemNo) {
+                    toastr.warning('Lỗi: Chưa chọn Hạng mục');
+                    return;
+                }
+                var formularContent = $('#arStaFormula_formularCode').val();
+                if (!formularContent) {
+                    toastr.warning('Vui lòng nhập nội dung công thức!');
+                    return;
+                }
+
+                var formularNoVal = $('#arStaFormula_formularNo').val();
+                var formData = {
+                    formularNo: formularNoVal ? parseInt(formularNoVal) : null,
+                    itemNo: currentItemNo,
+                    condition: $('#arStaFormula_condition').val(),
+                    formular: formularContent,
+                    orderno: $('#arStaFormula_orderno').val() || null,
+                    activity: parseInt($('#arStaFormula_activity').val()) || 0
+                };
+
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/arStaFormula/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (res) {
+                        toastr.success(res.message);
+                        var modalEl = document.getElementById('arStaFormulaModal');
+                        if (modalEl) bootstrap.Modal.getInstance(modalEl).hide();
+                        table.ajax.reload();
+                    },
+                    error: function (err) {
+                        toastr.error('Lỗi khi lưu!');
+                    }
+                });
+            };
+
+            window.arStaFormulaDelete = function (id) {
+                if (confirm('Bạn có chắc chắn muốn xóa công thức này?')) {
+                    $.ajax({
+                        url: '/ar/attendanceSettings/api/arStaFormula/delete/' + id,
+                        type: 'DELETE',
+                        success: function (res) {
+                            toastr.success(res.message);
+                            table.ajax.reload();
+                        },
+                        error: function (err) {
+                            toastr.error('Lỗi khi xóa!');
+                        }
+                    });
+                }
+            };
+
+            // ---- XỬ LÝ PHẦN CÔNG CỤ TOOLS ----
+            function loadTools() {
+                // Load Danh sách hạng mục chấm công
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/arStaFormula/tools/attItems',
+                    success: function (data) {
+                        var html = '';
+                        data.forEach(function (itm) {
+                            var itemName = itm.itemName || itm.ITEMNAME || itm.ITEM_NAME || '';
+                            var itemId = itm.itemId || itm.ITEMID || itm.ITEM_ID || '';
+                            html += `<div class="p-1 border-bottom tool-item" style="cursor:pointer;" onclick="insertToFormular('ATT_ITEM.' + '${itemId}')">${itemName}</div>`;
+                        });
+                        $('#arStaFormula_toolAttItems').html(html);
+                    }
+                });
+
+                // Load Bảng tổng hợp chấm công
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/arStaFormula/tools/staItems',
+                    success: function (data) {
+                        var html = '';
+                        data.forEach(function (itm) {
+                            var itemName = itm.itemName || itm.ITEMNAME || itm.ITEM_NAME || '';
+                            var staItemId = itm.staItemId || itm.STAITEMID || itm.STA_ITEM_ID || '';
+                            html += `<div class="p-1 border-bottom tool-item" style="cursor:pointer;" onclick="insertToFormular('STA_ITEM.' + '${staItemId}')">${itemName}</div>`;
+                        });
+                        $('#arStaFormula_toolStaItems').html(html);
+                    }
+                });
+
+                // Load Thông tin cơ bản
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/arStaFormula/tools/basicInfos',
+                    success: function (data) {
+                        var html = '';
+                        data.forEach(function (itm) {
+                            var fieldName = itm.fieldName || itm.FIELDNAME || itm.FIELD_NAME || '';
+                            var distinctField = itm.distinctField || itm.DISTINCTFIELD || itm.DISTINCT_FIELD || '';
+                            html += `<div class="p-1 border-bottom tool-item" style="cursor:pointer;" onclick="insertToFormular('STA_ITEM.' + '${distinctField}')">${fieldName}</div>`;
+                        });
+                        $('#arStaFormula_toolBasicInfo').html(html);
+                    }
+                });
+            }
+
+            window.insertToFormular = function (textToInsert) {
+                var $textarea = $('#arStaFormula_formularCode');
+                var val = $textarea.val();
+                $textarea.val(val ? (val + ' ' + textToInsert) : textToInsert);
+                $textarea.focus();
+            };
+            // --- END TOOLS ---
+
+            // Load tool lists once at page load
+            loadTools();
+
+        });
+    </script>
+</template>

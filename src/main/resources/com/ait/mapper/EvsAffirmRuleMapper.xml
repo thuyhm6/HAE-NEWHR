@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsAffirmRuleMapper">
+
+    <resultMap id="EvsAffirmRuleResultMap" type="com.ait.evs.manage.dto.EvsAffirmRuleDto">
+        <id     column="SEQ"        property="seq"        jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ" property="resumeSeq"  jdbcType="VARCHAR" />
+        <result column="EVS_STEP"   property="evsStep"    jdbcType="VARCHAR" />
+        <result column="EVS_STEP_NAME" property="evsStepName" jdbcType="VARCHAR" />
+        <result column="EVS_GROUP"  property="evsGroup"   jdbcType="VARCHAR" />
+        <result column="EVS_GROUP_NAME" property="evsGroupName" jdbcType="VARCHAR" />
+        <result column="RULE_ID"    property="ruleId"     jdbcType="VARCHAR" />
+        <result column="RULE_NAME"  property="ruleName"   jdbcType="VARCHAR" />
+        <result column="ACTIVITY"   property="activity"   jdbcType="VARCHAR" />
+        <result column="ORDER_NO"   property="orderNo"    jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR" />
+        <result column="CREATED_BY"  property="createdBy"  jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"  property="updatedBy"  jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsAffirmRuleDto"
+            resultMap="EvsAffirmRuleResultMap">
+        SELECT A.SEQ,
+               A.RESUME_SEQ,
+               A.EVS_STEP,
+               GET_CODE_NAME(A.EVS_STEP, #{lang, jdbcType=VARCHAR}) AS EVS_STEP_NAME,
+               A.EVS_GROUP,
+               (SELECT CODE_NAME FROM EVS_PARAM WHERE CODE_NO = A.EVS_GROUP AND PARAM_TYPE = 'GROUP' AND RESUME_SEQ = A.RESUME_SEQ) AS EVS_GROUP_NAME,
+               A.RULE_ID,
+               GET_CODE_NAME(A.RULE_ID, #{lang, jdbcType=VARCHAR}) AS RULE_NAME,
+               A.ACTIVITY,
+               TO_CHAR(A.ORDERNO)                               AS ORDER_NO,
+               TO_CHAR(A.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+               GET_UPDATED_INFO(A.CREATED_BY) || ' ' || A.CREATED_IP AS CREATED_BY,
+               TO_CHAR(A.UPDATE_DATE, 'YYYY-MM-DD HH24:MI')    AS UPDATE_DATE,
+               GET_UPDATED_INFO(A.UPDATED_BY) || ' ' || A.UPDATED_IP AS UPDATED_BY
+        FROM EVS_AFFIRM_RULE A
+        WHERE A.ACTIVITY != 2
+        <if test="resumeSeq != null and resumeSeq != ''">
+            AND A.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_NUMBER(A.SEQ)
+    </select>
+
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_PARAM_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsAffirmRuleDto">
+        INSERT INTO EVS_AFFIRM_RULE (
+            SEQ, RESUME_SEQ, EVS_STEP, EVS_GROUP, RULE_ID,
+            ACTIVITY, ORDERNO,
+            CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,       jdbcType=VARCHAR},
+            #{resumeSeq, jdbcType=VARCHAR},
+            #{evsStep,   jdbcType=VARCHAR},
+            #{evsGroup,  jdbcType=VARCHAR},
+            #{ruleId,    jdbcType=VARCHAR},
+            1,
+            <choose><when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR},</when><otherwise>200,</otherwise></choose>
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsAffirmRuleDto">
+        UPDATE EVS_AFFIRM_RULE
+        SET EVS_STEP    = GET_CODE_NO(#{evsStep,   jdbcType=VARCHAR},'14015060',#{cpnyId, jdbcType=VARCHAR},'CODE'),
+            EVS_GROUP   = GET_CODE_NO(#{evsGroup,  jdbcType=VARCHAR},RESUME_SEQ,'GROUP','EVS_PARAM'),
+            RULE_ID     = GET_CODE_NO(#{ruleId,    jdbcType=VARCHAR},'14015172',#{cpnyId, jdbcType=VARCHAR},'CODE'),
+            UPDATED_BY  = #{adminID,   jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,   jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteBySeq">
+        UPDATE EVS_AFFIRM_RULE
+		   SET UPDATE_DATE = SYSDATE,
+               UPDATED_BY   = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP   = #{adminIP, jdbcType=VARCHAR},
+               ACTIVITY     = 2
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

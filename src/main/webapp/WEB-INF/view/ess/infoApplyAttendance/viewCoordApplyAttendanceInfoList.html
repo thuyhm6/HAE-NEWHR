@@ -1,0 +1,279 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="cai_searchForm" class="row g-3 mb-4 d-flex align-items-end">
+                        <div class="col-md-2">
+                            <label for="cai_keyword" class="form-label" th:text="#{ex.field.empIdOrName}">Mã NV / Họ tên</label>
+                            <input type="text" class="form-control" id="cai_keyword"
+                                th:placeholder="#{ex.placeholder.empIdOrName}" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="cai_deptNo" class="form-label" th:text="#{ex.field.dept}">Phòng ban</label>
+                            <input type="text" class="form-control" id="cai_deptNo"
+                                th:placeholder="#{ex.placeholder.dept}" placeholder="Chọn phòng ban" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="cai_startDate" class="form-label" th:text="#{ex.field.fromDate}">Ngày bắt đầu</label>
+                            <input type="text" class="form-control js-daterangepicker" id="cai_startDate"
+                                data-drp-format="YYYY/MM/DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="cai_endDate" class="form-label" th:text="#{ex.field.toDate}">Ngày kết thúc</label>
+                            <input type="text" class="form-control js-daterangepicker" id="cai_endDate"
+                                data-drp-format="YYYY/MM/DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="cai_postFamily" class="form-label" th:text="#{ex.field.postFamily}">Nhóm nhân viên</label>
+                            <select class="form-select" id="cai_postFamily" data-parent-code="14015812"
+                                th:attr="data-default-text=#{ex.opt.all}" data-default-text="-- Tất cả --"></select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="cai_shiftNo" class="form-label" th:text="#{ex.field.shiftNo}">Ca làm việc</label>
+                            <select class="form-select" id="cai_shiftNo">
+                                <option value="" th:text="#{ex.opt.all}">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="cai_itemNoSearch" class="form-label" th:text="#{cai.field.category}">Phân loại</label>
+                            <select class="form-select" id="cai_itemNoSearch">
+                                <option value="" th:text="#{ex.opt.all}">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary" onclick="caiSearchData()">
+                                <i class="bx bx-search"></i>
+                                <span th:text="#{ex.btn.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="caiExportExcel()">
+                                <i class="bx bx-export"></i>
+                                <span th:text="#{ex.btn.export}">Xuất Excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table id="cai_dataTable" class="table table-striped table-bordered table-hover">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th th:text="#{ex.col.no}">No.</th>
+                                    <th th:text="#{ex.col.empId}">Mã nhân viên</th>
+                                    <th th:text="#{ex.col.fullName}">Họ tên</th>
+                                    <th th:text="#{ex.col.dept}">Phòng ban</th>
+                                    <th th:text="#{ex.col.position}">Chức vụ</th>
+                                    <th th:text="#{cai.col.shift}">Ca</th>
+                                    <th th:text="#{cai.col.category}">Phân loại</th>
+                                    <th th:text="#{cai.col.duration}">Thời lượng</th>
+                                    <th th:text="#{cai.col.workDate}">Ngày công</th>
+                                    <th th:text="#{cai.col.fromTime}">Thời gian bắt đầu</th>
+                                    <th th:text="#{cai.col.toTime}">Thời gian kết thúc</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _cai_table = null;
+        var _cai_pageBooted = false;
+        var _cai_selectedDeptCodes = [];
+
+        function caiFormatDate(dateObj) {
+            var d = String(dateObj.getDate()).padStart(2, '0');
+            var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var y = dateObj.getFullYear();
+            return y + '/' + m + '/' + d;
+        }
+
+        function caiInitDefaultDateRange() {
+            var today = new Date();
+            var yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+
+            var fromValue = caiFormatDate(yesterday);
+            var toValue = caiFormatDate(today);
+
+            $('#cai_startDate').val(fromValue);
+            $('#cai_endDate').val(toValue);
+
+            if ($('#cai_startDate').data('daterangepicker')) {
+                $('#cai_startDate').data('daterangepicker').setStartDate(fromValue);
+            }
+            if ($('#cai_endDate').data('daterangepicker')) {
+                $('#cai_endDate').data('daterangepicker').setStartDate(toValue);
+            }
+        }
+
+        function caiInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') return;
+            DeptTree.init('#cai_deptNo', function (selectedCodes) {
+                _cai_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        function caiLoadShiftOptions() {
+            return $.ajax({
+                url: '/ar/attendanceSettings/api/shift',
+                type: 'GET',
+                success: function (data) {
+                    var optAll = /*[[#{ex.opt.all}]]*/ '-- Tất cả --';
+                    var html = '<option value="">' + optAll + '</option>';
+                    (data || []).forEach(function (item) {
+                        var code = item.shiftNo || '';
+                        var name = item.nameVi || item.shiftName || code;
+                        html += '<option value="' + code + '">' + name + '</option>';
+                    });
+                    $('#cai_shiftNo').html(html);
+                }
+            });
+        }
+
+        function caiLoadItemOptions() {
+            return $.ajax({
+                url: '/ess/infoApplyAttendance/api/attendancePersonal/items',
+                type: 'GET',
+                success: function (data) {
+                    var optAll = /*[[#{ex.opt.all}]]*/ '-- Tất cả --';
+                    var html = '<option value="">' + optAll + '</option>';
+                    (data || []).forEach(function (item) {
+                        var code = item.itemNo || '';
+                        var name = item.itemName || code;
+                        html += '<option value="' + code + '">' + name + '</option>';
+                    });
+                    $('#cai_itemNoSearch').html(html);
+                }
+            });
+        }
+
+        function caiInitTable() {
+            _cai_table = $('#cai_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                scrollY: 'calc(100vh - 320px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                serverSide: true,
+                dom: 'Blfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        title: 'coord_apply_attendance_export'
+                    }
+                ],
+                columnDefs: [
+                    { targets: 0,  width: '40px',  orderable: false, className: 'text-center' },
+                    { targets: 1,  width: '100px', orderable: false, className: 'text-center' },
+                    { targets: 2,  width: '160px', orderable: false },
+                    { targets: 3,  width: '180px', orderable: false },
+                    { targets: 4,  width: '120px', orderable: false },
+                    { targets: 5,  width: '100px', orderable: false, className: 'text-center' },
+                    { targets: 6,  width: '140px', orderable: false },
+                    { targets: 7,  width: '80px',  orderable: false, className: 'text-center' },
+                    { targets: 8,  width: '100px', orderable: false, className: 'text-center' },
+                    { targets: 9,  width: '150px', orderable: false, className: 'text-center' },
+                    { targets: 10, width: '150px', orderable: false, className: 'text-center' }
+                ],
+                ajax: {
+                    url: '/ess/infoApplyAttendance/api/coordApply/list',
+                    data: function (d) {
+                        d.keyword      = $('#cai_keyword').val();
+                        d.deptNos      = (_cai_selectedDeptCodes || []).join(',');
+                        d.startDate    = $('#cai_startDate').val();
+                        d.endDate      = $('#cai_endDate').val();
+                        d.shiftNo      = $('#cai_shiftNo').val();
+                        d.itemNoSearch = $('#cai_itemNoSearch').val();
+                        d.postFamily   = $('#cai_postFamily').val();
+                        d.draw         = d.draw   || 1;
+                        d.start        = d.start  || 0;
+                        d.length       = d.length || 25;
+                    },
+                    error: function () {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error('Lỗi tải danh sách tra cứu chấm công');
+                        }
+                    }
+                },
+                initComplete: function () {
+                    $('#cai_dataTable_wrapper').find('.dt-buttons').hide();
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',         render: function (d) { return d || ''; } },
+                    { data: 'localName',     render: function (d) { return d || ''; } },
+                    { data: 'deptName',      render: function (d) { return d || ''; } },
+                    { data: 'postGradeName', render: function (d) { return d || ''; } },
+                    { data: 'shiftName',     render: function (d) { return d || ''; } },
+                    { data: 'itemName',      render: function (d) { return d || ''; } },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            var qty  = row.quantity || '';
+                            var unit = row.unit || '';
+                            return qty + (unit ? ' ' + unit : '');
+                        }
+                    },
+                    { data: 'arDateStr',  render: function (d) { return d || ''; } },
+                    { data: 'fromDate',   render: function (d) { return d || ''; } },
+                    { data: 'toTime',     render: function (d) { return d || ''; } }
+                ]
+            });
+        }
+
+        function caiBootPage() {
+            if (_cai_pageBooted) return;
+            if (!document.getElementById('cai_dataTable')) {
+                setTimeout(caiBootPage, 30);
+                return;
+            }
+            _cai_pageBooted = true;
+            caiInitDefaultDateRange();
+            caiInitDeptSelector();
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#cai_searchForm');
+            }
+            $.when(caiLoadShiftOptions(), caiLoadItemOptions()).always(function () {
+                caiInitTable();
+                if (_cai_table) {
+                    _cai_table.ajax.reload();
+                }
+            });
+        }
+
+        window.caiSearchData = function () {
+            if (_cai_table) {
+                _cai_table.ajax.reload();
+            }
+        };
+
+        window.caiExportExcel = function () {
+            if (_cai_table) {
+                _cai_table.button('.buttons-excel').trigger();
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', caiBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(caiBootPage);
+        } else {
+            caiBootPage();
+        }
+    </script>
+</template>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.infoApply.mapper.EssPersonOtInfoMapper">
+
+    <resultMap id="PersonOtInfoResultMap" type="com.ait.ess.infoApply.dto.EssPersonOtInfoDto">
+        <id   column="PK_NO"        property="pkNo"        />
+        <result column="PERSON_ID"   property="personId"    />
+        <result column="EMPID"       property="empId"       />
+        <result column="LOCAL_NAME"  property="localName"   />
+        <result column="DEPT_NAME"   property="deptName"    />
+        <result column="ITEM_NO"     property="itemNo"      />
+        <result column="ITEM_NAME"   property="itemName"    />
+        <result column="SHIFT_NO"    property="shiftNo"     />
+        <result column="SHIFT_NAME"  property="shiftName"   />
+        <result column="AR_DATE_STR" property="arDateStr"   />
+        <result column="WORK_TIME"   property="workTime"    />
+        <result column="INDOOR_TIME" property="indoorTime"  />
+        <result column="OUTDOOR_TIME" property="outdoorTime" />
+        <result column="OT_START_TIME" property="otStartTime" />
+        <result column="OT_END_TIME"   property="otEndTime"   />
+        <result column="QUANTITY"    property="workHour"    />
+    </resultMap>
+
+    <resultMap id="OtItemListResultMap" type="com.ait.ess.infoApply.dto.EssPersonOtInfoDto">
+        <id   column="ITEM_NO"   property="itemNo"   />
+        <result column="ITEM_NAME" property="itemName" />
+    </resultMap>
+
+    <!-- Danh sách tăng ca cá nhân từ AR_DETAIL_HTSV (ITEM_GROUP_CODE = '1433') -->
+    <select id="selectPersonOtList" resultMap="PersonOtInfoResultMap">
+        SELECT
+            D.PK_NO,
+            D.PERSON_ID,
+            HE.EMPID,
+            HE.LOCAL_NAME,
+            GET_DEPT_NAME(D.DEPT_NO, #{lang, jdbcType=VARCHAR})      AS DEPT_NAME,
+            D.ITEM_NO,
+            get_global_name(D.ITEM_NO,  #{lang, jdbcType=VARCHAR})   AS ITEM_NAME,
+            D.SHIFT_NO,
+            GET_GLOBAL_NAME(D.SHIFT_NO, #{lang, jdbcType=VARCHAR})   AS SHIFT_NAME,
+            D.AR_DATE_STR,
+            TO_CHAR(D.FROM_TIME, 'HH24:MI') || ' ~ '
+                || TO_CHAR(D.TO_TIME, 'HH24:MI')                     AS WORK_TIME,
+            TO_CHAR(D.FROM_TIME, 'HH24:MI')                          AS INDOOR_TIME,
+            TO_CHAR(D.TO_TIME,   'HH24:MI')                          AS OUTDOOR_TIME,
+            TO_CHAR(D.FROM_TIME, 'DD/MM/YYYY HH24:MI')               AS OT_START_TIME,
+            TO_CHAR(D.TO_TIME,   'DD/MM/YYYY HH24:MI')               AS OT_END_TIME,
+            D.QUANTITY
+        FROM AR_DETAIL_HTSV D
+        JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = D.PERSON_ID
+        WHERE D.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND D.ITEM_NO IN (
+              SELECT AIP.ITEM_NO
+                FROM AR_ITEM_PARAM AIP
+                JOIN AR_ITEM AI ON AI.ITEM_NO = AIP.ITEM_NO
+               WHERE AIP.CPNY_ID        = #{cpnyId, jdbcType=VARCHAR}
+                 AND AI.ITEM_GROUP_CODE = '1433'
+          )
+        <if test="startDate != null and startDate != ''">
+            AND D.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND D.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        <if test="itemNoSearch != null and itemNoSearch != ''">
+            AND D.ITEM_NO = #{itemNoSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="minQuantity != null and minQuantity != ''">
+            AND D.QUANTITY &gt;= #{minQuantity, jdbcType=VARCHAR}
+        </if>
+        ORDER BY D.AR_DATE_STR DESC, D.ITEM_NO
+    </select>
+
+    <!-- Danh sách loại tăng ca để load dropdown (ITEM_GROUP_CODE = '1433') -->
+    <select id="selectOtItemList" resultMap="OtItemListResultMap">
+        SELECT DISTINCT
+            AIP.ITEM_NO,
+            get_global_name(AIP.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME
+        FROM AR_ITEM_PARAM AIP
+        JOIN AR_ITEM AI ON AI.ITEM_NO = AIP.ITEM_NO
+        WHERE AIP.CPNY_ID        = #{cpnyId, jdbcType=VARCHAR}
+          AND AI.ITEM_GROUP_CODE = '1433'
+        ORDER BY AIP.ITEM_NO
+    </select>
+
+</mapper>

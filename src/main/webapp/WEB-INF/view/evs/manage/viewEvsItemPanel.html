@@ -1,0 +1,723 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="veitp_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <label class="form-label small text-muted mb-0 text-nowrap"
+                            th:text="#{evs.manage.viewEvsItemPanel.search.evaluationName}">Tên đánh giá</label>
+                        <select class="form-select form-select-sm" id="veitp_resumeSeq"
+                            style="max-width:320px;"></select>
+
+                        <label class="form-label small text-muted mb-0 text-nowrap"
+                            th:text="#{evs.manage.viewEvsItemPanel.search.criteriaGroup}">Nhóm chỉ tiêu</label>
+                        <select class="form-select form-select-sm" id="veitp_groupNo" style="max-width:200px;">
+                            <option value="" th:text="#{evs.manage.viewEvsItemPanel.search.select}">-- Lựa chọn --
+                            </option>
+                        </select>
+
+                        <label class="form-label small text-muted mb-0 text-nowrap"
+                            th:text="#{evs.manage.viewEvsItemPanel.search.evalGroup}">Nhóm đánh giá</label>
+                        <div class="input-group input-group-sm" style="max-width:200px;">
+                            <input type="hidden" id="veitp_evsGroupCode">
+                            <input type="text" class="form-control" id="veitp_evsGroupDisplay" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="veitpOpenGroupSearch()">
+                                <i class="bi bi-people-fill"></i>
+                            </button>
+                        </div>
+
+                        <label class="form-label small text-muted mb-0 text-nowrap"
+                            th:text="#{evs.manage.viewEvsItemPanel.search.occGroup}">Nhóm chức vụ</label>
+                        <div class="input-group input-group-sm" style="max-width:200px;">
+                            <input type="hidden" id="veitp_evsOccGroupCode">
+                            <input type="text" class="form-control" id="veitp_evsOccGroupDisplay" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="veitpOpenOccGroupSearch()">
+                                <i class="bi bi-people-fill"></i>
+                            </button>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-sm" onclick="veitpSearch()">
+                            <i class="bi bi-search"></i>
+                            <span th:text="#{common.search}">Tra cứu</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <ul class="nav nav-tabs flex-wrap" id="veitp_tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="veitp_tab_item" data-bs-toggle="tab"
+                                data-bs-target="#veitp_pane_item" type="button" role="tab"
+                                onclick="veitpSwitchTab('item')" th:text="#{evs.manage.viewEvsItemPanel.tab.item}">Chỉ
+                                tiêu đánh giá</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="veitp_tab_param" data-bs-toggle="tab"
+                                data-bs-target="#veitp_pane_param" type="button" role="tab"
+                                onclick="veitpSwitchTab('param')"
+                                th:text="#{evs.manage.viewEvsItemPanel.tab.param}">Hạng mục chỉ tiêu chỉ định</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="veitp_tabContent">
+
+                        <!-- ── Tab Chỉ tiêu đánh giá (EVS_ITEM) ── -->
+                        <div class="tab-pane fade show active" id="veitp_pane_item" role="tabpanel">
+                            <div class="d-flex align-items-center justify-content-between mt-2 mb-1 px-1">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="small fw-semibold text-muted" id="veitp_total_item">Total: 0</span>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <label class="small text-muted mb-0 text-nowrap"
+                                            th:text="#{common.quickFilter}">Lọc nhanh</label>
+                                        <input type="text" class="form-control form-control-sm" id="veitp_filter_item"
+                                            style="width:160px;" oninput="veitpFilterTable('item')">
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-success btn-sm" onclick="veitpAddRow('item')">
+                                        <i class="bi bi-plus-lg"></i>
+                                        <span th:text="#{common.add}">Thêm mới</span>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="veitpDeleteSelected('item')">
+                                        <i class="bi bi-trash"></i>
+                                        <span th:text="#{common.delete}">Xóa</span>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="veitpSave('item')">
+                                        <i class="bi bi-save"></i>
+                                        <span th:text="#{common.save}">Lưu</span>
+                                    </button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap"
+                                        th:text="#{common.perPage}">Mỗi trang</label>
+                                    <select class="form-select form-select-sm" id="veitp_pageSize_item"
+                                        style="width:70px;" onchange="veitpChangePage('item')">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{common.data}">dữ
+                                        liệu</label>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
+                                <table id="veitp_table_item"
+                                    class="table table-bordered table-hover table-sm align-middle mb-0"
+                                    style="width:100%; min-width:900px;">
+                                    <thead class="table-light text-center align-middle">
+                                        <tr>
+                                            <th style="width:36px;">
+                                                <input type="checkbox" class="form-check-input" id="veitp_chkAll_item"
+                                                    onchange="veitpToggleAll('item')">
+                                            </th>
+                                            <th style="width:44px;" th:text="#{evs.manage.viewEvsItemPanel.col.no}">No.
+                                            </th>
+                                            <th style="width:150px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.criteriaGroup}">Nhóm chỉ tiêu
+                                            </th>
+                                            <th style="width:100px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.itemCode}">Mã chỉ tiêu</th>
+                                            <th th:text="#{evs.manage.viewEvsItemPanel.col.itemName}">Tên chỉ tiêu</th>
+                                            <th th:text="#{evs.manage.viewEvsItemPanel.col.itemNameKo}">Tên chỉ tiêu
+                                                (Tiếng Hàn)</th>
+                                            <th th:text="#{evs.manage.viewEvsItemPanel.col.remark}">Giải thích</th>
+                                            <th th:text="#{evs.manage.viewEvsItemPanel.col.remarkKo}">Giải thích (Tiếng
+                                                Hàn)</th>
+                                            <th style="width:180px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.updatedBy}">Người thay đổi
+                                            </th>
+                                            <th style="width:130px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.updateDate}">Thời gian thay
+                                                đổi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="veitp_tbody_item"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ── Tab Hạng mục chỉ tiêu chỉ định (EVS_ITEM_PARAM) ── -->
+                        <div class="tab-pane fade" id="veitp_pane_param" role="tabpanel">
+                            <div class="d-flex align-items-center justify-content-between mt-2 mb-1 px-1">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="small fw-semibold text-muted" id="veitp_total_param">Total: 0</span>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <label class="small text-muted mb-0 text-nowrap"
+                                            th:text="#{common.quickFilter}">Lọc nhanh</label>
+                                        <input type="text" class="form-control form-control-sm" id="veitp_filter_param"
+                                            style="width:160px;" oninput="veitpFilterTable('param')">
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-success btn-sm" onclick="veitpAddRow('param')">
+                                        <i class="bi bi-plus-lg"></i>
+                                        <span th:text="#{common.add}">Thêm mới</span>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="veitpDeleteSelected('param')">
+                                        <i class="bi bi-trash"></i>
+                                        <span th:text="#{common.delete}">Xóa</span>
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="veitpSave('param')">
+                                        <i class="bi bi-save"></i>
+                                        <span th:text="#{common.save}">Lưu</span>
+                                    </button>
+                                    <label class="small text-muted mb-0 ms-2 text-nowrap"
+                                        th:text="#{common.perPage}">Mỗi trang</label>
+                                    <select class="form-select form-select-sm" id="veitp_pageSize_param"
+                                        style="width:70px;" onchange="veitpChangePage('param')">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50" selected>50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <label class="small text-muted mb-0 text-nowrap" th:text="#{common.data}">dữ
+                                        liệu</label>
+                                </div>
+                            </div>
+                            <div class="table-responsive" style="max-height:calc(100vh - 310px); overflow-y:auto;">
+                                <table id="veitp_table_param"
+                                    class="table table-bordered table-hover table-sm align-middle mb-0"
+                                    style="width:100%; min-width:1100px;">
+                                    <thead class="table-light text-center align-middle">
+                                        <tr>
+                                            <th style="width:36px;">
+                                                <input type="checkbox" class="form-check-input" id="veitp_chkAll_param"
+                                                    onchange="veitpToggleAll('param')">
+                                            </th>
+                                            <th style="width:44px;" th:text="#{evs.manage.viewEvsItemPanel.col.no}">No.
+                                            </th>
+                                            <th th:text="#{evs.manage.viewEvsItemPanel.col.itemName}">Tên chỉ tiêu</th>
+                                            <th style="width:100px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.itemCode}">Mã chỉ tiêu</th>
+                                            <th style="width:150px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.criteriaGroup}">Nhóm chỉ tiêu
+                                            </th>
+                                            <th th:text="#{evs.manage.viewEvsItemPanel.col.remark}">Giải thích</th>
+                                            <th style="width:160px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.evalGroup}">Nhóm nhân viên
+                                            </th>
+                                            <th style="width:160px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.occGroup}">Nhóm chức vụ</th>
+                                            <th style="width:80px;" th:text="#{evs.manage.viewEvsItemPanel.col.score}">
+                                                Điểm</th>
+                                            <th style="width:180px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.updatedBy}">Người thay đổi
+                                            </th>
+                                            <th style="width:130px;"
+                                                th:text="#{evs.manage.viewEvsItemPanel.col.updateDate}">Thời gian thay
+                                                đổi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="veitp_tbody_param"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div><!-- /.tab-content -->
+                </div><!-- /.card-body -->
+            </div><!-- /.card -->
+
+        </div><!-- /#veitp_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- Modal xác nhận xóa -->
+    <div class="modal fade" id="veitp_deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{common.confirmDelete}">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">
+                        <span th:text="#{common.confirmDeleteMsg}">Bạn có chắc muốn xóa</span>
+                        <strong id="veitp_deleteCount">0</strong>
+                        <span th:text="#{common.confirmDeleteRows}">dòng đã chọn?</span>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.cancel}">Hủy</button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="veitpConfirmDelete()">
+                        <i class="bi bi-trash"></i>
+                        <span th:text="#{common.delete}">Xóa</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <style>
+        #veitp_pageWrapper .veitp-row-edit {
+            background-color: #fffde7 !important;
+        }
+
+        #veitp_pageWrapper .veitp-row-edit td input.form-control,
+        #veitp_pageWrapper .veitp-row-edit td select.form-select {
+            height: 26px;
+            padding: 1px 4px;
+            font-size: 0.8rem;
+        }
+
+        #veitp_pageWrapper tbody tr {
+            cursor: pointer;
+        }
+
+        #veitp_pageWrapper tbody tr td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            var _veitp_tabId = window._currentTabId || 'default-content';
+            window._veitp_inst = window._veitp_inst || {};
+            if (!window._veitp_inst[_veitp_tabId]) {
+                window._veitp_inst[_veitp_tabId] = {
+                    evsType: new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('evsType') || '',
+                    allTabs: ['item', 'param'],
+                    data: { item: [], param: [] },
+                    page: { item: 1, param: 1 },
+                    filter: { item: '', param: '' },
+                    currentTab: 'item',
+                    deleteModal: null,
+                    pendingDeleteType: null,
+                    pendingDeleteIds: [],
+                    rowIdCounter: 0,
+                    itemOptions: [],
+                    groupOptions: [],
+                    occGroupOptions: []
+                };
+            }
+            var inst = window._veitp_inst[_veitp_tabId];
+            function veitp$(sel) { return $('#' + _veitp_tabId).find(sel); }
+
+            /* ── Tiện ích ──────────────────────────────────────────────────────── */
+            function veitpEsc(s) {
+                if (s == null) return '';
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+            function veitpFmtDate(val) {
+                if (!val) return '';
+                var s = String(val);
+                return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.substring(0, 10) : s;
+            }
+            function veitpNewRowId() { return 'NEW_' + (++inst.rowIdCounter); }
+            function veitpPageSize(tab) { return parseInt(veitp$('#veitp_pageSize_' + tab).val()) || 50; }
+            function veitpInp(field, rowId, val, extra) {
+                return '<input type="text" class="form-control form-control-sm" id="veitp_inp_' + field + '_' + rowId
+                    + '" value="' + veitpEsc(val) + '"' + (extra || '') + '>';
+            }
+            function veitpNum(field, rowId, val) {
+                return '<input type="number" class="form-control form-control-sm text-center" id="veitp_inp_' + field + '_' + rowId
+                    + '" value="' + veitpEsc(val) + '" step="any">';
+            }
+            function veitpReadEl(id) {
+                var el = document.querySelector('#' + _veitp_tabId + ' [id="' + id + '"]');
+                return el ? el.value : '';
+            }
+            function veitpReadSelName(id) {
+                var el = document.querySelector('#' + _veitp_tabId + ' [id="' + id + '"]');
+                if (!el || !el.value) return '';
+                return (el.selectedIndex >= 0 && el.options[el.selectedIndex]) ? el.options[el.selectedIndex].text : '';
+            }
+            function veitpBuildSel(field, rowId, options, val) {
+                var html = '<select class="form-select form-select-sm" id="veitp_inp_' + field + '_' + rowId + '">';
+                html += '<option value=""></option>';
+                options.forEach(function (opt) {
+                    html += '<option value="' + veitpEsc(opt.value) + '"'
+                        + (opt.value === val ? ' selected' : '') + '>'
+                        + veitpEsc(opt.label) + '</option>';
+                });
+                html += '</select>';
+                return html;
+            }
+            function veitpSel(field, rowId, parentCode) {
+                return '<select class="form-select form-select-sm" id="veitp_inp_' + field + '_' + rowId
+                    + '" data-parent-code="' + parentCode + '" data-default-text="-- Chọn --"></select>';
+            }
+            function veitpFindName(options, val) {
+                if (!val) return '';
+                var found = options.find(function (o) { return o.value === val; });
+                return found ? veitpEsc(found.label) : veitpEsc(val);
+            }
+
+            /* ── Load options ─────────────────────────────────────────────────── */
+            function veitpLoadItemOptions(resumeSeq) {
+                if (!resumeSeq) { inst.itemOptions = []; return; }
+                $.ajax({
+                    url: '/evs/manage/api/evsItem/list',
+                    type: 'GET',
+                    data: { resumeSeq: resumeSeq },
+                    success: function (rows) {
+                        inst.itemOptions = (rows || []).map(function (r) {
+                            return { value: r.itemCode, label: r.itemCode + ' - ' + (r.itemName || '') };
+                        });
+                    },
+                    error: function () { console.error('Lỗi tải danh sách chỉ tiêu'); }
+                });
+            }
+
+            function veitpLoadGroupOptions(resumeSeq) {
+                if (!resumeSeq) {
+                    inst.groupOptions = [];
+                    inst.occGroupOptions = [];
+                    return;
+                }
+                $.ajax({
+                    url: '/evs/manage/api/evsParam/list',
+                    type: 'GET',
+                    data: { resumeSeq: resumeSeq, paramType: 'GROUP' },
+                    success: function (data) { inst.groupOptions = (data || []).map(function (d) { return { value: d.codeNo, label: d.codeName }; }); },
+                    error: function () { console.error('Lỗi tải nhóm đánh giá'); }
+                });
+                $.ajax({
+                    url: '/evs/manage/api/evsParam/list',
+                    type: 'GET',
+                    data: { resumeSeq: resumeSeq, paramType: 'FAMILY' },
+                    success: function (data) {
+                        inst.occGroupOptions = (data || []).map(function (d) { return { value: d.codeNo, label: d.codeName }; });
+                    },
+                    error: function () { console.error('Lỗi tải nhóm chức vụ'); }
+                });
+            }
+
+            /* ── Cập nhật dropdown Nhóm chỉ tiêu từ dữ liệu Tab 1 ──────────── */
+            function veitpUpdateCriteriaGroupDropdown() {
+                var seen = {};
+                var opts = '<option value="">-- Lựa chọn --</option>';
+                inst.data['item'].forEach(function (r) {
+                    if (r.groupNo && !seen[r.groupNo]) {
+                        seen[r.groupNo] = true;
+                        opts += '<option value="' + veitpEsc(r.groupNo) + '">' + veitpEsc(r.groupName || r.groupNo) + '</option>';
+                    }
+                });
+                veitp$('#veitp_groupNo').html(opts);
+            }
+
+            /* ── Load resume dropdown ─────────────────────────────────────────── */
+            function veitpLoadResumeList() {
+                $.ajax({
+                    url: '/evs/manage/api/resume/evsResumeList',
+                    type: 'GET',
+                    data: { evsType: inst.evsType },
+                    success: function (rows) {
+                        var html = '';
+                        (rows || []).forEach(function (r) {
+                            html += '<option value="' + veitpEsc(r.seq) + '">' + veitpEsc(r.resumeName) + '</option>';
+                        });
+                        veitp$('#veitp_resumeSeq').html(html);
+                        var first = veitp$('#veitp_resumeSeq option[value!=""]').first();
+                        if (first.length) {
+                            veitp$('#veitp_resumeSeq').val(first.val());
+                            veitpSearch();
+                        }
+                    }
+                });
+            }
+
+            /* ── Search ─────────────────────────────────────────────────────────── */
+            window.veitpSearch = function () {
+                var resumeSeq = veitp$('#veitp_resumeSeq').val();
+                veitpLoadGroupOptions(resumeSeq);
+                inst.allTabs.forEach(function (tab) { veitpLoadTab(tab, resumeSeq); });
+            };
+
+            window.veitpSwitchTab = function (tab) { inst.currentTab = tab; };
+
+            window.veitpOpenGroupSearch = function () {
+                // Placeholder: mở popup tìm kiếm nhóm đánh giá nếu có
+                alert('Chức năng tìm kiếm nhóm đánh giá chưa được triển khai.');
+            };
+
+            window.veitpOpenOccGroupSearch = function () {
+                // Placeholder: mở popup tìm kiếm nhóm chức vụ nếu có
+                alert('Chức năng tìm kiếm nhóm chức vụ chưa được triển khai.');
+            };
+
+            function veitpLoadTab(tab, resumeSeq) {
+                var params = { resumeSeq: resumeSeq || '' };
+                var groupNo = veitp$('#veitp_groupNo').val();
+                var evsGroup = veitp$('#veitp_evsGroupCode').val();
+                var evsOccGroup = veitp$('#veitp_evsOccGroupCode').val();
+                if (groupNo) params.groupNo = groupNo;
+                if (tab === 'param') {
+                    if (evsGroup) params.evsGroup = evsGroup;
+                    if (evsOccGroup) params.evsOccGroup = evsOccGroup;
+                }
+                var apiPath = tab === 'item' ? 'evsItem' : 'evsItemParam';
+                $.ajax({
+                    url: '/evs/manage/api/' + apiPath + '/list',
+                    type: 'GET',
+                    data: params,
+                    success: function (rows) {
+                        inst.data[tab] = (rows || []).map(function (r) {
+                            r._rowId = r.seq || veitpNewRowId();
+                            r._isNew = false; r._modified = false;
+                            return r;
+                        });
+                        inst.page[tab] = 1;
+                        inst.filter[tab] = '';
+                        veitp$('#veitp_filter_' + tab).val('');
+                        veitpRenderTable(tab);
+                        if (tab === 'item') {
+                            veitpUpdateCriteriaGroupDropdown();
+                            veitpLoadItemOptions(resumeSeq);
+                        }
+                    },
+                    error: function () { console.error('Lỗi tải tab ' + tab); }
+                });
+            }
+
+            /* ── Filter / Phân trang ─────────────────────────────────────────── */
+            window.veitpFilterTable = function (tab) {
+                inst.filter[tab] = veitp$('#veitp_filter_' + tab).val().toLowerCase();
+                inst.page[tab] = 1;
+                veitpRenderTable(tab);
+            };
+            window.veitpChangePage = function (tab) { inst.page[tab] = 1; veitpRenderTable(tab); };
+
+            function veitpGetFiltered(tab) {
+                var kw = inst.filter[tab] || '';
+                if (!kw) return inst.data[tab];
+                return inst.data[tab].filter(function (r) {
+                    return (r.groupName || r.groupNo || '').toLowerCase().indexOf(kw) >= 0
+                        || (r.itemCode || r.itemCodeItem || '').toLowerCase().indexOf(kw) >= 0
+                        || (r.itemName || '').toLowerCase().indexOf(kw) >= 0
+                        || (r.remark || r.itemRemark || '').toLowerCase().indexOf(kw) >= 0;
+                });
+            }
+
+            /* ── Render ──────────────────────────────────────────────────────── */
+            function veitpRenderTable(tab) {
+                var filtered = veitpGetFiltered(tab);
+                var ps = veitpPageSize(tab);
+                var start = (inst.page[tab] - 1) * ps;
+                var pageData = filtered.slice(start, start + ps);
+                veitp$('#veitp_total_' + tab).text('Total: ' + filtered.length);
+                veitp$('#veitp_chkAll_' + tab).prop('checked', false);
+                var html = '';
+                pageData.forEach(function (r, idx) { html += veitpBuildRow(r, start + idx + 1, tab); });
+                veitp$('#veitp_tbody_' + tab).html(html);
+            }
+
+            function veitpBuildRow(r, no, tab) {
+                var chk = '<input type="checkbox" class="form-check-input veitp-row-chk" data-rowid="'
+                    + veitpEsc(r._rowId) + '" data-tab="' + tab + '" onclick="event.stopPropagation()">';
+                var rowCls = (r._editing ? 'veitp-row-edit' : '') + (r._isNew ? ' table-warning' : '');
+                return r._editing ? veitpBuildEditRow(r, no, tab, chk, rowCls) : veitpBuildViewRow(r, no, tab, chk, rowCls);
+            }
+
+            function veitpBuildViewRow(r, no, tab, chk, rowCls) {
+                var onclick = 'veitpClickRow(\'' + veitpEsc(r._rowId) + '\',\'' + tab + '\')';
+                var h = '<tr class="' + rowCls + '" onclick="' + onclick + '">';
+                h += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
+                h += '<td class="text-center">' + no + '</td>';
+                if (tab === 'item') {
+                    h += '<td>' + veitpEsc(r.groupName || r.groupNo) + '</td>';
+                    h += '<td class="text-center">' + veitpEsc(r.itemCode) + '</td>';
+                    h += '<td>' + veitpEsc(r.itemName) + '</td>';
+                    h += '<td>' + veitpEsc(r.itemNameKo) + '</td>';
+                    h += '<td>' + veitpEsc(r.remark) + '</td>';
+                    h += '<td>' + veitpEsc(r.remarkKo) + '</td>';
+                } else if (tab === 'param') {
+                    h += '<td>' + veitpEsc(r.itemName) + '</td>';
+                    h += '<td class="text-center">' + veitpEsc(r.itemCodeItem) + '</td>';
+                    h += '<td>' + veitpEsc(r.groupName) + '</td>';
+                    h += '<td>' + veitpEsc(r.itemRemark) + '</td>';
+                    h += '<td>' + veitpEsc(r.evsGroupName) + '</td>';
+                    h += '<td>' + veitpEsc(r.evsOccGroupName) + '</td>';
+                    h += '<td class="text-center">' + veitpEsc(r.itemScore) + '</td>';
+                }
+                h += '<td class="text-center small">' + veitpEsc(r.updatedBy) + '</td>';
+                h += '<td class="text-center small">' + veitpFmtDate(r.updateDate) + '</td>';
+                h += '</tr>';
+                return h;
+            }
+
+            function veitpBuildEditRow(r, no, tab, chk, rowCls) {
+                var id = r._rowId;
+                var h = '<tr class="' + rowCls + '">';
+                h += '<td class="text-center" onclick="event.stopPropagation()">' + chk + '</td>';
+                h += '<td class="text-center">' + no + '</td>';
+                if (tab === 'item') {
+                    h += '<td>' + veitpSel('groupNo', id, '14015376') + '</td>';
+                    h += '<td>' + veitpInp('itemCode', id, r.itemCode, ' maxlength="20"') + '</td>';
+                    h += '<td>' + veitpInp('itemName', id, r.itemName, ' maxlength="400"') + '</td>';
+                    h += '<td>' + veitpInp('itemNameKo', id, r.itemNameKo, ' maxlength="400"') + '</td>';
+                    h += '<td>' + veitpInp('remark', id, r.remark, ' maxlength="4000"') + '</td>';
+                    h += '<td>' + veitpInp('remarkKo', id, r.remarkKo, ' maxlength="4000"') + '</td>';
+                } else if (tab === 'param') {
+                    h += '<td>' + veitpBuildSel('itemCode', id, inst.itemOptions, r.itemCode) + '</td>';
+                    h += '<td class="text-center">' + veitpEsc(r.itemCodeItem) + '</td>';
+                    h += '<td>' + veitpEsc(r.groupName) + '</td>';
+                    h += '<td>' + veitpEsc(r.itemRemark) + '</td>';
+                    h += '<td>' + veitpBuildSel('evsGroup', id, inst.groupOptions, r.evsGroup) + '</td>';
+                    h += '<td>' + veitpBuildSel('evsOccGroup', id, inst.occGroupOptions, r.evsOccGroup) + '</td>';
+                    h += '<td>' + veitpNum('itemScore', id, r.itemScore) + '</td>';
+                }
+                h += '<td class="text-center small">' + veitpEsc(r.updatedBy) + '</td>';
+                h += '<td class="text-center small">' + veitpFmtDate(r.updateDate) + '</td>';
+                h += '</tr>';
+                return h;
+            }
+
+            /* ── Khởi tạo select cho hàng đang edit ─────────────────────────── */
+            function veitpInitSelectsForRow(tab, rowId, row) {
+                if (typeof reloadCodeSelect !== 'function') return;
+                var scope = '#' + _veitp_tabId + ' ';
+                if (tab === 'item') {
+                    reloadCodeSelect(scope + '#veitp_inp_groupNo_' + rowId, '14015376', '', row.groupNo || '');
+                }
+            }
+
+            /* ── Inline editing ──────────────────────────────────────────────── */
+            window.veitpClickRow = function (rowId, tab) {
+                veitpCommitEditing(tab);
+                var row = veitpFindRow(tab, rowId);
+                if (!row) return;
+                row._editing = true;
+                veitpRenderTable(tab);
+                veitpInitSelectsForRow(tab, rowId, row);
+                var firstField = tab === 'item' ? 'groupNo' : 'itemCode';
+                var firstInp = document.querySelector('#' + _veitp_tabId + ' #veitp_tbody_' + tab
+                    + ' [id="veitp_inp_' + firstField + '_' + rowId + '"]');
+                if (firstInp) firstInp.focus();
+            };
+
+            function veitpCommitEditing(tab) {
+                inst.data[tab].filter(function (r) { return r._editing; }).forEach(function (r) {
+                    veitpReadInputs(r, tab);
+                    r._editing = false; r._modified = true;
+                });
+            }
+
+            function veitpReadInputs(r, tab) {
+                var id = r._rowId;
+                if (tab === 'item') {
+                    r.groupNo = veitpReadEl('veitp_inp_groupNo_' + id);
+                    r.groupName = veitpReadSelName('veitp_inp_groupNo_' + id);
+                    r.itemCode = veitpReadEl('veitp_inp_itemCode_' + id);
+                    r.itemName = veitpReadEl('veitp_inp_itemName_' + id);
+                    r.itemNameKo = veitpReadEl('veitp_inp_itemNameKo_' + id);
+                    r.remark = veitpReadEl('veitp_inp_remark_' + id);
+                    r.remarkKo = veitpReadEl('veitp_inp_remarkKo_' + id);
+                } else if (tab === 'param') {
+                    r.itemCode = veitpReadEl('veitp_inp_itemCode_' + id);
+                    r.itemName = veitpReadSelName('veitp_inp_itemCode_' + id);
+                    r.evsGroup = veitpReadEl('veitp_inp_evsGroup_' + id);
+                    r.evsGroupName = veitpReadSelName('veitp_inp_evsGroup_' + id);
+                    r.evsOccGroup = veitpReadEl('veitp_inp_evsOccGroup_' + id);
+                    r.evsOccGroupName = veitpReadSelName('veitp_inp_evsOccGroup_' + id);
+                    r.itemScore = veitpReadEl('veitp_inp_itemScore_' + id);
+                }
+            }
+
+            function veitpFindRow(tab, rowId) {
+                return inst.data[tab].find(function (r) { return r._rowId === rowId; });
+            }
+
+            /* ── Thêm mới ────────────────────────────────────────────────────── */
+            window.veitpAddRow = function (tab) {
+                veitpCommitEditing(tab);
+                var resumeSeq = veitp$('#veitp_resumeSeq').val();
+                var base = {
+                    _rowId: veitpNewRowId(), _isNew: true, _modified: true, _editing: true,
+                    seq: '', resumeSeq: resumeSeq
+                };
+                var newRow;
+                if (tab === 'item') {
+                    newRow = Object.assign(base, { groupNo: '', groupName: '', itemCode: '', itemName: '', itemNameKo: '', remark: '', remarkKo: '' });
+                } else {
+                    newRow = Object.assign(base, { itemCode: '', itemCodeItem: '', itemName: '', itemRemark: '', evsGroup: '', evsGroupName: '', evsOccGroup: '', evsOccGroupName: '', itemScore: '' });
+                }
+                inst.data[tab].push(newRow);
+                var filtered = veitpGetFiltered(tab);
+                var ps = veitpPageSize(tab);
+                inst.page[tab] = Math.ceil(filtered.length / ps) || 1;
+                veitpRenderTable(tab);
+                veitpInitSelectsForRow(tab, newRow._rowId, newRow);
+            };
+
+            /* ── Lưu ─────────────────────────────────────────────────────────── */
+            window.veitpSave = function (tab) {
+                veitpCommitEditing(tab);
+                var resumeSeq = veitp$('#veitp_resumeSeq').val();
+                if (!resumeSeq) { alert('Vui lòng chọn Tên đánh giá trước khi lưu.'); return; }
+                var toSave = inst.data[tab].filter(function (r) { return r._modified || r._isNew; });
+                if (!toSave.length) { alert('Không có dữ liệu nào thay đổi để lưu.'); return; }
+                var apiPath = tab === 'item' ? 'evsItem' : 'evsItemParam';
+                var payload = toSave.map(function (r) {
+                    if (tab === 'item') {
+                        return {
+                            seq: r._isNew ? null : r.seq, resumeSeq: resumeSeq,
+                            groupNo: r.groupNo || '', itemCode: r.itemCode || '',
+                            itemName: r.itemName || '', itemNameKo: r.itemNameKo || '',
+                            remark: r.remark || '', remarkKo: r.remarkKo || ''
+                        };
+                    } else {
+                        return {
+                            seq: r._isNew ? null : r.seq, resumeSeq: resumeSeq,
+                            itemCode: r.itemCode || '', evsGroup: r.evsGroup || '',
+                            evsOccGroup: r.evsOccGroup || '', itemScore: r.itemScore || ''
+                        };
+                    }
+                });
+                $.ajax({
+                    url: '/evs/manage/api/' + apiPath + '/save',
+                    type: 'POST', contentType: 'application/json', data: JSON.stringify(payload),
+                    success: function () { veitpLoadTab(tab, resumeSeq); },
+                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                });
+            };
+
+            /* ── Xóa ─────────────────────────────────────────────────────────── */
+            window.veitpDeleteSelected = function (tab) {
+                var ids = [];
+                veitp$('#veitp_tbody_' + tab + ' .veitp-row-chk:checked').each(function () { ids.push($(this).data('rowid')); });
+                if (!ids.length) { alert('Vui lòng chọn ít nhất một dòng để xóa.'); return; }
+                inst.pendingDeleteType = tab;
+                inst.pendingDeleteIds = ids;
+                veitp$('#veitp_deleteCount').text(ids.length);
+                inst.deleteModal.show();
+            };
+
+            window.veitpConfirmDelete = function () {
+                var tab = inst.pendingDeleteType;
+                var ids = inst.pendingDeleteIds || [];
+                var resumeSeq = veitp$('#veitp_resumeSeq').val();
+                var existingSeqs = ids.map(function (id) { return veitpFindRow(tab, id); })
+                    .filter(function (r) { return r && !r._isNew; }).map(function (r) { return r.seq; });
+                inst.data[tab] = inst.data[tab].filter(function (r) { return ids.indexOf(r._rowId) < 0; });
+                inst.deleteModal.hide();
+                if (!existingSeqs.length) { veitpRenderTable(tab); return; }
+                var apiPath = tab === 'item' ? 'evsItem' : 'evsItemParam';
+                $.ajax({
+                    url: '/evs/manage/api/' + apiPath + '/delete',
+                    type: 'POST', contentType: 'application/json', data: JSON.stringify({ seqs: existingSeqs }),
+                    success: function () { veitpRenderTable(tab); },
+                    error: function () { alert('Lỗi khi xóa dữ liệu.'); veitpLoadTab(tab, resumeSeq); }
+                });
+            };
+
+            window.veitpToggleAll = function (tab) {
+                var checked = veitp$('#veitp_chkAll_' + tab).prop('checked');
+                veitp$('#veitp_tbody_' + tab + ' .veitp-row-chk').prop('checked', checked);
+            };
+
+            /* ── Boot ────────────────────────────────────────────────────────── */
+            $(document).ready(function () {
+                if (inst.deleteModal) return;
+                inst.deleteModal = new bootstrap.Modal(veitp$('#veitp_deleteModal')[0]);
+                veitpLoadResumeList();
+            });
+        })();
+    </script>
+</template>

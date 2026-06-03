@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrSpecialMatterMapper">
+
+    <!-- Result Map -->
+    <resultMap id="HrSpecialMatterResultMap" type="com.ait.hrm.empinfo.model.HrSpecialMatter">
+        <id property="specialNo" column="SPECIAL_NO"/>
+        <result property="personId" column="PERSON_ID"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="registrationDate" column="REGISTRATION_DATE"/>
+        <result property="inforDisCode" column="INFOR_DIS_CODE"/>
+        <result property="generationTitle" column="GENERATION_TITLE"/>
+        <result property="specialContent" column="SPECIAL_CONTENT"/>
+        <result property="startDate" column="START_DATE"/>
+        <result property="endDate" column="END_DATE"/>
+        <result property="otFlag" column="OT_FLAG"/>
+        <result property="localName" column="LOCAL_NAME"/>
+        <result property="empId" column="EMPID"/>
+        <result property="deptNo" column="DEPTNO"/>
+        <result property="position" column="POSITION"/>
+    </resultMap>
+
+    <!-- ============================================ -->
+    <!-- SQL FRAGMENTS - Tái sử dụng -->
+    <!-- ============================================ -->
+
+    <!-- Fragment 1: Base columns SELECT từ HR_SPECIAL_MATTER -->
+    <sql id="baseColumns">
+        hsm.SPECIAL_NO,
+        hsm.PERSON_ID,
+        hsm.CREATE_DATE,
+        hsm.CREATED_BY,
+        hsm.CREATED_IP,
+        hsm.UPDATE_DATE,
+        hsm.UPDATED_BY,
+        hsm.UPDATED_IP,
+        hsm.ACTIVITY,
+        hsm.REGISTRATION_DATE,
+        hsm.INFOR_DIS_CODE,
+        hsm.GENERATION_TITLE,
+        hsm.SPECIAL_CONTENT,
+        hsm.START_DATE,
+        hsm.END_DATE,
+        hsm.OT_FLAG
+    </sql>
+
+    <!-- Fragment 2: Employee columns -->
+    <sql id="employeeColumns">
+        he.EMPID,
+        he.LOCAL_NAME,
+        he.DEPTNO,
+        he.POSITION
+    </sql>
+
+    <!-- Fragment 3: Base FROM clause with INNER JOIN -->
+    <sql id="baseFromClause">
+        FROM HR_SPECIAL_MATTER hsm
+        INNER JOIN hr_employee he ON hsm.PERSON_ID = he.PERSON_ID
+    </sql>
+
+    <!-- Fragment 4: Base WHERE clause -->
+    <sql id="baseWhereClause">
+        WHERE 1 = 1
+    </sql>
+
+    <!-- Fragment 5: Keyword search conditions -->
+    <sql id="keywordSearchConditions">
+        <if test="searchValue != null and searchValue != ''">
+            AND (
+                CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchValue})) || '%'
+                OR he.EMPID LIKE '%' || #{searchValue} || '%'
+                OR hsm.SPECIAL_NO LIKE '%' || #{searchValue} || '%'
+                OR he.DEPTNO LIKE '%' || #{searchValue} || '%'
+                OR he.POSITION LIKE '%' || #{searchValue} || '%'
+                OR hsm.ACTIVITY LIKE '%' || #{searchValue} || '%'
+            )
+        </if>
+    </sql>
+
+    <!-- Fragment 6: Advanced search conditions -->
+    <sql id="advancedSearchConditions">
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="empId != null and empId != ''">
+            AND he.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+            AND he.DEPTNO LIKE '%' || #{deptNo} || '%'
+        </if>
+        <if test="position != null and position != ''">
+            AND he.POSITION LIKE '%' || #{position} || '%'
+        </if>
+        <if test="createDateFrom != null and createDateFrom != ''">
+            AND TRUNC(hsm.CREATE_DATE) &gt;= TO_DATE(#{createDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="createDateTo != null and createDateTo != ''">
+            AND TRUNC(hsm.CREATE_DATE) &lt;= TO_DATE(#{createDateTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="activity != null and activity != ''">
+            AND hsm.ACTIVITY = #{activity}
+        </if>
+        <if test="otFlag != null and otFlag != ''">
+            AND hsm.OT_FLAG = #{otFlag}
+        </if>
+    </sql>
+
+    <!-- Fragment 7: Dynamic ORDER BY clause -->
+    <sql id="dynamicOrderBy">
+        <choose>
+            <when test="orderColumn != null and orderColumn != ''">
+                <choose>
+                    <when test="orderColumn == 'empId'">he.EMPID</when>
+                    <when test="orderColumn == 'localName'">he.LOCAL_NAME</when>
+                    <when test="orderColumn == 'deptNo'">he.DEPTNO</when>
+                    <when test="orderColumn == 'position'">he.POSITION</when>
+                    <when test="orderColumn == 'specialNo'">hsm.SPECIAL_NO</when>
+                    <when test="orderColumn == 'activity'">hsm.ACTIVITY</when>
+                    <when test="orderColumn == 'createDate'">hsm.CREATE_DATE</when>
+                    <when test="orderColumn == 'startDate'">hsm.START_DATE</when>
+                    <when test="orderColumn == 'endDate'">hsm.END_DATE</when>
+                    <when test="orderColumn == 'otFlag'">hsm.OT_FLAG</when>
+                    <otherwise>hsm.CREATE_DATE</otherwise>
+                </choose>
+                <choose>
+                    <when test="orderDir == 'asc'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>hsm.CREATE_DATE DESC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- ============================================ -->
+    <!-- QUERIES - Sử dụng fragments -->
+    <!-- ============================================ -->
+
+    <!-- Lấy danh sách nhân viên nữ -->
+    <select id="getFemaleEmployeesList" resultMap="HrSpecialMatterResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        ORDER BY hsm.CREATE_DATE DESC
+    </select>
+
+    <!-- Lấy danh sách nhân viên nữ với phân trang -->
+    <select id="getFemaleEmployeesListWithPagination" resultMap="HrSpecialMatterResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        ORDER BY hsm.CREATE_DATE DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- Đếm tổng số nhân viên nữ -->
+    <select id="countFemaleEmployees" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+    </select>
+
+    <!-- Tìm kiếm nhân viên nữ theo từ khóa -->
+    <select id="searchFemaleEmployees" resultMap="HrSpecialMatterResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        AND (
+            CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword})) || '%'
+            OR he.EMPID LIKE '%' || #{keyword} || '%'
+            OR hsm.SPECIAL_NO LIKE '%' || #{keyword} || '%'
+        )
+        ORDER BY hsm.CREATE_DATE DESC
+    </select>
+
+    <!-- Tìm kiếm nhân viên nữ với nhiều điều kiện (cho export) -->
+    <select id="searchFemaleEmployeesWithConditions" resultMap="HrSpecialMatterResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="advancedSearchConditions"/>
+        ORDER BY hsm.CREATE_DATE DESC
+    </select>
+
+    <!-- Lấy thông tin chi tiết của một nhân viên nữ -->
+    <select id="getSpecialMatterById" resultMap="HrSpecialMatterResultMap">
+        SELECT 
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE hsm.SPECIAL_NO = #{specialNo}
+    </select>
+
+    <!-- DataTables server-side processing - Lấy danh sách với tìm kiếm và sắp xếp -->
+    <select id="getFemaleEmployeesForDataTables" resultMap="HrSpecialMatterResultMap">
+        SELECT * FROM (
+            SELECT 
+                <include refid="baseColumns"/>,
+                <include refid="employeeColumns"/>,
+                ROW_NUMBER() OVER (ORDER BY <include refid="dynamicOrderBy"/>) as rn
+            <include refid="baseFromClause"/>
+            <include refid="baseWhereClause"/>
+            <include refid="keywordSearchConditions"/>
+            <include refid="advancedSearchConditions"/>
+        )
+        WHERE rn BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <!-- DataTables server-side processing - Đếm tổng số bản ghi sau khi lọc -->
+    <select id="countFemaleEmployeesForDataTables" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="keywordSearchConditions"/>
+        <include refid="advancedSearchConditions"/>
+    </select>
+
+    <!-- DataTables server-side processing - Lấy danh sách với generic search parameters -->
+    <select id="getFemaleEmployeesForDataTablesWithSearchParams" resultMap="HrSpecialMatterResultMap">
+        SELECT * FROM (
+            SELECT 
+                <include refid="baseColumns"/>,
+                <include refid="employeeColumns"/>,
+                ROW_NUMBER() OVER (ORDER BY <include refid="dynamicOrderBy"/>) as rn
+            <include refid="baseFromClause"/>
+            <include refid="baseWhereClause"/>
+            <include refid="keywordSearchConditions"/>
+            <include refid="advancedSearchConditions"/>
+        )
+        WHERE rn BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <!-- DataTables server-side processing - Đếm tổng số bản ghi với generic search parameters -->
+    <select id="countFemaleEmployeesForDataTablesWithSearchParams" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="keywordSearchConditions"/>
+        <include refid="advancedSearchConditions"/>
+    </select>
+
+    <!-- ============================================ -->
+    <!-- INSERT, UPDATE, DELETE operations -->
+    <!-- ============================================ -->
+
+    <!-- Cập nhật thông tin - Dynamic UPDATE -->
+    <update id="updateSpecialMatter">
+        UPDATE HR_SPECIAL_MATTER 
+        <set>
+            <if test="activity != null">
+                ACTIVITY = #{activity},
+            </if>
+            <if test="registrationDate != null">
+                REGISTRATION_DATE = #{registrationDate},
+            </if>
+            <if test="inforDisCode != null">
+                INFOR_DIS_CODE = #{inforDisCode},
+            </if>
+            <if test="generationTitle != null">
+                GENERATION_TITLE = #{generationTitle},
+            </if>
+            <if test="specialContent != null">
+                SPECIAL_CONTENT = #{specialContent},
+            </if>
+            <if test="startDate != null">
+                START_DATE = #{startDate},
+            </if>
+            <if test="endDate != null">
+                END_DATE = #{endDate},
+            </if>
+            <if test="otFlag != null">
+                OT_FLAG = #{otFlag},
+            </if>
+            <!-- Audit fields - luôn update -->
+            UPDATE_DATE = #{updateDate},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        </set>
+        WHERE PERSON_ID = #{personId}
+    </update>
+
+    <!-- Thêm mới nhân viên nữ -->
+    <insert id="addSpecialMatter" parameterType="com.ait.hrm.empinfo.model.HrSpecialMatter">
+        INSERT INTO HR_SPECIAL_MATTER (
+            SPECIAL_NO,
+            PERSON_ID,
+            ACTIVITY,
+            REGISTRATION_DATE,
+            INFOR_DIS_CODE,
+            GENERATION_TITLE,
+            SPECIAL_CONTENT,
+            START_DATE,
+            END_DATE,
+            OT_FLAG,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATED_BY,
+            UPDATED_IP
+        ) VALUES (
+            hr_special_matter_seq.nextval,
+            GET_PERSON_ID(#{personId}),
+            #{activity},
+            #{registrationDate},
+            #{inforDisCode},
+            #{generationTitle},
+            #{specialContent},
+            #{startDate},
+            #{endDate},
+            #{otFlag},
+            #{createDate},
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{updateDate},
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- Xóa nhân viên nữ -->
+    <delete id="deleteSpecialMatter">
+        DELETE FROM HR_SPECIAL_MATTER 
+        WHERE SPECIAL_NO = #{specialNo}
+    </delete>
+
+</mapper>

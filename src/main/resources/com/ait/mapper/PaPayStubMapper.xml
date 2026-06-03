@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.pa.workManagement.mapper.PaPayStubMapper">
+
+    <resultMap id="PaPayStubResultMap" type="com.ait.pa.workManagement.dto.PaPayStubDto">
+        <result column="PAY_SCHEDULE_NO" property="payScheduleNo" jdbcType="VARCHAR"/>
+        <result column="PAY_DATE"        property="payDate"        jdbcType="VARCHAR"/>
+        <result column="HR_START_DATE"   property="hrStartDate"    jdbcType="VARCHAR"/>
+        <result column="HR_END_DATE"     property="hrEndDate"      jdbcType="VARCHAR"/>
+        <result column="AR_START_DATE"   property="arStartDate"    jdbcType="VARCHAR"/>
+        <result column="AR_END_DATE"     property="arEndDate"      jdbcType="VARCHAR"/>
+        <result column="PERSON_ID"       property="personId"       jdbcType="VARCHAR"/>
+        <result column="EMPID"           property="empId"          jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME"      property="localName"      jdbcType="VARCHAR"/>
+        <result column="DEPTNO"          property="deptNo"         jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME"       property="deptName"       jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY_NO"  property="postFamilyNo"   jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY"     property="postFamily"     jdbcType="VARCHAR"/>
+        <result column="POSITION_NO"     property="positionNo"     jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME"   property="positionName"   jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NO"   property="postGradeNo"    jdbcType="VARCHAR"/>
+        <result column="POST_GRADE"      property="postGrade"      jdbcType="VARCHAR"/>
+        <result column="EMP_TYPE_CODE"   property="empTypeCode"    jdbcType="VARCHAR"/>
+        <result column="EMP_TYPE_NAME"   property="empTypeName"    jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE"      property="empOffice"      jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE_NAME" property="empOfficeName"  jdbcType="VARCHAR"/>
+        <result column="ACCOUNT_NO"      property="accountNo"      jdbcType="VARCHAR"/>
+        <result column="DEPENDENT_COUNT" property="dependentCount" jdbcType="NUMERIC"/>
+        <result column="BANK_NAME"       property="bankName"       jdbcType="VARCHAR"/>
+        <result column="BANK_ACCOUNT_NO" property="bankAccountNo"  jdbcType="VARCHAR"/>
+        <result column="SOCIAL_INSURANCE_NO" property="socialInsuranceNo" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="PaPayStubItemResultMap" type="com.ait.pa.workManagement.dto.PaPayStubItemDto">
+        <result column="CPNY_ID"     property="cpnyId"     jdbcType="VARCHAR"/>
+        <result column="PERSON_ID"   property="personId"   jdbcType="VARCHAR"/>
+        <result column="ITEM_TYPE"   property="itemType"   jdbcType="NUMERIC"/>
+        <result column="ITEM_NO"     property="itemNo"     jdbcType="VARCHAR"/>
+        <result column="ITEM_NAME"   property="itemName"   jdbcType="VARCHAR"/>
+        <result column="ITEM_VALUE"  property="itemValue"  jdbcType="NUMERIC"/>
+        <result column="ORDERNO"     property="orderNo"    jdbcType="NUMERIC"/>
+        <result column="CREATE_BY"   property="createBy"   jdbcType="VARCHAR"/>
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="PaPayStubOtherResultMap" type="com.ait.pa.workManagement.dto.PaPayStubOtherDto">
+        <result column="RETURN_VALUE" property="returnValue" jdbcType="NUMERIC"/>
+        <result column="REMARK"       property="remark"      jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="whereEmployeeCondition">
+        WHERE T.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+          AND T.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+        <if test="empOfficeCond != null and empOfficeCond != ''">
+            AND T.EMP_OFFICE = #{empOfficeCond, jdbcType=VARCHAR}
+        </if>
+        <if test="deptNoList != null and deptNoList.size() > 0">
+            AND T.DEPTNO IN
+            <foreach item="deptNo" collection="deptNoList" open="(" separator="," close=")">
+                #{deptNo, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="empSearch != null and empSearch != ''">
+            AND (T.EMPID = #{empSearch, jdbcType=VARCHAR}
+              OR CONVERTTOUNSIGN(UPPER(T.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%')
+        </if>
+    </sql>
+
+    <select id="selectEmployeeList" parameterType="com.ait.pa.workManagement.dto.PaPayStubDto"
+            resultMap="PaPayStubResultMap">
+        SELECT T.PAY_SCHEDULE_NO,
+               T.PAY_DATE,
+               T.HR_START_DATE,
+               T.HR_END_DATE,
+               T.AR_START_DATE,
+               T.AR_END_DATE,
+               T.PERSON_ID,
+               T.EMPID,
+               T.LOCAL_NAME,
+               T.DEPTNO,
+               T.DEPT_NAME,
+               T.POST_FAMILY_NO,
+               T.POST_FAMILY,
+               T.POSITION_NO,
+               T.POSITION_NAME,
+               T.POST_GRADE_NO,
+               T.POST_GRADE,
+               T.EMP_TYPE_CODE,
+               T.EMP_TYPE_NAME,
+               T.EMP_OFFICE,
+               T.EMP_OFFICE_NAME,
+               T.ACCOUNT_NO,
+               T.P_TAX_FAMILY_DEDUCT_COUNT AS DEPENDENT_COUNT,
+               T.BANK_NAME AS BANK_NAME,
+               T.ACCOUNT_NO AS BANK_ACCOUNT_NO,
+               T.SOCIAL_INSURANCE_NO AS SOCIAL_INSURANCE_NO
+          FROM PA_SUMMARY_HTSV T
+        <include refid="whereEmployeeCondition"/>
+        ORDER BY T.DEPT_ORDERNO, T.EMPID
+    </select>
+
+    <!-- Lấy thông tin nhân viên đang đăng nhập để xem phiếu lương của bản thân -->
+    <select id="selectSelfEmployee" parameterType="com.ait.pa.workManagement.dto.PaPayStubDto"
+            resultMap="PaPayStubResultMap">
+        SELECT T.PAY_SCHEDULE_NO,
+               T.PAY_DATE,
+               T.HR_START_DATE,
+               T.HR_END_DATE,
+               T.AR_START_DATE,
+               T.AR_END_DATE,
+               T.PERSON_ID,
+               T.EMPID,
+               T.LOCAL_NAME,
+               T.DEPTNO,
+               T.DEPT_NAME,
+               T.POST_FAMILY_NO,
+               T.POST_FAMILY,
+               T.POSITION_NO,
+               T.POSITION_NAME,
+               T.POST_GRADE_NO,
+               T.POST_GRADE,
+               T.EMP_TYPE_CODE,
+               T.EMP_TYPE_NAME,
+               T.EMP_OFFICE,
+               T.EMP_OFFICE_NAME,
+               T.ACCOUNT_NO,
+               T.P_TAX_FAMILY_DEDUCT_COUNT AS DEPENDENT_COUNT,
+               T.BANK_NAME                 AS BANK_NAME,
+               T.ACCOUNT_NO               AS BANK_ACCOUNT_NO,
+               T.SOCIAL_INSURANCE_NO      AS SOCIAL_INSURANCE_NO
+          FROM PA_SUMMARY_HTSV T
+         WHERE T.CPNY_ID         = #{cpnyId,        jdbcType=VARCHAR}
+           AND T.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+           AND T.PERSON_ID       = #{adminID,        jdbcType=VARCHAR}
+    </select>
+
+    <!-- Gọi stored procedure để sinh dữ liệu phiếu lương -->
+    <update id="callSalaryPagePackage" statementType="CALLABLE">
+        { CALL PA_FOR_EMP_SALARY_PAGE_P(
+            #{cpnyId,        jdbcType=VARCHAR},
+            #{payScheduleNo, jdbcType=VARCHAR},
+            #{personId,      jdbcType=VARCHAR},
+            #{adminID,       jdbcType=VARCHAR}
+        ) }
+    </update>
+
+    <!-- Lấy dữ liệu phiếu lương sau khi gọi package -->
+    <select id="selectSalaryPageItems" resultMap="PaPayStubItemResultMap">
+        SELECT T.CPNY_ID,
+               T.PERSON_ID,
+               T.ITEM_TYPE,
+               T.ITEM_NO,
+               GET_GLOBAL_NAME(T.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NAME,
+               T.ITEM_VALUE,
+               T.ORDERNO,
+               T.CREATE_BY,
+               TO_CHAR(T.CREATE_DATE, 'DD-MM-YYYY') CREATE_DATE
+          FROM PA_EMP_SALARY_PAGE_DATA T
+         WHERE T.CPNY_ID   = #{cpnyId,   jdbcType=VARCHAR}
+           AND T.PERSON_ID = #{personId, jdbcType=VARCHAR}
+         ORDER BY T.ITEM_TYPE, T.ORDERNO, T.ITEM_NO
+    </select>
+
+    <!-- Hạng mục khác -->
+    <select id="selectOtherItems" resultMap="PaPayStubOtherResultMap">
+        SELECT TO_NUMBER(NVL(C.RETURN_VALUE, 0)) RETURN_VALUE,
+               C.REMARK
+          FROM PA_PARAM_ITEM_PARAM B,
+               PA_PARAM_DATA       C,
+               PA_SUMMARY_HTSV    PA
+         WHERE B.PARAM_NO  = C.PARAM_NO
+           AND C.PERSON_ID = PA.PERSON_ID
+           AND B.PARAM_ITEM_NO IN ('540099', '90000496', '90000495', '90000494', '90000493')
+           AND C.ACTIVITY  = '1'
+           AND B.CPNY_ID          = #{cpnyId,        jdbcType=VARCHAR}
+           AND PA.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+           AND PA.PERSON_ID       = #{personId,      jdbcType=VARCHAR}
+           AND TO_DATE(TO_CHAR(TO_DATE(PA.PAY_DATE, 'YYYY-MM-DD'), 'MMYYYY'), 'MMYYYY')
+               BETWEEN TO_DATE(C.START_MONTH, 'MMYYYY')
+               AND NVL(TO_DATE(C.END_MONTH, 'MMYYYY'), TO_DATE('129999', 'MMYYYY'))
+         ORDER BY C.CREATE_DATE
+    </select>
+
+</mapper>

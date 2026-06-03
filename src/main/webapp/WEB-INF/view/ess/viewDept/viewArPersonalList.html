@@ -1,0 +1,564 @@
+<div th:fragment="content">
+    <style>
+        #vapl_dataTable { table-layout: fixed; }
+        #vapl_dataTable th.vapl-sticky,
+        #vapl_dataTable td.vapl-sticky {
+            position: sticky;
+            z-index: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #vapl_dataTable thead th.vapl-sticky {
+            background-color: #cfe2ff;
+            z-index: 3;
+        }
+        #vapl_dataTable tbody td.vapl-sticky {
+            background-color: #ffffff;
+        }
+        /* màu solid tương đương rgba(0,0,0,.05) trên nền trắng */
+        #vapl_dataTable tbody tr:nth-child(odd) td.vapl-sticky {
+            background-color: #f2f2f2;
+        }
+        /* màu solid tương đương rgba(0,0,0,.075) trên nền trắng */
+        #vapl_dataTable tbody tr:hover td.vapl-sticky {
+            background-color: #e9ecef;
+        }
+        /* shadow lan rộng để tạo hiệu ứng "che mờ" khi cuộn vào */
+        #vapl_dataTable th.vapl-sticky:nth-child(4),
+        #vapl_dataTable td.vapl-sticky:nth-child(4) {
+            box-shadow: 6px 0 10px -2px rgba(0,0,0,.25);
+        }
+        /* cột số: giới hạn 50px, cho phép tiêu đề xuống dòng */
+        #vapl_dataTable th.vapl-num {
+            width: 50px;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        #vapl_dataTable td.vapl-num {
+            width: 50px;
+            overflow: hidden;
+        }
+    </style>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+
+                    <!-- Điều kiện tìm kiếm -->
+                    <form id="vapl_searchForm" class="d-flex align-items-end gap-3 mb-3 flex-wrap">
+                        <div>
+                            <label for="vapl_deptNo" class="form-label mb-1" th:text="#{vapl.label.dept}">Phòng ban</label>
+                            <input type="text" class="form-control" id="vapl_deptNo"
+                                th:placeholder="#{ex.placeholder.dept}" placeholder="Chọn phòng ban"
+                                readonly style="width:180px;">
+                        </div>
+                        <div>
+                            <label for="vapl_keyword" class="form-label mb-1" th:text="#{vapl.label.keyword}">Mã NV / Họ tên</label>
+                            <input type="text" class="form-control" id="vapl_keyword"
+                                th:placeholder="#{ex.placeholder.empIdOrName}" placeholder="Nhập mã hoặc họ tên"
+                                style="width:180px;">
+                        </div>
+                        <div>
+                            <label for="vapl_empTypeCode" class="form-label mb-1" th:text="#{common.empType}">Loại nhân viên</label>
+                            <select class="form-select" id="vapl_empTypeCode" data-parent-code="13864"
+                                th:attr="data-default-text=#{ex.opt.all}" data-default-text="-- Tất cả --"
+                                style="width:160px;"></select>
+                        </div>
+                        <div>
+                            <label for="vapl_startDate" class="form-label mb-1" th:text="#{vapl.label.startDate}">Ngày bắt đầu</label>
+                            <input type="text" class="form-control js-daterangepicker" id="vapl_startDate"
+                                data-drp-format="YYYY/MM/DD" autocomplete="off"
+                                placeholder="YYYY/MM/DD" style="width:145px;">
+                        </div>
+                        <div>
+                            <label for="vapl_endDate" class="form-label mb-1" th:text="#{vapl.label.endDate}">Ngày kết thúc</label>
+                            <input type="text" class="form-control js-daterangepicker" id="vapl_endDate"
+                                data-drp-format="YYYY/MM/DD" autocomplete="off"
+                                placeholder="YYYY/MM/DD" style="width:145px;">
+                        </div>
+                        <div class="d-flex gap-2 pb-1">
+                            <button type="button" class="btn btn-primary" onclick="vaplSearch()">
+                                <i class="bx bx-search"></i> <span th:text="#{ex.btn.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="vaplExportExcel()">
+                                <i class="bx bx-export"></i> <span th:text="#{ex.btn.export}">Xuất Excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Thanh điều khiển trang -->
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="small" th:text="#{vapl.show}">Hiển thị</span>
+                        <select class="form-select form-select-sm" id="vapl_pageSizeSelect"
+                            style="width:70px;" onchange="vaplChangePageSize(this.value)">
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span class="small" th:text="#{vapl.entries}">mục</span>
+                    </div>
+
+                    <!-- Bảng: mỗi hàng = 1 nhân viên, cột chấm công dynamic từ AR_ITEM -->
+                    <div style="overflow-x:auto;">
+                        <table id="vapl_dataTable"
+                            class="table table-striped table-bordered table-hover table-sm align-middle mb-0"
+                            style="min-width:100%;">
+                            <thead id="vapl_thead" class="table-primary text-center align-middle"></thead>
+                            <tbody id="vapl_tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer: info + pagination -->
+                    <div class="d-flex align-items-center justify-content-between mt-2 flex-wrap gap-2">
+                        <div id="vapl_info" class="small text-muted"></div>
+                        <ul id="vapl_pagination" class="pagination pagination-sm mb-0"></ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chi tiết chấm công -->
+<div class="modal fade" id="vapl_detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="vapl_detailModalLabel" th:text="#{apsl.modal.title}">Chi tiết chấm công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:50px;"   th:text="#{common.stt}">STT</th>
+                                <th style="width:110px;"  th:text="#{common.empId}">Mã nhân viên</th>
+                                <th style="min-width:140px;" th:text="#{common.empName}">Họ tên</th>
+                                <th style="min-width:120px;" th:text="#{apsl.detail.col.shift}">Ca</th>
+                                <th style="width:110px;"  th:text="#{apsl.detail.col.date}">Ngày</th>
+                                <th style="min-width:150px;" th:text="#{apsl.detail.col.leaveType}">Loại nghỉ phụ lục</th>
+                                <th style="width:120px;"  th:text="#{apsl.detail.col.startTime}">Thời gian bắt đầu</th>
+                                <th style="width:120px;"  th:text="#{apsl.detail.col.endTime}">Thời gian kết thúc</th>
+                                <th style="width:90px;"   th:text="#{apsl.detail.col.duration}">Thời lượng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vapl_detailBody">
+                            <tr>
+                                <td colspan="9" class="text-center text-muted" th:text="#{apsl.detail.hint}">
+                                    Chọn vào từng con số để xem chi tiết.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm"
+                    data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _vapl_msg = {
+            stt              : /*[[#{vapl.msg.stt}]]*/ 'STT',
+            empId            : /*[[#{vapl.msg.empId}]]*/ 'Mã NV',
+            empName          : /*[[#{vapl.msg.empName}]]*/ 'Họ tên',
+            deptName         : /*[[#{vapl.msg.deptName}]]*/ 'Phòng ban',
+            position         : /*[[#{vapl.msg.position}]]*/ 'Chức vụ',
+            normalWork       : /*[[#{vapl.msg.normalWork}]]*/ 'Tổng giờ công',
+            lateEarlyGoTotal : /*[[#{vapl.msg.lateEarlyGoTotal}]]*/ 'Tổng (muộn/sớm/ra ngoài)',
+            noData           : /*[[#{vapl.msg.noData}]]*/ 'Không có dữ liệu',
+            loadFailed       : /*[[#{vapl.msg.loadFailed}]]*/ 'Lỗi tải dữ liệu chấm công.',
+            noDataExport     : /*[[#{vapl.msg.noDataExport}]]*/ 'Không có dữ liệu để xuất.',
+            loading          : /*[[#{vapl.msg.loading}]]*/ 'Đang tải...',
+            noDataDetail     : /*[[#{apsl.msg.noDataDetail}]]*/ 'Không có dữ liệu.',
+            loadDetailFailed : /*[[#{apsl.msg.loadDetailFailed}]]*/ 'Tải dữ liệu thất bại.',
+            modalTitle       : /*[[#{apsl.msg.modalTitle}]]*/ 'Chi tiết chấm công'
+        };
+
+        /*
+         * _vapl_items : danh sách {itemId, itemName} lấy từ AR_ITEM (ACTIVITY=1)
+         *               → dùng để render header cột và đọc giá trị từ mỗi row
+         * _vapl_data  : mảng flat rows, mỗi phần tử = 1 nhân viên (LinkedHashMap từ backend)
+         *               Keys: PERSON_ID, EMPID, LOCAL_NAME, DEPT_NAME, POSITION_NAME,
+         *                     EMP_TYPE_CODE, NORMAL_WORK, LATE_EARLY_GO_TOTAL,
+         *                     + tất cả ITEM_ID active (ví dụ: ANNUAL_VACATION, PERSONAL_LEAVE, ...)
+         */
+        var _vapl_items             = [];
+        var _vapl_data              = [];
+        var _vapl_currentPage       = 1;
+        var _vapl_pageSize          = 25;
+        var _vapl_pageBooted        = false;
+        var _vapl_selectedDeptCodes = [];
+        var _vapl_detailModal       = null;
+
+        /* ── helpers ── */
+        function vaplEsc(v) {
+            if (v === null || v === undefined) return '';
+            return String(v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function vaplFmtQty(v) {
+            var n = parseFloat(v);
+            if (isNaN(n) || n === 0) return '0';
+            return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/\.?0+$/, '');
+        }
+
+        /* ── render header ── */
+        /* sticky: [width, left] cho 4 cột đầu (STT, Mã NV, Họ tên, Phòng ban) */
+        var _vapl_sticky = [
+            ['40px',  '0px'],
+            ['90px',  '40px'],
+            ['160px', '130px'],
+            ['150px', '290px']
+        ];
+
+        function vaplRenderHeader() {
+            function sth(i, content, extra) {
+                return '<th class="vapl-sticky' + (extra ? ' ' + extra : '') + '"'
+                    + ' style="width:' + _vapl_sticky[i][0] + ';left:' + _vapl_sticky[i][1] + ';">'
+                    + content + '</th>';
+            }
+            function nth(content) {
+                return '<th class="vapl-num">' + content + '</th>';
+            }
+            var html = '<tr>'
+                + sth(0, vaplEsc(_vapl_msg.stt),      'text-center')
+                + sth(1, vaplEsc(_vapl_msg.empId),     'text-center')
+                + sth(2, vaplEsc(_vapl_msg.empName))
+                + sth(3, vaplEsc(_vapl_msg.deptName))
+                + '<th style="width:120px;white-space:nowrap;">' + vaplEsc(_vapl_msg.position) + '</th>'
+                + nth(vaplEsc(_vapl_msg.normalWork))
+                + nth(vaplEsc(_vapl_msg.lateEarlyGoTotal));
+            _vapl_items.forEach(function (itm) {
+                html += nth(vaplEsc(itm.itemName));
+            });
+            html += '</tr>';
+            $('#vapl_thead').html(html);
+        }
+
+        /* ── render rows trang hiện tại ── */
+        function vaplRenderRows() {
+            var fixedCols = 7;
+            var cols      = fixedCols + _vapl_items.length;
+            var total     = _vapl_data.length;
+
+            if (!total) {
+                $('#vapl_tbody').html(
+                    '<tr><td colspan="' + cols + '" class="text-center text-muted">'
+                    + vaplEsc(_vapl_msg.noData) + '</td></tr>'
+                );
+                vaplRenderFooter(0, 0, 0);
+                return;
+            }
+
+            var start    = (_vapl_currentPage - 1) * _vapl_pageSize;
+            var end      = Math.min(start + _vapl_pageSize, total);
+            var pageData = _vapl_data.slice(start, end);
+            var html     = '';
+
+            pageData.forEach(function (row, idx) {
+                /*
+                 * Backend trả về LinkedHashMap với key là tên cột Oracle (uppercase).
+                 * Cột cố định: PERSON_ID, EMPID, LOCAL_NAME, DEPT_NAME, POSITION_NAME,
+                 *              EMP_TYPE_CODE, NORMAL_WORK, LATE_EARLY_GO_TOTAL
+                 * Cột động: row[itm.itemId] với itm.itemId = ITEM_ID từ AR_ITEM (uppercase)
+                 */
+                html += '<tr>'
+                    + '<td class="vapl-sticky text-center" style="width:' + _vapl_sticky[0][0] + ';left:' + _vapl_sticky[0][1] + ';">' + (start + idx + 1) + '</td>'
+                    + '<td class="vapl-sticky text-center" style="width:' + _vapl_sticky[1][0] + ';left:' + _vapl_sticky[1][1] + ';">' + vaplEsc(row['EMPID'] || '') + '</td>'
+                    + '<td class="vapl-sticky"             style="width:' + _vapl_sticky[2][0] + ';left:' + _vapl_sticky[2][1] + ';">' + vaplEsc(row['LOCAL_NAME'] || '') + '</td>'
+                    + '<td class="vapl-sticky"             style="width:' + _vapl_sticky[3][0] + ';left:' + _vapl_sticky[3][1] + ';">' + vaplEsc(row['DEPT_NAME'] || '') + '</td>'
+                    + '<td style="white-space:nowrap;">' + vaplEsc(row['POSITION_NAME'] || '') + '</td>'
+                    + '<td class="vapl-num text-center fw-bold">' + vaplFmtQty(row['NORMAL_WORK']) + '</td>'
+                    + '<td class="vapl-num text-center fw-bold">' + vaplFmtQty(row['LATE_EARLY_GO_TOTAL']) + '</td>';
+
+                _vapl_items.forEach(function (itm) {
+                    var qty = parseFloat(row[itm.itemId]) || 0;
+                    if (qty > 0) {
+                        html += '<td class="vapl-num text-center">'
+                            + '<a href="javascript:void(0)" class="vapl-detail-link fw-bold text-primary"'
+                            + ' data-person-id="' + vaplEsc(row['PERSON_ID'] || '') + '"'
+                            + ' data-item-id="'   + vaplEsc(itm.itemId)             + '"'
+                            + ' data-item-name="' + vaplEsc(itm.itemName)           + '">'
+                            + vaplFmtQty(qty) + '</a></td>';
+                    } else {
+                        html += '<td class="vapl-num text-center text-muted">0</td>';
+                    }
+                });
+                html += '</tr>';
+            });
+
+            $('#vapl_tbody').html(html);
+            vaplRenderFooter(start + 1, end, total);
+        }
+
+        /* ── footer: info + pagination ── */
+        function vaplRenderFooter(from, to, total) {
+            $('#vapl_info').text(
+                total === 0
+                    ? 'Showing 0 to 0 of 0 entries'
+                    : 'Showing ' + from + ' to ' + to + ' of ' + total + ' entries'
+            );
+            var totalPages = Math.ceil(total / _vapl_pageSize);
+            var pg = '';
+            pg += '<li class="page-item' + (_vapl_currentPage <= 1 ? ' disabled' : '') + '">'
+                + '<a class="page-link" href="javascript:void(0)" onclick="vaplGoPage(' + (_vapl_currentPage - 1) + ')">Previous</a></li>';
+            var s = Math.max(1, _vapl_currentPage - 2);
+            var e = Math.min(totalPages, _vapl_currentPage + 2);
+            for (var i = s; i <= e; i++) {
+                pg += '<li class="page-item' + (i === _vapl_currentPage ? ' active' : '') + '">'
+                    + '<a class="page-link" href="javascript:void(0)" onclick="vaplGoPage(' + i + ')">' + i + '</a></li>';
+            }
+            pg += '<li class="page-item' + (_vapl_currentPage >= totalPages ? ' disabled' : '') + '">'
+                + '<a class="page-link" href="javascript:void(0)" onclick="vaplGoPage(' + (_vapl_currentPage + 1) + ')">Next</a></li>';
+            $('#vapl_pagination').html(pg);
+        }
+
+        /* ── render bảng ── */
+        function vaplRenderTable(data) {
+            _vapl_data        = data || [];
+            _vapl_currentPage = 1;
+            vaplRenderHeader();
+            vaplRenderRows();
+
+            $('#vapl_tbody').off('click', '.vapl-detail-link')
+                .on('click', '.vapl-detail-link', function (e) {
+                    e.preventDefault();
+                    vaplOpenDetail(
+                        $(this).data('person-id'),
+                        $(this).data('item-id'),
+                        $(this).data('item-name')
+                    );
+                });
+        }
+
+        /* ── modal chi tiết ── */
+        function vaplFmtDate(s) {
+            if (!s) return '';
+            var p = s.split('/');
+            return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s;
+        }
+
+        function vaplOpenDetail(personId, itemId, itemName) {
+            $('#vapl_detailModalLabel').text(itemName || _vapl_msg.modalTitle);
+            $('#vapl_detailBody').html(
+                '<tr><td colspan="9" class="text-center text-muted">' + vaplEsc(_vapl_msg.loading) + '</td></tr>'
+            );
+            if (_vapl_detailModal) { _vapl_detailModal.show(); }
+
+            $.ajax({
+                url : '/ess/viewDept/api/arPersonalList/detail',
+                type: 'GET',
+                data: {
+                    personId : personId,
+                    itemId   : itemId,
+                    startDate: $('#vapl_startDate').val(),
+                    endDate  : $('#vapl_endDate').val()
+                },
+                success: function (data) {
+                    if (!data || !data.length) {
+                        $('#vapl_detailBody').html(
+                            '<tr><td colspan="9" class="text-center text-muted">'
+                            + vaplEsc(_vapl_msg.noDataDetail) + '</td></tr>'
+                        );
+                        return;
+                    }
+                    var html = '';
+                    data.forEach(function (row, idx) {
+                        html += '<tr>'
+                            + '<td class="text-center">' + (idx + 1) + '</td>'
+                            + '<td class="text-center">' + vaplEsc(row.empId     || '') + '</td>'
+                            + '<td>'                     + vaplEsc(row.localName || '') + '</td>'
+                            + '<td class="text-center">' + vaplEsc(row.shiftName || row.shiftNo || '') + '</td>'
+                            + '<td class="text-center">' + vaplFmtDate(row.arDateStr) + '</td>'
+                            + '<td>'                     + vaplEsc(row.itemName  || '') + '</td>'
+                            + '<td class="text-center">' + vaplEsc(row.fromTimeStr || '') + '</td>'
+                            + '<td class="text-center">' + vaplEsc(row.toTimeStr   || '') + '</td>'
+                            + '<td class="text-center">' + vaplFmtQty(row.quantity) + '</td>'
+                            + '</tr>';
+                    });
+                    $('#vapl_detailBody').html(html);
+                },
+                error: function () {
+                    $('#vapl_detailBody').html(
+                        '<tr><td colspan="9" class="text-center text-danger">'
+                        + vaplEsc(_vapl_msg.loadDetailFailed) + '</td></tr>'
+                    );
+                }
+            });
+        }
+
+        window.vaplGoPage = function (n) {
+            var totalPages = Math.ceil(_vapl_data.length / _vapl_pageSize);
+            if (n < 1 || n > totalPages) return;
+            _vapl_currentPage = n;
+            vaplRenderRows();
+        };
+
+        window.vaplChangePageSize = function (val) {
+            _vapl_pageSize    = parseInt(val, 10) || 25;
+            _vapl_currentPage = 1;
+            vaplRenderRows();
+        };
+
+        /* ── tra cứu ── */
+        window.vaplSearch = function () {
+            $.ajax({
+                url : '/ess/viewDept/api/arPersonalList/summary',
+                type: 'GET',
+                data: {
+                    keyword     : $('#vapl_keyword').val(),
+                    deptNos     : (_vapl_selectedDeptCodes || []).join(','),
+                    empTypeCode : $('#vapl_empTypeCode').val(),
+                    startDate   : $('#vapl_startDate').val(),
+                    endDate     : $('#vapl_endDate').val(),
+                    itemGroup   : '!1433'  /* để backend lọc AR_ITEM theo nhóm nghỉ phép này, tránh phải load tất cả AR_ITEM (ACTIVITY=1) */
+                },
+                success: function (data) {
+                    /* data là List<Map> - flat rows, không cần pivot */
+                    vaplRenderTable(data);
+                },
+                error: function () {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error(_vapl_msg.loadFailed);
+                    }
+                }
+            });
+        };
+
+        /* ── xuất Excel ── */
+        window.vaplExportExcel = function () {
+            if (!_vapl_data.length) {
+                if (typeof toastr !== 'undefined') toastr.warning(_vapl_msg.noDataExport);
+                return;
+            }
+            var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office"'
+                + ' xmlns:x="urn:schemas-microsoft-com:office:excel">'
+                + '<head><meta charset="UTF-8"></head><body><table border="1">';
+
+            html += '<tr>'
+                + '<th>' + _vapl_msg.stt              + '</th>'
+                + '<th>' + _vapl_msg.empId            + '</th>'
+                + '<th>' + _vapl_msg.empName          + '</th>'
+                + '<th>' + _vapl_msg.deptName         + '</th>'
+                + '<th>' + _vapl_msg.position         + '</th>'
+                + '<th>' + _vapl_msg.normalWork       + '</th>'
+                + '<th>' + _vapl_msg.lateEarlyGoTotal + '</th>';
+            _vapl_items.forEach(function (itm) { html += '<th>' + itm.itemName + '</th>'; });
+            html += '</tr>';
+
+            _vapl_data.forEach(function (row, idx) {
+                html += '<tr>'
+                    + '<td>' + (idx + 1)                                   + '</td>'
+                    + '<td>' + (row['EMPID']         || '')                 + '</td>'
+                    + '<td>' + (row['LOCAL_NAME']    || '')                 + '</td>'
+                    + '<td>' + (row['DEPT_NAME']     || '')                 + '</td>'
+                    + '<td>' + (row['POSITION_NAME'] || '')                 + '</td>'
+                    + '<td>' + vaplFmtQty(row['NORMAL_WORK'])               + '</td>'
+                    + '<td>' + vaplFmtQty(row['LATE_EARLY_GO_TOTAL'])       + '</td>';
+                _vapl_items.forEach(function (itm) {
+                    html += '<td>' + vaplFmtQty(parseFloat(row[itm.itemId]) || 0) + '</td>';
+                });
+                html += '</tr>';
+            });
+            html += '</table></body></html>';
+
+            var blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel' });
+            var url  = URL.createObjectURL(blob);
+            var a    = document.createElement('a');
+            a.href     = url;
+            a.download = 'tinh_hinh_cham_cong_nhan_vien.xls';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        /* ── mặc định: ngày 25 tháng trước đến ngày 24 tháng này ── */
+        function vaplDefaultDateRange() {
+            var now  = new Date();
+            var y    = now.getFullYear();
+            var m    = now.getMonth();        // 0-based
+            var pad  = function (n) { return n < 10 ? '0' + n : '' + n; };
+
+            var prevY = m === 0 ? y - 1 : y;
+            var prevM = m === 0 ? 12    : m;  // tháng trước (1-based)
+
+            var startVal = prevY + '/' + pad(prevM) + '/25';
+            var endVal   = y    + '/' + pad(m + 1)  + '/24';
+
+            $('#vapl_startDate').val(startVal);
+            $('#vapl_endDate').val(endVal);
+
+            if ($('#vapl_startDate').data('daterangepicker')) {
+                $('#vapl_startDate').data('daterangepicker').setStartDate(startVal);
+            }
+            if ($('#vapl_endDate').data('daterangepicker')) {
+                $('#vapl_endDate').data('daterangepicker').setStartDate(endVal);
+            }
+        }
+
+        /* ── load items (header cột), sau đó search ── */
+        function vaplLoadItems(callback) {
+            $.ajax({
+                url    : '/ess/viewDept/api/arPersonalList/items',
+                type   : 'GET',
+                data: {
+                    itemGroup   : '!1433'  /* để backend lọc AR_ITEM theo nhóm nghỉ phép này, tránh phải load tất cả AR_ITEM (ACTIVITY=1) */
+                },
+                success: function (data) {
+                    _vapl_items = data || [];
+                    if (typeof callback === 'function') callback();
+                },
+                error  : function () {
+                    _vapl_items = [];
+                    if (typeof callback === 'function') callback();
+                }
+            });
+        }
+
+        /* ── boot ── */
+        function vaplBootPage() {
+            if (_vapl_pageBooted) return;
+            if (!document.getElementById('vapl_dataTable')) {
+                setTimeout(vaplBootPage, 30);
+                return;
+            }
+            _vapl_pageBooted = true;
+
+            if (window.bootstrap && document.getElementById('vapl_detailModal')) {
+                _vapl_detailModal = new bootstrap.Modal(document.getElementById('vapl_detailModal'));
+            }
+            if (typeof DeptTree !== 'undefined') {
+                DeptTree.init('#vapl_deptNo', function (selectedCodes) {
+                    _vapl_selectedDeptCodes = selectedCodes || [];
+                });
+            }
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#vapl_searchForm');
+            }
+            vaplDefaultDateRange();
+            /* Load items trước để có header cột, rồi mới search */
+            vaplLoadItems(function () { vaplSearch(); });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', vaplBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(vaplBootPage);
+        } else {
+            vaplBootPage();
+        }
+    </script>
+</template>

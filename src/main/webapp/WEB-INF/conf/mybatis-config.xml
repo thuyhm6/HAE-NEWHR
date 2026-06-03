@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- Global Settings -->
+    <settings>
+        <!-- Enable lazy loading -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/>
+        
+        <!-- Enable multiple result sets -->
+        <setting name="multipleResultSetsEnabled" value="true"/>
+        
+        <!-- Use column label instead of column name -->
+        <setting name="useColumnLabel" value="true"/>
+        
+        <!-- Use generated keys -->
+        <setting name="useGeneratedKeys" value="true"/>
+        
+        <!-- Auto mapping behavior -->
+        <setting name="autoMappingBehavior" value="PARTIAL"/>
+        <setting name="autoMappingUnknownColumnBehavior" value="WARNING"/>
+        
+        <!-- Default executor type -->
+        <setting name="defaultExecutorType" value="SIMPLE"/>
+        
+        <!-- Default statement timeout -->
+        <setting name="defaultStatementTimeout" value="25"/>
+        <setting name="defaultFetchSize" value="100"/>
+        
+        <!-- Safe row bounds -->
+        <setting name="safeRowBoundsEnabled" value="false"/>
+        
+        <!-- Map underscore to camel case -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        
+        <!-- Local cache -->
+        <setting name="localCacheScope" value="SESSION"/>
+        
+        <!-- Jdbc type for null -->
+        <setting name="jdbcTypeForNull" value="OTHER"/>
+        
+        <!-- Lazy load trigger methods -->
+        <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>
+        
+        <!-- Log implementation -->
+        <setting name="logImpl" value="SLF4J"/>
+    </settings>
+    
+    <!-- Type Aliases -->
+    <typeAliases>
+        <package name="com.ait"/>
+        <package name="com.ait.dto"/>
+        <package name="com.ait.entity"/>
+    </typeAliases>
+    
+    <!-- Type Handlers -->
+    <typeHandlers>
+        <!-- Custom type handlers can be added here -->
+    </typeHandlers>
+    
+    <!-- Object Factory -->
+    <objectFactory type="org.apache.ibatis.reflection.factory.DefaultObjectFactory">
+        <property name="constructorArgTypes" value=""/>
+        <property name="constructorArgs" value=""/>
+    </objectFactory>
+    
+    <!-- Database ID Provider -->
+    <databaseIdProvider type="DB_VENDOR">
+        <property name="Oracle" value="oracle"/>
+        <property name="MySQL" value="mysql"/>
+        <property name="PostgreSQL" value="postgresql"/>
+    </databaseIdProvider>
+    
+    <!-- Mappers -->
+    <mappers>
+        <!-- XML Mappers -->
+        <mapper resource="com/ait/mapper/SyUserMapper.xml"/>
+        <mapper resource="com/ait/mapper/HrEmployeeMapper.xml"/>
+        <mapper resource="com/ait/mapper/HrDepartmentMapper.xml"/>
+        <mapper resource="com/ait/mapper/SyMenuMapper.xml"/>
+        <mapper resource="com/ait/mapper/SyRoleMapper.xml"/>
+        <mapper resource="com/ait/mapper/SyRoleGroupMapper.xml"/>
+        <mapper resource="com/ait/mapper/SyRoleGroupRelationMapper.xml"/>
+        <mapper resource="com/ait/mapper/SyRoleRelationMapper.xml"/>
+        <mapper resource="com/ait/mapper/SyUserRelationMapper.xml"/>
+        
+        <!-- Package Mappers -->
+        <!-- <package name="com.ait.mapper"/> -->
+    </mappers>
+</configuration>

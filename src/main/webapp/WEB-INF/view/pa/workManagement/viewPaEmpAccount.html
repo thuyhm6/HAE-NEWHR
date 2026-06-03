@@ -1,0 +1,500 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vpae_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="row g-2 align-items-start">
+                        <!-- Hàng 1 -->
+                        <div class="col-12 d-flex flex-wrap align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.empAccount.empSearch}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control form-control-sm" id="vpae_empSearch"
+                                style="max-width:200px;"
+                                onkeydown="if(event.key==='Enter') vpaeSearch()">
+
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.empAccount.bank}">Ngân hàng</label>
+                            <select class="form-select form-select-sm" id="vpae_bankSearch"
+                                data-parent-code="14015883" data-default-text="-- Chọn ngân hàng --" style="max-width:180px;"></select>
+
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.empAccount.empOffice}">Trạng thái làm việc</label>
+                            <select class="form-select form-select-sm" id="vpae_empOfficeSearch"
+                                data-parent-code="15118" data-default-text="-- Chọn trạng thái --" style="max-width:180px;"></select>
+
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.empAccount.dateStarted}">Ngày vào làm</label>
+                            <input type="date" class="form-control form-control-sm" id="vpae_fromDate"
+                                style="max-width:140px;" autocomplete="off">
+                            <span class="text-muted">-</span>
+                            <input type="date" class="form-control form-control-sm" id="vpae_toDate"
+                                style="max-width:140px;" autocomplete="off">
+                        </div>
+                        <!-- Hàng 2 -->
+                        <div class="col-12 d-flex flex-wrap align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.empAccount.dept}">Phòng ban</label>
+                            <input type="text" class="form-control form-control-sm" id="vpae_deptSearch"
+                                style="max-width:200px;"
+                                th:placeholder="#{pa.empAccount.deptPlaceholder}"
+                                placeholder="Chọn phòng ban" readonly>
+
+                            <div class="ms-auto d-flex gap-2 flex-wrap">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="vpaeSearch()">
+                                    <i class="bi bi-search"></i>
+                                    <span th:text="#{pa.empAccount.search}">Tra cứu</span>
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm" onclick="vpaeOpenAddModal()">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span th:text="#{pa.empAccount.addNew}">Thêm mới</span>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="vpaeDeleteSelected()">
+                                    <i class="bi bi-trash"></i>
+                                    <span th:text="#{pa.empAccount.delete}">Xóa</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table id="vpae_table" class="table table-striped table-bordered table-hover table-sm"
+                            style="width:100%; cursor:pointer;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;">
+                                        <input type="checkbox" id="vpae_checkAll">
+                                    </th>
+                                    <th class="text-center" style="width:40px;" th:text="#{pa.empAccount.no}">STT</th>
+                                    <th th:text="#{pa.empAccount.empId}">Mã nhân viên</th>
+                                    <th th:text="#{pa.empAccount.localName}">Họ tên</th>
+                                    <th th:text="#{pa.empAccount.dept}">Phòng ban</th>
+                                    <th th:text="#{pa.empAccount.position}">Chức vụ</th>
+                                    <th class="text-center" th:text="#{pa.empAccount.dateStarted}">Ngày vào làm</th>
+                                    <th th:text="#{pa.empAccount.bank}">Ngân hàng</th>
+                                    <th th:text="#{pa.empAccount.accountNo}">Tài khoản ngân hàng</th>
+                                    <th th:text="#{pa.empAccount.accountAddress}">Chi nhánh</th>
+                                    <th th:text="#{pa.empAccount.securityNo}">Mã số BH</th>
+                                    <th th:text="#{pa.empAccount.taxNo}">Mã số thuế</th>
+                                    <th class="text-center" th:text="#{pa.empAccount.createdBy}">Người tạo</th>
+                                    <th class="text-center" th:text="#{pa.empAccount.createDate}">Thời gian tạo</th>
+                                    <th class="text-center" th:text="#{pa.empAccount.updatedBy}">Người thay đổi</th>
+                                    <th class="text-center" th:text="#{pa.empAccount.updateDate}">Thời gian thay đổi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vpae_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- ── Modal thêm mới / chỉnh sửa ─────────────────────────────────────────── -->
+    <div class="modal fade" id="vpae_editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable" style="max-width:600px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vpae_modalTitle" th:text="#{pa.empAccount.addTitle}">
+                        Thêm mới tài khoản lương nhân viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="vpae_paEmpAccountNo">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:35%;">
+                            <col style="width:65%;">
+                        </colgroup>
+                        <tbody>
+                            <!-- Nhân viên -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.supervisor}">Nhân viên</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" id="vpae_empDisplay"
+                                            th:placeholder="#{pa.empAccount.empSelectPlaceholder}"
+                                            placeholder="Chọn nhân viên..." readonly>
+                                        <input type="hidden" id="vpae_personId">
+                                        <button class="btn btn-outline-primary" type="button"
+                                            id="vpae_empSearchBtn"
+                                            onclick="vpaeOpenEmpSearch()">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Ngân hàng -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.bank}">Ngân hàng</span>
+                                </th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vpae_accountType"
+                                        data-parent-code="14015883"></select>
+                                </td>
+                            </tr>
+                            <!-- Tài khoản ngân hàng -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.accountNo}">Tài khoản ngân hàng</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_accountNo">
+                                </td>
+                            </tr>
+                            <!-- Chi nhánh -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.accountAddress}">Chi nhánh</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_accountAddress">
+                                </td>
+                            </tr>
+                            <!-- Tên tài khoản -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.accountName}">Tên tài khoản</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_accountName">
+                                </td>
+                            </tr>
+                            <!-- Mã số BHXH -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.securityNo}">Mã số BHXH</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_securityNo">
+                                </td>
+                            </tr>
+                            <!-- Thời gian đóng BH -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.securityPayDate}">Thời gian đóng BH</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_securityPayDate">
+                                </td>
+                            </tr>
+                            <!-- Mã số công đoàn -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.fundNo}">Mã số công đoàn</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_fundNo">
+                                </td>
+                            </tr>
+                            <!-- Thời gian đóng CĐ -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.fundPayDate}">Thời gian đóng CĐ</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_fundPayDate">
+                                </td>
+                            </tr>
+                            <!-- Mã số thuế -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.taxNo}">Mã số thuế</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vpae_taxNo">
+                                </td>
+                            </tr>
+                            <!-- Trạng thái -->
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.empAccount.activity}">Trạng thái</span>
+                                </th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vpae_activity"
+                                        style="max-width:180px;">
+                                        <option value="1" th:text="#{pa.empAccount.activity.active}">Hoạt động</option>
+                                        <option value="0" th:text="#{pa.empAccount.activity.inactive}">Không hoạt động</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="vpaeSave()">
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{pa.empAccount.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vpae_table = null;
+        var vpae_selectedDeptCodes = [];
+        var vpae_msgConfirmDelete  = /*[[#{pa.empAccount.confirmDelete}]]*/ 'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?';
+        var vpae_msgSelectRequired = /*[[#{pa.empAccount.selectRequired}]]*/ 'Vui lòng chọn ít nhất một bản ghi!';
+        var vpae_msgValidate       = /*[[#{pa.empAccount.validateRequired}]]*/ 'Vui lòng chọn nhân viên!';
+        var vpae_msgSelectOneEdit  = /*[[#{common.warning}]]*/ 'Vui lòng chọn đúng một bản ghi để sửa!';
+        var vpae_titleAdd          = /*[[#{pa.empAccount.addTitle}]]*/ 'Thêm mới tài khoản lương nhân viên';
+        var vpae_titleEdit         = /*[[#{pa.empAccount.editTitle}]]*/ 'Chỉnh sửa tài khoản lương nhân viên';
+
+        $(document).ready(function () {
+
+            $('#vpae_fromDate').val('');
+            $('#vpae_toDate').val('');
+
+            // Khởi tạo DeptTree selector
+            if (typeof DeptTree !== 'undefined') {
+                DeptTree.init('#vpae_pageWrapper #vpae_deptSearch', function (selectedCodes) {
+                    vpae_selectedDeptCodes = selectedCodes || [];
+                });
+            }
+
+            vpae_table = $('#vpae_table').DataTable({
+                destroy: true,
+                scrollY: 'calc(100vh - 310px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 20,
+                lengthMenu: [10, 20, 50, 100],
+                processing: true,
+                serverSide: true,
+                columnDefs: [
+                    { targets: 0, width: '36px', className: 'text-center', orderable: false },
+                    { targets: 1, width: '40px', className: 'text-center', orderable: false },
+                    { targets: [6, 12, 13, 14, 15], className: 'text-center' },
+                    { targets: 15, orderable: false }
+                ],
+                ajax: {
+                    url: '/pa/workManagement/api/empAccount/list',
+                    type: 'GET',
+                    data: function (d) {
+                        d.empSearch       = $('#vpae_empSearch').val();
+                        d.deptNos         = (vpae_selectedDeptCodes || []).join(',');
+                        d.empOfficeSearch = $('#vpae_empOfficeSearch').val();
+                        d.bankSearch      = $('#vpae_bankSearch').val();
+                        d.fromDateStarted = $('#vpae_fromDate').val();
+                        d.toDateStarted   = $('#vpae_toDate').val();
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            return '<input type="checkbox" class="vpae_rowCheck"'
+                                + ' data-no="' + (row.paEmpAccountNo || '') + '">';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',          defaultContent: '' },
+                    { data: 'localName',      defaultContent: '' },
+                    { data: 'deptName',       defaultContent: '' },
+                    { data: 'postGradeName',  defaultContent: '' },
+                    { data: 'dateStarted',    defaultContent: '' },
+                    { data: 'accountTypeName',defaultContent: '' },
+                    { data: 'accountNo',      defaultContent: '' },
+                    { data: 'accountAddress', defaultContent: '' },
+                    { data: 'securityNo',     defaultContent: '' },
+                    { data: 'taxNo',          defaultContent: '' },
+                    { data: 'createdBy',      defaultContent: '' },
+                    { data: 'createDate',     defaultContent: '' },
+                    { data: 'updatedBy',      defaultContent: '' },
+                    { data: 'updateDate',     defaultContent: '' }
+                ],
+                drawCallback: function () {
+                    $('#vpae_checkAll').off('change').on('change', function () {
+                        $('.vpae_rowCheck').prop('checked', $(this).is(':checked'));
+                    });
+
+                    // Click vào dòng để mở modal sửa
+                    $('#vpae_table tbody').off('click', 'tr').on('click', 'tr', function (e) {
+                        // Bỏ qua nếu click vào checkbox
+                        if ($(e.target).is('input[type="checkbox"]')) return;
+                        var no = $(this).find('.vpae_rowCheck').data('no');
+                        if (no) vpaeLoadEdit(no);
+                    });
+                }
+            });
+
+            // ── Tìm kiếm ──────────────────────────────────────────────────────
+            window.vpaeSearch = function () {
+                vpae_table.ajax.reload();
+            };
+
+            // ── Mở popup tìm nhân viên ────────────────────────────────────────
+            window.vpaeOpenEmpSearch = function () {
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    EmployeeSearchModal.open(function (employee) {
+                        $('#vpae_personId').val(employee.personId);
+                        $('#vpae_empDisplay').val(employee.empId + ' - ' + employee.localName);
+                    });
+                } else {
+                    alert('Component tìm kiếm nhân viên chưa được tải!');
+                }
+            };
+
+            // ── Reset form modal ───────────────────────────────────────────────
+            function vpaeResetForm() {
+                $('#vpae_paEmpAccountNo').val('');
+                $('#vpae_personId').val('');
+                $('#vpae_empDisplay').val('');
+                $('#vpae_accountNo').val('');
+                $('#vpae_accountAddress').val('');
+                $('#vpae_accountName').val('');
+                $('#vpae_securityNo').val('');
+                $('#vpae_securityPayDate').val('');
+                $('#vpae_fundNo').val('');
+                $('#vpae_fundPayDate').val('');
+                $('#vpae_taxNo').val('');
+                $('#vpae_activity').val('1');
+                // Reset select ngân hàng về option đầu
+                $('#vpae_accountType').val($('#vpae_accountType option:first').val());
+            }
+
+            // ── Thêm mới ──────────────────────────────────────────────────────
+            window.vpaeOpenAddModal = function () {
+                vpaeResetForm();
+                $('#vpae_empDisplay').prop('readonly', true);
+                $('#vpae_empSearchBtn').prop('disabled', false).show();
+                $('#vpae_modalTitle').text(vpae_titleAdd);
+                new bootstrap.Modal(document.getElementById('vpae_editModal')).show();
+            };
+
+            // ── Sửa từ nút "Sửa" (chọn 1 dòng trong bảng) ────────────────────
+            window.vpaeOpenEditSelected = function () {
+                var checked = $('.vpae_rowCheck:checked');
+                if (checked.length !== 1) {
+                    toastr ? toastr.warning(vpae_msgSelectOneEdit) : alert(vpae_msgSelectOneEdit);
+                    return;
+                }
+                var no = checked.first().data('no');
+                vpaeLoadEdit(no);
+            };
+
+            window.vpaeLoadEdit = function vpaeLoadEdit(paEmpAccountNo) {
+                $.ajax({
+                    url: '/pa/workManagement/api/empAccount/' + encodeURIComponent(paEmpAccountNo),
+                    type: 'GET',
+                    success: function (dto) {
+                        vpaeResetForm();
+                        $('#vpae_paEmpAccountNo').val(dto.paEmpAccountNo || '');
+                        $('#vpae_personId').val(dto.personId || '');
+                        $('#vpae_empDisplay').val((dto.empId || '') + ' - ' + (dto.localName || ''));
+                        $('#vpae_accountType').val(dto.accountType != null ? dto.accountType : '');
+                        $('#vpae_accountNo').val(dto.accountNo || '');
+                        $('#vpae_accountAddress').val(dto.accountAddress || '');
+                        $('#vpae_accountName').val(dto.accountName || '');
+                        $('#vpae_securityNo').val(dto.securityNo || '');
+                        $('#vpae_securityPayDate').val(dto.securityPayDate || '');
+                        $('#vpae_fundNo').val(dto.fundNo || '');
+                        $('#vpae_fundPayDate').val(dto.fundPayDate || '');
+                        $('#vpae_taxNo').val(dto.taxNo || '');
+                        $('#vpae_activity').val(dto.activity != null ? dto.activity : 1);
+                        // Khi sửa: không cho phép đổi nhân viên
+                        $('#vpae_empDisplay').prop('readonly', true);
+                        $('#vpae_empSearchBtn').prop('disabled', true).hide();
+                        $('#vpae_modalTitle').text(vpae_titleEdit);
+                        new bootstrap.Modal(document.getElementById('vpae_editModal')).show();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            }
+
+            // ── Lưu ───────────────────────────────────────────────────────────
+            window.vpaeSave = function () {
+                var personId = $('#vpae_personId').val().trim();
+                if (!personId) {
+                    toastr ? toastr.warning(vpae_msgValidate) : alert(vpae_msgValidate);
+                    return;
+                }
+                var paEmpAccountNo = $('#vpae_paEmpAccountNo').val();
+                var payload = {
+                    paEmpAccountNo: paEmpAccountNo ? parseInt(paEmpAccountNo) : null,
+                    personId:        personId,
+                    accountType:     $('#vpae_accountType').val() ? parseInt($('#vpae_accountType').val()) : null,
+                    accountNo:       $('#vpae_accountNo').val().trim() || null,
+                    accountAddress:  $('#vpae_accountAddress').val().trim() || null,
+                    accountName:     $('#vpae_accountName').val().trim() || null,
+                    securityNo:      $('#vpae_securityNo').val().trim() || null,
+                    securityPayDate: $('#vpae_securityPayDate').val().trim() || null,
+                    fundNo:          $('#vpae_fundNo').val().trim() || null,
+                    fundPayDate:     $('#vpae_fundPayDate').val().trim() || null,
+                    taxNo:           $('#vpae_taxNo').val().trim() || null,
+                    activity:        parseInt($('#vpae_activity').val())
+                };
+                $.ajax({
+                    url: '/pa/workManagement/api/empAccount/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Lưu thành công') : alert(res.message || 'Lưu thành công');
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('vpae_editModal'));
+                        if (modal) modal.hide();
+                        vpae_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            // ── Xóa ───────────────────────────────────────────────────────────
+            window.vpaeDeleteSelected = function () {
+                var selected = [];
+                $('.vpae_rowCheck:checked').each(function () {
+                    selected.push(parseInt($(this).data('no')));
+                });
+                if (selected.length === 0) {
+                    toastr ? toastr.warning(vpae_msgSelectRequired) : alert(vpae_msgSelectRequired);
+                    return;
+                }
+                if (!confirm(vpae_msgConfirmDelete)) return;
+                $.ajax({
+                    url: '/pa/workManagement/api/empAccount/deleteList',
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selected),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Xóa thành công') : alert(res.message || 'Xóa thành công');
+                        vpae_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+        });
+    </script>
+</template>

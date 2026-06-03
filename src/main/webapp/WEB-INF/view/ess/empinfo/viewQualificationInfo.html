@@ -1,0 +1,535 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- ===== Thông tin cơ bản ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white py-2">
+                    <strong><i class="bx bx-certification me-1"></i><span th:text="#{qi.section.certInfo}">Thông tin Chứng chỉ</span></strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.fullName}">Họ tên</th>
+                                <td id="qi_localName"></td>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.empId}">Mã nhân viên</th>
+                                <td id="qi_empId"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{epi.field.department}">Phòng ban</th>
+                                <td id="qi_deptName"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.position}">Chức vụ</th>
+                                <td id="qi_dutyName"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Trình độ học vấn ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bx bx-book-open me-1"></i><span th:text="#{qi.section.education}">Trình độ học vấn</span></strong>
+                    <button type="button" class="btn btn-sm btn-success" onclick="openEducModal(null)">
+                        <i class="bx bx-plus me-1"></i><span th:text="#{epi.btn.addNew}">Thêm mới</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{qi.field.educLevel}">Trình độ học vấn</th>
+                                <th style="width:120px;" th:text="#{qi.field.startDate}">Ngày nhập học</th>
+                                <th style="width:120px;" th:text="#{qi.field.endDate}">Ngày tốt nghiệp</th>
+                                <th th:text="#{qi.field.institution}">Trường tốt nghiệp</th>
+                                <th th:text="#{qi.field.subject}">Chuyên ngành</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qi_educBody">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Thông tin chứng chỉ ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bx bx-id-card me-1"></i><span th:text="#{qi.section.qualification}">Thông tin chứng chỉ</span></strong>
+                    <button type="button" class="btn btn-sm btn-success" onclick="openQualModal(null)">
+                        <i class="bx bx-plus me-1"></i><span th:text="#{epi.btn.addNew}">Thêm mới</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{qi.field.qualName}">Chứng chỉ</th>
+                                <th th:text="#{qi.field.qualLevel}">Cấp chứng chỉ</th>
+                                <th style="width:110px;" th:text="#{qi.field.dateObtained}">Ngày cấp</th>
+                                <th style="width:110px;" th:text="#{qi.field.validityDate}">Ngày hết hạn</th>
+                                <th th:text="#{qi.field.qualCardNo}">Mã chứng chỉ</th>
+                                <th th:text="#{qi.field.qualInstitute}">Nơi cấp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qi_qualBody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Thông tin khen thưởng ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2">
+                    <strong><i class="bx bx-trophy me-1"></i><span th:text="#{qi.section.reward}">Thông tin khen thưởng</span></strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{qi.field.rewardType}">Khen thưởng</th>
+                                <th style="width:120px;" th:text="#{qi.field.rewardDate}">Ngày khen thưởng</th>
+                                <th th:text="#{qi.field.rewardCnpy}">Đơn vị trao thưởng</th>
+                                <th th:text="#{qi.field.rewardAmount}">Tiền thưởng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="qi_rewardBody">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== Modal: Trình độ học vấn ===== -->
+    <div class="modal fade" id="modalEduc" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEducTitle">
+                        <i class="bx bx-book-open me-1"></i><span th:text="#{qi.section.education}">Trình độ học vấn</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="ed_educNo">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold"><span th:text="#{qi.field.educLevel}">Trình độ học vấn</span> <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="ed_degreeCode" data-parent-code="13769"
+                                th:attr="data-default-text=#{epi.select.choose}" data-default-text="-- Chọn --">
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.institution}">Trường tốt nghiệp</label>
+                            <input type="text" class="form-control form-control-sm" id="ed_institutionName">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.startMonth}">Ngày nhập học (MM/YYYY)</label>
+                            <input type="text" class="form-control form-control-sm" id="ed_startDate"
+                                th:attr="placeholder=#{qi.placeholder.mmyyyy}" placeholder="VD: 09/2015">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.endMonth}">Ngày tốt nghiệp (MM/YYYY)</label>
+                            <input type="text" class="form-control form-control-sm" id="ed_endDate"
+                                th:attr="placeholder=#{qi.placeholder.mmyyyy}" placeholder="VD: 06/2019">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.subject}">Chuyên ngành</label>
+                            <input type="text" class="form-control form-control-sm" id="ed_subject">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.academicTitle}">Học vị</label>
+                            <input type="text" class="form-control form-control-sm" id="ed_degreesCode">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.degreeNum}">Số bằng cấp</label>
+                            <input type="text" class="form-control form-control-sm" id="ed_eduDegNum">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
+                            <textarea class="form-control form-control-sm" id="ed_remark" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-end">
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm me-1"
+                            data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveEduc()">
+                            <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Modal: Chứng chỉ ===== -->
+    <div class="modal fade" id="modalQual" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalQualTitle">
+                        <i class="bx bx-id-card me-1"></i><span th:text="#{qi.section.qualification}">Thông tin chứng chỉ</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="ql_qualNo">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold"><span th:text="#{qi.field.qualName}">Tên chứng chỉ</span> <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="ql_qualName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.qualLevel}">Cấp chứng chỉ</label>
+                            <input type="text" class="form-control form-control-sm" id="ql_qualLevel">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.dateObtained}">Ngày cấp</label>
+                            <input type="date" class="form-control form-control-sm" id="ql_dateObtained">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.validityDate}">Ngày hết hạn</label>
+                            <input type="date" class="form-control form-control-sm" id="ql_validityDate">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.qualCardNo}">Mã chứng chỉ</label>
+                            <input type="text" class="form-control form-control-sm" id="ql_qualCardNo">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.qualInstitute}">Nơi cấp</label>
+                            <input type="text" class="form-control form-control-sm" id="ql_qualInstitute">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{qi.field.qualGrade}">Xếp loại</label>
+                            <input type="text" class="form-control form-control-sm" id="ql_qualGrade">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
+                            <textarea class="form-control form-control-sm" id="ql_qualRemark" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-end">
+                    <div>
+                        <button type="button" class="btn btn-secondary btn-sm me-1"
+                            data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveQual()">
+                            <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        (function () {
+            var i18n = {
+                noData:             /*[[#{epi.msg.noData}]]*/ 'Không có dữ liệu',
+                loading:            /*[[#{common.loading}]]*/ 'Đang tải...',
+                loadErrEduc:        /*[[#{qi.msg.loadError.educ}]]*/ 'Lỗi tải dữ liệu học vấn',
+                loadErrQual:        /*[[#{qi.msg.loadError.qual}]]*/ 'Lỗi tải dữ liệu chứng chỉ',
+                loadErrReward:      /*[[#{qi.msg.loadError.reward}]]*/ 'Lỗi tải dữ liệu khen thưởng',
+                validateEducLevel:  /*[[#{qi.msg.validate.educLevel}]]*/ 'Vui lòng chọn Trình độ học vấn!',
+                validateQualName:   /*[[#{qi.msg.validate.qualName}]]*/ 'Vui lòng nhập Tên chứng chỉ!',
+                saveSuccess:        /*[[#{epi.msg.saveSuccess}]]*/ 'Cập nhật thành công!',
+                addSuccess:         /*[[#{epi.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+                systemError:        /*[[#{epi.msg.systemError}]]*/ 'Lỗi hệ thống',
+                titleAddEduc:       /*[[#{qi.modal.addEduc}]]*/ 'Thêm mới học vấn',
+                titleEditEduc:      /*[[#{qi.modal.editEduc}]]*/ 'Cập nhật học vấn',
+                titleAddQual:       /*[[#{qi.modal.addQual}]]*/ 'Thêm mới chứng chỉ',
+                titleEditQual:      /*[[#{qi.modal.editQual}]]*/ 'Cập nhật chứng chỉ'
+            };
+
+            var currentEducList = [];
+            var currentQualList = [];
+
+            function setText(id, val) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = val || '';
+            }
+
+            function showToast(msg, type) {
+                var container = document.getElementById('qi_toast_container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'qi_toast_container';
+                    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;min-width:250px;';
+                    document.body.appendChild(container);
+                }
+                var toast = document.createElement('div');
+                toast.className = 'alert alert-' + (type || 'info') + ' alert-dismissible fade show shadow-sm py-2';
+                toast.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                container.appendChild(toast);
+                setTimeout(function () { if (toast.parentNode) toast.remove(); }, 3500);
+            }
+
+            function formatDate(val) {
+                if (!val) return '';
+                if (/^\d{4}-\d{2}-\d{2}/.test(val)) {
+                    var p = val.substring(0, 10).split('-');
+                    return p[2] + '/' + p[1] + '/' + p[0];
+                }
+                return val;
+            }
+
+            function toInputDate(val) {
+                if (!val) return '';
+                if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.substring(0, 10);
+                return '';
+            }
+
+            // ===== Thông tin cơ bản =====
+            function loadBasicInfo() {
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/myInfo',
+                    type: 'GET',
+                    success: function (data) {
+                        if (!data) return;
+                        setText('qi_localName', data.localName);
+                        setText('qi_empId', data.empId);
+                        setText('qi_deptName', data.deptName);
+                        setText('qi_dutyName', data.dutyName);
+                    }
+                });
+            }
+
+            // ===== Trình độ học vấn =====
+            function loadEducation() {
+                $.ajax({
+                    url: '/ess/empinfo/api/qualInfo/myEducation',
+                    type: 'GET',
+                    success: function (list) {
+                        currentEducList = list || [];
+                        var tbody = document.getElementById('qi_educBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">' + i18n.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item, i) {
+                            html += '<tr style="cursor:pointer;" onclick="openEducModal(' + i + ')">' +
+                                '<td><a href="javascript:void(0)" class="text-primary">' + (item.degreeName || '') + '</a></td>' +
+                                '<td>' + (item.startDate || '') + '</td>' +
+                                '<td>' + (item.endDate || '') + '</td>' +
+                                '<td>' + (item.institutionName || '') + '</td>' +
+                                '<td>' + (item.subject || '') + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('qi_educBody').innerHTML =
+                            '<tr><td colspan="5" class="text-center text-danger">' + i18n.loadErrEduc + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Chứng chỉ =====
+            function loadQualification() {
+                $.ajax({
+                    url: '/ess/empinfo/api/qualInfo/myQualification',
+                    type: 'GET',
+                    success: function (list) {
+                        currentQualList = list || [];
+                        var tbody = document.getElementById('qi_qualBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">' + i18n.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item, i) {
+                            html += '<tr style="cursor:pointer;" onclick="openQualModal(' + i + ')">' +
+                                '<td><a href="javascript:void(0)" class="text-primary">' + (item.qualName || '') + '</a></td>' +
+                                '<td>' + (item.qualLevel || '') + '</td>' +
+                                '<td>' + formatDate(item.dateObtained) + '</td>' +
+                                '<td>' + formatDate(item.validityDate) + '</td>' +
+                                '<td>' + (item.qualCardNo || '') + '</td>' +
+                                '<td>' + (item.qualInstitute || '') + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('qi_qualBody').innerHTML =
+                            '<tr><td colspan="6" class="text-center text-danger">' + i18n.loadErrQual + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Khen thưởng (chỉ đọc) =====
+            function loadReward() {
+                $.ajax({
+                    url: '/ess/empinfo/api/qualInfo/myReward',
+                    type: 'GET',
+                    success: function (list) {
+                        var tbody = document.getElementById('qi_rewardBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">' + i18n.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item) {
+                            html += '<tr>' +
+                                '<td>' + (item.rewardType || '') + '</td>' +
+                                '<td>' + formatDate(item.rewardDate) + '</td>' +
+                                '<td>' + (item.rewardCnpy || '') + '</td>' +
+                                '<td>' + (item.reward || '') + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('qi_rewardBody').innerHTML =
+                            '<tr><td colspan="4" class="text-center text-danger">' + i18n.loadErrReward + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Modal: Học vấn =====
+            window.openEducModal = function (indexOrNull) {
+                var isNew = indexOrNull === null;
+                document.getElementById('modalEducTitle').innerHTML =
+                    '<i class="bx bx-book-open me-1"></i>' + (isNew ? i18n.titleAddEduc : i18n.titleEditEduc);
+
+                var degreeCode = '';
+                if (isNew) {
+                    ['ed_educNo', 'ed_institutionName', 'ed_startDate',
+                        'ed_endDate', 'ed_subject', 'ed_degreesCode', 'ed_eduDegNum', 'ed_remark']
+                        .forEach(function (id) { document.getElementById(id).value = ''; });
+                } else {
+                    var item = currentEducList[indexOrNull];
+                    degreeCode = item.degreeCode || '';
+                    document.getElementById('ed_educNo').value = item.educNo || '';
+                    document.getElementById('ed_institutionName').value = item.institutionName || '';
+                    document.getElementById('ed_startDate').value = item.startDate || '';
+                    document.getElementById('ed_endDate').value = item.endDate || '';
+                    document.getElementById('ed_subject').value = item.subject || '';
+                    document.getElementById('ed_degreesCode').value = item.degreesCode || '';
+                    document.getElementById('ed_eduDegNum').value = item.eduDegNum || '';
+                    document.getElementById('ed_remark').value = item.remark || '';
+                }
+
+                $.when(initCodeSelects('#ed_degreeCode')).done(function () {
+                    $('#ed_degreeCode').val(degreeCode);
+                });
+
+                new bootstrap.Modal(document.getElementById('modalEduc')).show();
+            };
+
+            window.saveEduc = function () {
+                if (!document.getElementById('ed_degreeCode').value) {
+                    showToast(i18n.validateEducLevel, 'danger');
+                    return;
+                }
+                var educNo = document.getElementById('ed_educNo').value;
+                var payload = {
+                    educNo: educNo ? parseInt(educNo) : null,
+                    degreeCode: document.getElementById('ed_degreeCode').value || null,
+                    institutionName: document.getElementById('ed_institutionName').value || null,
+                    startDate: document.getElementById('ed_startDate').value || null,
+                    endDate: document.getElementById('ed_endDate').value || null,
+                    subject: document.getElementById('ed_subject').value || null,
+                    degreesCode: document.getElementById('ed_degreesCode').value || null,
+                    eduDegNum: document.getElementById('ed_eduDegNum').value || null,
+                    remark: document.getElementById('ed_remark').value || null
+                };
+                $.ajax({
+                    url: '/ess/empinfo/api/qualInfo/saveEducation',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        bootstrap.Modal.getInstance(document.getElementById('modalEduc')).hide();
+                        showToast(educNo ? i18n.saveSuccess : i18n.addSuccess, 'success');
+                        loadEducation();
+                    },
+                    error: function (err) {
+                        showToast((err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.systemError, 'danger');
+                    }
+                });
+            };
+
+            // ===== Modal: Chứng chỉ =====
+            window.openQualModal = function (indexOrNull) {
+                var isNew = indexOrNull === null;
+                document.getElementById('modalQualTitle').innerHTML =
+                    '<i class="bx bx-id-card me-1"></i>' + (isNew ? i18n.titleAddQual : i18n.titleEditQual);
+
+                if (isNew) {
+                    ['ql_qualNo', 'ql_qualName', 'ql_qualLevel', 'ql_dateObtained', 'ql_validityDate',
+                        'ql_qualCardNo', 'ql_qualInstitute', 'ql_qualGrade', 'ql_qualRemark']
+                        .forEach(function (id) { document.getElementById(id).value = ''; });
+                } else {
+                    var item = currentQualList[indexOrNull];
+                    document.getElementById('ql_qualNo').value = item.qualNo || '';
+                    document.getElementById('ql_qualName').value = item.qualName || '';
+                    document.getElementById('ql_qualLevel').value = item.qualLevel || '';
+                    document.getElementById('ql_dateObtained').value = toInputDate(item.dateObtained);
+                    document.getElementById('ql_validityDate').value = toInputDate(item.validityDate);
+                    document.getElementById('ql_qualCardNo').value = item.qualCardNo || '';
+                    document.getElementById('ql_qualInstitute').value = item.qualInstitute || '';
+                    document.getElementById('ql_qualGrade').value = item.qualGrade || '';
+                    document.getElementById('ql_qualRemark').value = item.qualRemark || '';
+                }
+                new bootstrap.Modal(document.getElementById('modalQual')).show();
+            };
+
+            window.saveQual = function () {
+                if (!document.getElementById('ql_qualName').value) {
+                    showToast(i18n.validateQualName, 'danger');
+                    return;
+                }
+                var qualNo = document.getElementById('ql_qualNo').value;
+                var payload = {
+                    qualNo: qualNo ? parseInt(qualNo) : null,
+                    qualName: document.getElementById('ql_qualName').value || null,
+                    qualLevel: document.getElementById('ql_qualLevel').value || null,
+                    dateObtained: document.getElementById('ql_dateObtained').value || null,
+                    validityDate: document.getElementById('ql_validityDate').value || null,
+                    qualCardNo: document.getElementById('ql_qualCardNo').value || null,
+                    qualInstitute: document.getElementById('ql_qualInstitute').value || null,
+                    qualGrade: document.getElementById('ql_qualGrade').value || null,
+                    qualRemark: document.getElementById('ql_qualRemark').value || null
+                };
+                $.ajax({
+                    url: '/ess/empinfo/api/qualInfo/saveQualification',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        bootstrap.Modal.getInstance(document.getElementById('modalQual')).hide();
+                        showToast(qualNo ? i18n.saveSuccess : i18n.addSuccess, 'success');
+                        loadQualification();
+                    },
+                    error: function (err) {
+                        showToast((err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.systemError, 'danger');
+                    }
+                });
+            };
+
+            $(document).ready(function () {
+                loadBasicInfo();
+                loadEducation();
+                loadQualification();
+                loadReward();
+            });
+        })();
+    </script>
+</template>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title></title></head>
+<body>
+
+<!-- Fragment HTML: thẻ card thông tin nhân viên ESS -->
+<div th:fragment="card" class="card mb-3">
+    <div class="card-body p-0">
+        <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+            <colgroup>
+                <col style="width:15%;">
+                <col style="width:35%;">
+                <col style="width:15%;">
+                <col style="width:35%;">
+            </colgroup>
+            <tbody>
+                <tr>
+                    <th class="table-light text-center" th:text="#{essEmpCard.localName}">Họ tên</th>
+                    <td id="essEmpInfo_localName"></td>
+                    <th class="table-light text-center" th:text="#{essEmpCard.empId}">Mã nhân viên</th>
+                    <td id="essEmpInfo_empId"></td>
+                </tr>
+                <tr>
+                    <th class="table-light text-center" th:text="#{essEmpCard.deptName}">Phòng ban</th>
+                    <td id="essEmpInfo_deptName"></td>
+                    <th class="table-light text-center" th:text="#{essEmpCard.headDept}">Trưởng phòng</th>
+                    <td id="essEmpInfo_headDepartment"></td>
+                </tr>
+                <tr>
+                    <th class="table-light text-center" th:text="#{essEmpCard.postFamily}">Nhóm nhân viên</th>
+                    <td id="essEmpInfo_postFamilyName"></td>
+                    <th class="table-light text-center" th:text="#{essEmpCard.postGrade}">Chức vụ</th>
+                    <td id="essEmpInfo_postGradeName"></td>
+                </tr>
+                <tr>
+                    <th class="table-light text-center" th:text="#{essEmpCard.positionName}">Chức danh</th>
+                    <td id="essEmpInfo_positionNoName"></td>
+                    <th class="table-light text-center" th:text="#{essEmpCard.dateStarted}">Ngày vào làm</th>
+                    <td id="essEmpInfo_dateStarted"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Fragment Script: hàm loadEssEmpInfoCard() dùng chung -->
+<th:block th:fragment="script">
+    <script>
+        window.loadEssEmpInfoCard = function () {
+            // Capture active pane tại thời điểm gọi (trước AJAX) để tránh trùng ID khi nhiều tab cùng mở
+            var activePane = document.querySelector('.tab-pane.active') || document;
+            $.ajax({
+                url: '/ess/empinfo/api/personalInfo/myInfo',
+                type: 'GET',
+                success: function (data) {
+                    if (!data) return;
+                    function set(id, val) {
+                        var el = activePane.querySelector ? activePane.querySelector('#' + id) : document.getElementById(id);
+                        if (el) el.textContent = val || '';
+                    }
+                    set('essEmpInfo_localName',      data.localName);
+                    set('essEmpInfo_empId',           data.empId);
+                    set('essEmpInfo_deptName',        data.deptName);
+                    set('essEmpInfo_headDepartment',  data.headDepartment);
+                    set('essEmpInfo_postFamilyName',  data.postFamilyName);
+                    set('essEmpInfo_postGradeName',   data.postGradeName);
+                    set('essEmpInfo_positionNoName',  data.positionNoName);
+                    set('essEmpInfo_dateStarted',     data.dateStarted);
+                }
+            });
+        };
+    </script>
+</th:block>
+
+</body>
+</html>

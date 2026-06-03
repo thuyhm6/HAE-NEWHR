@@ -1,0 +1,211 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vne_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2 px-3">
+                    <form id="vne_searchForm" class="row gy-2 align-items-center">
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{vne.search.title}">Tiêu đề</label>
+                            <input type="text" class="form-control form-control-sm" id="vne_titleSearch"
+                                style="min-width:200px;">
+                        </div>
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{vne.search.applyType}">Loại đơn</label>
+                            <select class="form-select form-select-sm" id="vne_applyTypeSearch"
+                                style="min-width:140px;">
+                                <option value="" th:text="#{vne.search.applyType.all}">-- Tất cả --</option>
+                                <option value="31" th:text="#{vne.search.applyType.ot}">Tăng ca</option>
+                                <option value="21" th:text="#{vne.search.applyType.leave}">Nghỉ phép</option>
+                                <option value="218197" th:text="#{vne.search.applyType.anomaly}">Nghỉ bất thường</option>
+                            </select>
+                        </div>
+                        <div class="col-auto ms-auto d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="vneSearch()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{vne.btn.search}">Tra cứu</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle mb-0"
+                            id="vne_table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:40px;" th:text="#{vne.col.no}">NO</th>
+                                    <th th:text="#{vne.col.title}">Tiêu đề</th>
+                                    <th class="text-center" style="width:20%; white-space:nowrap;"
+                                        th:text="#{vne.col.applyPerson}">Người xin phép</th>
+                                    <th class="text-center" style="width:10%; white-space:nowrap;"
+                                        th:text="#{vne.col.updateDate}">Ngày thực hiện</th>
+                                    <th class="text-center" style="width:10%; white-space:nowrap;"
+                                        th:text="#{vne.col.affirmStatus}">Trạng thái duyệt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vne_tableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-3"
+                                        th:text="#{vne.msg.loading}">Đang tải...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vne_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- Modal chi tiết đơn tăng ca -->
+    <th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtModal}"></th:block>
+    <!-- Modal chi tiết đơn nghỉ phép -->
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveModal}"></th:block>
+    <!-- Modal chi tiết điều chỉnh chấm công -->
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExModal}"></th:block>
+
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtScript}"></th:block>
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveScript}"></th:block>
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExScript}"></th:block>
+    <style>
+        #vne_table th,
+        #vne_table td {
+            vertical-align: middle;
+        }
+        #vne_table thead th {
+            white-space: nowrap;
+        }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            var _vne_tabId = window._currentTabId || 'default-content';
+            var _vne_data = [];
+
+            var _vne_i18n = {
+                noData:    /*[[#{vne.msg.noData}]]*/ 'Không có dữ liệu',
+                loading:   /*[[#{vne.msg.loading}]]*/ 'Đang tải...',
+                loadError: /*[[#{vne.msg.loadError}]]*/ 'Lỗi tải dữ liệu'
+            };
+
+            function vne$(sel) { return $('#' + _vne_tabId).find(sel); }
+
+            function vneEsc(s) {
+                if (s == null) return '';
+                return String(s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function vneStatusBadge(flagName, affirmFlag) {
+                var cls = 'text-bg-secondary';
+                var f = String(affirmFlag || '');
+                if (f === '14014309') cls = 'text-bg-success';
+                else if (f === '14014310') cls = 'text-bg-danger';
+                else if (f === '14014308') cls = 'text-bg-warning';
+                return '<span class="badge ' + cls + '">' + vneEsc(flagName) + '</span>';
+            }
+
+            function vneRenderTable(rows) {
+                var $tbody = vne$('#vne_tableBody');
+                if (!rows || !rows.length) {
+                    $tbody.html('<tr><td colspan="5" class="text-center text-muted py-3">' + vneEsc(_vne_i18n.noData) + '</td></tr>');
+                    return;
+                }
+                var html = '';
+                rows.forEach(function (r, idx) {
+                    var titleHtml = r.affirmUrl
+                        ? '<a href="javascript:void(0)" class="text-primary vne-detail-link"'
+                          + ' data-apply-no="' + vneEsc(r.applyNo || '') + '"'
+                          + ' data-apply-type="' + vneEsc(r.applyType || '') + '"'
+                          + ' data-affirm-url="' + vneEsc(r.affirmUrl || '') + '"'
+                          + ' data-idx="' + idx + '">'
+                          + vneEsc(r.title || '') + '</a>'
+                        : vneEsc(r.title || '');
+                    html += '<tr>'
+                        + '<td class="text-center">' + (idx + 1) + '</td>'
+                        + '<td>' + titleHtml + '</td>'
+                        + '<td class="text-center">' + vneEsc(r.applyPersonInfo || '') + '</td>'
+                        + '<td class="text-center">' + vneEsc(r.updateDate || '') + '</td>'
+                        + '<td class="text-center">' + vneStatusBadge(r.applyAffirmFlag, r.affirmFlag) + '</td>'
+                        + '</tr>';
+                });
+                $tbody.html(html);
+            }
+
+            function vneOpenDetailModal(applyNo, applyType, affirmUrl) {
+                var url = affirmUrl || '';
+                if (url.indexOf('viewApprovaledOt') !== -1) {
+                    typeof vaotOpenApplyDetail === 'function' && vaotOpenApplyDetail(applyNo, applyType, null);
+                } else if (url.indexOf('viewApprovaledLeave') !== -1) {
+                    typeof valOpenApplyDetail === 'function' && valOpenApplyDetail(applyNo, applyType, null);
+                } else if (url.indexOf('viewAttendanceEx') !== -1) {
+                    typeof atexOpenApplyDetail === 'function' && atexOpenApplyDetail(applyNo, applyType, null);
+                }
+            }
+
+            function vneLoadList() {
+                vne$('#vne_tableBody').html('<tr><td colspan="5" class="text-center text-muted py-3">' + vneEsc(_vne_i18n.loading) + '</td></tr>');
+                $.ajax({
+                    url: '/ess/infoApply/api/noticeedEmail/list',
+                    type: 'GET',
+                    success: function (rows) {
+                        _vne_data = rows || [];
+                        vneSearch();
+                    },
+                    error: function () {
+                        vne$('#vne_tableBody').html('<tr><td colspan="5" class="text-center text-danger py-3">' + vneEsc(_vne_i18n.loadError) + '</td></tr>');
+                    }
+                });
+            }
+
+            window.vneSearch = function () {
+                var typeFilter  = vne$('#vne_applyTypeSearch').val() || '';
+                var titleFilter = vne$('#vne_titleSearch').val() || '';
+                var rows = _vne_data.filter(function (r) {
+                    var matchType  = !typeFilter  || r.applyTypeCode === typeFilter;
+                    var matchTitle = !titleFilter || (r.title && r.title.toLowerCase().indexOf(titleFilter.toLowerCase()) !== -1);
+                    return matchType && matchTitle;
+                });
+                vneRenderTable(rows);
+            };
+
+            $(document).ready(function () {
+                if (window._currentTabUrl) {
+                    try {
+                        var qStr = window._currentTabUrl.split('?')[1] || '';
+                        var urlParams = new URLSearchParams(qStr);
+                        var typeCode = urlParams.get('applyTypeCode');
+                        if (typeCode) {
+                            vne$('#vne_applyTypeSearch').val(typeCode);
+                        }
+                    } catch (e) {}
+                }
+
+                vne$('#vne_titleSearch').on('keydown', function (e) {
+                    if (e.key === 'Enter') { e.preventDefault(); vneSearch(); }
+                });
+
+                vne$('#vne_tableBody').on('click', '.vne-detail-link', function () {
+                    vneOpenDetailModal(
+                        $(this).data('apply-no'),
+                        $(this).data('apply-type'),
+                        $(this).data('affirm-url')
+                    );
+                });
+
+                vneLoadList();
+            });
+        })();
+    </script>
+</template>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.infoApply.mapper.EssCwaAbnormalMapper">
+
+    <resultMap id="EssCwaAbnormalResultMap" type="com.ait.ess.infoApply.dto.EssCwaAbnormalDto">
+        <id  property="pkNo"          column="PK_NO" />
+        <result property="personId"    column="PERSON_ID" />
+        <result property="empId"       column="EMPID" />
+        <result property="itemNo"      column="ITEM_NO" />
+        <result property="itemName"    column="ITEM_NAME" />
+        <result property="fromTime"    column="FROM_TIME" />
+        <result property="toTime"      column="TO_TIME" />
+        <result property="arDateStr"   column="AR_DATE_STR" />
+        <result property="dateStr"     column="DATE_STR" />
+        <result property="indoorTime"  column="INDOOR_TIME" />
+        <result property="outdoorTime" column="OUTDOOR_TIME" />
+        <result property="shiftStartYyyy" column="SHIFT_START_YYYY" />
+        <result property="shiftStartHh"   column="SHIFT_START_HH" />
+        <result property="shiftStartMi"   column="SHIFT_START_MI" />
+        <result property="shiftEndYyyy"   column="SHIFT_END_YYYY" />
+        <result property="shiftEndHh"     column="SHIFT_END_HH" />
+        <result property="shiftEndMi"     column="SHIFT_END_MI" />
+        <result property="lockYn"      column="LOCK_YN" />
+    </resultMap>
+
+    <select id="selectMyCwaAbnormalList" resultMap="EssCwaAbnormalResultMap">
+        SELECT
+            AR_DETAIL.PK_NO,
+            AR_DETAIL.PERSON_ID,
+            GET_EMPID(AR_DETAIL.PERSON_ID) AS EMPID,
+            AR_DETAIL.ITEM_NO,
+            GET_GLOBAL_NAME(AR_DETAIL.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+            TO_CHAR(AR_DETAIL.FROM_TIME, 'DD/MM/YYYY HH24:MI:SS') AS FROM_TIME,
+            TO_CHAR(AR_DETAIL.TO_TIME,   'DD/MM/YYYY HH24:MI:SS') AS TO_TIME,
+            TO_CHAR(TO_DATE(AR_DETAIL.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY') AS AR_DATE_STR,
+            REPLACE(TO_CHAR(TO_DATE(AR_DETAIL.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY'), '/', '.') AS DATE_STR,
+            GET_AR_MAC_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, 'IN')  AS INDOOR_TIME,
+            GET_AR_MAC_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, 'OUT') AS OUTDOOR_TIME,
+            TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'DD/MM/YYYY') AS SHIFT_START_YYYY,
+            TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'HH24') AS SHIFT_START_HH,
+            TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'MI')   AS SHIFT_START_MI,
+            TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'DD/MM/YYYY') AS SHIFT_END_YYYY,
+            TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'HH24') AS SHIFT_END_HH,
+            TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(AR_DETAIL.PERSON_ID, AR_DETAIL.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), 'YYYY/MM/DD HH24:MI'), 'MI')   AS SHIFT_END_MI,
+            AR_DETAIL.LOCK_YN
+        FROM AR_DETAIL_HTSV AR_DETAIL
+        WHERE AR_DETAIL.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND AR_DETAIL.ITEM_NO IN ('141443', '141441', '141442', '14015448')
+          AND AR_DETAIL.AR_DATE_STR &lt; TO_CHAR(SYSDATE, 'YYYY/MM/DD')
+          AND AR_DETAIL.AR_DATE_STR NOT IN (
+              SELECT AR_DATE_STR
+              FROM ESS_CARD_APPLY_TB CARD
+              WHERE AFFIRM_FLAG IN ('14014306', '14014307', '14014308')
+                AND CARD.CONFIRM_FLAG &lt;&gt; '2'
+                AND PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          )
+        <if test="startDate != null and startDate != ''">
+            AND AR_DETAIL.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND AR_DETAIL.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        ORDER BY AR_DETAIL.AR_DATE_STR DESC
+    </select>
+
+</mapper>

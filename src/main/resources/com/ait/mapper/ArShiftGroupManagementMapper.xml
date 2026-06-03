@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.deptEmpAtt.mapper.ArShiftGroupManagementMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ess.deptEmpAtt.dto.ArShiftGroupManagementDto">
+        <id     property="pkNo"        column="AR_SHIFTGROUP_MANAGE_NO"/>
+        <result property="personId"    column="PERSON_ID"/>
+        <result property="empId"       column="EMPID"/>
+        <result property="localName"   column="LOCAL_NAME"/>
+        <result property="beforShiftNo" column="BEFOR_SHIFT_NO"/>
+        <result property="beforShiftName" column="BEFOR_SHIFT_NAME"/>
+        <result property="shiftNo"     column="SHIFT_NO"/>
+        <result property="shiftName"   column="SHIFT_NAME"/>
+        <result property="startDate"   column="START_DATE"/>
+        <result property="remark"      column="REMARK"/>
+        <result property="createDate"  column="CREATE_DATE"/>
+        <result property="createdBy"   column="CREATED_BY"/>
+        <result property="updateDate"  column="UPDATE_DATE"/>
+        <result property="updatedBy"   column="UPDATED_BY"/>
+        <result property="activity"    column="ACTIVITY"/>
+    </resultMap>
+
+    <!-- Lấy danh sách lịch sử thay đổi ca, JOIN HR_EMPLOYEE -->
+    <select id="selectList" resultMap="DtoResultMap">
+        SELECT
+            s.AR_SHIFTGROUP_MANAGE_NO,
+            s.PERSON_ID,
+            e.EMPID,
+            e.LOCAL_NAME,
+            s.BEFOR_SHIFT_NO,
+            GET_GLOBAL_NAME(s.BEFOR_SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS BEFOR_SHIFT_NAME,
+            s.SHIFT_NO,
+            GET_GLOBAL_NAME(s.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            TO_CHAR(s.START_DATE, 'YYYY-MM-DD') AS START_DATE,
+            s.REMARK,
+            TO_CHAR(s.CREATE_DATE, 'YYYY-MM-DD') AS CREATE_DATE,
+            s.CREATED_BY,
+            TO_CHAR(s.UPDATE_DATE, 'YYYY-MM-DD') AS UPDATE_DATE,
+            s.UPDATED_BY,
+            s.ACTIVITY
+        FROM AR_SHIFTGROUP_MANAGEMENT s
+        LEFT JOIN HR_EMPLOYEE e ON e.PERSON_ID = s.PERSON_ID
+        WHERE e.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          <if test="empId != null and empId != ''">
+              AND UPPER(e.EMPID) LIKE '%' || UPPER(#{empId}) || '%'
+          </if>
+          <if test="empName != null and empName != ''">
+              AND UPPER(e.LOCAL_NAME) LIKE '%' || UPPER(#{empName}) || '%'
+          </if>
+        ORDER BY s.START_DATE DESC, e.EMPID
+    </select>
+
+    <!-- ESS: Lấy lịch sử nhóm ca của chính user hiện tại -->
+    <select id="selectByPersonId" resultMap="DtoResultMap">
+        SELECT
+            s.AR_SHIFTGROUP_MANAGE_NO,
+            s.PERSON_ID,
+            e.EMPID,
+            e.LOCAL_NAME,
+            s.BEFOR_SHIFT_NO,
+            s.SHIFT_NO,
+            TO_CHAR(s.START_DATE, 'DD/MM/YYYY') AS START_DATE,
+            s.REMARK,
+            TO_CHAR(s.CREATE_DATE, 'YYYY-MM-DD') AS CREATE_DATE,
+            s.CREATED_BY,
+            TO_CHAR(s.UPDATE_DATE, 'YYYY-MM-DD') AS UPDATE_DATE,
+            s.UPDATED_BY,
+            s.ACTIVITY
+        FROM AR_SHIFTGROUP_MANAGEMENT s
+        LEFT JOIN HR_EMPLOYEE e ON e.PERSON_ID = s.PERSON_ID
+        WHERE s.PERSON_ID = #{personId}
+          <if test="shiftNo != null and shiftNo != ''">
+              AND s.SHIFT_NO = #{shiftNo}
+          </if>
+          <if test="fromDate != null and fromDate != ''">
+              AND s.START_DATE &gt;= TO_DATE(#{fromDate}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+              AND s.START_DATE &lt;= TO_DATE(#{toDate}, 'YYYY-MM-DD')
+          </if>
+        ORDER BY s.START_DATE DESC
+    </select>
+
+    <!-- Gọi Procedure AR_SHIFTGROUP_CHANGE_P -->
+    <update id="callChangeProcedure" statementType="CALLABLE">
+        {CALL AR_SHIFTGROUP_CHANGE_P(
+            #{PERSON_ID,    jdbcType=VARCHAR,  mode=IN},
+            #{BEFOR_SHIFT_NO, jdbcType=VARCHAR, mode=IN},
+            #{SHIFT_NO,     jdbcType=VARCHAR,  mode=IN},
+            #{START_DATE,   jdbcType=VARCHAR,  mode=IN},
+            #{REMARK,       jdbcType=VARCHAR,  mode=IN},
+            #{adminID,      jdbcType=VARCHAR,  mode=IN},
+            #{adminIP,      jdbcType=VARCHAR,  mode=IN}
+        )}
+    </update>
+
+</mapper>

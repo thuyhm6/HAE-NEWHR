@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.infoApplyAttendance.mapper.EssCoordApplyAttendanceMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ess.infoApplyAttendance.dto.EssCoordApplyAttendanceDto">
+        <result property="empId"         column="EMPID"/>
+        <result property="localName"     column="LOCAL_NAME"/>
+        <result property="itemNo"        column="ITEM_NO"/>
+        <result property="deptName"      column="DEPT_NAME"/>
+        <result property="shiftName"     column="SHIFT_NAME"/>
+        <result property="postGradeNo"   column="POST_GRADE_NO"/>
+        <result property="postGradeName" column="POST_GRADE_NAME"/>
+        <result property="itemName"      column="ITEM_NAME"/>
+        <result property="arDateStr"     column="AR_DATE_STR"/>
+        <result property="fromDate"      column="FROM_DATE"/>
+        <result property="toTime"        column="TO_TIME"/>
+        <result property="quantity"      column="QUANTITY"/>
+        <result property="unit"          column="UNIT"/>
+        <result property="remark"        column="REMARK"/>
+        <result property="statusName"    column="STATUS_NAME"/>
+        <result property="lockYn"        column="LOCK_YN"/>
+    </resultMap>
+
+    <sql id="baseQuery">
+        SELECT HE.EMPID,
+               HE.LOCAL_NAME,
+               AR.ITEM_NO,
+               GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+               GET_GLOBAL_NAME(AR.SHIFT_NO, #{lang, jdbcType=VARCHAR}) SHIFT_NAME,
+               HE.POST_GRADE_NO,
+               GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
+               GET_GLOBAL_NAME(AR.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NAME,
+               AR.AR_DATE_STR AS AR_DATE_STR,
+               TO_CHAR(AR.FROM_TIME, 'YYYY/MM/DD HH24:MI') FROM_DATE,
+               TO_CHAR(AR.TO_TIME, 'YYYY/MM/DD HH24:MI') TO_TIME,
+               AR.QUANTITY,
+               AR.UNIT,
+               AR.REMARK,
+               GET_GLOBAL_NAME(AR.STATUS_CODE, #{lang, jdbcType=VARCHAR}) STATUS_NAME,
+               AR.LOCK_YN
+          FROM AR_DETAIL_HTSV AR, HR_EMPLOYEE HE
+         WHERE AR.PERSON_ID = HE.PERSON_ID
+           AND AR.PERSON_ID NOT LIKE '111111%'
+           AND AR.ITEM_NO NOT IN (
+               '90000295', '90000296', '90000297', '90000298',
+               '90000299', '90000300', '90000301'
+           )
+           AND AR.AR_DATE_STR &gt;= #{startDate, jdbcType=VARCHAR}
+           AND AR.AR_DATE_STR &lt;= #{endDate, jdbcType=VARCHAR}
+           AND EXISTS (
+               SELECT B1.DEPTID
+                 FROM HR_DEPARTMENT B1
+                WHERE B1.DEPTNO = HE.DEPTNO
+               START WITH B1.DEPTNO IN (
+                   SELECT HRD.DEPTID
+                     FROM HR_DEPARTMENT HRD
+                    WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+               )
+               CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+               UNION
+               SELECT AR_SUPERVISOR_INFO.DEPTNO
+                 FROM AR_SUPERVISOR_INFO
+                WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+                  AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           )
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+            AND AR.SHIFT_NO = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="itemNoSearch != null and itemNoSearch != ''">
+            AND AR.ITEM_NO = #{itemNoSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="statusCode != null and statusCode != ''">
+            AND AR.STATUS_CODE = #{statusCode, jdbcType=VARCHAR}
+        </if>
+        <if test="postFamily != null and postFamily != ''">
+            AND HE.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <select id="countList" resultType="int"
+            parameterType="com.ait.ess.infoApplyAttendance.dto.EssCoordApplyAttendanceDto">
+        SELECT COUNT(*) FROM (
+            <include refid="baseQuery"/>
+        )
+    </select>
+
+    <select id="selectListPage" resultMap="DtoResultMap"
+            parameterType="com.ait.ess.infoApplyAttendance.dto.EssCoordApplyAttendanceDto">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY AR.AR_DATE_STR ASC, AR.CREATE_DATE DESC, HE.DEPTNO, HE.EMPID
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+</mapper>

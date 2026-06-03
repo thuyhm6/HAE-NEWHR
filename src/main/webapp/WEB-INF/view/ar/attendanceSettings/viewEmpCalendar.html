@@ -1,0 +1,486 @@
+<div th:fragment="content">
+
+    <!-- ===== Toolbar ===== -->
+    <div id="ecal_toolbar" class="ccal-toolbar">
+        <div class="ccal-nav">
+            <button class="ccal-nav-btn" id="ecal_prevMonth" title="Tháng trước">
+                <i class="bx bx-chevron-left"></i>
+            </button>
+            <select id="ecal_monthSel" class="ccal-combo">
+                <option value="1">Tháng 01</option>
+                <option value="2">Tháng 02</option>
+                <option value="3">Tháng 03</option>
+                <option value="4">Tháng 04</option>
+                <option value="5">Tháng 05</option>
+                <option value="6">Tháng 06</option>
+                <option value="7">Tháng 07</option>
+                <option value="8">Tháng 08</option>
+                <option value="9">Tháng 09</option>
+                <option value="10">Tháng 10</option>
+                <option value="11">Tháng 11</option>
+                <option value="12">Tháng 12</option>
+            </select>
+            <select id="ecal_yearSel" class="ccal-combo ccal-year"></select>
+            <button class="ccal-nav-btn" id="ecal_nextMonth" title="Tháng sau">
+                <i class="bx bx-chevron-right"></i>
+            </button>
+            <!-- Chọn nhân viên -->
+            <div class="input-group input-group-sm" style="width:280px;">
+                <input type="text" class="form-control form-control-sm" id="ecal_empDisplay"
+                    th:value="${defaultEmpId != null ? defaultEmpId + ' - ' + defaultLocalName : ''}"
+                    placeholder="Chọn nhân viên..." readonly style="height:32px;font-size:.82rem;">
+                <input type="hidden" id="ecal_personId" th:value="${defaultPersonId}">
+                <button class="btn btn-outline-primary btn-sm" type="button" onclick="ecalOpenEmpSearch()"
+                    style="height:32px;padding:0 8px;">
+                    <i class="bx bx-search"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="ecalClearEmp()"
+                    title="Xem lịch của bản thân" style="height:32px;padding:0 8px;">
+                    <i class="bx bx-user"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="ccal-actions">
+            <button class="ccal-btn ccal-btn-default" onclick="ecalLoad()"><i class="bx bx-refresh"></i> Tra
+                cứu</button>
+            <!-- <button class="ccal-btn ccal-btn-success" onclick="ecalOpenEditSelected()"><i class="bx bx-edit"></i>Sửa</button> -->
+        </div>
+    </div>
+
+    <!-- ===== Calendar ===== -->
+    <div id="ecal_gridWrap" class="ccal-grid-wrap">
+        <div class="ccal-hrow">
+            <div class="ccal-hcell ccal-col-sun"><i class="bx bxs-sun"></i> CN</div>
+            <div class="ccal-hcell">T2</div>
+            <div class="ccal-hcell">T3</div>
+            <div class="ccal-hcell">T4</div>
+            <div class="ccal-hcell">T5</div>
+            <div class="ccal-hcell">T6</div>
+            <div class="ccal-hcell ccal-col-sat"><i class="bx bxs-star"></i> T7</div>
+        </div>
+        <div id="ecal_body"></div>
+    </div>
+
+    <!-- ===== Legend ===== -->
+    <div class="ccal-legend">
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-work"></span> Ngày làm việc</span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-rest"></span> Ngày nghỉ</span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-holiday"></span> Ngày lễ</span>
+        <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-today"></span> Hôm nay</span>
+    </div>
+
+    <!-- ===== Modal Cập Nhật Lịch Cá Nhân ===== -->
+    <div class="modal fade" id="ecal_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title mb-0" id="ecal_modalTitle">Cập nhật ngày</h6>
+                    <button class="btn-close btn-sm" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ecal_form">
+                        <input type="hidden" id="ecal_editDdateStr">
+                        <input type="hidden" id="ecal_editPersonId">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Nhân viên</label>
+                                <input type="text" class="form-control form-control-sm" id="ecal_editEmpDisplay"
+                                    readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Ngày</label>
+                                <input type="text" class="form-control form-control-sm" id="ecal_editDateDisplay"
+                                    readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Ca làm việc (Shift No)</label>
+                                <select class="form-select form-select-sm" id="ecal_shiftNo"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Loại ngày (TypeID)</label>
+                                <select class="form-select form-select-sm" id="ecal_typeid"
+                                    data-parent-code="1439"></select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label form-label-sm">Ghi chú (Remark)</label>
+                                <input type="text" class="form-control form-control-sm" id="ecal_remark">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer py-2">
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button class="btn btn-sm btn-primary" onclick="ecalSave()">
+                        <i class="bx bx-save me-1"></i>Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        /* ===========================
+           MAIN LOGIC — prefix: ecal (Emp Calendar)
+           =========================== */
+
+        var _ecal_initialized = false;
+        var _ecal_sysMode     = (typeof sysMode !== 'undefined' && sysMode) ? sysMode : 'ess';
+
+        /* Chặn click bằng CSS ngay lập tức khi không phải hrm mode */
+        (function () {
+            if (_ecal_sysMode !== 'hrm') {
+                var s = document.getElementById('ecal-no-click-css') || document.createElement('style');
+                s.id  = 'ecal-no-click-css';
+                s.textContent = '#ecal_gridWrap .ccal-day{pointer-events:none!important;cursor:default!important;}';
+                if (!s.parentNode) document.head.appendChild(s);
+            } else {
+                var old = document.getElementById('ecal-no-click-css');
+                if (old) old.parentNode.removeChild(old);
+            }
+        })();
+
+        /* ---  inject CSS nếu chưa có (dùng chung ccal-* class) --- */
+        (function () {
+            if (document.getElementById('ccal-injected-css') || document.getElementById('ecal-extra-css')) return;
+            // CSS ccal-* sẽ được inject bởi viewCompanyCalendar nếu mở đồng thời.
+            // Ở đây chỉ inject phần bổ sung nếu cần.
+            var css = document.createElement('style');
+            css.id = 'ecal-extra-css';
+            css.textContent =
+                '@keyframes ccal-fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}'
+                + '@keyframes ccal-pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)}50%{box-shadow:0 0 0 6px rgba(59,130,246,0)}}'
+                + '@keyframes ccal-slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}'
+                + '.ccal-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;'
+                + 'background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);'
+                + 'border:1px solid #cbd5e1;border-radius:8px 8px 0 0;padding:8px 14px;'
+                + 'box-shadow:0 1px 3px rgba(0,0,0,.06);}'
+                + '.ccal-nav{display:flex;align-items:center;gap:4px;margin:0 auto;}'
+                + '.ccal-nav-btn{background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:4px 10px;'
+                + 'font-size:.85rem;cursor:pointer;color:#475569;transition:all .2s;line-height:1;}'
+                + '.ccal-nav-btn:hover{background:#3b82f6;color:#fff;border-color:#3b82f6;transform:scale(1.05);}'
+                + '.ccal-combo{font-size:.82rem;height:32px;padding:4px 6px;border:1px solid #cbd5e1;'
+                + 'border-radius:6px;background:#fff;outline:none;transition:border-color .2s;}'
+                + '.ccal-combo:focus{border-color:#3b82f6;}.ccal-year{width:78px;}'
+                + '.ccal-actions{display:flex;gap:6px;}'
+                + '.ccal-btn{padding:5px 12px;font-size:.78rem;border-radius:6px;border:none;cursor:pointer;'
+                + 'font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:4px;}'
+                + '.ccal-btn:active{transform:scale(.96);}'
+                + '.ccal-btn-default{background:#fff;border:1px solid #cbd5e1;color:#475569;}'
+                + '.ccal-btn-default:hover{background:#f1f5f9;}'
+                + '.ccal-btn-success{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;'
+                + 'box-shadow:0 2px 6px rgba(22,163,74,.3);}'
+                + '.ccal-btn-success:hover{background:linear-gradient(135deg,#16a34a,#15803d);}'
+                + '.ccal-grid-wrap{border:1px solid #cbd5e1;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.06);}'
+                + '.ccal-hrow{display:grid;grid-template-columns:repeat(7,1fr);background:linear-gradient(135deg,#1e293b 0%,#334155 100%);}'
+                + '.ccal-hcell{padding:8px;text-align:center;font-weight:700;font-size:.82rem;color:#e2e8f0;letter-spacing:.5px;border-right:1px solid rgba(255,255,255,.08);}'
+                + '.ccal-hcell:last-child{border-right:none;}'
+                + '.ccal-col-sun{color:#fca5a5 !important;}.ccal-col-sat{color:#86efac !important;}'
+                + '.ccal-week{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #e2e8f0;animation:ccal-slideDown .3s ease-out both;}'
+                + '.ccal-week:last-child{border-bottom:none;}'
+                + '.ccal-day{min-height:90px;padding:6px 8px;border-right:1px solid #e2e8f0;cursor:pointer;'
+                + 'background:#fff;overflow:hidden;transition:all .2s ease;position:relative;}'
+                + '.ccal-day:last-child{border-right:none;}'
+                + '.ccal-day:hover{transform:scale(1.02);z-index:2;box-shadow:0 4px 16px rgba(0,0,0,.1);border-radius:4px;}'
+                + '.ccal-day.is-empty{background:#f8fafc;cursor:default;min-height:0;}'
+                + '.ccal-day.is-empty:hover{transform:none;box-shadow:none;}'
+                + '.ccal-day.is-today{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);animation:ccal-pulse 2.5s infinite;}'
+                + '.ccal-day.is-rest{background:linear-gradient(180deg,#fff 0%,#fef2f2 100%);}'
+                + '.ccal-day.is-work{background:linear-gradient(180deg,#fff 0%,#f0fdf4 100%);}'
+                + '.ccal-day.is-holiday{background:linear-gradient(180deg,#fff 0%,#fefce8 100%);}'
+                + '.ccal-day.ccal-selected{outline:2px solid #3b82f6;outline-offset:-2px;box-shadow:0 0 0 4px rgba(59,130,246,.15);border-radius:4px;z-index:3;}'
+                + '.ccal-day-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}'
+                + '.ccal-day-num{font-size:.95rem;font-weight:800;color:#1e293b;white-space:nowrap;line-height:1.2;}'
+                + '.ccal-day-num.is-sun{color:#dc2626;}.ccal-day-num.is-sat{color:#16a34a;}'
+                + '.ccal-status{font-size:.62rem;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap;line-height:1.3;letter-spacing:.3px;text-transform:uppercase;}'
+                + '.ccal-status.s-rest{background:linear-gradient(135deg,#fecaca,#fca5a5);color:#7f1d1d;}'
+                + '.ccal-status.s-holiday{background:linear-gradient(135deg,#fde68a,#fbbf24);color:#78350f;}'
+                + '.ccal-status.s-work-text{font-size:.62rem;color:#166534;font-weight:600;padding:2px 7px;border-radius:10px;background:linear-gradient(135deg,#bbf7d0,#86efac);}'
+                + '.ccal-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}'
+                + '.ccal-tag{display:inline-flex;align-items:center;font-size:.58rem;padding:1px 6px;border-radius:8px;line-height:1.6;white-space:nowrap;font-weight:600;transition:transform .15s;}'
+                + '.ccal-tag:hover{transform:scale(1.08);}'
+                + '.ccal-tag.t-we{background:#fde8e8;color:#991b1b;}.ccal-tag.t-wd{background:#dbeafe;color:#1e3a8a;}'
+                + '.ccal-tag.t-hol{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:1px solid #fbbf24;}'
+                + '.ccal-tag.t-sh{background:#d1fae5;color:#065f46;}.ccal-tag.t-rest{background:#fde8e8;color:#991b1b;}'
+                + '.ccal-tag.t-custom{background:#ede9fe;color:#5b21b6;}'
+                + '.ccal-remark{margin-top:3px;font-size:.58rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:italic;}'
+                + '.ccal-legend{display:flex;gap:16px;padding:8px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-top:none;border-radius:0 0 8px 8px;margin-top:-1px;flex-wrap:wrap;}'
+                + '.ccal-legend-item{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;color:#64748b;font-weight:500;}'
+                + '.ccal-legend-dot{width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.1);}'
+                + '.ccal-lg-work{background:linear-gradient(135deg,#86efac,#4ade80);}'
+                + '.ccal-lg-rest{background:linear-gradient(135deg,#fca5a5,#f87171);}'
+                + '.ccal-lg-holiday{background:linear-gradient(135deg,#fde68a,#fbbf24);}'
+                + '.ccal-lg-today{background:linear-gradient(135deg,#93c5fd,#3b82f6);}'
+                + '.ccal-week:nth-child(1){animation-delay:.03s;}.ccal-week:nth-child(2){animation-delay:.06s;}'
+                + '.ccal-week:nth-child(3){animation-delay:.09s;}.ccal-week:nth-child(4){animation-delay:.12s;}'
+                + '.ccal-week:nth-child(5){animation-delay:.15s;}.ccal-week:nth-child(6){animation-delay:.18s;}';
+            document.head.appendChild(css);
+        })();
+
+        /* ===================== FUNCTIONS ===================== */
+
+        function ecalEsc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        window.ecalLoad = function () {
+            var year = parseInt($('#ecal_yearSel').val());
+            var month = parseInt($('#ecal_monthSel').val());
+            var personId = $('#ecal_personId').val() || '';
+            $.ajax({
+                url: '/ar/attendanceSettings/api/calender/emp/month',
+                data: { year: year, month: month, personId: personId },
+                success: function (data) { ecalRender(year, month, data); },
+                error: function (err) {
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi tải lịch cá nhân!';
+                    toastr && toastr.error(msg);
+                }
+            });
+        };
+
+        function ecalRender(year, month, records) {
+            if (!records || records.length === 0) {
+                $('#ecal_body').html('<div style="padding: 20px; text-align: center; color: #64748b;">Không có dữ liệu lịch cá nhân trong khoảng thời gian này.</div>');
+                return;
+            }
+
+            var today = new Date();
+            var todayKey = today.getFullYear()
+                + '/' + String(today.getMonth() + 1).padStart(2, '0')
+                + '/' + String(today.getDate()).padStart(2, '0');
+
+            // Lấy ngày đầu tiên từ danh sách records
+            var firstRec = records[0];
+            var firstKey = (firstRec.ddateStr || firstRec.ddateFormatted || '').replace(/-/g, '/');
+            var firstParts = firstKey.split('/');
+            var firstDateObj = new Date(parseInt(firstParts[0]), parseInt(firstParts[1]) - 1, parseInt(firstParts[2]));
+            var firstDow = firstDateObj.getDay(); // 0 (Sun) - 6 (Sat)
+
+            var html = '<div class="ccal-week">';
+            var cellCount = 0;
+
+            // In các ô trống căn cho đúng thứ tự trong tuần trước ngày bắt đầu
+            for (var i = 0; i < firstDow; i++) {
+                html += '<div class="ccal-day is-empty"></div>';
+                cellCount++;
+            }
+
+            // In các ngày có dữ liệu
+            records.forEach(function (rec) {
+                if (cellCount > 0 && cellCount % 7 === 0) {
+                    html += '</div><div class="ccal-week">'; // Đóng tuần cũ mở tuần mới
+                }
+
+                var key = (rec.ddateStr || rec.ddateFormatted || '').replace(/-/g, '/');
+                var p = key.split('/');
+                var dMonth = parseInt(p[1]);
+                var day = parseInt(p[2]);
+
+                var dow = cellCount % 7;
+                var isSun = dow === 0, isSat = dow === 6, isWE = isSun || isSat;
+                var isToday = (key === todayKey);
+
+                var isRest = rec.workdayflag == 0;
+                var isWork = rec.workdayflag == 1;
+                var isStat = rec.statutoryFlag == 1;
+
+                var cls = 'ccal-day' + (isToday ? ' is-today' : isStat ? ' is-holiday' : isRest ? ' is-rest' : ' is-work');
+                var numCls = 'ccal-day-num' + (isSun ? ' is-sun' : isSat ? ' is-sat' : '');
+
+                var statusHtml;
+                if (isStat) statusHtml = '<span class="ccal-status s-holiday">Ngày lễ</span>';
+                else if (isRest) statusHtml = '<span class="ccal-status s-rest">Nghỉ</span>';
+                else statusHtml = '<span class="ccal-status s-work-text">Làm việc</span>';
+
+                var tags = '';
+                if (isWE) {
+                    tags += '<span class="ccal-tag t-we">Cuối tuần</span>';
+                } else {
+                    tags += '<span class="ccal-tag t-wd">Ngày thường</span>';
+                }
+                if (isStat) tags += '<span class="ccal-tag t-hol">\u2605 Lễ</span>';
+
+                // Ca làm việc cá nhân
+                if (rec.shiftName || rec.shiftNo) {
+                    tags += '<span class="ccal-tag t-sh">' + ecalEsc(rec.shiftName || rec.shiftNo) + '</span>';
+                } else if (!isWE && !isStat) {
+                    tags += '<span class="ccal-tag t-sh">Ca hành chính</span>';
+                }
+
+                // Loại ngày cá nhân (nếu có tùy chỉnh)
+                if (rec.typeidName) {
+                    tags += '<span class="ccal-tag t-custom">' + ecalEsc(rec.typeidName) + '</span>';
+                }
+
+                var remarkHtml = rec.remark
+                    ? '<div class="ccal-remark" title="' + ecalEsc(rec.remark) + '">\u2014 ' + ecalEsc(rec.remark) + '</div>'
+                    : '';
+
+                html += '<div class="' + cls + '" data-datestr="' + key + '" onclick="ecalDayClick(this)">';
+                html += '<div class="ccal-day-top"><span class="' + numCls + '">' + day + '-' + dMonth + '</span>' + statusHtml + '</div>';
+                html += '<div class="ccal-tags">' + tags + '</div>';
+                html += remarkHtml;
+                html += '</div>';
+
+                cellCount++;
+            });
+
+            // In các ô trống cho kín tuần ở dòng cuối cùng
+            var remain = cellCount % 7;
+            if (remain > 0) {
+                for (var j = remain; j < 7; j++) {
+                    html += '<div class="ccal-day is-empty"></div>';
+                }
+            }
+            html += '</div>'; // Đóng tuần cuối
+
+            $('#ecal_body').html(html);
+        }
+
+        window.ecalDayClick = function (el) {
+            $('#ecal_body .ccal-day').removeClass('ccal-selected');
+            $(el).addClass('ccal-selected');
+            var dateStr = $(el).attr('data-datestr');
+            var personId = $('#ecal_personId').val() || '';
+            ecalFillModal(dateStr, personId);
+        };
+
+        window.ecalOpenEditSelected = function () {
+            var sel = document.querySelector('#ecal_body .ccal-selected');
+            if (!sel) { toastr && toastr.warning('Bấm chọn 1 ngày trên lịch!'); return; }
+            var dateStr = $(sel).attr('data-datestr');
+            var personId = $('#ecal_personId').val() || '';
+            ecalFillModal(dateStr, personId);
+        };
+
+        function ecalFillModal(dateStr, personId) {
+            var p = dateStr.split('/');
+            var display = p[2] + '/' + p[1] + '/' + p[0];
+            var empTxt = $('#ecal_empDisplay').val() || 'Bản thân';
+
+            // Set header ngay
+            $('#ecal_modalTitle').text('Cập nhật \u2014 ' + display + ' / ' + empTxt);
+            $('#ecal_editDdateStr').val(dateStr);
+            $('#ecal_editPersonId').val(personId);
+            $('#ecal_editEmpDisplay').val(empTxt);
+            $('#ecal_editDateDisplay').val(display);
+
+            // Reset form trước
+            $('#ecal_shiftNo').val('');
+            $('#ecal_typeid').val('');
+            $('#ecal_remark').val('');
+
+            // Gọi API lấy dữ liệu lịch cá nhân ngày đó
+            $.ajax({
+                url: '/ar/attendanceSettings/api/calender/emp/detail',
+                data: { arDateStr: dateStr, personId: personId || '' },
+                success: function (data) {
+                    if (data) {
+                        // Điền ca làm việc từ AR_SCHEDULE_HTSV (nếu đã có)
+                        if (data.shiftNo) $('#ecal_shiftNo').val(data.shiftNo);
+                        if (data.typeid) $('#ecal_typeid').val(data.typeid);
+                        if (data.remark) $('#ecal_remark').val(data.remark);
+                    }
+                    new bootstrap.Modal(document.getElementById('ecal_modal')).show();
+                },
+                error: function () {
+                    // Nếu API lỗi (không có record trong AR_CALENDER → tháng chưa có dữ liệu)
+                    // vẫn mở modal rỗng để nhập
+                    new bootstrap.Modal(document.getElementById('ecal_modal')).show();
+                }
+            });
+        }
+
+        window.ecalSave = function () {
+            var ddateStr = $('#ecal_editDdateStr').val();
+            var personId = $('#ecal_editPersonId').val();
+            if (!ddateStr || !personId) { toastr && toastr.warning('Dữ liệu không hợp lệ!'); return; }
+            var payload = {
+                ddateStr: ddateStr,
+                personId: personId,
+                shiftNo: $('#ecal_shiftNo').val() || null,
+                typeid: $('#ecal_typeid').val() || null,
+                remark: $('#ecal_remark').val() || null
+            };
+            $.ajax({
+                url: '/ar/attendanceSettings/api/calender/emp/save',
+                type: 'POST', contentType: 'application/json', data: JSON.stringify(payload),
+                success: function (res) {
+                    if (res && res.success) {
+                        toastr && toastr.success(res.message || 'Lưu thành công!');
+                        var m = bootstrap.Modal.getInstance(document.getElementById('ecal_modal'));
+                        if (m) m.hide();
+                        ecalLoad();
+                    } else { toastr && toastr.error((res && res.error) || 'Lỗi!'); }
+                },
+                error: function (err) {
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
+                    toastr && toastr.error('Lỗi: ' + msg);
+                }
+            });
+        };
+
+        window.ecalOpenEmpSearch = function () {
+            if (typeof EmployeeSearchModal !== 'undefined') {
+                EmployeeSearchModal.open(function (emp) {
+                    $('#ecal_personId').val(emp.personId);
+                    $('#ecal_empDisplay').val(emp.empId + ' - ' + emp.localName);
+                    ecalLoad();
+                });
+            } else {
+                toastr && toastr.warning('Component tìm kiếm nhân viên chưa sẵn sàng!');
+            }
+        };
+
+        window.ecalClearEmp = function () {
+            $('#ecal_personId').val(/*[[${defaultPersonId}]]*/ '');
+            var dId = /*[[${defaultEmpId}]]*/ '';
+            var dName = /*[[${defaultLocalName}]]*/ '';
+            $('#ecal_empDisplay').val(dId ? (dId + ' - ' + dName) : '');
+            ecalLoad();
+        };
+
+        /* ===================== INIT ===================== */
+
+        $(document).ready(function () {
+            if (_ecal_initialized) return;
+            _ecal_initialized = true;
+
+            var now = new Date();
+            var curYear = now.getFullYear();
+            var curMonth = now.getMonth() + 1;
+
+            // Init year dropdown
+            var $ys = $('#ecal_yearSel');
+            for (var y = curYear - 5; y <= curYear + 5; y++) $ys.append(new Option(y, y));
+            $ys.val(curYear);
+            $('#ecal_monthSel').val(curMonth);
+
+            // Load shift dropdown
+            $.ajax({
+                url: '/ar/attendanceSettings/api/shift',
+                success: function (data) {
+                    var $sel = $('#ecal_shiftNo');
+                    (data || []).forEach(function (s) {
+                        $sel.append(new Option((s.nameVi || s.shiftNo), s.shiftNo));
+                    });
+                }
+            });
+
+            // Nav buttons
+            $('#ecal_prevMonth').on('click', function () {
+                var m = parseInt($('#ecal_monthSel').val()), y = parseInt($('#ecal_yearSel').val());
+                if (--m < 1) { m = 12; y--; }
+                $('#ecal_monthSel').val(m); $('#ecal_yearSel').val(y); ecalLoad();
+            });
+            $('#ecal_nextMonth').on('click', function () {
+                var m = parseInt($('#ecal_monthSel').val()), y = parseInt($('#ecal_yearSel').val());
+                if (++m > 12) { m = 1; y++; }
+                $('#ecal_monthSel').val(m); $('#ecal_yearSel').val(y); ecalLoad();
+            });
+
+            ecalLoad();
+        });
+    </script>
+</template>

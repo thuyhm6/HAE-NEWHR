@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.pa.workManagement.mapper.PaWorkFlowMapper">
+
+    <resultMap id="PaWorkFlowResultMap" type="com.ait.pa.workManagement.dto.PaWorkFlowDto">
+        <id     column="PA_WORK_FLOW_NO"   property="paWorkFlowNo"    jdbcType="NUMERIC" />
+        <result column="PAY_SCHEDULE_NO"   property="payScheduleNo"   jdbcType="NUMERIC" />
+        <result column="HR_START_DATE"     property="hrStartDate"     jdbcType="VARCHAR" />
+        <result column="HR_END_DATE"       property="hrEndDate"       jdbcType="VARCHAR" />
+        <result column="AR_START_DATE"     property="arStartDate"     jdbcType="VARCHAR" />
+        <result column="AR_END_DATE"       property="arEndDate"       jdbcType="VARCHAR" />
+        <result column="OBJ_CREATE_FLAG"   property="objCreateFlag"   jdbcType="NUMERIC" />
+        <result column="AR_MONTH_CAL_FLAG" property="arMonthCalFlag"  jdbcType="NUMERIC" />
+        <result column="PA_CAL_FLAG"       property="paCalFlag"       jdbcType="NUMERIC" />
+        <result column="PA_CONFIRM_FLAG"   property="paConfirmFlag"   jdbcType="NUMERIC" />
+        <result column="PA_OPEN_FLAG"      property="paOpenFlag"      jdbcType="NUMERIC" />
+        <result column="AR_LOCK_FLAG"      property="arLockFlag"      jdbcType="NUMERIC" />
+        <result column="EMP_COUNT"         property="empCount"        jdbcType="NUMERIC" />
+    </resultMap>
+
+    <select id="selectOne" resultMap="PaWorkFlowResultMap">
+        SELECT PWF.PA_WORK_FLOW_NO,
+               PPS.PAY_SCHEDULE_NO,
+               TO_CHAR(PPS.HR_START_DATE, 'DD-MM-YYYY') HR_START_DATE,
+               TO_CHAR(PPS.HR_END_DATE,   'DD-MM-YYYY') HR_END_DATE,
+               TO_CHAR(PPS.AR_START_DATE, 'DD-MM-YYYY') AR_START_DATE,
+               TO_CHAR(PPS.AR_END_DATE,   'DD-MM-YYYY') AR_END_DATE,
+               OBJ_CREATE_FLAG,
+               AR_MONTH_CAL_FLAG,
+               PA_CAL_FLAG,
+               PA_CONFIRM_FLAG,
+               PA_OPEN_FLAG,
+               PPS.AR_LOCK_FLAG,
+               (SELECT COUNT(*)
+                  FROM PA_PAY_OBJECT PPO
+                 WHERE PPO.PAY_SCHEDULE_NO = PPS.PAY_SCHEDULE_NO
+                   AND PPO.ACTIVITY        = 1
+                   AND PPO.INCLUDE_TYPE    = 1) EMP_COUNT
+          FROM PA_PAY_SCHEDULE PPS, PA_WORK_FLOW PWF
+         WHERE PPS.PAY_SCHEDULE_NO = PWF.PAY_SCHEDULE_NO
+           AND PPS.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           AND PPS.ACTIVITY        = 1
+           AND PPS.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+    </select>
+
+    <resultMap id="PaWorkFlowRecordsResultMap" type="com.ait.pa.workManagement.dto.PaWorkFlowRecordsDto">
+        <id     column="PA_WORK_FLOW_RECORDS_NO" property="recordNo"     jdbcType="NUMERIC" />
+        <result column="PA_WORK_FLOW_NO"         property="paWorkFlowNo" jdbcType="NUMERIC" />
+        <result column="FLOW_STEP"               property="flowStep"     jdbcType="NUMERIC" />
+        <result column="CREATE_DATE"             property="createDate"   jdbcType="VARCHAR" />
+        <result column="CREATED_BY"              property="createdBy"    jdbcType="VARCHAR" />
+        <result column="CREATED_IP"              property="createdIp"    jdbcType="VARCHAR" />
+        <result column="ROW_NUM"                 property="rowNum"       jdbcType="NUMERIC" />
+    </resultMap>
+
+    <select id="selectRecordList" resultMap="PaWorkFlowRecordsResultMap">
+        SELECT ROWNUM AS ROW_NUM,
+               PWFR.PA_WORK_FLOW_RECORDS_NO,
+               PWFR.PA_WORK_FLOW_NO,
+               PWFR.FLOW_STEP,
+               TO_CHAR(PWFR.CREATE_DATE, 'DD/MM/YYYY HH24:MI') AS CREATE_DATE,
+               GET_EMP_LOCAL_NAME(PWFR.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})||' '||PWFR.CREATED_IP AS CREATED_BY,
+               PWFR.CREATED_IP
+          FROM PA_WORK_FLOW_RECORDS PWFR
+          JOIN PA_WORK_FLOW PWF ON PWFR.PA_WORK_FLOW_NO = PWF.PA_WORK_FLOW_NO
+          JOIN PA_PAY_SCHEDULE PPS ON PWF.PAY_SCHEDULE_NO = PPS.PAY_SCHEDULE_NO
+         WHERE PPS.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+           AND PPS.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           <if test="flowStep != null">
+               AND PWFR.FLOW_STEP = #{flowStep, jdbcType=NUMERIC}
+           </if>
+         ORDER BY PWFR.PA_WORK_FLOW_RECORDS_NO ASC
+    </select>
+
+    <!-- Gọi stored procedure xử lý quy trình lương -->
+    <select id="callModifyWorkFlow" statementType="CALLABLE"
+            parameterType="com.ait.pa.workManagement.dto.PaWorkFlowDto">
+        {CALL PKG_PA_WORK_FLOW.PA_WORKFLOW_EXECUTE(
+            #{payScheduleNo, jdbcType=VARCHAR, mode=IN},
+            #{adminID,       jdbcType=VARCHAR, mode=IN},
+            #{adminIP,       jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,        jdbcType=VARCHAR, mode=IN},
+            #{type,          jdbcType=VARCHAR, mode=IN},
+            #{message,       jdbcType=VARCHAR, mode=OUT}
+        )}
+    </select>
+
+    <!-- Thêm mới -->
+    <insert id="insert" parameterType="com.ait.pa.workManagement.dto.PaWorkFlowDto">
+        INSERT INTO PA_WORK_FLOW (
+            PA_WORK_FLOW_NO,
+            PAY_SCHEDULE_NO,
+            CPNY_ID,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            ACTIVITY
+        ) VALUES (
+            PA_WORK_FLOW_SEQ.NEXTVAL,
+            #{payScheduleNo, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            1
+        )
+    </insert>
+
+</mapper>

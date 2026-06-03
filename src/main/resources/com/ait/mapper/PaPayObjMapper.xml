@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.pa.workManagement.mapper.PaPayObjMapper">
+
+    <resultMap id="PaPayObjResultMap" type="com.ait.pa.workManagement.dto.PaPayObjDto">
+        <result column="PAY_SCHEDULE_NO" property="payScheduleNo"  jdbcType="VARCHAR" />
+        <result column="EMPID"           property="empId"          jdbcType="VARCHAR" />
+        <result column="PERSON_ID"       property="personId"       jdbcType="VARCHAR" />
+        <result column="DEPTNO"          property="deptNo"         jdbcType="VARCHAR" />
+        <result column="INCLUDE_TYPE"    property="includeType"    jdbcType="NUMERIC" />
+        <result column="CREATE_TYPE"     property="createType"     jdbcType="NUMERIC" />
+        <result column="ACTIVITY"        property="activity"       jdbcType="NUMERIC" />
+        <result column="WAGE_TYPE"       property="wageType"       jdbcType="VARCHAR" />
+        <result column="CREATE_DATE"     property="createDate"     jdbcType="VARCHAR" />
+        <result column="CREATED_BY"      property="createdBy"      jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"     property="updateDate"     jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"      property="updatedBy"      jdbcType="VARCHAR" />
+        <result column="EMP_NAME"        property="empName"        jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"       property="deptName"       jdbcType="VARCHAR" />
+        <result column="EMP_OFFICE"      property="empOffice"      jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Danh sách không phân trang (dùng cho export Excel) -->
+    <select id="selectList" parameterType="com.ait.pa.workManagement.dto.PaPayObjDto"
+            resultMap="PaPayObjResultMap">
+        SELECT TO_CHAR(O.PAY_SCHEDULE_NO)                               AS PAY_SCHEDULE_NO,
+               O.EMPID,
+               O.PERSON_ID,
+               O.DEPTNO,
+               O.INCLUDE_TYPE,
+               O.CREATE_TYPE,
+               O.ACTIVITY,
+               O.WAGE_TYPE,
+               TO_CHAR(O.CREATE_DATE, 'DD-MM-YYYY HH24:MI')            AS CREATE_DATE,
+               O.CREATED_BY,
+               TO_CHAR(O.UPDATE_DATE, 'DD-MM-YYYY HH24:MI')            AS UPDATE_DATE,
+               O.UPDATED_BY,
+               E.LOCAL_NAME                                             AS EMP_NAME,
+               HD.ORG_NAME_LOCAL                                        AS DEPT_NAME,
+               E.EMP_OFFICE
+        FROM PA_PAY_OBJECT O
+        LEFT JOIN HR_EMPLOYEE   E  ON O.EMPID  = E.EMPID
+                                   AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO = HD.DEPTNO
+        <include refid="whereCondition"/>
+        ORDER BY O.CREATE_DATE DESC, O.EMPID
+    </select>
+
+    <!-- SQL điều kiện dùng chung cho selectListPage và countList -->
+    <sql id="whereCondition">
+        WHERE O.ACTIVITY != 0
+        <if test="payScheduleNo != null and payScheduleNo != ''">
+            AND O.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+        </if>
+        <if test="includeType != null">
+            AND O.INCLUDE_TYPE = #{includeType, jdbcType=NUMERIC}
+        </if>
+        <if test="empOfficeCond != null and empOfficeCond != ''">
+            AND E.EMP_OFFICE = #{empOfficeCond, jdbcType=VARCHAR}
+        </if>
+        <if test="empSearch != null and empSearch != ''">
+            AND (O.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
+              OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%')
+        </if>
+    </sql>
+
+    <!-- Đếm tổng số bản ghi (dùng cho server-side pagination) -->
+    <select id="countList" parameterType="com.ait.pa.workManagement.dto.PaPayObjDto"
+            resultType="long">
+        SELECT COUNT(1)
+        FROM PA_PAY_OBJECT O
+        LEFT JOIN HR_EMPLOYEE   E  ON O.EMPID  = E.EMPID
+                                   AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO = HD.DEPTNO
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- Phân trang phía server – Oracle 11g dùng ROWNUM -->
+    <select id="selectListPage" parameterType="com.ait.pa.workManagement.dto.PaPayObjDto"
+            resultMap="PaPayObjResultMap">
+        SELECT PAY_SCHEDULE_NO, EMPID, PERSON_ID, DEPTNO, INCLUDE_TYPE,
+               CREATE_TYPE, ACTIVITY, WAGE_TYPE, CREATE_DATE, CREATED_BY,
+               UPDATE_DATE, UPDATED_BY, EMP_NAME, DEPT_NAME, EMP_OFFICE
+        FROM (
+            SELECT a.*, ROWNUM AS RN
+            FROM (
+                SELECT TO_CHAR(O.PAY_SCHEDULE_NO)                    AS PAY_SCHEDULE_NO,
+                       O.EMPID,
+                       O.PERSON_ID,
+                       O.DEPTNO,
+                       O.INCLUDE_TYPE,
+                       O.CREATE_TYPE,
+                       O.ACTIVITY,
+                       O.WAGE_TYPE,
+                       TO_CHAR(O.CREATE_DATE, 'DD-MM-YYYY HH24:MI') AS CREATE_DATE,
+                       O.CREATED_BY,
+                       TO_CHAR(O.UPDATE_DATE, 'DD-MM-YYYY HH24:MI') AS UPDATE_DATE,
+                       O.UPDATED_BY,
+                       E.LOCAL_NAME                                  AS EMP_NAME,
+                       HD.ORG_NAME_LOCAL                             AS DEPT_NAME,
+                       E.EMP_OFFICE
+                FROM PA_PAY_OBJECT O
+                LEFT JOIN HR_EMPLOYEE   E  ON O.EMPID  = E.EMPID
+                                           AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO = HD.DEPTNO
+                <include refid="whereCondition"/>
+                ORDER BY O.CREATE_DATE DESC, O.EMPID
+            ) a
+            WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        )
+        WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- Kiểm tra trùng (PAY_SCHEDULE_NO + EMPID) -->
+    <select id="countDuplicate" resultType="int">
+        SELECT COUNT(1)
+        FROM PA_PAY_OBJECT
+        WHERE PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+          AND EMPID            = #{empId,         jdbcType=VARCHAR}
+    </select>
+
+    <!-- Tìm nhân viên theo EMPID (dùng cho modal thêm mới) -->
+    <select id="selectEmployeeByEmpId" resultMap="PaPayObjResultMap">
+        SELECT E.EMPID,
+               E.LOCAL_NAME        AS EMP_NAME,
+               HD.ORG_NAME_LOCAL   AS DEPT_NAME,
+               E.EMP_OFFICE
+        FROM HR_EMPLOYEE E
+        LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO = HD.DEPTNO
+        WHERE E.EMPID    = #{empId,   jdbcType=VARCHAR}
+          AND E.CPNY_ID  = #{cpnyId,  jdbcType=VARCHAR}
+          AND E.ACTIVITY = 1
+    </select>
+
+    <!-- Thêm mới -->
+    <insert id="insert" parameterType="com.ait.pa.workManagement.dto.PaPayObjDto">
+        INSERT INTO PA_PAY_OBJECT (
+            PAY_SCHEDULE_NO,
+            EMPID,
+            PERSON_ID,
+            DEPTNO,
+            INCLUDE_TYPE,
+            CREATE_TYPE,
+            ACTIVITY,
+            CREATED_BY,
+            CREATED_IP,
+            CREATE_DATE
+        )
+        SELECT #{payScheduleNo, jdbcType=VARCHAR},
+               E.EMPID,
+               E.PERSON_ID,
+               E.DEPTNO,
+               #{includeType,   jdbcType=NUMERIC},
+               1,
+               1,
+               #{adminID,       jdbcType=VARCHAR},
+               #{adminIP,       jdbcType=VARCHAR},
+               SYSDATE
+        FROM HR_EMPLOYEE E
+        WHERE E.EMPID   = #{empId,   jdbcType=VARCHAR}
+    </insert>
+
+    <!-- Cập nhật INCLUDE_TYPE (inline edit) -->
+    <update id="updateIncludeType" parameterType="com.ait.pa.workManagement.dto.PaPayObjDto">
+        UPDATE PA_PAY_OBJECT
+        SET INCLUDE_TYPE = #{includeType, jdbcType=NUMERIC},
+            UPDATED_BY   = #{adminID,     jdbcType=VARCHAR},
+            UPDATED_IP   = #{adminIP,     jdbcType=VARCHAR},
+            UPDATE_DATE  = SYSDATE
+        WHERE PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+          AND EMPID            = #{empId,         jdbcType=VARCHAR}
+    </update>
+
+    <!-- Xóa mềm (ACTIVITY=0) theo khóa chính -->
+    <update id="deleteByKey">
+        UPDATE PA_PAY_OBJECT
+        SET ACTIVITY    = 0,
+            UPDATED_BY  = #{adminID,       jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,       jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+          AND EMPID            = #{empId,         jdbcType=VARCHAR}
+    </update>
+
+</mapper>

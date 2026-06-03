@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.evs.manage.mapper.EvsResultEmpMapper">
+
+    <resultMap id="EvsResultEmpResultMap" type="com.ait.evs.manage.dto.EvsResultEmpDto">
+        <result column="EVS_YEAR"        property="evsYear"        jdbcType="VARCHAR" />
+        <result column="EVS_performance" property="evsPerformance" jdbcType="VARCHAR" />
+        <result column="EVS_ability"     property="evsAbility"     jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsResultEmpDto" resultMap="EvsResultEmpResultMap">
+        SELECT EVS_YEAR,
+               MAX(EVS_MONTH12) EVS_performance,
+               MAX(EVS_MONTH13) EVS_ability
+          FROM (SELECT EVS_YEAR,
+                       DECODE(EVS_MONTH, '14015057', MAX(FINAL_GRADE)) EVS_MONTH12,
+                       DECODE(EVS_MONTH, 'ability',  MAX(FINAL_GRADE)) EVS_MONTH13
+                  FROM (SELECT EVS.EVS_YEAR,
+                               DECODE(EVS.EVS_TYPE,
+                                      'ability',
+                                      'ability',
+                                      DECODE(EVS.EVS_MONTH,
+                                             '14015058', '14015050',
+                                             '14015059', '14015057',
+                                             EVS.EVS_MONTH)) EVS_MONTH,
+                               CASE
+                                 WHEN EVS.FINAL_GRADE = 'A' THEN 'EX'
+                                 WHEN EVS.FINAL_GRADE = 'B' THEN 'VG'
+                                 WHEN EVS.FINAL_GRADE = 'C' THEN 'GD'
+                                 WHEN EVS.FINAL_GRADE = 'D' THEN 'NI'
+                                 WHEN EVS.FINAL_GRADE = 'E' THEN 'UN'
+                                 ELSE EVS.FINAL_GRADE
+                               END FINAL_GRADE
+                          FROM EVS_OBJECT EVS
+                         WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}
+                           AND PKG_EVS_PROCESS.GET_EVS_FEEDBACK(EVS.RESUME_SEQ, '14015077') = 1
+                           AND ACTIVITY = '14015361')
+                 GROUP BY EVS_YEAR, EVS_MONTH)
+         GROUP BY EVS_YEAR
+         ORDER BY EVS_YEAR
+    </select>
+
+</mapper>

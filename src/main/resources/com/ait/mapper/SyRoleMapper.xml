@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.syRole.mapper.SyRoleMapper">
+
+    <!-- Result Map cho SyRole -->
+    <resultMap id="SyRoleResultMap" type="com.ait.sy.syRole.model.SyRole">
+        <id column="ROLE_NO" property="roleNo"/>
+        <result column="ROLE_ID" property="roleId"/>
+        <result column="CPNY_ID" property="cpnyId"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ORDERNO" property="orderNo"/>
+        <result column="ACTIVITY" property="activity"/>
+        <result column="SYS_TYPE" property="sysType"/>
+    </resultMap>
+
+    <!-- Tìm role theo roleNo -->
+    <select id="findByRoleNo" resultMap="SyRoleResultMap">
+        SELECT 
+            ROLE_NO,
+            ROLE_ID,
+            CPNY_ID,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            SYS_TYPE
+        FROM sy_role 
+        WHERE ROLE_NO = #{roleNo}
+    </select>
+
+    <!-- Tìm roles theo cpnyId -->
+    <select id="findByCpnyId" resultMap="SyRoleResultMap">
+        SELECT 
+            ROLE_NO,
+            ROLE_ID,
+            CPNY_ID,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            SYS_TYPE
+        FROM sy_role 
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND ACTIVITY = 1
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Lấy danh sách roles hoạt động -->
+    <select id="findAllActive" resultMap="SyRoleResultMap">
+        SELECT 
+            ROLE_NO,
+            ROLE_ID,
+            CPNY_ID,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            SYS_TYPE
+        FROM sy_role 
+        WHERE ACTIVITY = 1
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Tìm roles theo roleGroupNo (qua bảng trung gian) -->
+    <select id="findByRoleGroupNo" resultMap="SyRoleResultMap">
+        SELECT 
+            r.ROLE_NO,
+            r.ROLE_ID,
+            r.CPNY_ID,
+            r.CREATE_DATE,
+            r.CREATED_BY,
+            r.UPDATE_DATE,
+            r.UPDATED_BY,
+            r.ORDERNO,
+            r.ACTIVITY,
+            r.SYS_TYPE
+        FROM sy_role r
+        INNER JOIN sy_role_group_relation rgr ON r.ROLE_NO = rgr.ROLE_NO
+        WHERE rgr.ROLE_GROUP_NO = #{roleGroupNo}
+          AND r.ACTIVITY = 1
+          AND rgr.ACTIVITY = 1
+        ORDER BY r.ORDERNO
+    </select>
+
+    <!-- Kiểm tra role có tồn tại và hoạt động không -->
+    <select id="existsAndActive" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM sy_role 
+        WHERE ROLE_NO = #{roleNo}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Lấy giá trị sequence tiếp theo -->
+    <select id="getNextVal" resultType="String">
+        SELECT SY_GLOBAL_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <!-- Thêm mới Role -->
+    <insert id="insert" parameterType="com.ait.sy.syRole.model.SyRole">
+        INSERT INTO SY_ROLE (
+            ROLE_NO, ROLE_ID, CPNY_ID, ORDERNO, ACTIVITY, SYS_TYPE,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+        ) VALUES (
+            #{roleNo}, #{roleId}, #{cpnyId, jdbcType=VARCHAR}, #{orderNo}, #{activity}, #{sysType},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- Cập nhật Role -->
+    <update id="update" parameterType="com.ait.sy.syRole.model.SyRole">
+        UPDATE SY_ROLE SET
+            ORDERNO = #{orderNo},
+            ACTIVITY = #{activity},
+            SYS_TYPE = #{sysType},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        WHERE ROLE_NO = #{roleNo}
+    </update>
+
+    <!-- Xóa Role -->
+    <delete id="deleteByRoleNo">
+        DELETE FROM SY_ROLE WHERE ROLE_NO = #{roleNo}
+    </delete>
+
+    <!-- Tìm kiếm Role bao gồm tên đa ngôn ngữ -->
+    <resultMap id="SyRoleDtoResultMap" type="com.ait.sy.syRole.dto.SyRoleDto" extends="SyRoleResultMap">
+        <result column="NAME_VI" property="nameVi"/>
+        <result column="NAME_EN" property="nameEn"/>
+        <result column="NAME_ZH" property="nameZh"/>
+        <result column="NAME_KO" property="nameKo"/>
+    </resultMap>
+
+    <select id="findAllWithNames" resultMap="SyRoleDtoResultMap">
+        SELECT 
+            r.*,
+            (SELECT CONTENT FROM SY_GLOBAL_NAME WHERE NO = r.ROLE_NO AND LANGUAGE = 'vi') AS NAME_VI,
+            (SELECT CONTENT FROM SY_GLOBAL_NAME WHERE NO = r.ROLE_NO AND LANGUAGE = 'en') AS NAME_EN,
+            (SELECT CONTENT FROM SY_GLOBAL_NAME WHERE NO = r.ROLE_NO AND LANGUAGE = 'zh') AS NAME_ZH,
+            (SELECT CONTENT FROM SY_GLOBAL_NAME WHERE NO = r.ROLE_NO AND LANGUAGE = 'ko') AS NAME_KO
+        FROM SY_ROLE r
+        WHERE r.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    LOWER(r.ROLE_ID) LIKE LOWER('%' || #{keyword} || '%') OR
+                    LOWER(r.ROLE_NO) LIKE LOWER('%' || #{keyword} || '%') OR
+                    EXISTS (
+                        SELECT 1 FROM SY_GLOBAL_NAME g 
+                        WHERE g.NO = r.ROLE_NO 
+                          AND LOWER(g.CONTENT) LIKE LOWER('%' || #{keyword} || '%')
+                    )
+                )
+            </if>
+        ORDER BY r.ORDERNO, r.ROLE_ID
+    </select>
+
+</mapper>

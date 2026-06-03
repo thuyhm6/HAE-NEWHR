@@ -1,0 +1,323 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <!-- Search Form -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body p-1">
+                                    <form class="searchForm" id="resumeList_searchForm">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label for="resumeList_searchNo" class="form-label">Mã thay đổi</label>
+                                                <input type="text" class="form-control" id="resumeList_searchNo"
+                                                    name="no" placeholder="Nhập mã thay đổi">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="resumeList_searchResumeName" class="form-label">Tên thay
+                                                    đổi</label>
+                                                <input type="text" class="form-control" id="resumeList_searchResumeName"
+                                                    name="resumeName" placeholder="Nhập tên thay đổi">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label for="resumeList_searchChangeDateFrom" class="form-label">Ngày
+                                                    hiệu lực
+                                                    từ</label>
+                                                <input type="date" class="form-control"
+                                                    id="resumeList_searchChangeDateFrom" name="changeDateFrom">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label for="resumeList_searchChangeDateTo" class="form-label">Ngày hiệu
+                                                    lực
+                                                    đến</label>
+                                                <input type="date" class="form-control"
+                                                    id="resumeList_searchChangeDateTo" name="changeDateTo">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label for="resumeList_searchActivity" class="form-label">Trạng
+                                                    thái</label>
+                                                <select class="form-select" id="resumeList_searchActivity"
+                                                    name="activity">
+                                                    <option value="">Tất cả</option>
+                                                    <option value="14013948">Hoạt động</option>
+                                                    <option value="INACTIVE">Không hoạt động</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-12">
+                                                <button type="button" class="btn btn-success"
+                                                    onclick="resumeList_addNew()">
+                                                    <i class="bx bx-plus me-1"></i> Thêm mới
+                                                </button>
+                                                <button type="button" class="btn btn-primary ms-2"
+                                                    onclick="resumeList_performSearch()">
+                                                    <i class="bx bx-search me-1"></i> Tìm kiếm
+                                                </button>
+                                                <button type="button" class="btn btn-secondary ms-2"
+                                                    onclick="resumeList_clearSearch()">
+                                                    <i class="bx bx-x me-1"></i> Xóa bộ lọc
+                                                </button>
+                                                <button type="button" class="btn btn-outline-info ms-2"
+                                                    onclick="resumeList_exportSearchResults()">
+                                                    <i class="bx bx-download me-1"></i> Xuất kết quả
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- DataTables Table -->
+                    <div class="table-responsive">
+                        <table id="resumeList_table" class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã thay đổi</th>
+                                    <th>Tên thay đổi</th>
+                                    <th>Ngày hiệu lực</th>
+                                    <th>Nguyên nhân</th>
+                                    <th>Trạng thái</th>
+                                    <th>Người tạo</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal fade" id="resumeList_modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resumeList_modalTitle">Thêm mới thay đổi tổ chức</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="resumeList_form">
+                        <input type="hidden" id="resumeList_editType" value="ADD"> <!-- ADD or EDIT -->
+                        <!-- NO is auto-generated for ADD, readonly for EDIT -->
+                        <div class="row mb-3">
+                            <label for="resumeList_inputNo" class="col-sm-3 col-form-label">Mã thay đổi</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="resumeList_inputNo"
+                                    placeholder="Tự động tạo" readonly>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="resumeList_inputResumeName" class="col-sm-3 col-form-label">Tên thay đổi <span
+                                    class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="resumeList_inputResumeName" requierd>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="resumeList_inputChangeDate" class="col-sm-3 col-form-label">Ngày hiệu lực <span
+                                    class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <input type="date" class="form-control" id="resumeList_inputChangeDate" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="resumeList_inputChangeReason" class="col-sm-3 col-form-label">Nguyên
+                                nhân</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" id="resumeList_inputChangeReason" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="resumeList_inputRemark" class="col-sm-3 col-form-label">Ghi chú</label>
+                            <div class="col-sm-9">
+                                <textarea class="form-control" id="resumeList_inputRemark" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="resumeList_inputActivity" class="col-sm-3 col-form-label">Trạng thái</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="resumeList_inputActivity">
+                                    <option value="14013948">Hoạt động</option>
+                                    <option value="INACTIVE">Không hoạt động</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="resumeList_save()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template id="fragmentScripts">
+        <script th:inline="none">
+            $(document).ready(function () {
+                var table = $('#resumeList_table').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '/org/api/resumes',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: function (d) {
+                            d.no = $('#resumeList_searchNo').val();
+                            d.resumeName = $('#resumeList_searchResumeName').val();
+                            d.changeDateFrom = $('#resumeList_searchChangeDateFrom').val();
+                            d.changeDateTo = $('#resumeList_searchChangeDateTo').val();
+                            d.activity = $('#resumeList_searchActivity').val();
+                            return JSON.stringify(d);
+                        },
+                        dataSrc: function (json) {
+                            if (json.error) {
+                                alert(json.error);
+                                return [];
+                            }
+                            return json.data;
+                        }
+                    },
+                    columns: [
+                        {
+                            data: null,
+                            render: function (data, type, row, meta) {
+                                return meta.row + meta.settings._iDisplayStart + 1;
+                            }
+                        },
+                        { data: 'no' },
+                        { data: 'resumeName' },
+                        { data: 'changeDate' },
+                        { data: 'changeReason' },
+                        {
+                            data: 'activity',
+                            render: function (data) {
+                                return data === '14013948' ? '<span class="badge bg-success">Hoạt động</span>' : '<span class="badge bg-secondary">Không hoạt động</span>';
+                            }
+                        },
+                        { data: 'createdBy' },
+                        {
+                            data: 'createDate',
+                            render: function (data) {
+                                if (data) return new Date(data).toLocaleString('vi-VN');
+                                return '';
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                return `<div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-warning" onclick="resumeList_edit('${row.no}')"><i class="bx bx-edit"></i></button>
+                                    <button class="btn btn-outline-danger" onclick="resumeList_delete('${row.no}')"><i class="bx bx-trash"></i></button>
+                                </div>`;
+                            }
+                        }
+                    ],
+                    order: [[1, 'desc']], // Sort by NO desc
+                    scrollY: 400,
+                    scrollCollapse: true
+                });
+
+                window.resumeList_performSearch = function () {
+                    table.ajax.reload();
+                };
+
+                window.resumeList_clearSearch = function () {
+                    $('#resumeList_searchForm')[0].reset();
+                    table.ajax.reload();
+                };
+
+                window.resumeList_exportSearchResults = function () {
+                    const params = new URLSearchParams({
+                        no: $('#resumeList_searchNo').val(),
+                        resumeName: $('#resumeList_searchResumeName').val(),
+                        changeDateFrom: $('#resumeList_searchChangeDateFrom').val(),
+                        changeDateTo: $('#resumeList_searchChangeDateTo').val(),
+                        activity: $('#resumeList_searchActivity').val()
+                    });
+                    window.open('/org/resume/export?' + params.toString(), '_blank');
+                };
+
+                window.resumeList_addNew = function () {
+                    $('#resumeList_form')[0].reset();
+                    $('#resumeList_editType').val('ADD');
+                    $('#resumeList_inputNo').val(''); // Auto
+                    $('#resumeList_modalTitle').text('Thêm mới thay đổi tổ chức');
+                    $('#resumeList_modal').modal('show');
+                };
+
+                window.resumeList_edit = function (no) {
+                    $.get('/org/api/resume/' + no, function (data) {
+                        $('#resumeList_editType').val('EDIT');
+                        $('#resumeList_inputNo').val(data.no);
+                        $('#resumeList_inputResumeName').val(data.resumeName);
+                        $('#resumeList_inputChangeDate').val(data.changeDate); // Ensure format matches input type="date" YYYY-MM-DD
+                        $('#resumeList_inputChangeReason').val(data.changeReason);
+                        $('#resumeList_inputRemark').val(data.remark);
+                        $('#resumeList_inputActivity').val(data.activity);
+                        $('#resumeList_modalTitle').text('Cập nhật thay đổi tổ chức');
+                        $('#resumeList_modal').modal('show');
+                    });
+                };
+
+                window.resumeList_save = function () {
+                    const type = $('#resumeList_editType').val(); // ADD or EDIT
+                    const url = type === 'ADD' ? '/org/api/resume/add' : '/org/api/resume/update';
+
+                    const data = {
+                        no: $('#resumeList_inputNo').val(), // For update
+                        resumeName: $('#resumeList_inputResumeName').val(),
+                        changeDate: $('#resumeList_inputChangeDate').val(),
+                        changeReason: $('#resumeList_inputChangeReason').val(),
+                        remark: $('#resumeList_inputRemark').val(),
+                        activity: $('#resumeList_inputActivity').val()
+                    };
+
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function (res) {
+                            alert(res.message);
+                            $('#resumeList_modal').modal('hide');
+                            table.ajax.reload();
+                        },
+                        error: function (xhr) {
+                            alert('Lỗi: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
+                        }
+                    });
+                };
+
+                window.resumeList_delete = function (no) {
+                    if (confirm('Bạn có chắc chắn muốn xóa?')) {
+                        $.ajax({
+                            url: '/org/api/resume/delete/' + no,
+                            type: 'DELETE',
+                            success: function (res) {
+                                alert(res.message);
+                                table.ajax.reload();
+                            },
+                            error: function (xhr) {
+                                alert('Lỗi: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
+                            }
+                        });
+                    }
+                };
+            });
+        </script>
+    </template>
+</div>

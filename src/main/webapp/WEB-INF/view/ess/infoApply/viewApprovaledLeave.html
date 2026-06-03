@@ -1,0 +1,308 @@
+<th:block th:fragment="approvalLeaveModal">
+    <div class="modal fade" id="val_applyDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="val_applyDetailTitle" th:text="#{applyAtt.applyTitle}">[Xin nghỉ phép]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="table-light text-center" style="width: 160px;" th:text="#{applyAtt.subject}">Tiêu đề</th>
+                                    <td id="val_modalApplyTitle"></td>
+                                </tr>
+                                <tr>
+                                    <th class="table-light text-center" th:text="#{applyAtt.applicant}">Người xin phép</th>
+                                    <td id="val_modalApplicant"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th style="width: 50px;" th:text="#{common.no.serial}">STT</th>
+                                    <th style="width: 90px;" th:text="#{applyAtt.approvalSeq}">Trình tự duyệt</th>
+                                    <th style="width: 110px;" th:text="#{applyAtt.approvalStatus}">Trạng thái duyệt</th>
+                                    <th th:text="#{common.empName}">Họ tên</th>
+                                    <th th:text="#{applyAtt.opinion}">Ý kiến</th>
+                                    <th style="width: 170px;" th:text="#{applyAtt.actionTime}">Thời gian thực hiện</th>
+                                    <th style="width: 120px;" th:text="#{common.deptName}">Phòng ban</th>
+                                </tr>
+                            </thead>
+                            <tbody id="val_modalApprovalBody"></tbody>
+                        </table>
+                    </div>
+
+                    <h6 class="fw-bold mb-2" th:text="#{applyAtt.empInfo}">Thông tin nhân viên</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="table-light text-center" style="width: 100px;" th:text="#{common.empName}">Họ tên</th>
+                                    <td id="val_modalEmpName"></td>
+                                    <th class="table-light text-center" style="width: 100px;" th:text="#{common.empId}">Mã nhân viên</th>
+                                    <td id="val_modalEmpId"></td>
+                                </tr>
+                                <tr>
+                                    <th class="table-light text-center" th:text="#{common.deptName}">Phòng ban</th>
+                                    <td id="val_modalEmpDept"></td>
+                                    <th class="table-light text-center" th:text="#{common.position}">Chức vụ</th>
+                                    <td id="val_modalEmpPost"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h6 class="fw-bold mb-2" th:text="#{applyAtt.leaveInfo}">Thông tin xin phép</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{applyAtt.leaveTypeFull}">Loại nghỉ phép</th>
+                                    <th style="width: 170px;" th:text="#{common.startTime}">Thời gian bắt đầu</th>
+                                    <th style="width: 170px;" th:text="#{common.endTime}">Thời gian kết thúc</th>
+                                    <th style="width: 140px;" th:text="#{applyAtt.leaveDuration}">Thời lượng</th>
+                                    <th th:text="#{common.reason}">Lý do</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="val_modalLeaveType" class="text-center"></td>
+                                    <td id="val_modalLeaveFrom" class="text-center"></td>
+                                    <td id="val_modalLeaveTo" class="text-center"></td>
+                                    <td id="val_modalLeaveLength" class="text-center"></td>
+                                    <td id="val_modalLeaveReason" class="text-center"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <div id="val_approveSection" class="d-flex align-items-center gap-2 me-auto" style="display:none!important">
+                        <button type="button" class="btn btn-success btn-sm" onclick="valDoAffirm(1)">
+                            <i class="bi bi-check-circle"></i>
+                            <span th:text="#{vae.btn.approve}">Duyệt</span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="valDoAffirm(2)">
+                            <i class="bi bi-x-circle"></i>
+                            <span th:text="#{vae.btn.reject}">Từ chối</span>
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<script th:fragment="approvalLeaveScript" th:inline="javascript">
+    (function () {
+        var _val_detailModal = null;
+        var _val_affirmCtx = null;
+
+        var _val_i18n = {
+            noApplyNo:          /*[[#{applyAtt.msg.noApplyNo}]]*/ 'Không tìm thấy số đơn để xem chi tiết',
+            loadingData:        /*[[#{applyAtt.loadingData}]]*/ 'Đang tải dữ liệu...',
+            noApprovalData:     /*[[#{applyAtt.noApprovalData}]]*/ 'Không có dữ liệu phê duyệt',
+            loadFailed:         /*[[#{applyAtt.loadFailed}]]*/ 'Tải dữ liệu thất bại',
+            applyTitleFallback: /*[[#{applyAtt.applyTitleFallback}]]*/ 'Xin nghỉ phép',
+            executeFail:        /*[[#{vae.msg.executeFail}]]*/ 'Có lỗi xảy ra trong quá trình xử lý.'
+        };
+
+        function valEscHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function valSetText(selector, value) {
+            $(selector).text(value || '');
+        }
+
+        function valFormatDuration(applyLength, dayHours) {
+            var len = parseFloat(applyLength);
+            var dh  = parseFloat(dayHours);
+            if (isNaN(len) || isNaN(dh) || dh === 0) return String(applyLength || '');
+            var days  = Math.floor(len / dh);
+            var hours = len - days * dh;
+            var text  = '';
+            if (days > 0)  text += days  + ' Ngày';
+            if (hours > 0) text += (text ? ' ' : '') + hours + ' Giờ';
+            return text || String(len);
+        }
+
+        function valBuildApplyTitle(info) {
+            var leaveTypeName = info.leaveTypeName || '';
+            var localName     = info.localName     || '';
+            var fromTime      = info.leaveFromTime || '';
+            var toTime        = info.leaveToTime   || '';
+            if (!leaveTypeName && !localName && !fromTime && !toTime) return '';
+            return leaveTypeName + '/Apply(' + localName + ')[Date: ' + fromTime + ' ~ ' + toTime + ']';
+        }
+
+        function valResetModal() {
+            valSetText('#val_modalApplyTitle', '');
+            valSetText('#val_modalApplicant', '');
+            valSetText('#val_modalEmpName', '');
+            valSetText('#val_modalEmpId', '');
+            valSetText('#val_modalEmpDept', '');
+            valSetText('#val_modalEmpPost', '');
+            valSetText('#val_modalLeaveType', '');
+            valSetText('#val_modalLeaveFrom', '');
+            valSetText('#val_modalLeaveTo', '');
+            valSetText('#val_modalLeaveLength', '');
+            valSetText('#val_modalLeaveReason', '');
+            $('#val_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">'
+                + valEscHtml(_val_i18n.loadingData) + '</td></tr>');
+        }
+
+        function valRenderApprovalRows(approvalList) {
+            if (!approvalList || !approvalList.length) {
+                $('#val_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">'
+                    + valEscHtml(_val_i18n.noApprovalData) + '</td></tr>');
+                return;
+            }
+            var canAffirm = _val_affirmCtx && _val_affirmCtx.fromApprovalEmail
+                && _val_affirmCtx.affirmPersonId && String(_val_affirmCtx.affirmFlag) === '0';
+            var html = '';
+            approvalList.forEach(function (item, index) {
+                var stt = item.affirmLevel || (index + 1);
+                if (String(stt) === '100') stt = 'HR';
+                var isPending = canAffirm && item.affirmPersonId === _val_affirmCtx.affirmPersonId
+                    && String(item.affirmFlag) === '0';
+                var opinionCell = isPending
+                    ? '<input type="text" id="val_pendingOpinionInput" class="form-control form-control-sm" style="min-width:140px;">'
+                    : valEscHtml(item.affirmContent || '');
+                html += '<tr>'
+                    + '<td class="text-center">' + valEscHtml(stt) + '</td>'
+                    + '<td class="text-center">' + valEscHtml(item.affirmTypeName || '') + '</td>'
+                    + '<td class="text-center">' + valEscHtml(item.affirmFlagName || '') + '</td>'
+                    + '<td>' + valEscHtml(item.affirmName || '') + '</td>'
+                    + '<td>' + opinionCell + '</td>'
+                    + '<td class="text-center">' + valEscHtml(item.updateDate || '') + '</td>'
+                    + '<td class="text-center">' + valEscHtml(item.deptName || '') + '</td>'
+                    + '</tr>';
+            });
+            $('#val_modalApprovalBody').html(html);
+
+            if (canAffirm) {
+                $('#val_approveSection').show();
+            }
+        }
+
+        function valRenderData(data) {
+            var leaveInfo    = data && data.leaveInfo    ? data.leaveInfo    : {};
+            var employeeInfo = data && data.employeeInfo ? data.employeeInfo : leaveInfo;
+            var approvalList = data && data.approvalList ? data.approvalList : [];
+
+            $('#val_applyDetailTitle').text('[' + (leaveInfo.leaveTypeName || _val_i18n.applyTitleFallback) + ']');
+            valSetText('#val_modalApplyTitle', valBuildApplyTitle(leaveInfo));
+            valSetText('#val_modalApplicant',
+                (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
+
+            valSetText('#val_modalEmpName',  employeeInfo.localName     || '');
+            valSetText('#val_modalEmpId',    employeeInfo.empId         || '');
+            valSetText('#val_modalEmpDept',  employeeInfo.deptName      || '');
+            valSetText('#val_modalEmpPost',  employeeInfo.postGradeName || '');
+
+            valSetText('#val_modalLeaveType',   leaveInfo.leaveTypeName || '');
+            valSetText('#val_modalLeaveFrom',   leaveInfo.leaveFromTime || '');
+            valSetText('#val_modalLeaveTo',     leaveInfo.leaveToTime   || '');
+            valSetText('#val_modalLeaveLength', valFormatDuration(leaveInfo.applyLength, leaveInfo.dayHours));
+            valSetText('#val_modalLeaveReason', leaveInfo.leaveReason   || '');
+
+            valRenderApprovalRows(approvalList);
+        }
+
+        window.valOpenApplyDetail = function (applyNo, applyType, ctx) {
+            if (!applyNo) {
+                typeof toastr !== 'undefined' && toastr.warning(_val_i18n.noApplyNo);
+                return;
+            }
+            _val_affirmCtx = ctx || null;
+
+            // Dọn sạch state Bootstrap Modal còn sót từ tab trước
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({ paddingRight: '', overflow: '' });
+
+            // Tìm modal element (có thể đang nằm trong tab pane bị ẩn)
+            var modalEl = document.getElementById('val_applyDetailModal');
+            if (!modalEl) return;
+
+            // Di chuyển modal ra thẳng <body> để tránh bị ẩn theo tab pane display:none
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+
+            // Re-init nếu element đã thay đổi hoặc chưa khởi tạo
+            if (!_val_detailModal || _val_detailModal._element !== modalEl) {
+                try { if (_val_detailModal) _val_detailModal.dispose(); } catch (e) {}
+                _val_detailModal = window.bootstrap ? new bootstrap.Modal(modalEl) : null;
+            }
+
+            valResetModal();
+            $('#val_approveSection').hide();
+            if (_val_detailModal) _val_detailModal.show();
+
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/leaveApply/detail',
+                type: 'GET',
+                data: { applyNo: applyNo, applyType: applyType || '' },
+                success: function (res) { valRenderData(res || {}); },
+                error: function () {
+                    $('#val_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">'
+                        + valEscHtml(_val_i18n.loadFailed) + '</td></tr>');
+                    typeof toastr !== 'undefined' && toastr.error(_val_i18n.loadFailed);
+                }
+            });
+        };
+
+        window.valDoAffirm = function (flag) {
+            if (!_val_affirmCtx) return;
+            var affirmContent = ($('#val_pendingOpinionInput').val() || '').trim() || (flag === 1 ? 'Ok' : 'Reject');
+            var items = [{
+                applyNo:      _val_affirmCtx.applyNo,
+                applyType:    _val_affirmCtx.applyType,
+                applyFlag:    _val_affirmCtx.applyFlag,
+                affirmLevel:  _val_affirmCtx.affirmLevel,
+                flag:         flag,
+                affirmContent: affirmContent
+            }];
+            $.ajax({
+                url: '/ess/infoApply/api/approvalEmail/execute',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ items: items }),
+                success: function (res) {
+                    if (_val_detailModal) _val_detailModal.hide();
+                    if (res.success) {
+                        typeof vaeLoadList === 'function' && vaeLoadList();
+                    } else {
+                        alert(res.message || _val_i18n.executeFail);
+                    }
+                },
+                error: function () {
+                    alert(_val_i18n.executeFail);
+                }
+            });
+        };
+
+        $(document).ready(function () {
+            if (window.bootstrap && document.getElementById('val_applyDetailModal')) {
+                _val_detailModal = new bootstrap.Modal(document.getElementById('val_applyDetailModal'));
+            }
+        });
+    })();
+</script>

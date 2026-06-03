@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.basicMaintenance.mapper.SyMenuParamMapper">
+
+    <resultMap id="SyMenuParamDtoResultMap" type="com.ait.sy.basicMaintenance.dto.SyMenuParamDto">
+        <!-- SyMenu fields -->
+        <id column="MENU_NO" property="menuNo"/>
+        <result column="MENU_PARENT_NO" property="menuParentNo"/>
+        <result column="MENU_CODE" property="menuCode"/>
+        <result column="MENU_IMG" property="menuImg"/>
+        <result column="DEPTH" property="depth"/>
+        <result column="MENU_URL" property="menuUrl"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ORDERNO" property="orderNo"/>
+        <result column="ACTIVITY" property="activity"/>
+        
+        <!-- SyMenuDto fields -->
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+        <result column="PARENT_MENU_NAME" property="parentMenuName" />
+
+        <!-- SyMenuParam fields -->
+        <result column="PARAM_NO" property="paramNo"/>
+        <result column="PARAM_CPNY_ID" property="cpnyId"/>
+        <result column="PARAM_ORDER_NO" property="paramOrderNo"/>
+        <result column="PARAM_ACTIVITY" property="paramActivity"/>
+        <result column="IS_CAN_BE_BUILD" property="isCanBeBuild"/>
+        <result column="IS_ASSIGNED" property="assigned"/>
+    </resultMap>
+    
+    <select id="findByParentMenuAndCpny" resultMap="SyMenuParamDtoResultMap">
+        SELECT 
+            m.*,
+            gvi.CONTENT AS NAME_VI,
+            gen.CONTENT AS NAME_EN,
+            gzh.CONTENT AS NAME_ZH,
+            gko.CONTENT AS NAME_KO,
+            pvi.CONTENT AS PARENT_MENU_NAME,
+            
+            p.PARAM_NO,
+            p.CPNY_ID AS PARAM_CPNY_ID,
+            p.ORDERNO AS PARAM_ORDER_NO,
+            p.ACTIVITY AS PARAM_ACTIVITY,
+            p.IS_CAN_BE_BUILD,
+            CASE WHEN p.PARAM_NO IS NOT NULL THEN 1 ELSE 0 END AS IS_ASSIGNED
+        FROM SY_MENU m
+        LEFT JOIN SY_GLOBAL_NAME gvi ON m.MENU_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON m.MENU_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON m.MENU_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON m.MENU_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        LEFT JOIN SY_GLOBAL_NAME pvi ON m.MENU_PARENT_NO = pvi.NO AND pvi.LANGUAGE = 'vi'
+        
+        LEFT JOIN SY_MENU_PARAM p ON m.MENU_NO = p.MENU_NO 
+            AND p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR} 
+             
+        WHERE m.ACTIVITY = 1
+        <choose>
+            <when test="parentMenuNo != null and parentMenuNo != '' and parentMenuNo != 'ROOT'">
+                AND m.MENU_PARENT_NO = #{parentMenuNo}
+            </when>
+            <otherwise>
+                AND (m.MENU_PARENT_NO IS NULL OR m.MENU_PARENT_NO = '')
+            </otherwise>
+        </choose>
+        ORDER BY m.DEPTH, m.ORDERNO
+    </select>
+    
+    <select id="findByCpnyIdAndMenuNo" resultType="com.ait.sy.basicMaintenance.model.SyMenuParam">
+        SELECT * FROM SY_MENU_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND MENU_NO = #{menuNo}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SY_MENU_PARAM (
+            PARAM_NO, MENU_NO, CPNY_ID, IS_CAN_BE_BUILD,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
+        ) VALUES (
+            #{paramNo}, #{menuNo}, #{cpnyId, jdbcType=VARCHAR}, #{isCanBeBuild},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE SY_MENU_PARAM SET
+            IS_CAN_BE_BUILD = #{isCanBeBuild},
+            UPDATE_DATE = sysdate,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ORDERNO = #{orderNo},
+            ACTIVITY = #{activity}
+        WHERE PARAM_NO = #{paramNo}
+    </update>
+
+    <delete id="deleteByCpnyIdAndMenuNo">
+        DELETE FROM SY_MENU_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND MENU_NO = #{menuNo}
+    </delete>
+
+    <select id="getNextParamNoSeq" resultType="String">
+        SELECT SY_MENU_PARAM_SEQ.NEXTVAL FROM DUAL
+    </select>
+</mapper>

@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.salary.mapper.PaInputItemDataMapper">
+
+    <resultMap id="ParamItemResultMap" type="com.ait.pa.salary.dto.PaInputItemDataDto">
+        <result column="PARAM_NO"      property="paramNo"      jdbcType="VARCHAR" />
+        <result column="PARAM_ITEM_NO" property="paramItemNo"  jdbcType="VARCHAR" />
+        <result column="DEFAULT_VAL"   property="defaultVal"   jdbcType="VARCHAR" />
+        <result column="PARAM_ITEM_ID" property="paramItemId"  jdbcType="VARCHAR" />
+        <result column="PARAM_NAME"    property="paramName"    jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="ParamDataResultMap" type="com.ait.pa.salary.dto.PaInputItemDataDto">
+        <result column="PARAM_DATA_NO"         property="paramDataNo"         jdbcType="NUMERIC" />
+        <result column="PARAM_NO"              property="paramNo"             jdbcType="VARCHAR" />
+        <result column="PERSON_ID"             property="personId"            jdbcType="VARCHAR" />
+        <result column="RETURN_VALUE"          property="returnValue"         jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD"        property="distinctField"       jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD_2ND"    property="distinctField2nd"    jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD_NAME"   property="distinctFieldName"   jdbcType="VARCHAR" />
+        <result column="DISTINCT_FIELD_2ND_NAME" property="distinctField2ndName" jdbcType="VARCHAR" />
+        <result column="EMPID"                 property="empId"               jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"            property="localName"           jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"             property="deptName"            jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME"       property="postGradeName"       jdbcType="VARCHAR" />
+        <result column="EMP_OFFICE"            property="empOffice"           jdbcType="VARCHAR" />
+        <result column="DATE_STARTED"          property="dateStarted"         jdbcType="VARCHAR" />
+        <result column="DATE_LEFT"             property="dateLeft"            jdbcType="VARCHAR" />
+        <result column="START_MONTH"           property="startMonth"          jdbcType="VARCHAR" />
+        <result column="END_MONTH"             property="endMonth"            jdbcType="VARCHAR" />
+        <result column="CPNY_ID"               property="cpnyId"              jdbcType="VARCHAR" />
+        <result column="CPNY_NAME"             property="cpnyName"            jdbcType="VARCHAR" />
+        <result column="IS_APPLY"              property="isApply"             jdbcType="VARCHAR" />
+        <result column="REMARK"                property="remark"              jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── Danh sách hạng mục tiêu chuẩn cho panel trái ─────────────────────── -->
+    <select id="selectParamItemList" parameterType="com.ait.pa.salary.dto.PaInputItemDataDto"
+            resultMap="ParamItemResultMap">
+        SELECT T.PARAM_NO,
+               T.PARAM_ITEM_NO,
+               T.DEFAULT_VAL,
+               PI.PARAM_ITEM_ID,
+               SY.CONTENT AS PARAM_NAME
+          FROM PA_PARAM_ITEM_PARAM T,
+               PA_PARAM_ITEM       PI,
+               SY_GLOBAL_NAME      SY
+         WHERE T.PARAM_ITEM_NO = PI.PARAM_ITEM_NO
+           AND T.PARAM_ITEM_NO = SY.NO
+           AND SY.LANGUAGE     = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY     = 1
+           <if test="itemType != null and itemType != ''">
+           AND PI.ITEM_TYPE    = #{itemType, jdbcType=VARCHAR}
+           </if>
+           AND T.ACTIVITY      = '1'
+           AND T.CPNY_ID       = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY PI.ORDER_NO
+    </select>
+
+    <!-- ── SQL cốt lõi cho danh sách PA_PARAM_DATA ───────────────────────────── -->
+    <sql id="baseParamDataSelect">
+        SELECT A.PARAM_DATA_NO,
+               A.PARAM_NO,
+               A.PERSON_ID,
+               A.RETURN_VALUE,
+               BP.DISTINCT_FIELD,
+               BP.DISTINCT_FIELD_2ND,
+               SY0.CONTENT                                    DISTINCT_FIELD_NAME,
+               SY1.CONTENT                                    DISTINCT_FIELD_2ND_NAME,
+               D.EMPID,
+               D.LOCAL_NAME,
+               get_dept_name(D.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+               SY2.CONTENT                                    POST_GRADE_NAME,
+               GET_GLOBAL_NAME(D.EMP_OFFICE, #{lang, jdbcType=VARCHAR}) EMP_OFFICE,
+               TO_CHAR(D.DATE_STARTED, 'YYYY-MM-DD')          DATE_STARTED,
+               TO_CHAR(D.DATE_LEFT, 'YYYY-MM-DD')             DATE_LEFT,
+               A.START_MONTH,
+               A.END_MONTH,
+               A.CPNY_ID,
+               SY4.CONTENT                                    CPNY_NAME,
+               NVL(A.IS_APPLY, 'N')                           IS_APPLY,
+               A.REMARK
+          FROM PA_PARAM_DATA       A,
+               PA_PARAM_ITEM_PARAM BP,
+               HR_EMPLOYEE         D,
+               HR_COMPANY          HR,
+               SY_GLOBAL_NAME      SY0,
+               SY_GLOBAL_NAME      SY1,
+               SY_GLOBAL_NAME      SY2,
+               SY_GLOBAL_NAME      SY4,
+               PA_DISTINCT_LIST    PA1,
+               PA_DISTINCT_LIST    PA2
+         WHERE A.PARAM_NO          = #{paramNo, jdbcType=VARCHAR}
+           AND A.PARAM_NO          = BP.PARAM_NO
+           AND BP.CPNY_ID          = #{cpnyId,  jdbcType=VARCHAR}
+           AND BP.DISTINCT_FIELD   = PA1.DISTINCT_FIELD(+)
+           AND BP.CPNY_ID          = PA1.CPNY_ID(+)
+           AND PA1.ID              = SY0.NO(+)
+           AND SY0.LANGUAGE(+)     = #{lang, jdbcType=VARCHAR}
+           AND BP.DISTINCT_FIELD_2ND = PA2.DISTINCT_FIELD(+)
+           AND BP.CPNY_ID          = PA2.CPNY_ID(+)
+           AND PA2.ID              = SY1.NO(+)
+           AND SY1.LANGUAGE(+)     = #{lang, jdbcType=VARCHAR}
+           AND A.PERSON_ID         = D.PERSON_ID
+           AND D.POST_GRADE_NO     = SY2.NO(+)
+           AND SY2.LANGUAGE(+)     = #{lang, jdbcType=VARCHAR}
+           AND A.CPNY_ID           = HR.CPNY_ID
+           AND HR.CPNY_NO          = SY4.NO(+)
+           AND SY4.LANGUAGE(+)     = #{lang, jdbcType=VARCHAR}
+           AND A.ACTIVITY          = 1
+           <if test="payMonth != null and payMonth != ''">
+           AND TO_DATE(#{payMonth, jdbcType=VARCHAR}, 'MMYYYY') &gt;= TO_DATE(A.START_MONTH, 'MMYYYY')
+           AND TO_DATE(#{payMonth, jdbcType=VARCHAR}, 'MMYYYY') &lt;= TO_DATE(NVL(A.END_MONTH, '129999'), 'MMYYYY')
+           AND (D.DATE_LEFT IS NULL
+                OR TO_CHAR(D.DATE_LEFT, 'YYYYMM') &gt;= TO_CHAR(ADD_MONTHS(TO_DATE(#{payMonth, jdbcType=VARCHAR}, 'MMYYYY'), -2), 'YYYYMM'))
+           </if>
+           <if test="empOfficeSearch != null and empOfficeSearch != ''">
+           AND D.EMP_OFFICE        = #{empOfficeSearch, jdbcType=VARCHAR}
+           </if>
+           <if test="deptNos != null and deptNos != ''">
+           AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || D.DEPTNO || ',') &gt; 0
+           </if>
+           <if test="empSearch != null and empSearch != ''">
+           AND (D.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(D.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%')
+           </if>
+    </sql>
+
+    <!-- ── Đếm tổng bản ghi ─────────────────────────────────────────────────── -->
+    <select id="countParamDataList" parameterType="com.ait.pa.salary.dto.PaInputItemDataDto" resultType="long">
+        SELECT COUNT(1) FROM (
+            <include refid="baseParamDataSelect"/>
+        )
+    </select>
+
+    <!-- ── Phân trang – Oracle ROWNUM ───────────────────────────────────────── -->
+    <select id="selectParamDataListPage" parameterType="com.ait.pa.salary.dto.PaInputItemDataDto"
+            resultMap="ParamDataResultMap">
+        SELECT PARAM_DATA_NO, PARAM_NO, PERSON_ID, RETURN_VALUE,
+               DISTINCT_FIELD, DISTINCT_FIELD_2ND,
+               DISTINCT_FIELD_NAME, DISTINCT_FIELD_2ND_NAME,
+               EMPID, LOCAL_NAME, DEPT_NAME, POST_GRADE_NAME, EMP_OFFICE,
+               DATE_STARTED, DATE_LEFT, START_MONTH, END_MONTH,
+               CPNY_ID, CPNY_NAME, IS_APPLY, REMARK
+          FROM (
+            SELECT a.*, ROWNUM AS RN
+              FROM (
+                <include refid="baseParamDataSelect"/>
+                ORDER BY D.PERSON_ID
+              ) a
+             WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+          )
+         WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Lấy một bản ghi để chỉnh sửa ─────────────────────────────────────── -->
+    <select id="selectParamDataOne" resultMap="ParamDataResultMap">
+        SELECT PARAM_DATA_NO, PARAM_NO, PERSON_ID, RETURN_VALUE,
+               START_MONTH, END_MONTH, IS_APPLY, REMARK, CPNY_ID
+          FROM PA_PARAM_DATA
+         WHERE PARAM_DATA_NO = #{paramDataNo, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Thêm mới, PARAM_DATA_NO tự tăng qua sequence ──────────────────────── -->
+    <insert id="insertParamData" parameterType="com.ait.pa.salary.dto.PaInputItemDataDto">
+        INSERT INTO PA_PARAM_DATA (
+            PARAM_DATA_NO,
+            PARAM_NO,
+            PERSON_ID,
+            RETURN_VALUE,
+            START_MONTH,
+            END_MONTH,
+            REMARK,
+            CPNY_ID,
+            ACTIVITY,
+            CREATED_BY,
+            CREATE_DATE
+            CREATED_IP
+        ) VALUES (
+            PA_PARAM_DATA_SEQ.NEXTVAL,
+            #{paramNo,      jdbcType=VARCHAR},
+            #{personId,     jdbcType=VARCHAR},
+            #{returnValue,  jdbcType=VARCHAR},
+            #{startMonth,   jdbcType=VARCHAR},
+            #{endMonth,     jdbcType=VARCHAR},
+            #{remark,       jdbcType=VARCHAR},
+            #{cpnyId,       jdbcType=VARCHAR},
+            1,
+            #{adminID,      jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminIP,      jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ── Cập nhật bản ghi ──────────────────────────────────────────────────── -->
+    <update id="updateParamData" parameterType="com.ait.pa.salary.dto.PaInputItemDataDto">
+        UPDATE PA_PARAM_DATA
+           SET RETURN_VALUE  = #{returnValue,  jdbcType=VARCHAR},
+               START_MONTH   = #{startMonth,   jdbcType=VARCHAR},
+               END_MONTH     = #{endMonth,      jdbcType=VARCHAR},
+               REMARK        = #{remark,        jdbcType=VARCHAR},
+               UPDATED_BY    = #{adminID,       jdbcType=VARCHAR},
+               UPDATE_DATE   = SYSDATE,
+               UPDATED_IP    = #{adminIP,       jdbcType=VARCHAR}
+         WHERE PARAM_DATA_NO = #{paramDataNo,   jdbcType=NUMERIC}
+    </update>
+
+    <!-- ── Xóa bản ghi ───────────────────────────────────────────────────────── -->
+    <delete id="deleteParamData">
+        UPDATE PA_PARAM_DATA
+           SET ACTIVITY = 0,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_IP  = #{adminIP, jdbcType=VARCHAR}
+         WHERE PARAM_DATA_NO = #{paramDataNo, jdbcType=NUMERIC}
+    </delete>
+
+    <!-- ── Import Excel: xóa dữ liệu temp cũ của người upload ──────────────── -->
+    <delete id="deleteParamDataTemp" parameterType="map">
+        DELETE FROM PA_PARAM_DATA_TEMP
+         WHERE UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+           AND CPNY_ID   = #{cpnyId,  jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ── Import Excel: chèn từng dòng vào PA_PARAM_DATA_TEMP ─────────────── -->
+    <insert id="insertParamDataTemp" parameterType="map">
+        INSERT INTO PA_PARAM_DATA_TEMP (
+            PARAM_NO,
+            EMPID,
+            RETURN_VALUE,
+            START_MONTH,
+            END_MONTH,
+            REMARK,
+            LOCAL_NAME,
+            CPNY_ID,
+            UPLOAD_BY,
+            UPLOAD_DATE,
+            LINE_ID,
+            UPLOAD_ERROR_MSG,
+            RESULT_FLAG,
+            ACTIVITY,
+            CREATED_BY,
+            CREATED_IP,
+            CREATE_DATE
+        ) VALUES (
+            #{paramNo,         jdbcType=VARCHAR},
+            #{empId,           jdbcType=VARCHAR},
+            #{returnValue,     jdbcType=VARCHAR},
+            #{startMonth,      jdbcType=VARCHAR},
+            #{endMonth,        jdbcType=VARCHAR},
+            #{remark,          jdbcType=VARCHAR},
+            NVL(#{localName,   jdbcType=VARCHAR},
+                (SELECT LOCAL_NAME FROM HR_EMPLOYEE
+                  WHERE EMPID   = #{empId, jdbcType=VARCHAR}
+                    AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                    AND ROWNUM  = 1)),
+            #{cpnyId,          jdbcType=VARCHAR},
+            #{adminID,         jdbcType=VARCHAR},
+            SYSDATE,
+            #{lineId,          jdbcType=NUMERIC},
+            #{uploadErrorMsg,  jdbcType=VARCHAR},
+            NVL(#{resultFlag,  jdbcType=VARCHAR}, 'N'),
+            1,
+            #{adminID,         jdbcType=VARCHAR},
+            #{adminIP,         jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- ── ResultMap cho PA_PARAM_DATA_TEMP ─────────────────────────────────── -->
+    <resultMap id="ParamDataTempResultMap" type="com.ait.pa.salary.dto.PaParamDataTempDto">
+        <result column="PARAM_NO"         property="paramNo"         jdbcType="VARCHAR" />
+        <result column="EMPID"            property="empId"           jdbcType="VARCHAR" />
+        <result column="RETURN_VALUE"     property="returnValue"     jdbcType="VARCHAR" />
+        <result column="START_MONTH"      property="startMonth"      jdbcType="VARCHAR" />
+        <result column="END_MONTH"        property="endMonth"        jdbcType="VARCHAR" />
+        <result column="REMARK"           property="remark"          jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"       property="localName"       jdbcType="VARCHAR" />
+        <result column="UPLOAD_ERROR_MSG" property="uploadErrorMsg"  jdbcType="VARCHAR" />
+        <result column="LINE_ID"          property="lineId"          jdbcType="NUMERIC" />
+        <result column="RESULT_FLAG"      property="resultFlag"      jdbcType="VARCHAR" />
+        <result column="UPLOAD_BY"        property="uploadBy"        jdbcType="VARCHAR" />
+        <result column="UPLOAD_DATE"      property="uploadDate"      jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── Danh sách PA_PARAM_DATA_TEMP của người upload hiện tại ───────────── -->
+    <select id="selectParamDataTempList" parameterType="com.ait.pa.salary.dto.PaParamDataTempDto"
+            resultMap="ParamDataTempResultMap">
+        SELECT PARAM_NO,
+               EMPID,
+               RETURN_VALUE,
+               START_MONTH,
+               END_MONTH,
+               REMARK,
+               LOCAL_NAME,
+               UPLOAD_ERROR_MSG,
+               LINE_ID,
+               RESULT_FLAG,
+               UPLOAD_BY,
+               TO_CHAR(UPLOAD_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPLOAD_DATE
+          FROM PA_PARAM_DATA_TEMP
+         WHERE UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+           AND CPNY_ID   = #{cpnyId,  jdbcType=VARCHAR}
+           <if test="errorOnly != null and errorOnly == 'Y'">
+           AND UPLOAD_ERROR_MSG IS NOT NULL
+           </if>
+           <if test="errorOnly != null and errorOnly == 'N'">
+           AND (UPLOAD_ERROR_MSG IS NULL OR UPLOAD_ERROR_MSG = '')
+           </if>
+         ORDER BY LINE_ID
+    </select>
+
+    <!-- ── Gọi stored procedure import từ temp sang chính thức ─────────────── -->
+    <update id="callImportParamDataTemp" parameterType="map" statementType="CALLABLE">
+        {CALL PKG_WAGEBASE_EXCEL_TEMP.PR_IMPORT_PAPARAM_DATA(
+            #{adminID,       jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,        jdbcType=VARCHAR, mode=IN},
+            #{distinctField, jdbcType=VARCHAR, mode=IN},
+            #{message,       jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+</mapper>

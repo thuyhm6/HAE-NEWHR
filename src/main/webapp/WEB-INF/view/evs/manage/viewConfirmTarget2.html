@@ -1,0 +1,564 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vct2_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="d-flex align-items-center gap-3 flex-wrap justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                   th:text="#{evs.viewConfirmTarget2.evalName}">Tên đánh giá</label>
+                            <select class="form-select form-select-sm" id="vct2_resumeSeq" style="max-width:320px;">
+                                <option value=""></option>
+                            </select>
+                            <button type="button" class="btn btn-primary btn-sm" style="white-space: nowrap;" onclick="vct2Search()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{evs.viewConfirmTarget2.btnSearch}">Tra cứu</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách nhân viên cần xác nhận lần 2 -->
+            <div class="card mb-2">
+                <div class="card-body p-2">
+                    <div class="d-flex align-items-center justify-content-between mb-1 flex-wrap gap-1">
+                        <div class="small text-muted">
+                            <span th:text="#{evs.viewConfirmTarget2.currentEmp}">Nhân viên hiện tại</span>:
+                            <strong id="vct2_recordsFiltered">0</strong>
+                            <span class="mx-1">/</span>
+                            <span th:text="#{evs.viewConfirmTarget2.totalEmp}">Nhân viên đánh giá đối tượng</span>:
+                            <strong id="vct2_recordsTotal">0</strong>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle mb-0"
+                               id="vct2_objectTable" style="width:100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th style="width:48px;" th:text="#{evs.viewConfirmTarget2.col.no}">No</th>
+                                    <th style="width:36px;"></th>
+                                    <th th:text="#{evs.viewConfirmTarget2.col.fullName}">Họ tên</th>
+                                    <th style="width:110px;" th:text="#{evs.viewConfirmTarget2.col.empid}">Mã NV</th>
+                                    <th style="width:120px;" th:text="#{evs.viewConfirmTarget2.col.dept}">Phòng ban</th>
+                                    <th style="width:110px;" th:text="#{evs.viewConfirmTarget2.col.position}">Chức vụ</th>
+                                    <th style="width:90px;" th:text="#{evs.viewConfirmTarget2.col.objectType}">Đối tượng</th>
+                                    <th style="width:170px;" th:text="#{evs.viewConfirmTarget2.col.status}">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vct2_objectTbody">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination controls -->
+                    <div class="d-flex align-items-center justify-content-end mt-1 gap-2">
+                        <label class="small text-muted mb-0 text-nowrap">Mỗi trang</label>
+                        <select class="form-select form-select-sm" id="vct2_pageLength" style="width:70px;"
+                                onchange="vct2ChangePageLength()">
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                        </select>
+                        <span class="small text-muted">dữ liệu</span>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="vct2_pagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vct2_pageWrapper -->
+
+        <!-- Thông báo không có quyền đánh giá -->
+        <div id="vct2_emptyNotice" class="col-12" style="display:none; min-height:300px; align-items:center; justify-content:center;">
+            <div class="text-center text-muted p-4">
+                <i class="bi bi-exclamation-circle fs-1 d-block mb-3 text-secondary"></i>
+                <p class="alert alert-warning fs-4 fw-bold" role="alert" th:text="#{evs.viewConfirmTarget1.msg.notInEvalPeriod}">Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!</p>
+            </div>
+        </div>
+
+        <!-- Modal chi tiết xác nhận mục tiêu lần 2 -->
+        <div class="modal fade" id="vct2_detailModal" tabindex="-1" aria-labelledby="vct2_detailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title fw-bold" id="vct2_detailModalLabel"
+                            th:text="#{evs.viewConfirmTarget2.modalTitle}">Xác nhận mục tiêu (lần 2)</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-2">
+                        <!-- Thông tin cá nhân -->
+                        <div class="fw-bold mb-2 border-bottom pb-1"
+                             th:text="#{evs.viewConfirmTarget2.personalInfo}">Thông tin cá nhân</div>
+                        <div class="row g-0 mb-3">
+                            <div class="col-md-6">
+                                <table class="table table-bordered table-sm mb-0 h-100">
+                                    <thead class="table-light text-center">
+                                        <tr>
+                                            <th colspan="2" th:text="#{evs.viewConfirmTarget2.basicInfo}">Thông tin cơ bản</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted small" style="width:35%;"
+                                                th:text="#{evs.viewConfirmTarget2.fullName}">Họ tên</td>
+                                            <td id="vct2_localName"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted small"
+                                                th:text="#{evs.viewConfirmTarget2.position}">Chức vụ</td>
+                                            <td id="vct2_postGradeName"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted small"
+                                                th:text="#{evs.viewConfirmTarget2.dept}">Phòng ban</td>
+                                            <td id="vct2_deptname"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted small"
+                                                th:text="#{evs.viewConfirmTarget2.hireDate}">Ngày vào làm</td>
+                                            <td id="vct2_dateStarted"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-bordered table-sm mb-0 h-100">
+                                    <thead class="table-light text-center">
+                                        <tr>
+                                            <th colspan="2" th:text="#{evs.viewConfirmTarget2.evalCategory}">Hạng mục đánh giá</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted small" style="width:40%;"
+                                                th:text="#{evs.viewConfirmTarget2.evalYear}">Năm đánh giá</td>
+                                            <td id="vct2_evsYear"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted small"
+                                                th:text="#{evs.viewConfirmTarget2.period}">Thời gian</td>
+                                            <td id="vct2_evsPeriod"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted small"
+                                                th:text="#{evs.viewConfirmTarget2.appraiser1}">Người đánh giá lần 1</td>
+                                            <td id="vct2_localName1"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted small"
+                                                th:text="#{evs.viewConfirmTarget2.appraiser2}">Người đánh giá lần 2</td>
+                                            <td id="vct2_localName2"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Objective Confirm (readonly) -->
+                        <div class="fw-bold mb-1"
+                             th:text="#{evs.viewConfirmTarget2.objectiveConfirm}">Objective Confirm</div>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered table-sm align-middle mb-0"
+                                   id="vct2_itemTable" style="width:100%;">
+                                <thead class="table-light text-center align-middle">
+                                    <tr>
+                                        <th style="width:48px;" th:text="#{evs.viewConfirmTarget2.col.no}">No</th>
+                                        <th style="width:220px;" th:text="#{evs.viewConfirmTarget2.col.evalItem}">Hạng mục đánh giá</th>
+                                        <th th:text="#{evs.viewConfirmTarget2.col.target}">Mục tiêu</th>
+                                        <th style="width:90px;" th:text="#{evs.viewConfirmTarget2.col.ratio}">Tỷ lệ(%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vct2_itemTbody">
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">0</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light">
+                                        <td colspan="3" class="text-end fw-bold small">Total</td>
+                                        <td class="text-center fw-bold" id="vct2_totalScore">0</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Phần 2: Ý kiến người đánh giá -->
+                        <div class="fw-bold mb-2 border-bottom pb-1"
+                             th:text="#{evs.viewConfirmTarget2.part2}">Phần 2</div>
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th style="width:160px;"></th>
+                                    <th th:text="#{evs.viewConfirmTarget2.col.opinion}">Ý kiến</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted small align-middle"
+                                        th:text="#{evs.viewConfirmTarget2.appraiser1Comment}">Người đánh giá cấp 1</td>
+                                    <td>
+                                        <textarea class="form-control form-control-sm" id="vct2_affirmComment1"
+                                                  rows="4" readonly style="resize:none;"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted small align-middle"
+                                        th:text="#{evs.viewConfirmTarget2.appraiser2Comment}">Người đánh giá cấp 2</td>
+                                    <td>
+                                        <textarea class="form-control form-control-sm" id="vct2_affirmComment2"
+                                                  rows="4" style="resize:none;"></textarea>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-success btn-sm" onclick="vct2Confirm('1')">
+                            <span th:text="#{evs.viewConfirmTarget2.btnConfirm}">Xác nhận</span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="vct2Confirm('0')">
+                            <span th:text="#{evs.viewConfirmTarget2.btnReject}">Từ chối</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="vct2CloseDetail()">
+                            <span th:text="#{evs.viewConfirmTarget2.btnClose}">Đóng</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.row -->
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <style>
+        #vct2_pageWrapper #vct2_objectTable tbody tr {
+            cursor: pointer;
+        }
+        #vct2_pageWrapper #vct2_objectTable tbody tr:hover {
+            background-color: #f0f4ff;
+        }
+        #vct2_pageWrapper #vct2_objectTable tbody tr.vct2-active {
+            background-color: #cce5ff !important;
+        }
+        #vct2_pageWrapper .vct2-blue-name {
+            color: #0d6efd;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        #vct2_itemTable td.vct2-rich-content p { margin: 0; }
+        #vct2_itemTable td.vct2-rich-content ul,
+        #vct2_itemTable td.vct2-rich-content ol { margin: 0; padding-left: 1.2em; }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            var _vct2_tabId = window._currentTabId || 'default-content';
+            window._vct2_inst = window._vct2_inst || {};
+            if (!window._vct2_inst[_vct2_tabId]) {
+                var _vct2_urlParams = new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '');
+                window._vct2_inst[_vct2_tabId] = {
+                    evsType: _vct2_urlParams.get('evsType') || '',
+                    currentResumeSeq: null,
+                    currentObjectSeq: null,
+                    currentPage: 1,
+                    pageLength: 50,
+                    recordsTotal: 0,
+                    recordsFiltered: 0
+                };
+            }
+            var inst = window._vct2_inst[_vct2_tabId];
+
+            var CONFIRM_ACTIVITY = '14015365';
+
+            function vct2$(sel) { return $('#' + _vct2_tabId).find(sel); }
+
+            function vct2Esc(s) {
+                if (s == null) return '';
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            /* ── Load resume dropdown ─────────────────────────────────────── */
+            function vct2LoadResumeList() {
+                $.ajax({
+                    url: '/evs/manage/api/resume/evsResumeList',
+                    type: 'GET',
+                    data: { evsType: inst.evsType, evsLevel: '14015085' },
+                    success: function (rows) {
+                        if (!rows || rows.length === 0) {
+                            $('#vct2_pageWrapper').hide();
+                            $('#vct2_emptyNotice').css('display', 'flex');
+                            return;
+                        }
+                        $('#vct2_emptyNotice').hide();
+                        $('#vct2_pageWrapper').show();
+                        var html = '<option value=""></option>';
+                        rows.forEach(function (r) {
+                            html += '<option value="' + vct2Esc(r.seq) + '">' + vct2Esc(r.resumeName) + '</option>';
+                        });
+                        vct2$('#vct2_resumeSeq').html(html);
+                        var first = vct2$('#vct2_resumeSeq option[value!=""]').first();
+                        if (first.length) {
+                            vct2$('#vct2_resumeSeq').val(first.val());
+                            vct2Search();
+                        }
+                    }
+                });
+            }
+
+            /* ── Tra cứu ──────────────────────────────────────────────────── */
+            window.vct2Search = function () {
+                var resumeSeq = vct2$('#vct2_resumeSeq').val();
+                if (!resumeSeq) {
+                    alert(/*[[#{evs.viewConfirmTarget2.msg.selectEvalFirst}]]*/ 'Vui lòng chọn tên đánh giá trước.');
+                    return;
+                }
+                inst.currentResumeSeq = resumeSeq;
+                inst.currentPage = 1;
+                vct2LoadObjectList();
+                vct2HideDetail();
+            };
+
+            /* ── Thay đổi số dòng/trang ────────────────────────────────────── */
+            window.vct2ChangePageLength = function () {
+                inst.pageLength = parseInt(vct2$('#vct2_pageLength').val()) || 50;
+                inst.currentPage = 1;
+                vct2LoadObjectList();
+            };
+
+            /* ── Load danh sách nhân viên (phân trang thủ công) ────────────── */
+            function vct2LoadObjectList() {
+                if (!inst.currentResumeSeq) return;
+                var start = (inst.currentPage - 1) * inst.pageLength;
+                $.ajax({
+                    url: '/evs/manage/api/confirmTarget2/objectList',
+                    type: 'GET',
+                    data: {
+                        resumeSeq: inst.currentResumeSeq,
+                        evsType: inst.evsType,
+                        draw: inst.currentPage,
+                        start: start,
+                        length: inst.pageLength
+                    },
+                    success: function (resp) {
+                        inst.recordsTotal    = resp.recordsTotal    || 0;
+                        inst.recordsFiltered = resp.recordsFiltered || 0;
+                        vct2$('#vct2_recordsTotal').text(inst.recordsTotal);
+                        vct2$('#vct2_recordsFiltered').text(resp.data ? resp.data.length : 0);
+                        vct2RenderObjectList(resp.data || []);
+                        vct2RenderPagination();
+                    },
+                    error: function () {
+                        vct2$('#vct2_objectTbody').html('<tr><td colspan="8" class="text-center text-muted">0</td></tr>');
+                    }
+                });
+            }
+
+            /* ── Render danh sách nhân viên ────────────────────────────────── */
+            function vct2RenderObjectList(rows) {
+                if (!rows.length) {
+                    vct2$('#vct2_objectTbody').html('<tr><td colspan="8" class="text-center text-muted">0</td></tr>');
+                    return;
+                }
+                var start = (inst.currentPage - 1) * inst.pageLength;
+                var html = '';
+                rows.forEach(function (r, idx) {
+                    var isConfirmActivity = String(r.activity || '') === CONFIRM_ACTIVITY;
+                    var nameHtml = isConfirmActivity
+                        ? '<span class="vct2-blue-name">' + vct2Esc(r.localName) + '</span>'
+                        : vct2Esc(r.localName || '');
+                    html += '<tr data-seq="' + vct2Esc(r.seq) + '" data-activity="' + vct2Esc(r.activity) + '">';
+                    html += '<td class="text-center">' + (start + idx + 1) + '</td>';
+                    html += '<td class="text-center"><input type="checkbox" class="vct2-chk" data-seq="' + vct2Esc(r.seq) + '"></td>';
+                    html += '<td>' + nameHtml + '</td>';
+                    html += '<td class="text-center">' + vct2Esc(r.empid) + '</td>';
+                    html += '<td>' + vct2Esc(r.deptname) + '</td>';
+                    html += '<td>' + vct2Esc(r.postGradeName) + '</td>';
+                    html += '<td class="text-center">' + vct2Esc(r.objectTypeName) + '</td>';
+                    html += '<td class="text-center">' + vct2Esc(r.activityName) + '</td>';
+                    html += '</tr>';
+                });
+                vct2$('#vct2_objectTbody').html(html);
+
+                // Bind click để hiển thị chi tiết (chỉ với dòng có CONFIRM_ACTIVITY)
+                vct2$('#vct2_objectTbody tr').on('click', function (e) {
+                    if ($(e.target).is('input[type="checkbox"]')) return;
+                    var $row = $(this);
+                    var seq = $row.data('seq');
+                    var activity = String($row.data('activity') || '');
+                    if (activity !== CONFIRM_ACTIVITY) return;
+                    vct2$('#vct2_objectTbody tr').removeClass('vct2-active');
+                    $row.addClass('vct2-active');
+                    inst.currentObjectSeq = seq;
+                    vct2LoadDetail(seq);
+                });
+            }
+
+            /* ── Render phân trang ─────────────────────────────────────────── */
+            function vct2RenderPagination() {
+                var totalPages = Math.ceil(inst.recordsTotal / inst.pageLength) || 1;
+                var html = '';
+                html += '<li class="page-item' + (inst.currentPage <= 1 ? ' disabled' : '') + '">'
+                    + '<a class="page-link" href="#" onclick="vct2GoPage(' + (inst.currentPage - 1) + ');return false;">&laquo;</a></li>';
+                var start = Math.max(1, inst.currentPage - 2);
+                var end   = Math.min(totalPages, start + 4);
+                for (var p = start; p <= end; p++) {
+                    html += '<li class="page-item' + (p === inst.currentPage ? ' active' : '') + '">'
+                        + '<a class="page-link" href="#" onclick="vct2GoPage(' + p + ');return false;">' + p + '</a></li>';
+                }
+                html += '<li class="page-item' + (inst.currentPage >= totalPages ? ' disabled' : '') + '">'
+                    + '<a class="page-link" href="#" onclick="vct2GoPage(' + (inst.currentPage + 1) + ');return false;">&raquo;</a></li>';
+                vct2$('#vct2_pagination').html(html);
+            }
+
+            window.vct2GoPage = function (page) {
+                var totalPages = Math.ceil(inst.recordsTotal / inst.pageLength) || 1;
+                if (page < 1 || page > totalPages) return;
+                inst.currentPage = page;
+                vct2LoadObjectList();
+            };
+
+            /* ── Load chi tiết nhân viên ───────────────────────────────────── */
+            function vct2LoadDetail(evsObjectSeq) {
+                $.ajax({
+                    url: '/evs/manage/api/confirmTarget2/objectInfo',
+                    type: 'GET',
+                    data: { evsObjectSeq: evsObjectSeq },
+                    success: function (d) {
+                        if (!d || !d.seq) { vct2HideDetail(); return; }
+                        vct2RenderPersonalInfo(d);
+                        vct2LoadItems(evsObjectSeq);
+                    },
+                    error: function () { vct2HideDetail(); }
+                });
+            }
+
+            /* ── Render thông tin cá nhân ──────────────────────────────────── */
+            function vct2RenderPersonalInfo(d) {
+                vct2$('#vct2_localName').text(d.localName || '');
+                vct2$('#vct2_postGradeName').text(d.postGradeName || '');
+                vct2$('#vct2_deptname').text(d.deptname || '');
+                vct2$('#vct2_dateStarted').text(d.dateStarted || '');
+                vct2$('#vct2_evsYear').text(d.evsYear || '');
+                var period = (d.evsStartDate || '') + (d.evsEndDate ? '~' + d.evsEndDate : '');
+                vct2$('#vct2_evsPeriod').text(period);
+                vct2$('#vct2_localName1').text(d.localName1 || '');
+                vct2$('#vct2_localName2').text(d.localName2 || '');
+                vct2$('#vct2_affirmComment1').val(d.affirmComment1 || '');
+                vct2$('#vct2_affirmComment2').val(d.affirmComment2 || '');
+            }
+
+            /* ── Load danh sách mục tiêu ───────────────────────────────────── */
+            function vct2LoadItems(evsObjectSeq) {
+                $.ajax({
+                    url: '/evs/manage/api/personalTarget/itemList',
+                    type: 'GET',
+                    data: { evsObjectSeq: evsObjectSeq },
+                    success: function (rows) {
+                        vct2RenderItems(rows || []);
+                        vct2ShowModal();
+                    },
+                    error: function () {
+                        vct2$('#vct2_itemTbody').html('<tr><td colspan="4" class="text-center text-muted">0</td></tr>');
+                        vct2ShowModal();
+                    }
+                });
+            }
+
+            /* ── Hiển thị modal ────────────────────────────────────────────── */
+            function vct2ShowModal() {
+                var modalEl = document.getElementById('vct2_detailModal');
+                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+
+            /* ── Render danh sách mục tiêu (readonly) ──────────────────────── */
+            function vct2RenderItems(rows) {
+                if (!rows.length) {
+                    vct2$('#vct2_itemTbody').html('<tr><td colspan="4" class="text-center text-muted">0</td></tr>');
+                    vct2$('#vct2_totalScore').text('0');
+                    return;
+                }
+                var html = '';
+                var total = 0;
+                rows.forEach(function (r, idx) {
+                    html += '<tr>';
+                    html += '<td class="text-center">' + (idx + 1) + '</td>';
+                    html += '<td>' + vct2Esc(r.itemName) + '</td>';
+                    html += '<td class="vct2-rich-content">' + (r.itemContent || '') + '</td>';
+                    html += '<td class="text-center">' + vct2Esc(r.itemScore) + '</td>';
+                    html += '</tr>';
+                    total += parseFloat(r.itemScore) || 0;
+                });
+                vct2$('#vct2_itemTbody').html(html);
+                vct2$('#vct2_totalScore').text(Math.round(total * 100) / 100);
+            }
+
+            /* ── Xác nhận / Từ chối ────────────────────────────────────────── */
+            window.vct2Confirm = function (flag) {
+                if (!inst.currentObjectSeq) {
+                    alert(/*[[#{evs.viewConfirmTarget2.msg.selectEmployee}]]*/ 'Vui lòng chọn nhân viên trước.');
+                    return;
+                }
+                var msgKey = flag === '1'
+                    ? /*[[#{evs.viewConfirmTarget2.msg.confirmAction}]]*/ 'Bạn có chắc muốn xác nhận mục tiêu của nhân viên này?'
+                    : /*[[#{evs.viewConfirmTarget2.msg.rejectAction}]]*/ 'Bạn có chắc muốn từ chối mục tiêu của nhân viên này?';
+                if (!confirm(msgKey)) return;
+
+                var affirmComment = vct2$('#vct2_affirmComment2').val() || '';
+                $.ajax({
+                    url: '/evs/manage/api/confirmTarget2/confirm',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        evsObjectSeq: inst.currentObjectSeq,
+                        affirmComment: affirmComment,
+                        flag: flag
+                    }),
+                    success: function (res) {
+                        if (res.success) {
+                            var successMsg = flag === '1'
+                                ? /*[[#{evs.viewConfirmTarget2.msg.confirmSuccess}]]*/ 'Xác nhận thành công!'
+                                : /*[[#{evs.viewConfirmTarget2.msg.rejectSuccess}]]*/ 'Từ chối thành công!';
+                            alert(successMsg);
+                            inst.currentObjectSeq = null;
+                            vct2CloseModal();
+                            vct2LoadObjectList();
+                        } else {
+                            alert(res.message || /*[[#{evs.viewConfirmTarget2.msg.actionFail}]]*/ 'Lỗi khi thực hiện. Vui lòng thử lại.');
+                        }
+                    },
+                    error: function () {
+                        alert(/*[[#{evs.viewConfirmTarget2.msg.actionFail}]]*/ 'Lỗi khi thực hiện. Vui lòng thử lại.');
+                    }
+                });
+            };
+
+            /* ── Đóng modal chi tiết ───────────────────────────────────────── */
+            window.vct2CloseDetail = function () {
+                inst.currentObjectSeq = null;
+                vct2$('#vct2_objectTbody tr').removeClass('vct2-active');
+            };
+
+            function vct2CloseModal() {
+                var modalEl = document.getElementById('vct2_detailModal');
+                var modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            }
+
+            function vct2HideDetail() {
+                vct2CloseModal();
+            }
+
+            /* ── Boot ────────────────────────────────────────────────────────── */
+            $(document).ready(function () {
+                vct2LoadResumeList();
+            });
+        })();
+    </script>
+</template>

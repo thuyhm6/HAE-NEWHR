@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsScheduleMapper">
+
+    <resultMap id="EvsScheduleResultMap" type="com.ait.evs.manage.dto.EvsScheduleDto">
+        <id     column="SEQ"             property="seq"           jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ"      property="resumeSeq"     jdbcType="VARCHAR" />
+        <result column="SCHEDULE_TYPE"   property="scheduleType"  jdbcType="VARCHAR" />
+        <result column="NO"              property="no"            jdbcType="VARCHAR" />
+        <result column="NAME"            property="name"          jdbcType="VARCHAR" />
+        <result column="DEPTNO"          property="deptNo"        jdbcType="VARCHAR" />
+        <result column="DEPTNAME"        property="deptName"      jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO"   property="postGradeNo"   jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR" />
+        <result column="EVS_OBJECT"      property="evsObject"     jdbcType="VARCHAR" />
+        <result column="EVS_STEP"        property="evsStep"       jdbcType="VARCHAR" />
+        <result column="EVS_STEP_NAME"   property="evsStepName"   jdbcType="VARCHAR" />
+        <result column="ACTIVITY"        property="activity"      jdbcType="VARCHAR" />
+        <result column="DEPT_TYPE"       property="deptType"      jdbcType="VARCHAR" />
+        <result column="ORDER_NO"        property="orderNo"       jdbcType="VARCHAR" />
+        <result column="PERSON_ID"       property="personId"      jdbcType="VARCHAR" />
+        <result column="START_DATE"      property="startDate"     jdbcType="VARCHAR" />
+        <result column="END_DATE"        property="endDate"       jdbcType="VARCHAR" />
+        <result column="CREATE_DATE"     property="createDate"    jdbcType="VARCHAR" />
+        <result column="CREATED_BY"      property="createdBy"     jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"     property="updateDate"    jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"      property="updatedBy"     jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Danh sách quy trình đánh giá theo resumeSeq, scheduleType, evsType -->
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsScheduleDto"
+            resultMap="EvsScheduleResultMap">
+        SELECT S.SEQ,
+               S.RESUME_SEQ,
+               S.SCHEDULE_TYPE,
+               S.NO,
+               S.NAME,
+               S.DEPTNO,
+               S.DEPTNAME,
+               S.POST_GRADE_NO,
+               S.POST_GRADE_NAME,
+               S.EVS_OBJECT,
+               S.EVS_STEP,
+               GET_GLOBAL_NAME(S.EVS_STEP, #{lang, jdbcType=VARCHAR}) AS EVS_STEP_NAME,
+               S.ACTIVITY,
+               S.DEPT_TYPE,
+               TO_CHAR(S.ORDER_NO)                              AS ORDER_NO,
+               S.PERSON_ID,
+               TO_CHAR(S.START_DATE, 'YYYY-MM-DD')             AS START_DATE,
+               TO_CHAR(S.END_DATE,   'YYYY-MM-DD')             AS END_DATE,
+               TO_CHAR(S.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+               GET_UPDATED_INFO(S.CREATED_BY) || ' ' || S.CREATED_IP AS CREATED_BY,
+               TO_CHAR(S.UPDATE_DATE, 'YYYY-MM-DD HH24:MI')    AS UPDATE_DATE,
+               GET_UPDATED_INFO(S.UPDATED_BY) || ' ' || S.UPDATED_IP AS UPDATED_BY
+        FROM EVS_SCHEDULE S
+        WHERE ACTIVITY != 2
+        <if test="resumeSeq != null and resumeSeq != ''">
+            AND S.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        </if>
+        <if test="scheduleType != null and scheduleType != ''">
+            AND S.SCHEDULE_TYPE = #{scheduleType, jdbcType=VARCHAR}
+        </if>
+        ORDER BY S.ORDER_NO, S.SEQ
+    </select>
+
+    <!-- Lấy SEQ mới -->
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_SCHEDULE_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <!-- Thêm mới -->
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsScheduleDto">
+        INSERT INTO EVS_SCHEDULE (
+            SEQ, RESUME_SEQ, SCHEDULE_TYPE, NO, NAME,
+            DEPTNO, DEPTNAME, POST_GRADE_NO, POST_GRADE_NAME,
+            EVS_OBJECT, EVS_STEP, ACTIVITY, DEPT_TYPE,
+            ORDER_NO, PERSON_ID,
+            START_DATE, END_DATE,
+            CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,           jdbcType=VARCHAR},
+            #{resumeSeq,     jdbcType=VARCHAR},
+            #{scheduleType,  jdbcType=VARCHAR},
+            #{no,            jdbcType=VARCHAR},
+            #{name,          jdbcType=VARCHAR},
+            #{deptNo,        jdbcType=VARCHAR},
+            #{deptName,      jdbcType=VARCHAR},
+            #{postGradeNo,   jdbcType=VARCHAR},
+            #{postGradeName, jdbcType=VARCHAR},
+            #{evsObject,     jdbcType=VARCHAR},
+            #{evsStep,       jdbcType=VARCHAR},
+            1, -- Mặc định là active khi tạo mới
+            #{deptType,      jdbcType=VARCHAR},
+            <choose>
+                <when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR},</when>
+                <otherwise>200,</otherwise>
+            </choose>
+            #{personId,      jdbcType=VARCHAR},
+            <choose>
+                <when test="startDate != null and startDate != ''">
+                    TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            <choose>
+                <when test="endDate != null and endDate != ''">
+                    TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- Cập nhật -->
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsScheduleDto">
+        UPDATE EVS_SCHEDULE
+        SET NO = CASE WHEN SCHEDULE_TYPE = 'CPNY' THEN #{cpnyId,  jdbcType=VARCHAR}
+                      ELSE GET_CODE_NO(#{name, jdbcType=VARCHAR},'0',#{cpnyId,  jdbcType=VARCHAR},'DEPT')
+                 END,
+            NAME            = DECODE(SCHEDULE_TYPE,'CPNY',#{cpnyId,  jdbcType=VARCHAR},#{name,          jdbcType=VARCHAR}),
+            DEPTNO          = #{deptNo,        jdbcType=VARCHAR},
+            DEPTNAME        = #{deptName,      jdbcType=VARCHAR},
+            POST_GRADE_NO   = #{postGradeNo,   jdbcType=VARCHAR},
+            POST_GRADE_NAME = #{postGradeName, jdbcType=VARCHAR},
+            EVS_OBJECT      = #{evsObject,     jdbcType=VARCHAR},
+            EVS_STEP        = #{evsStep,       jdbcType=VARCHAR},
+            DEPT_TYPE       = #{deptType,      jdbcType=VARCHAR},
+            PERSON_ID       = #{personId,      jdbcType=VARCHAR},
+            START_DATE      = <choose>
+                                  <when test="startDate != null and startDate != ''">
+                                      TO_DATE(#{startDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+                                  </when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            END_DATE        = <choose>
+                                  <when test="endDate != null and endDate != ''">
+                                      TO_DATE(#{endDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+                                  </when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            UPDATED_BY      = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP      = #{adminIP, jdbcType=VARCHAR},
+            UPDATE_DATE     = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </update>
+
+    <!-- Xóa vật lý -->
+    <delete id="deleteBySeq">
+        UPDATE EVS_SCHEDULE
+        SET UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ACTIVITY = 2,
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

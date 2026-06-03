@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.YearUseInfoMapper">
+
+    <resultMap id="VacationRowResultMap" type="com.ait.ess.viewDept.dto.YearUseVacationDto">
+        <result column="STRT_DATE"      property="strtDate"      jdbcType="VARCHAR" />
+        <result column="END_DATE"       property="endDate"       jdbcType="VARCHAR" />
+        <result column="TOT_VAC_CNT"    property="totVacCnt"     jdbcType="VARCHAR" />
+        <result column="ADD_VAC"        property="addVac"        jdbcType="VARCHAR" />
+        <result column="LAST_YEAR_VAC"  property="lastYearVac"   jdbcType="VARCHAR" />
+        <result column="TOTAL"          property="total"         jdbcType="VARCHAR" />
+        <result column="USE_VAC"        property="useVac"        jdbcType="VARCHAR" />
+        <result column="AFFIRM_USE_VAC" property="affirmUseVac"  jdbcType="VARCHAR" />
+        <result column="REMAIN_VAC"     property="remainVac"     jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="LeaveUsageResultMap" type="com.ait.ess.viewDept.dto.YearUseLeaveUsageDto">
+        <id     column="APPLY_NO"             property="applyNo"        jdbcType="VARCHAR" />
+        <result column="LEAVE_FROM_DATE"      property="leaveFromDate"  jdbcType="VARCHAR" />
+        <result column="LEAVE_FROM_TIME_ONLY" property="leaveFromTime"  jdbcType="VARCHAR" />
+        <result column="LEAVE_TO_DATE"        property="leaveToDate"    jdbcType="VARCHAR" />
+        <result column="LEAVE_TO_TIME_ONLY"   property="leaveToTime"    jdbcType="VARCHAR" />
+        <result column="APPLY_LENGTH"         property="applyLength"    jdbcType="VARCHAR" />
+        <result column="AFFIRM_FLAG"          property="affirmFlag"     jdbcType="VARCHAR" />
+        <result column="AFFIRM_FLAG_NAME"     property="affirmFlagName" jdbcType="VARCHAR" />
+        <result column="CONFIRM_FLAG"         property="confirmFlag"    jdbcType="VARCHAR" />
+        <result column="CONFIRM_FLAG_NAME"    property="confirmFlagName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Thông tin nghỉ phép năm theo từng dòng AR_VAC_EMP, lọc theo năm của STRT_DATE -->
+    <select id="selectVacationRowsByYear" resultMap="VacationRowResultMap">
+        SELECT TO_CHAR(A.STRT_DATE, 'DD/MM/YYYY')  AS STRT_DATE,
+               TO_CHAR(A.END_DATE,  'DD/MM/YYYY')  AS END_DATE,
+               TO_CHAR(A.TOT_VAC_CNT)              AS TOT_VAC_CNT,
+               TO_CHAR(A.ADD_VAC)                  AS ADD_VAC,
+               TO_CHAR(A.LAST_YEAR_VAC)            AS LAST_YEAR_VAC,
+               TO_CHAR(A.TOT_VAC_CNT + A.ADD_VAC + A.LAST_YEAR_VAC) AS TOTAL,
+               TO_CHAR(AR_USE_VACATION(
+                   TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'),
+                   TO_CHAR(A.END_DATE,  'YYYY/MM/DD'),
+                   A.CPNY_ID, A.PERSON_ID, 'CONFIRM'))               AS USE_VAC,
+               TO_CHAR(AR_USE_VACATION(
+                   TO_CHAR(A.STRT_DATE, 'YYYY/MM/DD'),
+                   TO_CHAR(A.END_DATE,  'YYYY/MM/DD'),
+                   A.CPNY_ID, A.PERSON_ID, 'AFFIRM'))                AS AFFIRM_USE_VAC,
+               TO_CHAR(A.TOT_VAC_CNT + A.ADD_VAC + A.LAST_YEAR_VAC
+                   - AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'CONFIRM')
+                   - AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM')
+                   - A.USE_VAC_CNT)                                   AS REMAIN_VAC
+        FROM AR_VAC_EMP A
+        WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND A.ACTIVITY  = 1
+          AND TO_CHAR(A.STRT_DATE, 'YYYY') = #{year, jdbcType=VARCHAR}
+        ORDER BY A.STRT_DATE
+    </select>
+
+    <!-- Tình trạng sử dụng phép năm (LEAVE_TYPE_CODE = 26) lọc theo năm bắt đầu nghỉ -->
+    <select id="selectLeaveUsageByYear" resultMap="LeaveUsageResultMap">
+        SELECT A.APPLY_NO,
+               TO_CHAR(A.LEAVE_FROM_TIME, 'DD/MM/YYYY') AS LEAVE_FROM_DATE,
+               TO_CHAR(A.LEAVE_FROM_TIME, 'HH24:MI')    AS LEAVE_FROM_TIME_ONLY,
+               TO_CHAR(A.LEAVE_TO_TIME,   'DD/MM/YYYY') AS LEAVE_TO_DATE,
+               TO_CHAR(A.LEAVE_TO_TIME,   'HH24:MI')    AS LEAVE_TO_TIME_ONLY,
+               TO_CHAR(A.APPLY_LENGTH)                  AS APPLY_LENGTH,
+               A.AFFIRM_FLAG,
+               GET_GLOBAL_NAME(A.AFFIRM_FLAG,  #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+               A.CONFIRM_FLAG,
+               GET_GLOBAL_NAME(A.CONFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS CONFIRM_FLAG_NAME
+        FROM ESS_LEAVE_APPLY_TB A
+        WHERE A.PERSON_ID       = #{adminID, jdbcType=VARCHAR}
+          AND A.ACTIVITY        = 1
+          AND A.LEAVE_TYPE_CODE = '26'
+          AND TO_CHAR(A.LEAVE_FROM_TIME, 'YYYY') = #{year, jdbcType=VARCHAR}
+        ORDER BY A.LEAVE_FROM_TIME
+    </select>
+
+</mapper>

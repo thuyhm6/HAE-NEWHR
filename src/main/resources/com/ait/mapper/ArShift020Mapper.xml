@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArShift020Mapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArShift020">
+        <id column="PK_NO" property="pkNo" />
+        <result column="BEGIN_DAY_OFFSET" property="beginDayOffset" />
+        <result column="FROM_TIME" property="fromTime" />
+        <result column="END_DAY_OFFSET" property="endDayOffset" />
+        <result column="TO_TIME" property="toTime" />
+        <result column="SHIFT_NO" property="shiftNo" />
+        <result column="ITEM_NO" property="itemNo" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArShift020Dto" extends="BaseResultMap">
+        <result column="FROM_TIME_STR" property="fromTimeStr" />
+        <result column="TO_TIME_STR" property="toTimeStr" />
+        <result column="ITEM_NAME" property="itemName" />
+    </resultMap>
+
+    <select id="getNextPkNoSeq" resultType="Long">
+        SELECT AR_SHIFT020_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <select id="findByShiftNo" resultMap="DtoResultMap">
+        SELECT a.*,
+               TO_CHAR(a.FROM_TIME, 'HH24:MI') as FROM_TIME_STR,
+               TO_CHAR(a.TO_TIME, 'HH24:MI') as TO_TIME_STR,
+               gvi.CONTENT as ITEM_NAME
+        FROM AR_SHIFT020 a
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        WHERE a.SHIFT_NO = #{shiftNo}
+        ORDER BY a.ORDERNO, a.PK_NO
+    </select>
+
+    <select id="selectByPkNo" resultMap="BaseResultMap">
+        SELECT * FROM AR_SHIFT020 WHERE PK_NO = #{pkNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArShift020">
+        INSERT INTO AR_SHIFT020 (
+            PK_NO, BEGIN_DAY_OFFSET, FROM_TIME, END_DAY_OFFSET, TO_TIME, 
+            SHIFT_NO, ITEM_NO, CREATE_DATE, CREATED_BY, 
+            UPDATE_DATE, UPDATED_BY, ACTIVITY, ORDERNO
+        ) VALUES (
+            #{pkNo, jdbcType=NUMERIC}, #{beginDayOffset, jdbcType=NUMERIC}, #{fromTime, jdbcType=TIMESTAMP}, 
+            #{endDayOffset, jdbcType=NUMERIC}, #{toTime, jdbcType=TIMESTAMP},
+            #{shiftNo, jdbcType=VARCHAR}, #{itemNo, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArShift020">
+        UPDATE AR_SHIFT020
+        <set>
+            <if test="beginDayOffset != null">BEGIN_DAY_OFFSET = #{beginDayOffset},</if>
+            <if test="fromTime != null">FROM_TIME = #{fromTime},</if>
+            <if test="endDayOffset != null">END_DAY_OFFSET = #{endDayOffset},</if>
+            <if test="toTime != null">TO_TIME = #{toTime},</if>
+            <if test="itemNo != null">ITEM_NO = #{itemNo},</if>
+            <if test="activity != null">ACTIVITY = #{activity},</if>
+            <if test="orderno != null">ORDERNO = #{orderno},</if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        </set>
+        WHERE PK_NO = #{pkNo}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM AR_SHIFT020 WHERE PK_NO = #{pkNo}
+    </delete>
+
+</mapper>

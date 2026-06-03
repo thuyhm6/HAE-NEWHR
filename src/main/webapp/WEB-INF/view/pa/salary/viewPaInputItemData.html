@@ -1,0 +1,591 @@
+<div th:fragment="content">
+    <div class="row h-100">
+
+        <!-- ── Panel trái: danh sách hạng mục tiêu chuẩn ────────────────────── -->
+        <div class="col-md-3 border-end p-0 bg-white d-flex flex-column" style="height: calc(100vh - 160px);">
+            <div class="px-3 py-2 bg-light border-bottom flex-shrink-0">
+                <h6 class="mb-0 fw-bold" id="vpid_panelTitle"></h6>
+            </div>
+            <div id="vpid_itemList" class="overflow-auto flex-grow-1">
+                <!-- Loaded by AJAX -->
+            </div>
+        </div>
+
+        <!-- ── Panel phải: danh sách dữ liệu PA_PARAM_DATA ─────────────────── -->
+        <div class="col-md-9 p-3">
+            <div class="card" style="height: calc(100vh - 170px);">
+
+                <!-- Thanh tìm kiếm -->
+                <div class="card-header bg-light py-2">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1" th:text="#{pa.inputItemData.payMonth}">Tháng lương</label>
+                            <input type="text" id="vpid_payMonth" class="form-control form-control-sm"
+                                   placeholder="MMYYYY" maxlength="6">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1" th:text="#{pa.inputItemData.empOffice}">Trạng thái làm việc</label>
+                            <select id="vpid_empOffice" class="form-select form-select-sm"
+                                    data-parent-code="15118" data-default-text="All">
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1" th:text="#{pa.inputItemData.dept}">Phòng ban</label>
+                            <input type="text" id="vpid_deptSearch" class="form-control form-control-sm" readonly
+                                   th:placeholder="#{pa.inputItemData.deptPlaceholder}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1" th:text="#{pa.inputItemData.empSearch}">Họ tên / Mã NV</label>
+                            <div class="input-group input-group-sm">
+                                <input type="hidden" id="vpid_empId">
+                                <input type="text" class="form-control form-control-sm" id="vpid_empName"
+                                       th:placeholder="#{pa.inputItemData.empSearchPlaceholder}">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="vpidOpenEmpSearch()">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex gap-1">
+                            <button type="button" class="btn btn-primary btn-sm w-100" onclick="vpidSearch()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{common.search}">Tìm</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="vpidReset()">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tiêu đề panel + nút hành động -->
+                <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 text-primary fw-bold" id="vpid_selectedLabel"
+                        th:text="#{pa.inputItemData.dataList}">Danh sách dữ liệu tiêu chuẩn</h6>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-success btn-sm" onclick="vpidOpenAddModal()">
+                            <i class="bi bi-plus-circle"></i>
+                            <span th:text="#{pa.inputItemData.addNew}">Thêm mới</span>
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm" onclick="vpidDownloadTemplate()">
+                            <i class="bx bx-download"></i> <span th:text="#{common.downloadTemplate}">Tải File Mẫu</span>
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="vpidOpenImportModal()">
+                            <i class="bx bx-upload"></i> <span th:text="#{common.importExcel}">Import Excel</span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="vpidDeleteSelected()">
+                            <i class="bi bi-trash"></i>
+                            <span th:text="#{pa.inputItemData.delete}">Xóa</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body p-2 overflow-auto">
+                    <div class="table-responsive">
+                        <table id="vpid_table"
+                               class="table table-striped table-bordered table-hover table-sm"
+                               style="width:100%; cursor:pointer;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;">
+                                        <input type="checkbox" id="vpid_checkAll">
+                                    </th>
+                                    <th class="text-center" style="width:40px;"
+                                        th:text="#{pa.inputItemData.no}">STT</th>
+                                    <th th:text="#{pa.inputItemData.empId}">Mã NV</th>
+                                    <th th:text="#{pa.inputItemData.localName}">Họ tên</th>
+                                    <th th:text="#{pa.inputItemData.deptName}">Phòng ban</th>
+                                    <th th:text="#{pa.inputItemData.postGrade}">Chức danh</th>
+                                    <th th:text="#{pa.inputItemData.empOfficeName}">Trạng thái</th>
+                                    <th th:text="#{pa.inputItemData.returnValue}">Giá trị</th>
+                                    <th th:text="#{pa.inputItemData.startMonth}">Tháng bắt đầu</th>
+                                    <th th:text="#{pa.inputItemData.endMonth}">Tháng kết thúc</th>
+                                    <th th:text="#{pa.inputItemData.remark}">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Modal Thêm / Sửa dữ liệu tiêu chuẩn ────────────────────────────────── -->
+<div class="modal fade" id="vpid_modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vpid_modalTitle" th:text="#{pa.inputItemData.addTitle}">
+                    Thêm mới dữ liệu tiêu chuẩn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="vpid_form">
+                    <input type="hidden" id="vpid_paramDataNo">
+
+                    <div class="alert alert-info py-2 mb-3">
+                        <strong th:text="#{pa.inputItemData.configItem}">Hạng mục đang nhập:</strong>
+                        <span id="vpid_modalItemName" class="ms-1 fw-semibold"></span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <span th:text="#{pa.inputItemData.personId}">Mã nhân viên</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="hidden" id="vpid_personId">
+                                <input type="text" class="form-control" id="vpid_personName" readonly
+                                       th:placeholder="#{pa.inputItemData.personIdPlaceholder}">
+                                <button type="button" class="btn btn-outline-secondary" id="vpid_empSearchBtn"
+                                        onclick="vpidModalOpenEmpSearch()">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="vpid_returnValue" class="form-label">
+                                <span th:text="#{pa.inputItemData.returnValue}">Giá trị</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="vpid_returnValue" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="vpid_startMonth" class="form-label">
+                                <span th:text="#{pa.inputItemData.startMonth}">Tháng bắt đầu</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="vpid_startMonth" required
+                                   placeholder="MMYYYY" maxlength="6">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="vpid_endMonth" class="form-label"
+                                   th:text="#{pa.inputItemData.endMonth}">Tháng kết thúc</label>
+                            <input type="text" class="form-control" id="vpid_endMonth"
+                                   placeholder="MMYYYY" maxlength="6">
+                        </div>
+                        <div class="col-12">
+                            <label for="vpid_remark" class="form-label"
+                                   th:text="#{pa.inputItemData.remark}">Ghi chú</label>
+                            <textarea class="form-control" id="vpid_remark" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="vpidSaveData()">
+                    <i class="bi bi-save"></i>
+                    <span th:text="#{common.save}">Lưu</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Scripts ──────────────────────────────────────────────────────────────── -->
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        (function () {
+            /* ── Per-tab instance (giống EvsSchedulePanel) ──────────────────────── */
+            var _tabId = window._currentTabId || 'default-content';
+            window._vpid_inst = window._vpid_inst || {};
+            if (!window._vpid_inst[_tabId]) {
+                window._vpid_inst[_tabId] = {
+                    itemType: new URLSearchParams((window._currentTabUrl || window.location.href).split('?')[1] || '').get('itemType') || '',
+                    table: null,
+                    currentParamNo: '',
+                    currentParamName: '',
+                    selectedDeptCodes: []
+                };
+            }
+            var inst = window._vpid_inst[_tabId];
+
+            /* ── Scoped DOM selector ─────────────────────────────────────────────── */
+            function vpid$(sel) { return $('#' + _tabId).find(sel); }
+
+            /* ── i18n messages ───────────────────────────────────────────────────── */
+            var msgSelectItemFirst  = /*[[#{pa.inputItemData.selectItemFirst}]]*/  'Vui lòng chọn hạng mục ở bên trái trước!';
+            var msgPersonIdRequired = /*[[#{pa.inputItemData.personIdRequired}]]*/ 'Vui lòng nhập mã nhân viên!';
+            var msgValueRequired    = /*[[#{pa.inputItemData.valueRequired}]]*/    'Vui lòng nhập giá trị!';
+            var msgStartRequired    = /*[[#{pa.inputItemData.startRequired}]]*/    'Vui lòng nhập tháng bắt đầu!';
+            var msgConfirmDelete    = /*[[#{pa.inputItemData.confirmDelete}]]*/    'Bạn có chắc chắn muốn xóa bản ghi đã chọn?';
+            var msgSelectRequired       = /*[[#{pa.inputItemData.selectRequired}]]*/       'Vui lòng chọn ít nhất một bản ghi!';
+            var msgStartGreaterThanEnd  = /*[[#{pa.inputItemData.startGreaterThanEnd}]]*/  'Tháng bắt đầu không được lớn hơn tháng kết thúc!';
+            var msgInvalidMonthFormat   = /*[[#{pa.inputItemData.invalidMonthFormat}]]*/   'Định dạng tháng không hợp lệ. Vui lòng nhập theo định dạng MMYYYY (ví dụ: 012026).';
+            var msgAddTitle             = /*[[#{pa.inputItemData.addTitle}]]*/             'Thêm mới dữ liệu tiêu chuẩn';
+            var msgEditTitle            = /*[[#{pa.inputItemData.editTitle}]]*/            'Cập nhật dữ liệu tiêu chuẩn';
+
+            /* ── Format số: thêm dấu chấm phân nghìn (ví dụ: 1000000 → 1.000.000) ── */
+            function vpidFormatNumber(val) {
+                var raw = String(val).replace(/\./g, '').replace(/[^0-9\-]/g, '');
+                if (!raw) return '';
+                var isNeg = raw.charAt(0) === '-';
+                var num   = isNeg ? raw.substring(1) : raw;
+                return (isNeg ? '-' : '') + num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+            function vpidUnformatNumber(val) {
+                return String(val).replace(/\./g, '');
+            }
+
+            /* Chuyển MMYYYY → YYYYMM để so sánh thứ tự tháng */
+            function vpidToYYYYMM(mmyyyy) {
+                if (!mmyyyy || mmyyyy.length !== 6) return '';
+                return mmyyyy.substring(2) + mmyyyy.substring(0, 2);
+            }
+
+            /* Kiểm tra định dạng MMYYYY hợp lệ: 6 chữ số, tháng 01-12 */
+            function vpidIsValidMMYYYY(val) {
+                if (!val || !/^\d{6}$/.test(val)) return false;
+                var mm = parseInt(val.substring(0, 2), 10);
+                return mm >= 1 && mm <= 12;
+            }
+
+            function currentMonth() {
+                var now = new Date();
+                return String(now.getMonth() + 1).padStart(2, '0') + now.getFullYear();
+            }
+
+            /* ── Boot ────────────────────────────────────────────────────────────── */
+            $(document).ready(function () {
+                if (inst.table) return; // đã khởi tạo rồi (re-activate tab)
+
+                var _tabObj = window.tabSystem && window.tabSystem.tabs ? window.tabSystem.tabs.get(_tabId) : null;
+                vpid$('#vpid_panelTitle').text(_tabObj ? _tabObj.title : '');
+
+                vpidLoadItemList();
+                // #vpid_empOffice có data-parent-code="15118" → master.html MutationObserver tự load
+
+                vpid$('#vpid_payMonth').val(currentMonth());
+
+                if (typeof DeptTree !== 'undefined') {
+                    DeptTree.init('#' + _tabId + ' #vpid_deptSearch', function (selectedCodes) {
+                        inst.selectedDeptCodes = selectedCodes || [];
+                    }, { api: '/pa/wagebase/api/supervisor/authorized-departments' });
+                }
+
+                inst.table = vpid$('#vpid_table').DataTable({
+                    destroy: true,
+                    scrollY: 'calc(100vh - 430px)',
+                    scrollCollapse: true,
+                    paging: true,
+                    searching: false,
+                    lengthChange: true,
+                    pageLength: 20,
+                    lengthMenu: [10, 20, 50, 100],
+                    processing: true,
+                    serverSide: true,
+                    autoWidth: false,
+                    scrollX: true,
+                    columnDefs: [
+                        { targets: 0,  width: '36px', className: 'text-center', orderable: false },
+                        { targets: 1,  width: '40px', className: 'text-center', orderable: false },
+                        { targets: 10, className: 'text-center', orderable: false }
+                    ],
+                    ajax: {
+                        url: '/pa/salary/inputItemData/api/list',
+                        type: 'GET',
+                        data: function (d) {
+                            d.paramNo         = inst.currentParamNo;
+                            d.payMonth        = vpid$('#vpid_payMonth').val();
+                            d.empOfficeSearch = vpid$('#vpid_empOffice').val();
+                            d.deptNos         = inst.selectedDeptCodes.join(',');
+                            d.empSearch       = vpid$('#vpid_empName').val();
+                        }
+                    },
+                    columns: [
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                return '<input type="checkbox" class="vpid_rowCheck" data-paramdatano="' + row.paramDataNo + '">';
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row, meta) {
+                                return meta.settings._iDisplayStart + meta.row + 1;
+                            }
+                        },
+                        { data: 'empId',         defaultContent: '' },
+                        { data: 'localName',     defaultContent: '' },
+                        { data: 'deptName',      defaultContent: '' },
+                        { data: 'postGradeName', defaultContent: '' },
+                        { data: 'empOffice',     defaultContent: '' },
+                        {
+                            data: 'returnValue',
+                            defaultContent: '',
+                            render: function (data) {
+                                return data != null && data !== '' ? vpidFormatNumber(data) : '';
+                            }
+                        },
+                        { data: 'startMonth',    defaultContent: '' },
+                        { data: 'endMonth',      defaultContent: '' },
+                        { data: 'remark', defaultContent: '' }
+                    ],
+                    drawCallback: function () {
+                        vpid$('#vpid_checkAll').off('change').on('change', function () {
+                            vpid$('.vpid_rowCheck').prop('checked', $(this).is(':checked'));
+                        });
+                        vpid$('#vpid_table tbody')
+                            .off('click', 'tr')
+                            .on('click', 'tr', function (e) {
+                                if ($(e.target).is(':checkbox')) return;
+                                var paramDataNo = $(this).find('.vpid_rowCheck').data('paramdatano');
+                                if (!paramDataNo) return;
+                                vpidOpenEditModal(paramDataNo);
+                            });
+                    }
+                });
+
+                vpid$('#vpid_payMonth, #vpid_empOffice').on('keypress', function (e) {
+                    if (e.which === 13) vpidSearch();
+                });
+
+                /* Format dấu chấm nghìn khi nhập returnValue */
+                vpid$('#vpid_returnValue').on('input', function () {
+                    var pos = this.selectionStart;
+                    var oldLen = this.value.length;
+                    this.value = vpidFormatNumber(this.value);
+                    var newLen = this.value.length;
+                    this.setSelectionRange(pos + (newLen - oldLen), pos + (newLen - oldLen));
+                });
+
+                vpid$('#vpid_modal').on('hidden.bs.modal', function () {
+                    vpid$('#vpid_empSearchBtn').show();
+                });
+            });
+
+            /* ── Load danh sách hạng mục trái ───────────────────────────────────── */
+            function vpidLoadItemList() {
+                $.ajax({
+                    url: '/pa/salary/inputItemData/api/itemList',
+                    type: 'GET',
+                    data: { itemType: inst.itemType },
+                    success: function (data) {
+                        if (!data || data.length === 0) {
+                            vpid$('#vpid_itemList').html('<div class="text-muted small p-3">Không có dữ liệu</div>');
+                            return;
+                        }
+                        var html = '';
+                        $.each(data, function (i, item) {
+                            var paramNo   = item.paramNo   || '';
+                            var paramName = item.paramName || paramNo;
+                            html += '<div class="vpid_item-row d-flex align-items-center px-3 py-2 border-bottom"'
+                                  + ' style="cursor:pointer;"'
+                                  + ' data-paramno="' + paramNo + '"'
+                                  + ' data-paramname="' + $('<span>').text(paramName).html() + '">'
+                                  + '<i class="bx bxs-file me-2 text-warning flex-shrink-0"></i>'
+                                  + '<span class="small text-truncate">' + $('<span>').text(paramName).html() + '</span>'
+                                  + '</div>';
+                        });
+                        vpid$('#vpid_itemList').html(html);
+                        vpid$('#vpid_itemList').off('click', '.vpid_item-row')
+                            .on('click', '.vpid_item-row', function () {
+                                vpid$('.vpid_item-row').removeClass('bg-primary text-white');
+                                $(this).addClass('bg-primary text-white');
+                                inst.currentParamNo   = $(this).data('paramno');
+                                inst.currentParamName = $(this).data('paramname');
+                                vpid$('#vpid_selectedLabel').text(inst.currentParamName);
+                                if (inst.table) inst.table.ajax.reload();
+                            });
+                    },
+                    error: function () {
+                        vpid$('#vpid_itemList').html('<div class="text-danger small p-3">Lỗi khi tải danh sách hạng mục</div>');
+                    }
+                });
+            }
+
+            /* ── Tìm kiếm / Reset ────────────────────────────────────────────────── */
+            window.vpidSearch = function () { if (inst.table) inst.table.ajax.reload(); };
+
+            window.vpidReset = function () {
+                vpid$('#vpid_payMonth').val(currentMonth());
+                vpid$('#vpid_empOffice').val('');
+                vpid$('#vpid_deptSearch').val('');
+                inst.selectedDeptCodes = [];
+                vpid$('#vpid_empId').val('');
+                vpid$('#vpid_empName').val('');
+                if (inst.table) inst.table.ajax.reload();
+            };
+
+            /* ── Tìm kiếm nhân viên (thanh tìm kiếm danh sách) ─────────────────── */
+            window.vpidOpenEmpSearch = function () {
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    var keyword = vpid$('#vpid_empName').val().replace(/.*- /, '').trim();
+                    EmployeeSearchModal.open(function (employee) {
+                        vpid$('#vpid_empId').val(employee.empId);
+                        vpid$('#vpid_empName').val(employee.localName);
+                    }, keyword);
+                } else {
+                    alert('Component tìm kiếm nhân viên chưa được tải!');
+                }
+            };
+
+            // Tải file Excel mẫu
+            window.vpidDownloadTemplate = function () {
+                window.location.href = '/sy/excel/api/downloadTemplate?templateName=Payroll_Input_Template';
+            };
+
+            // Mở modal import Excel (dùng shared component ExcelImport)
+            window.vpidOpenImportModal = function () {
+                if (!inst.currentParamNo) {
+                    toastr ? toastr.warning(msgSelectItemFirst) : alert(msgSelectItemFirst);
+                    return;
+                }
+                var importUrl = '/pa/salary/inputItemData/api/importExcel?paramNo=' + encodeURIComponent(inst.currentParamNo);
+                ExcelImport.open(importUrl, function (res) {
+                    var resultUrl = '/pa/salary/viewImportExcelTempPaParamList?paramNo=' + encodeURIComponent(inst.currentParamNo);
+                    if (typeof tabSystem !== 'undefined' && tabSystem && typeof tabSystem.openTab === 'function') {
+                        tabSystem.openTab(resultUrl, 'Kết quả nhập');
+                    } else {
+                        window.open(resultUrl, '_blank');
+                    }
+                });
+            };
+
+            /* ── Tìm kiếm nhân viên trong modal thêm/sửa ────────────────────────── */
+            window.vpidModalOpenEmpSearch = function () {
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    var keyword = vpid$('#vpid_personName').val().replace(/.*- /, '').trim();
+                    EmployeeSearchModal.open(function (employee) {
+                        vpid$('#vpid_personId').val(employee.personId);
+                        vpid$('#vpid_personName').val(employee.empId + ' - ' + employee.localName);
+                    }, keyword);
+                } else {
+                    alert('Component tìm kiếm nhân viên chưa được tải!');
+                }
+            };
+
+            /* ── Modal Thêm / Sửa ────────────────────────────────────────────────── */
+            window.vpidOpenAddModal = function () {
+                if (!inst.currentParamNo) {
+                    toastr ? toastr.warning(msgSelectItemFirst) : alert(msgSelectItemFirst);
+                    return;
+                }
+                vpid$('#vpid_modalTitle').text(msgAddTitle);
+                vpid$('#vpid_form')[0].reset();
+                vpid$('#vpid_paramDataNo').val('');
+                vpid$('#vpid_personId').val('');
+                vpid$('#vpid_personName').val('');
+                vpid$('#vpid_empSearchBtn').show();
+                vpid$('#vpid_modalItemName').text(inst.currentParamName + ' (' + inst.currentParamNo + ')');
+                new bootstrap.Modal(vpid$('#vpid_modal')[0]).show();
+            };
+
+            window.vpidOpenEditModal = function (paramDataNo) {
+                $.ajax({
+                    url: '/pa/salary/inputItemData/api/' + paramDataNo,
+                    type: 'GET',
+                    success: function (data) {
+                        vpid$('#vpid_modalTitle').text(msgEditTitle);
+                        vpid$('#vpid_paramDataNo').val(data.paramDataNo);
+                        vpid$('#vpid_personId').val(data.personId || '');
+                        vpid$('#vpid_personName').val(data.personId || '');
+                        vpid$('#vpid_empSearchBtn').hide();
+                        vpid$('#vpid_returnValue').val(data.returnValue != null ? vpidFormatNumber(data.returnValue) : '');
+                        vpid$('#vpid_startMonth').val(data.startMonth  || '');
+                        vpid$('#vpid_endMonth').val(data.endMonth      || '');
+                        vpid$('#vpid_remark').val(data.remark          || '');
+                        vpid$('#vpid_modalItemName').text(inst.currentParamName + ' (' + inst.currentParamNo + ')');
+                        new bootstrap.Modal(vpid$('#vpid_modal')[0]).show();
+                    },
+                    error: function () {
+                        toastr ? toastr.error('Lỗi khi tải dữ liệu!') : alert('Lỗi khi tải dữ liệu!');
+                    }
+                });
+            };
+
+            /* ── Lưu dữ liệu ─────────────────────────────────────────────────────── */
+            window.vpidSaveData = function () {
+                var personIdVal   = vpid$('#vpid_personId').val();
+                var returnVal     = vpid$('#vpid_returnValue').val();
+                var startMonthVal = vpid$('#vpid_startMonth').val();
+
+                if (!personIdVal || !personIdVal.trim()) {
+                    toastr ? toastr.warning(msgPersonIdRequired) : alert(msgPersonIdRequired); return;
+                }
+                if (!returnVal || !returnVal.trim()) {
+                    toastr ? toastr.warning(msgValueRequired) : alert(msgValueRequired); return;
+                }
+                if (!startMonthVal || !startMonthVal.trim()) {
+                    toastr ? toastr.warning(msgStartRequired) : alert(msgStartRequired); return;
+                }
+                if (!vpidIsValidMMYYYY(startMonthVal.trim())) {
+                    toastr ? toastr.warning(msgInvalidMonthFormat) : alert(msgInvalidMonthFormat); return;
+                }
+                var endMonthVal = vpid$('#vpid_endMonth').val();
+                if (endMonthVal && endMonthVal.trim()) {
+                    if (!vpidIsValidMMYYYY(endMonthVal.trim())) {
+                        toastr ? toastr.warning(msgInvalidMonthFormat) : alert(msgInvalidMonthFormat); return;
+                    }
+                    if (vpidToYYYYMM(startMonthVal.trim()) > vpidToYYYYMM(endMonthVal.trim())) {
+                        toastr ? toastr.warning(msgStartGreaterThanEnd) : alert(msgStartGreaterThanEnd); return;
+                    }
+                }
+
+                var paramDataNoVal = vpid$('#vpid_paramDataNo').val();
+                var isEdit = paramDataNoVal !== '';
+                var payload = {
+                    paramDataNo:  isEdit ? parseInt(paramDataNoVal) : null,
+                    paramNo:      inst.currentParamNo,
+                    personId:     personIdVal,
+                    returnValue:  vpidUnformatNumber(returnVal),
+                    startMonth:   startMonthVal,
+                    endMonth:     endMonthVal,
+                    remark:       vpid$('#vpid_remark').val()
+                };
+                $.ajax({
+                    url:  isEdit ? '/pa/salary/inputItemData/api/update' : '/pa/salary/inputItemData/api/insert',
+                    type: isEdit ? 'PUT' : 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message) : alert(res.message);
+                        var modal = bootstrap.Modal.getInstance(vpid$('#vpid_modal')[0]);
+                        if (modal) modal.hide();
+                        inst.table.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            /* ── Xóa ─────────────────────────────────────────────────────────────── */
+            window.vpidDeleteSelected = function () {
+                var selected = [];
+                vpid$('.vpid_rowCheck:checked').each(function () {
+                    selected.push($(this).data('paramdatano'));
+                });
+                if (selected.length === 0) {
+                    toastr ? toastr.warning(msgSelectRequired) : alert(msgSelectRequired); return;
+                }
+                if (!confirm(msgConfirmDelete)) return;
+
+                var deleteNext = function (index) {
+                    if (index >= selected.length) {
+                        toastr ? toastr.success('Xóa thành công') : alert('Xóa thành công');
+                        inst.table.ajax.reload(null, false);
+                        return;
+                    }
+                    $.ajax({
+                        url: '/pa/salary/inputItemData/api/delete/' + selected[index],
+                        type: 'DELETE',
+                        success: function () { deleteNext(index + 1); },
+                        error: function (err) {
+                            var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi khi xóa';
+                            toastr ? toastr.error(msg) : alert(msg);
+                        }
+                    });
+                };
+                deleteNext(0);
+            };
+        })();
+    </script>
+</template>

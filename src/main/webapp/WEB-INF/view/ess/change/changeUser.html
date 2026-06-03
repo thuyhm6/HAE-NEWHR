@@ -1,0 +1,80 @@
+<div th:fragment="content">
+
+    <div class="card mb-2">
+        <div class="card-body py-2 px-3">
+            <div class="row g-2 align-items-center">
+
+                <div class="col-auto">
+                    <label class="form-label small text-muted mb-0 text-nowrap"
+                           th:text="#{ess.changeUser.empSearch}">Mã nhân viên/Họ tên</label>
+                </div>
+                <div class="col-auto">
+                    <div class="input-group input-group-sm">
+                        <input type="hidden" id="vcu_personId">
+                        <input type="text" class="form-control form-control-sm" id="vcu_empName"
+                               style="min-width:220px;"
+                               onkeydown="if(event.key==='Enter'){event.preventDefault();vcuOpenEmpSearch();}">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="vcuOpenEmpSearch()">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-auto ms-auto">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="vcuChangeUser()">
+                        <i class="bi bi-person-fill-gear"></i>
+                        <span th:text="#{ess.changeUser.changeBtn}">Thay đổi người dùng</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vcu_msgNoEmp      = /*[[#{ess.changeUser.noEmpSelected}]]*/ 'Vui lòng chọn nhân viên!';
+        var vcu_msgConfirm    = /*[[#{ess.changeUser.confirm}]]*/ 'Bạn có chắc chắn muốn thay đổi người dùng?';
+        var vcu_msgSuccess    = /*[[#{ess.changeUser.success}]]*/ 'Thay đổi người dùng thành công!';
+        var vcu_msgError      = /*[[#{ess.changeUser.error}]]*/ 'Thay đổi người dùng thất bại!';
+
+        window.vcuOpenEmpSearch = function () {
+            if (typeof EmployeeSearchModal !== 'undefined') {
+                var keyword = $('#vcu_empName').val().trim();
+                EmployeeSearchModal.open(function (employee) {
+                    $('#vcu_personId').val(employee.personId);
+                    $('#vcu_empName').val(employee.empId + ' - ' + employee.localName);
+                }, keyword);
+            } else {
+                alert('Component tìm kiếm nhân viên chưa được tải!');
+            }
+        };
+
+        window.vcuChangeUser = function () {
+            var personId = $('#vcu_personId').val();
+            if (!personId) {
+                if (typeof toastr !== 'undefined') toastr.warning(vcu_msgNoEmp);
+                else alert(vcu_msgNoEmp);
+                return;
+            }
+            if (!confirm(vcu_msgConfirm + '\n' + $('#vcu_empName').val())) {
+                return;
+            }
+            $.ajax({
+                url: '/ess/change/api/changeUser',
+                type: 'POST',
+                data: { personId: personId },
+                success: function () {
+                    if (typeof toastr !== 'undefined') toastr.success(vcu_msgSuccess);
+                    setTimeout(function () { window.location.reload(); }, 800);
+                },
+                error: function (err) {
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : vcu_msgError;
+                    if (typeof toastr !== 'undefined') toastr.error(msg); else alert(msg);
+                }
+            });
+        };
+    </script>
+</template>

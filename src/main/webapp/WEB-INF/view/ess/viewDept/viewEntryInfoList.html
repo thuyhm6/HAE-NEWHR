@@ -1,0 +1,266 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="veil_searchForm" class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label for="veil_keyword" class="form-label" th:text="#{common.search.empIdOrName}">Mã nhân viên / Họ tên</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="veil_keyword"
+                                       th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã hoặc họ tên">
+                                <button class="btn btn-outline-secondary" type="button" id="veil_btnEmpSearch">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="veil_fromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="veil_fromDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="veil_toDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="veil_toDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="veil_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="veil_deptNo"
+                                   th:placeholder="#{common.select}" placeholder="Chọn phòng ban" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="veil_shiftNoFilter" class="form-label" th:text="#{attSearch.shiftType}">Ca làm việc</label>
+                            <select class="form-select" id="veil_shiftNoFilter">
+                                <option value="" th:text="#{attSearch.all}">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="veil_missingCard" class="form-label" th:text="#{acrd.col.missingCard}">Trạng thái thiếu thẻ</label>
+                            <select class="form-select" id="veil_missingCard">
+                                <option value=""  th:text="#{acrd.missingCard.all}">Tất cả</option>
+                                <option value="1" th:text="#{acrd.missingCard.yes}">Thiếu thẻ</option>
+                                <option value="2" th:text="#{acrd.missingCard.no}">Đủ thẻ</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex gap-2 flex-wrap justify-content-end">
+                            <button type="button" class="btn btn-primary" onclick="veilSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="veilClearSearch()">
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="veilExportExcel()">
+                                <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất Excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table id="veil_dataTable" class="table table-striped table-bordered table-hover" style="min-width: 100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th th:text="#{common.stt}">STT</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.empName}">Họ tên</th>
+                                    <th th:text="#{acrd.col.team}">TEAM</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{common.position}">Chức vụ</th>
+                                    <th th:text="#{attSearch.workDate}">Ngày công</th>
+                                    <th th:text="#{acrd.col.inDay}">Ngày vào</th>
+                                    <th th:text="#{acrd.col.inTime}">Thời gian vào</th>
+                                    <th th:text="#{acrd.col.outDay}">Ngày ra</th>
+                                    <th th:text="#{acrd.col.outTime}">Thời gian ra</th>
+                                    <th th:text="#{acr.col.remark}">Ghi chú</th>
+                                    <th th:text="#{acrd.col.shiftName}">Ca làm</th>
+                                    <th th:text="#{acrd.col.changeShiftPerson}">Người thay đổi Ca làm</th>
+                                    <th th:text="#{acrd.col.eatTime}">Eat time</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _veil_table = null;
+        var _veil_pageBooted = false;
+        var _veil_selectedDeptCodes = [];
+
+        function veilFormatDate(dateObj) {
+            var y = dateObj.getFullYear();
+            var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var d = String(dateObj.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        function veilInitDefaultDateRange() {
+            var today = new Date();
+            var todayStr = veilFormatDate(today);
+            $('#veil_fromDate').val(todayStr);
+            $('#veil_toDate').val(todayStr);
+            if ($('#veil_fromDate').data('daterangepicker')) {
+                $('#veil_fromDate').data('daterangepicker').setStartDate(todayStr);
+            }
+            if ($('#veil_toDate').data('daterangepicker')) {
+                $('#veil_toDate').data('daterangepicker').setStartDate(todayStr);
+            }
+        }
+
+        function veilLoadShiftOptions() {
+            return $.ajax({
+                url: '/ar/attendanceSettings/api/shift',
+                type: 'GET',
+                success: function (data) {
+                    var html = '<option value="">-- Tất cả --</option>';
+                    (data || []).forEach(function (item) {
+                        var code = item.shiftNo || '';
+                        var name = item.nameVi || item.shiftName || code;
+                        html += '<option value="' + code + '">' + name + '</option>';
+                    });
+                    $('#veil_shiftNoFilter').html(html);
+                }
+            });
+        }
+
+        function veilInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') return;
+            DeptTree.init('#veil_deptNo', function (selectedCodes) {
+                _veil_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        function veilInitTable() {
+            _veil_table = $('#veil_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                scrollY: 'calc(100vh - 350px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 50,
+                processing: true,
+                serverSide: true,
+                dom: 'Blfrtip',
+                buttons: [
+                    { extend: 'excel', title: 'du_lieu_quet_the_ca_lam' }
+                ],
+                ajax: {
+                    url: '/ess/viewDept/api/entryInfoList/list',
+                    type: 'GET',
+                    data: function (d) {
+                        d.keyword       = $('#veil_keyword').val();
+                        d.deptNos       = (_veil_selectedDeptCodes || []).join(',');
+                        d.fromDate      = $('#veil_fromDate').val();
+                        d.toDate        = $('#veil_toDate').val();
+                        d.shiftNoFilter = $('#veil_shiftNoFilter').val();
+                        d.missingCard   = $('#veil_missingCard').val();
+                    }
+                },
+                initComplete: function () {
+                    $('#veil_dataTable_wrapper').find('.dt-buttons').hide();
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row, meta) {
+                            var pageInfo = _veil_table ? _veil_table.page.info() : { start: 0 };
+                            return pageInfo.start + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',             className: 'text-center' },
+                    { data: 'localName' },
+                    { data: 'deptTeam' },
+                    { data: 'deptName' },
+                    { data: 'postGradeNoName' },
+                    { data: 'arDateStr',         className: 'text-center' },
+                    { data: 'inDay',             className: 'text-center' },
+                    { data: 'inTime',            className: 'text-center' },
+                    { data: 'outDay',            className: 'text-center' },
+                    { data: 'outTime',           className: 'text-center' },
+                    { data: 'leaveContent' },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row) {
+                            var name = row.shiftName || '';
+                            var time = row.shiftTime || '';
+                            return name + (time ? ' (' + time + ')' : '');
+                        }
+                    },
+                    { data: 'changeShiftPerson' },
+                    { data: 'eatTimes',          className: 'text-center' }
+                ]
+            });
+        }
+
+        function veilBootPage() {
+            if (_veil_pageBooted) return;
+            if (!document.getElementById('veil_dataTable')) {
+                setTimeout(veilBootPage, 30);
+                return;
+            }
+            _veil_pageBooted = true;
+            veilInitDefaultDateRange();
+            veilInitDeptSelector();
+            $.when(veilLoadShiftOptions()).always(function () {
+                veilInitTable();
+                if (_veil_table) _veil_table.ajax.reload();
+            });
+
+            $('#veil_btnEmpSearch').on('click', function () {
+                var keyword = $('#veil_keyword').val().trim();
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    EmployeeSearchModal.open(function (emp) {
+                        $('#veil_keyword').val(emp.empId + ' - ' + emp.localName);
+                        veilSearchData();
+                    }, keyword);
+                }
+            });
+
+            $('#veil_keyword').on('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    veilSearchData();
+                }
+            });
+        }
+
+        window.veilSearchData = function () {
+            if (_veil_table) _veil_table.ajax.reload();
+        };
+
+        window.veilClearSearch = function () {
+            $('#veil_keyword').val('');
+            $('#veil_deptNo').val('');
+            $('#veil_shiftNoFilter').val('');
+            $('#veil_missingCard').val('');
+            _veil_selectedDeptCodes = [];
+            $('.auth-dept-chk-global').prop('checked', false).trigger('change');
+            veilInitDefaultDateRange();
+            if (_veil_table) _veil_table.ajax.reload();
+        };
+
+        window.veilExportExcel = function () {
+            if (_veil_table) _veil_table.button('.buttons-excel').trigger();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', veilBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(veilBootPage);
+        } else {
+            veilBootPage();
+        }
+    </script>
+</template>

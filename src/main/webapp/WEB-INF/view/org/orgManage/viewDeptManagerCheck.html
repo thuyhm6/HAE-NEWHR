@@ -1,0 +1,271 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-white border-bottom">
+                    <div class="row align-items-center">
+                        <div class="col-md-auto">
+                            <label class="fw-bold">Phiên bản thay đổi:</label>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="deptMgrCheck_resumeSelect" class="form-select select2" style="width: 100%;">
+                                <!-- Populate via AJAX -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="deptMgrCheck_table"
+                            class="table table-bordered table-striped table-hover dt-responsive nowrap w-100">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Mã bộ phận - Tên bộ phận</th>
+                                    <th>Trưởng bộ phận</th>
+                                    <th>Chức vụ</th>
+                                    <th>Chức danh</th>
+                                    <th class="text-center">Kiêm nhiệm (Part-time)</th>
+                                    <th class="text-center">Trống (Vacancy)</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Manager Modal -->
+    <div class="modal fade" id="deptMgrCheck_editModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật trưởng bộ phận</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="deptMgrCheck_editForm">
+                        <input type="hidden" id="deptMgrCheck_editDeptNo">
+                        <input type="hidden" id="deptMgrCheck_editManagerEmpId">
+
+                        <div class="mb-3">
+                            <label class="form-label">Bộ phận</label>
+                            <input type="text" class="form-control" id="deptMgrCheck_displayDeptName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Trưởng bộ phận</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="deptMgrCheck_displayManagerName" readonly
+                                    placeholder="Chọn nhân viên...">
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="deptMgrCheck_openEmployeeSearch()">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" type="button"
+                                    onclick="deptMgrCheck_clearSelectedManager()">
+                                    <i class="bx bx-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="deptMgrCheck_editIsPartTime" value="1">
+                            <label class="form-check-label" for="deptMgrCheck_editIsPartTime">
+                                Kiêm nhiệm (Part-time)
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="deptMgrCheck_saveManager()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template id="fragmentScripts">
+        <script th:inline="none">
+            $(document).ready(function () {
+                // Initialize Select2
+                if ($.fn.select2) {
+                    $('#deptMgrCheck_resumeSelect').select2({
+                        placeholder: "-- Chọn phiên bản thay đổi --",
+                        allowClear: true
+                    });
+                }
+
+                // DataTable Initialization
+                var table = $('#deptMgrCheck_table').DataTable({
+                    destroy: true,
+                    paging: false,
+                    scrollY: 600,
+                    scrollCollapse: true,
+                    responsive: true, // Hỗ trợ mobile
+                    columnDefs: [
+                        { "width": "30%", "targets": 0 },   // Cột ID cố định nhỏ
+                        { "width": "5%", "targets": -1 }, // Cột Action cố định
+                        // Các cột còn lại sẽ tự chia nhau khoảng trống còn lại
+                    ],
+                    columns: [
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                var level = row.DEPT_LEVEL || 0;
+                                var padding = (level) * 20;
+                                var deptNo = row.DEPTNO || '';
+                                var deptName = row.ORG_NAME_LOCAL || '';
+                                return '<div style="padding-left: ' + padding + 'px;">' + deptNo + ' - ' + deptName + '</div>';
+                            }
+                        },
+                        {
+                            data: 'MANAGER_NAME',
+                            render: function (d) { return d || '<span class="text-muted">Chưa có</span>'; }
+                        },
+                        {
+                            data: 'POST_GRADE_NAME',
+                            defaultContent: '',
+                            render: function (d) { return d || ''; }
+                        },
+                        {
+                            data: 'POSITION_NAME',
+                            defaultContent: '',
+                            render: function (d) { return d || ''; }
+                        },
+                        {
+                            data: 'IS_PART_TIME',
+                            className: 'text-center',
+                            render: function (d) {
+                                return (d === '1')
+                                    ? '<i class="fa fa-check text-success fs-5"></i>'
+                                    : '';
+                            }
+                        },
+                        {
+                            data: 'VACANCY',
+                            className: 'text-center',
+                            render: function (d) {
+                                return (d === 1 || d === '1')
+                                    ? '<span class="badge bg-danger">Trống</span>'
+                                    : '<span class="badge bg-success">Đã bổ nhiệm</span>';
+                            }
+                        },
+                        {
+                            data: null,
+                            className: 'text-center',
+                            render: function (d, type, row) {
+                                return `<button class="btn btn-sm btn-outline-primary" onclick="deptMgrCheck_editManager('${row.DEPTNO}')" title="Cập nhật">
+                                            <i class="fa fa-edit"></i>
+                                        </button>`;
+                            }
+                        }
+                    ],
+                    dom: 'Bfrtip',
+                    buttons: ['excel', 'pdf', 'print'],
+                    language: {
+                        url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
+                    }
+                });
+
+                // Load Resumes
+                $.ajax({
+                    url: '/org/api/resume/dropdown',
+                    type: 'GET',
+                    success: function (data) {
+                        var select = $('#deptMgrCheck_resumeSelect');
+                        select.empty();
+
+                        if (data && data.length > 0) {
+                            data.forEach(function (item) {
+                                var displayText = (item.no ? item.no + ' ' : '') + (item.resumeName || '');
+                                var option = new Option(displayText, item.no);
+                                select.append(option);
+                            });
+                            select.val(data[0].no).trigger('change');
+                        }
+                    },
+                    error: function (xhr) {
+                        if (typeof toastr !== 'undefined') toastr.error('Lỗi tải danh sách phiên bản');
+                    }
+                });
+
+                // On change, reload table
+                $('#deptMgrCheck_resumeSelect').on('change', function () {
+                    var resumeNo = $(this).val();
+                    if (resumeNo) {
+                        $.ajax({
+                            url: '/org/api/compose/manager-check',
+                            data: { resumeNo: resumeNo },
+                            success: function (data) {
+                                table.clear().rows.add(data).draw();
+                            },
+                            error: function () {
+                                if (typeof toastr !== 'undefined') toastr.error('Lỗi tải dữ liệu');
+                            }
+                        });
+                    }
+                });
+
+                // Global functions for Edit Manager
+                window.deptMgrCheck_editManager = function (deptNo) {
+                    var data = table.rows().data().toArray().find(r => r.DEPTNO == deptNo);
+                    if (!data) return;
+
+                    $('#deptMgrCheck_editDeptNo').val(data.DEPTNO);
+                    $('#deptMgrCheck_displayDeptName').val(data.DEPTNO + ' - ' + data.ORG_NAME_LOCAL);
+
+                    $('#deptMgrCheck_editManagerEmpId').val(data.MANAGER_EMP_ID);
+                    $('#deptMgrCheck_displayManagerName').val(data.MANAGER_NAME);
+
+                    $('#deptMgrCheck_editIsPartTime').prop('checked', data.IS_PART_TIME == '1');
+
+                    $('#deptMgrCheck_editModal').modal('show');
+                };
+
+                window.deptMgrCheck_openEmployeeSearch = function () {
+                    if (typeof EmployeeSearchModal !== 'undefined') {
+                        EmployeeSearchModal.open(function (emp) {
+                            $('#deptMgrCheck_editManagerEmpId').val(emp.personId);
+                            $('#deptMgrCheck_displayManagerName').val(emp.localName);
+                        });
+                    } else {
+                        console.error("EmployeeSearchModal is not defined");
+                        alert("Chức năng tìm kiếm nhân viên chưa được tải.");
+                    }
+                };
+
+                window.deptMgrCheck_clearSelectedManager = function () {
+                    $('#deptMgrCheck_editManagerEmpId').val('');
+                    $('#deptMgrCheck_displayManagerName').val('');
+                };
+
+                window.deptMgrCheck_saveManager = function () {
+                    var payload = {
+                        resumeNo: $('#deptMgrCheck_resumeSelect').val(),
+                        deptNo: $('#deptMgrCheck_editDeptNo').val(),
+                        managerEmpId: $('#deptMgrCheck_editManagerEmpId').val(),
+                        isPartTime: $('#deptMgrCheck_editIsPartTime').is(':checked') ? '1' : '0'
+                    };
+
+                    $.ajax({
+                        url: '/org/api/compose/updateManager',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(payload),
+                        success: function (res) {
+                            if (typeof toastr !== 'undefined') toastr.success(res.message);
+                            $('#deptMgrCheck_editModal').modal('hide');
+                            $('#deptMgrCheck_resumeSelect').trigger('change');
+                        },
+                        error: function (xhr) {
+                            var msg = xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText;
+                            if (typeof toastr !== 'undefined') toastr.error('Lỗi: ' + msg);
+                        }
+                    });
+                };
+
+            });
+        </script>
+    </template>
+</div>

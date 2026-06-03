@@ -1,0 +1,623 @@
+<div th:fragment="topbar">
+     <header class="topbar">
+          <div class="container-fluid">
+               <div class="navbar-header">
+                    <div class="d-flex align-items-center">
+                         <!-- Menu Toggle Button -->
+                         <div class="topbar-item">
+                              <button type="button" class="button-toggle-menu me-2">
+                                   <iconify-icon icon="solar:hamburger-menu-broken"
+                                        class="fs-24 align-middle"></iconify-icon>
+                              </button>
+                         </div>
+                    </div>
+
+                    <nav class="topbar-horizontal-menu" th:if="${userMenus != null and !userMenus.empty}">
+                         <ul class="topbar-menu-nav">
+                              <li class="topbar-menu-item" th:each="menu : ${userMenus}" th:if="${menu.isActive()}"
+                                   th:classappend="${menu.hasChildren()} ? ' has-children'">
+                                   <th:block th:if="${menu.hasChildren()}">
+                                        <a class="topbar-menu-link" href="javascript:void(0);"
+                                             th:attr="data-menu-no=${menu.menuNo}">
+                                             <span th:text="${menu.menuName}">Menu Name</span>
+                                        </a>
+                                        <ul class="topbar-submenu">
+                                             <li class="topbar-submenu-item" th:each="child : ${menu.children}"
+                                                  th:if="${child.isActive()}"
+                                                  th:classappend="${child.hasChildren()} ? ' has-children'">
+                                                  <th:block th:if="${child.hasChildren()}">
+                                                       <a class="topbar-submenu-link" href="javascript:void(0);"
+                                                            th:attr="data-menu-no=${child.menuNo}"
+                                                            th:text="${child.menuName}">Child Menu Name</a>
+                                                       <ul class="topbar-submenu topbar-submenu-nested">
+                                                            <li class="topbar-submenu-item"
+                                                                 th:each="grandChild : ${child.children}"
+                                                                 th:if="${grandChild.isActive()}">
+                                                                 <a class="topbar-submenu-link"
+                                                                      th:attr="data-tab=${grandChild.menuUrl != null and !grandChild.menuUrl.empty} ? ${grandChild.menuUrl} : 'javascript:void(0);', data-menu-no=${grandChild.menuNo}"
+                                                                      th:text="${grandChild.menuName}">Grand Child Menu Name</a>
+                                                            </li>
+                                                       </ul>
+                                                  </th:block>
+                                                  <th:block th:unless="${child.hasChildren()}">
+                                                       <a class="topbar-submenu-link"
+                                                            th:attr="data-tab=${child.menuUrl != null and !child.menuUrl.empty} ? ${child.menuUrl} : 'javascript:void(0);', data-menu-no=${child.menuNo}"
+                                                            th:text="${child.menuName}">Child Menu Name</a>
+                                                  </th:block>
+                                             </li>
+                                        </ul>
+                                   </th:block>
+                                   <th:block th:unless="${menu.hasChildren()}">
+                                        <a class="topbar-menu-link"
+                                             th:attr="data-tab=${menu.menuUrl != null and !menu.menuUrl.empty} ? ${menu.menuUrl} : 'javascript:void(0);', data-menu-no=${menu.menuNo}">
+                                             <span th:text="${menu.menuName}">Menu Name</span>
+                                        </a>
+                                   </th:block>
+                              </li>
+                         </ul>
+                    </nav>
+
+                    <div class="d-flex align-items-center gap-1 topbar-actions">
+
+                         <!-- Theme Color (Light/Dark) -->
+                         <div class="topbar-item">
+                              <button type="button" class="topbar-button" id="light-dark-mode">
+                                   <iconify-icon icon="solar:moon-bold-duotone"
+                                        class="fs-24 align-middle"></iconify-icon>
+                              </button>
+                         </div>
+
+                         <!-- Notification -->
+                         <div class="dropdown topbar-item">
+                              <button type="button" class="topbar-button position-relative"
+                                   id="page-header-notifications-dropdown" data-bs-toggle="dropdown"
+                                   aria-haspopup="true" aria-expanded="false">
+                                   <iconify-icon icon="solar:bell-bing-bold-duotone"
+                                        class="fs-24 align-middle"></iconify-icon>
+                                   <span id="topbar-notif-badge"
+                                        class="position-absolute topbar-badge fs-10 translate-middle badge bg-danger rounded-pill"
+                                        style="display:none;">0
+                                        <span class="visually-hidden" th:text="#{topbar.unreadMessages}">tin chờ duyệt</span>
+                                   </span>
+                              </button>
+                              <div class="dropdown-menu py-0 dropdown-lg dropdown-menu-end"
+                                   aria-labelledby="page-header-notifications-dropdown">
+                                   <div class="p-3 border-top-0 border-start-0 border-end-0 border-dashed border">
+                                        <div class="row align-items-center">
+                                             <div class="col">
+                                                  <h6 class="m-0 fs-16 fw-semibold" th:text="#{topbar.notifications}">Thông báo</h6>
+                                             </div>
+                                        </div>
+                                   </div>
+                                   <div data-simplebar style="max-height: 280px;">
+                                        <!-- HRM mode: Nghỉ phép + Nghỉ bất thường chờ xác nhận -->
+                                        <th:block th:if="${sysMode == 'hrm'}">
+                                             <a href="/ess/arConfirm/viewLeaveConfirmList"
+                                                  data-tab="/ess/arConfirm/viewLeaveConfirmList"
+                                                  th:attr="data-title=#{topbar.notification.leave}"
+                                                  class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                       <iconify-icon icon="solar:calendar-mark-bold-duotone" class="fs-22 text-primary"></iconify-icon>
+                                                       <span th:text="#{topbar.notification.leave}">Nghỉ phép</span>
+                                                  </div>
+                                                  <span id="topbar-notif-hrm-leave" class="badge bg-danger rounded-pill">0</span>
+                                             </a>
+                                             <a href="/ess/arConfirm/viewAttendanceExConfirm"
+                                                  data-tab="/ess/arConfirm/viewAttendanceExConfirm"
+                                                  th:attr="data-title=#{topbar.notification.anomaly}"
+                                                  class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                       <iconify-icon icon="solar:notification-unread-bold-duotone" class="fs-22 text-danger"></iconify-icon>
+                                                       <span th:text="#{topbar.notification.anomaly}">Nghỉ bất thường</span>
+                                                  </div>
+                                                  <span id="topbar-notif-hrm-anomalous" class="badge bg-danger rounded-pill">0</span>
+                                             </a>
+                                        </th:block>
+                                        <!-- ESS mode: Nghỉ phép + Tăng ca + Nghỉ bất thường chờ phê duyệt -->
+                                        <th:block th:unless="${sysMode == 'hrm'}">
+                                             <a href="/ess/infoApply/viewApprovalEmail?applyTypeCode=21"
+                                                  data-tab="/ess/infoApply/viewApprovalEmail?applyTypeCode=21"
+                                                  th:attr="data-title=#{topbar.notification.leave}"
+                                                  class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                       <iconify-icon icon="solar:calendar-mark-bold-duotone" class="fs-22 text-primary"></iconify-icon>
+                                                       <span th:text="#{topbar.notification.leave}">Nghỉ phép</span>
+                                                  </div>
+                                                  <span id="topbar-notif-leave" class="badge bg-danger rounded-pill">0</span>
+                                             </a>
+                                             <a href="/ess/infoApply/viewApprovalEmail?applyTypeCode=31"
+                                                  data-tab="/ess/infoApply/viewApprovalEmail?applyTypeCode=31"
+                                                  th:attr="data-title=#{topbar.notification.ot}"
+                                                  class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                       <iconify-icon icon="solar:clock-circle-bold-duotone" class="fs-22 text-warning"></iconify-icon>
+                                                       <span th:text="#{topbar.notification.ot}">Tăng ca</span>
+                                                  </div>
+                                                  <span id="topbar-notif-ot" class="badge bg-danger rounded-pill">0</span>
+                                             </a>
+                                             <a href="/ess/infoApply/viewApprovalEmail?applyTypeCode=218197"
+                                                  data-tab="/ess/infoApply/viewApprovalEmail?applyTypeCode=218197"
+                                                  th:attr="data-title=#{topbar.notification.anomaly}"
+                                                  class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                       <iconify-icon icon="solar:notification-unread-bold-duotone" class="fs-22 text-danger"></iconify-icon>
+                                                       <span th:text="#{topbar.notification.anomaly}">Nghỉ bất thường</span>
+                                                  </div>
+                                                  <span id="topbar-notif-anomaly" class="badge bg-danger rounded-pill">0</span>
+                                             </a>
+                                        </th:block>
+                                   </div>
+                                   <div class="text-center py-3">
+                                        <a th:if="${sysMode == 'hrm'}"
+                                             href="/ess/arConfirm/viewLeaveConfirmList"
+                                             data-tab="/ess/arConfirm/viewLeaveConfirmList"
+                                             th:attr="data-title=#{topbar.viewAllNotification}"
+                                             class="btn btn-primary btn-sm">
+                                             <span th:text="#{topbar.viewAllNotification}">Xem tất cả thông báo</span>
+                                             <i class="bx bx-right-arrow-alt ms-1"></i>
+                                        </a>
+                                        <a th:unless="${sysMode == 'hrm'}"
+                                             href="/ess/infoApply/viewApprovalEmail"
+                                             data-tab="/ess/infoApply/viewApprovalEmail"
+                                             th:attr="data-title=#{topbar.viewAllNotification}"
+                                             class="btn btn-primary btn-sm">
+                                             <span th:text="#{topbar.viewAllNotification}">Xem tất cả thông báo</span>
+                                             <i class="bx bx-right-arrow-alt ms-1"></i>
+                                        </a>
+                                   </div>
+                              </div>
+                         </div>
+
+                         <!-- Language Selector -->
+                         <div class="topbar-item">
+                              <div th:replace="~{fragments/multilingual :: languageSelectorCompact}"></div>
+                         </div>
+
+                         <!-- Theme Setting -->
+                         <div class="topbar-item d-none d-md-flex">
+                              <button type="button" class="topbar-button" id="theme-settings-btn"
+                                   data-bs-toggle="offcanvas" data-bs-target="#theme-settings-offcanvas"
+                                   aria-controls="theme-settings-offcanvas">
+                                   <iconify-icon icon="solar:settings-bold-duotone"
+                                        class="fs-24 align-middle"></iconify-icon>
+                              </button>
+                         </div>
+
+                         <!-- Activity -->
+                         <div class="topbar-item d-none d-md-flex">
+                              <button type="button" class="topbar-button" id="theme-activity-btn"
+                                   data-bs-toggle="offcanvas" data-bs-target="#theme-activity-offcanvas"
+                                   aria-controls="theme-settings-offcanvas">
+                                   <iconify-icon icon="solar:clock-circle-bold-duotone"
+                                        class="fs-24 align-middle"></iconify-icon>
+                              </button>
+                         </div>
+
+                         <!-- User -->
+                         <div class="dropdown topbar-item">
+                              <a type="button" class="topbar-button" id="page-header-user-dropdown"
+                                   data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                   <span class="d-flex align-items-center">
+                                        <img class="rounded-circle" width="32"
+                                             th:src="${currentHrUser != null ? currentHrUser.photoUrl : '/assets/images/users/dummy-avatar.jpg'}"
+                                             th:alt="${currentHrUser != null ? currentHrUser.employeeName : 'avatar'}">
+                                   </span>
+                              </a>
+                              <div class="dropdown-menu dropdown-menu-end">
+                                   <h6 class="dropdown-header"
+                                        th:text="${currentHrUser != null and currentHrUser.employeeName != null and !#strings.isEmpty(currentHrUser.employeeName) ? currentHrUser.employeeName : 'HR System'}">
+                                        HR System
+                                   </h6>
+                                   <a class="dropdown-item" th:if="${hasSysTypeZeroMenus}" th:href="@{/sys/hrm}"
+                                        target="_blank" rel="noopener noreferrer">
+                                        <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle">HR Management System</span>
+                                   </a>
+                                   <a class="dropdown-item" href="pages-profile.html">
+                                        <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.profile}">Hồ sơ cá nhân</span>
+                                   </a>
+                                   <a class="dropdown-item" href="apps-chat.html">
+                                        <i class="bx bx-message-dots text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.messages}">Tin nhắn</span>
+                                   </a>
+                                   <a class="dropdown-item" href="pages-pricing.html">
+                                        <i class="bx bx-wallet text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.pricing}">Bảng giá</span>
+                                   </a>
+                                   <a class="dropdown-item" th:href="@{/change-password}">
+                                        <i class="fas fa-key text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.changePassword}">Cập nhật mật khẩu</span>
+                                   </a>
+                                   <a class="dropdown-item" href="pages-faqs.html">
+                                        <i class="bx bx-help-circle text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.help}">Trợ giúp</span>
+                                   </a>
+                                   <a class="dropdown-item" href="javascript:void(0);" onclick="topbarLockScreen()">
+                                        <i class="bx bx-lock text-muted fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.lockScreen}">Khóa màn hình</span>
+                                   </a>
+                                   <div class="dropdown-divider my-1"></div>
+                                   <a class="dropdown-item text-danger" th:href="@{/logout}">
+                                        <i class="bx bx-log-out fs-18 align-middle me-1"></i>
+                                        <span class="align-middle" th:text="#{topbar.logout}">Đăng xuất</span>
+                                   </a>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+          </div>
+     </header>
+
+     <!-- Lock Screen Overlay -->
+     <!-- <div id="lockScreenOverlay"
+          th:data-csrf-token="${_csrf.token}"
+          th:data-csrf-header="${_csrf.headerName}"
+          th:data-msg-subtitle="#{topbar.lockScreen.subtitle}"
+          th:data-msg-auto-lock="#{topbar.lockScreen.autoLockMessage}"
+          th:data-msg-wrong-pwd="#{topbar.lockScreen.wrongPassword}"
+          th:data-msg-verify-error="#{topbar.lockScreen.verifyError}"
+          style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999;
+                 background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);"
+          class="d-flex align-items-center justify-content-center">
+          <div class="text-center p-4" style="max-width:420px; width:90%;">
+
+               Biểu tượng khóa 
+               <div class="mb-3">
+                    <iconify-icon icon="solar:lock-keyhole-bold-duotone"
+                         style="font-size:56px; color:rgba(255,255,255,0.5);"></iconify-icon>
+               </div>
+
+               Avatar người dùng 
+               <div class="mb-3">
+                    <img id="lockScreenAvatar"
+                         th:src="${currentHrUser != null ? currentHrUser.photoUrl : '/assets/images/users/dummy-avatar.jpg'}"
+                         class="rounded-circle"
+                         style="width:80px; height:80px; object-fit:cover; border:3px solid rgba(255,255,255,0.4);"
+                         alt="avatar">
+               </div>
+
+               Tên người dùng
+               <h5 class="text-white mb-1"
+                   th:text="${currentHrUser != null and currentHrUser.employeeName != null and !#strings.isEmpty(currentHrUser.employeeName) ? currentHrUser.employeeName : 'HR System'}">
+                   HR System
+               </h5>
+
+               Thông báo trạng thái khóa
+               <p id="lockScreenSubtitle" class="mb-4" style="color:rgba(255,255,255,0.6);"
+                  th:text="#{topbar.lockScreen.subtitle}">Nhập mật khẩu để tiếp tục</p>
+
+               Ô nhập mật khẩu
+               <div class="mb-2">
+                    <div class="input-group">
+                         <input type="password"
+                                id="lockScreenPassword"
+                                class="form-control form-control-lg text-center"
+                                th:placeholder="#{topbar.lockScreen.passwordPlaceholder}"
+                                placeholder="Nhập mật khẩu"
+                                autocomplete="current-password"
+                                style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.25);
+                                       color:white; border-right:none;">
+                         <button type="button" id="lockScreenTogglePwd"
+                                 style="background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.25);
+                                        color:rgba(255,255,255,0.7); border-left:none;">
+                              <iconify-icon icon="solar:eye-bold" id="lockScreenEyeIcon"></iconify-icon>
+                         </button>
+                    </div>
+                    <div id="lockScreenError" class="text-danger mt-2 small" style="display:none;min-height:20px;"
+                         th:text="#{topbar.lockScreen.wrongPassword}">Mật khẩu không đúng, vui lòng thử lại</div>
+               </div>
+
+               Nút Mở khóa / Đăng xuất
+               <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button type="button" id="lockScreenUnlockBtn"
+                            class="btn btn-primary px-4"
+                            onclick="topbarUnlockScreen()">
+                         <iconify-icon icon="solar:lock-keyhole-unlocked-bold-duotone" class="me-1"></iconify-icon>
+                         <span th:text="#{topbar.lockScreen.unlockBtn}">Mở khóa</span>
+                    </button>
+                    <a th:href="@{/logout}" class="btn btn-outline-light px-4">
+                         <iconify-icon icon="solar:logout-2-bold-duotone" class="me-1"></iconify-icon>
+                         <span th:text="#{topbar.logout}">Đăng xuất</span>
+                    </a>
+               </div>
+
+          </div>
+     </div> -->
+     <!-- /Lock Screen Overlay -->
+
+     <script th:inline="javascript">
+          // ==================== PENDING APPROVAL COUNTS ====================
+          (function () {
+               var sysMode = /*[[${sysMode}]]*/ null;
+
+               function loadHrmPendingCounts() {
+                    fetch('/sy/syAffirm/api/hrm-pending-counts', {
+                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(function (r) {
+                         if (!r.ok) throw new Error('HTTP ' + r.status);
+                         return r.json();
+                    })
+                    .then(function (data) {
+                         var total = parseInt(data.total, 10) || 0;
+                         var leave = parseInt(data.leave, 10) || 0;
+                         var anomalous = parseInt(data.anomalous, 10) || 0;
+
+                         var badge = document.getElementById('topbar-notif-badge');
+                         if (badge) {
+                              badge.innerHTML = (total > 99 ? '99+' : total)
+                                   + '<span class="visually-hidden">tin chờ duyệt</span>';
+                              badge.style.display = total > 0 ? '' : 'none';
+                         }
+                         var leaveEl = document.getElementById('topbar-notif-hrm-leave');
+                         if (leaveEl) leaveEl.textContent = leave;
+                         var anomalousEl = document.getElementById('topbar-notif-hrm-anomalous');
+                         if (anomalousEl) anomalousEl.textContent = anomalous;
+                    })
+                    .catch(function (err) {
+                         console.warn('[topbar] Failed to load HRM pending counts:', err);
+                    });
+               }
+
+               function loadEssPendingCounts() {
+                    fetch('/sy/syAffirm/api/pending-counts', {
+                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(function (r) {
+                         if (!r.ok) throw new Error('HTTP ' + r.status);
+                         return r.json();
+                    })
+                    .then(function (data) {
+                         var total = parseInt(data.total, 10) || 0;
+                         var leave = parseInt(data.leave, 10) || 0;
+                         var ot = parseInt(data.ot, 10) || 0;
+                         var anomaly = parseInt(data.anomaly, 10) || 0;
+
+                         var badge = document.getElementById('topbar-notif-badge');
+                         if (badge) {
+                              badge.innerHTML = (total > 99 ? '99+' : total)
+                                   + '<span class="visually-hidden">tin chờ duyệt</span>';
+                              badge.style.display = total > 0 ? '' : 'none';
+                         }
+                         var leaveEl = document.getElementById('topbar-notif-leave');
+                         if (leaveEl) leaveEl.textContent = leave;
+                         var otEl = document.getElementById('topbar-notif-ot');
+                         if (otEl) otEl.textContent = ot;
+                         var anomalyEl = document.getElementById('topbar-notif-anomaly');
+                         if (anomalyEl) anomalyEl.textContent = anomaly;
+                    })
+                    .catch(function (err) {
+                         console.warn('[topbar] Failed to load pending counts:', err);
+                    });
+               }
+
+               function loadPendingCounts() {
+                    if (sysMode === 'hrm') {
+                         loadHrmPendingCounts();
+                    } else {
+                         loadEssPendingCounts();
+                    }
+               }
+
+               if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function () {
+                         loadPendingCounts();
+                         setInterval(loadPendingCounts, 3 * 60 * 1000);
+                    });
+               } else {
+                    loadPendingCounts();
+                    setInterval(loadPendingCounts, 3 * 60 * 1000);
+               }
+          })();
+          // ================== /PENDING APPROVAL COUNTS ====================
+     </script>
+
+     <script>
+          document.addEventListener("DOMContentLoaded", function () {
+               const mobileWidth = 991.98;
+               const topbarMenu = document.querySelector(".topbar-horizontal-menu");
+               if (!topbarMenu) return;
+
+               function notifySidebar(link) {
+                    if (!link) return;
+                    const payload = {
+                         menuNo: link.getAttribute("data-menu-no") || "",
+                         dataTab: link.getAttribute("data-tab") || "",
+                         href: link.getAttribute("href") || ""
+                    };
+                    if (!payload.menuNo && !payload.dataTab && !payload.href) return;
+                    document.dispatchEvent(new CustomEvent("topbar-menu-selected", { detail: payload }));
+               }
+
+               topbarMenu.addEventListener("click", function (event) {
+                    const clickedLink = event.target.closest(".topbar-menu-link, .topbar-submenu-link");
+                    if (!clickedLink || !topbarMenu.contains(clickedLink)) return;
+
+                    const trigger = event.target.closest(".has-children > .topbar-menu-link, .has-children > .topbar-submenu-link");
+                    if (trigger && topbarMenu.contains(trigger) && window.innerWidth <= mobileWidth) {
+                         event.preventDefault();
+                         const parentItem = trigger.parentElement;
+                         if (parentItem) {
+                              const sameLevelItems = parentItem.parentElement
+                                   ? Array.from(parentItem.parentElement.children).filter(function (item) {
+                                        return item.classList && item.classList.contains("has-children") && item.classList.contains("mobile-open");
+                                   }) : [];
+                              sameLevelItems.forEach(function (item) {
+                                   if (item !== parentItem) item.classList.remove("mobile-open");
+                              });
+                              parentItem.classList.toggle("mobile-open");
+                         }
+                    }
+                    notifySidebar(clickedLink);
+               });
+
+               document.addEventListener("click", function (event) {
+                    if (window.innerWidth > mobileWidth) return;
+                    if (topbarMenu.contains(event.target)) return;
+                    topbarMenu.querySelectorAll(".mobile-open").forEach(function (item) {
+                         item.classList.remove("mobile-open");
+                    });
+               });
+          });
+
+          // ===================== LOCK SCREEN =====================
+          (function () {
+               var IDLE_TIMEOUT = 5 * 60 * 1000;
+               var idleTimer = null;
+               var isLocked = false;
+               var unlockBtnOriginalHTML = '';
+
+               function getOverlay() {
+                    return document.getElementById('lockScreenOverlay');
+               }
+
+               function getMsgs() {
+                    var el = getOverlay();
+                    return {
+                         subtitle:    el ? (el.getAttribute('data-msg-subtitle')     || 'Nhập mật khẩu để tiếp tục') : 'Nhập mật khẩu để tiếp tục',
+                         autoLock:    el ? (el.getAttribute('data-msg-auto-lock')    || 'Màn hình tự động khóa do không có thao tác') : 'Màn hình tự động khóa do không có thao tác',
+                         wrongPwd:    el ? (el.getAttribute('data-msg-wrong-pwd')    || 'Mật khẩu không đúng, vui lòng thử lại') : 'Mật khẩu không đúng, vui lòng thử lại',
+                         verifyError: el ? (el.getAttribute('data-msg-verify-error') || 'Có lỗi xảy ra, vui lòng thử lại') : 'Có lỗi xảy ra, vui lòng thử lại'
+                    };
+               }
+
+               function getCsrfToken() {
+                    var el = getOverlay();
+                    return el ? el.getAttribute('data-csrf-token') : null;
+               }
+
+               function getCsrfHeader() {
+                    var el = getOverlay();
+                    return (el && el.getAttribute('data-csrf-header')) ? el.getAttribute('data-csrf-header') : 'X-CSRF-TOKEN';
+               }
+
+               function doLock(isAuto) {
+                    if (isLocked) return;
+                    isLocked = true;
+                    clearIdleTimer();
+                    var overlay = getOverlay();
+                    var msgs = getMsgs();
+                    var subtitle = document.getElementById('lockScreenSubtitle');
+                    var pwdInput = document.getElementById('lockScreenPassword');
+                    var errDiv   = document.getElementById('lockScreenError');
+                    if (subtitle) subtitle.textContent = isAuto ? msgs.autoLock : msgs.subtitle;
+                    if (overlay)  { overlay.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+                    if (errDiv)   errDiv.style.display = 'none';
+                    if (pwdInput) { pwdInput.value = ''; setTimeout(function () { pwdInput.focus(); }, 150); }
+               }
+
+               function doUnlock() {
+                    var overlay    = getOverlay();
+                    var pwdInput   = document.getElementById('lockScreenPassword');
+                    var errDiv     = document.getElementById('lockScreenError');
+                    var unlockBtn  = document.getElementById('lockScreenUnlockBtn');
+                    var msgs       = getMsgs();
+                    var password   = pwdInput ? pwdInput.value : '';
+
+                    if (!password || !password.trim()) {
+                         if (errDiv)   { errDiv.textContent = msgs.wrongPwd; errDiv.style.display = 'block'; }
+                         if (pwdInput) pwdInput.focus();
+                         return;
+                    }
+
+                    if (unlockBtn) {
+                         unlockBtnOriginalHTML = unlockBtn.innerHTML;
+                         unlockBtn.disabled = true;
+                         unlockBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>';
+                    }
+                    if (errDiv) errDiv.style.display = 'none';
+
+                    var headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+                    var csrfToken = getCsrfToken();
+                    if (csrfToken) headers[getCsrfHeader()] = csrfToken;
+
+                    fetch('/password/api/verify-old-password', {
+                         method: 'POST',
+                         headers: headers,
+                         body: 'oldPassword=' + encodeURIComponent(password),
+                         credentials: 'same-origin'
+                    })
+                    .then(function (r) {
+                         if (r.status === 403) throw new Error('forbidden');
+                         return r.json();
+                    })
+                    .then(function (data) {
+                         if (data.success) {
+                              if (overlay) overlay.style.display = 'none';
+                              document.body.style.overflow = '';
+                              isLocked = false;
+                              resetIdleTimer();
+                         } else {
+                              if (errDiv)   { errDiv.textContent = msgs.wrongPwd; errDiv.style.display = 'block'; }
+                              if (pwdInput) { pwdInput.value = ''; pwdInput.focus(); }
+                         }
+                    })
+                    .catch(function () {
+                         if (errDiv) { errDiv.textContent = msgs.verifyError; errDiv.style.display = 'block'; }
+                         if (pwdInput) pwdInput.focus();
+                    })
+                    .finally(function () {
+                         if (unlockBtn) {
+                              unlockBtn.disabled = false;
+                              unlockBtn.innerHTML = unlockBtnOriginalHTML;
+                         }
+                    });
+               }
+
+               function resetIdleTimer() {
+                    clearIdleTimer();
+                    idleTimer = setTimeout(function () { doLock(true); }, IDLE_TIMEOUT);
+               }
+
+               function clearIdleTimer() {
+                    if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+               }
+
+               // Theo dõi hoạt động người dùng để reset timer
+               var activityEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart', 'wheel'];
+               activityEvents.forEach(function (evt) {
+                    document.addEventListener(evt, function () {
+                         if (!isLocked) resetIdleTimer();
+                    }, { passive: true });
+               });
+
+               function initLockScreen() {
+                    resetIdleTimer();
+
+                    var toggleBtn = document.getElementById('lockScreenTogglePwd');
+                    var pwdInput  = document.getElementById('lockScreenPassword');
+                    var eyeIcon   = document.getElementById('lockScreenEyeIcon');
+
+                    if (toggleBtn && pwdInput && eyeIcon) {
+                         toggleBtn.addEventListener('click', function () {
+                              if (pwdInput.type === 'password') {
+                                   pwdInput.type = 'text';
+                                   eyeIcon.setAttribute('icon', 'solar:eye-closed-bold');
+                              } else {
+                                   pwdInput.type = 'password';
+                                   eyeIcon.setAttribute('icon', 'solar:eye-bold');
+                              }
+                         });
+                    }
+
+                    if (pwdInput) {
+                         pwdInput.addEventListener('keydown', function (e) {
+                              if (e.key === 'Enter') doUnlock();
+                         });
+                    }
+               }
+
+               // Xử lý đúng dù DOMContentLoaded đã fire hay chưa
+               if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initLockScreen);
+               } else {
+                    initLockScreen();
+               }
+
+               window.topbarLockScreen  = function () { doLock(false); };
+               window.topbarUnlockScreen = doUnlock;
+          })();
+          // ==================== /LOCK SCREEN ====================
+     </script>
+</div>

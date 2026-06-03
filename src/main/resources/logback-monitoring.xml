@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    
+    <!-- Console appender với structured logging -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <message />
+                <mdc />
+                <stackTrace />
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "thread": "%thread",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}",
+                            "ipAddress": "%X{ipAddress:-}",
+                            "userAgent": "%X{userAgent:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- File appender cho application logs -->
+    <appender name="APPLICATION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/hr-application.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <message />
+                <mdc />
+                <stackTrace />
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "thread": "%thread",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}",
+                            "ipAddress": "%X{ipAddress:-}",
+                            "userAgent": "%X{userAgent:-}",
+                            "exception": "%ex{full:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/hr-application.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Audit logger -->
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/hr-audit.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <message />
+                <mdc />
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "thread": "%thread",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}",
+                            "ipAddress": "%X{ipAddress:-}",
+                            "userAgent": "%X{userAgent:-}",
+                            "eventType": "%X{eventType:-}",
+                            "entityType": "%X{entityType:-}",
+                            "entityId": "%X{entityId:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/hr-audit.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Security logger -->
+    <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/hr-security.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <message />
+                <mdc />
+                <stackTrace />
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "thread": "%thread",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}",
+                            "ipAddress": "%X{ipAddress:-}",
+                            "userAgent": "%X{userAgent:-}",
+                            "securityEvent": "%X{securityEvent:-}",
+                            "threatLevel": "%X{threatLevel:-}",
+                            "action": "%X{action:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/hr-security.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Performance logger -->
+    <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/hr-performance.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <message />
+                <mdc />
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "thread": "%thread",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}",
+                            "metricName": "%X{metricName:-}",
+                            "metricValue": "%X{metricValue:-}",
+                            "operation": "%X{operation:-}",
+                            "executionTime": "%X{executionTime:-}",
+                            "endpoint": "%X{endpoint:-}",
+                            "method": "%X{method:-}",
+                            "statusCode": "%X{statusCode:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/hr-performance.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Business logger -->
+    <appender name="BUSINESS_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/hr-business.log</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <message />
+                <mdc />
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "thread": "%thread",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}",
+                            "eventType": "%X{eventType:-}",
+                            "entityType": "%X{entityType:-}",
+                            "entityId": "%X{entityId:-}",
+                            "businessData": "%X{businessData:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/hr-business.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Error logger -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/hr-errors.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel />
+                <loggerName />
+                <message />
+                <mdc />
+                <stackTrace />
+                <pattern>
+                    <pattern>
+                        {
+                            "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                            "level": "%level",
+                            "logger": "%logger{36}",
+                            "message": "%msg",
+                            "thread": "%thread",
+                            "correlationId": "%X{correlationId:-}",
+                            "userId": "%X{userId:-}",
+                            "sessionId": "%X{sessionId:-}",
+                            "ipAddress": "%X{ipAddress:-}",
+                            "userAgent": "%X{userAgent:-}",
+                            "errorType": "%X{errorType:-}",
+                            "exceptionClass": "%X{exceptionClass:-}",
+                            "exceptionMessage": "%X{exceptionMessage:-}",
+                            "stackTrace": "%ex{full:-}"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/hr-errors.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>365</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Async appenders for better performance -->
+    <appender name="ASYNC_APPLICATION" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="APPLICATION_FILE" />
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_AUDIT" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="AUDIT_FILE" />
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_SECURITY" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="SECURITY_FILE" />
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_PERFORMANCE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="PERFORMANCE_FILE" />
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_BUSINESS" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="BUSINESS_FILE" />
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ERROR_FILE" />
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+    </appender>
+
+    <!-- Logger configurations -->
+    <logger name="AUDIT" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_AUDIT" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <logger name="SECURITY" level="WARN" additivity="false">
+        <appender-ref ref="ASYNC_SECURITY" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <logger name="PERFORMANCE" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_PERFORMANCE" />
+    </logger>
+
+    <logger name="BUSINESS" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_BUSINESS" />
+    </logger>
+
+    <!-- Application loggers -->
+    <logger name="com.ait" level="INFO" additivity="false">
+        <appender-ref ref="ASYNC_APPLICATION" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="ASYNC_APPLICATION" />
+        <appender-ref ref="ASYNC_ERROR" />
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>

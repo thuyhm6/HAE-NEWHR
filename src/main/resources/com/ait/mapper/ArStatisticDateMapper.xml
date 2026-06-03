@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArStatisticDateMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArStatisticDate">
+        <id column="STAT_NO" property="statNo" />
+        <result column="BEGIN_MONTH_OFFSET" property="beginMonthOffset" />
+        <result column="END_MONTH_OFFSET" property="endMonthOffset" />
+        <result column="VALID_DATE_FROM" property="validDateFrom" />
+        <result column="VALID_DATE_TO" property="validDateTo" />
+        <result column="START_DAY" property="startDay" />
+        <result column="END_DAY" property="endDay" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArStatisticDateDto" extends="BaseResultMap">
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+    </resultMap>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT a.*,
+               TO_CHAR(a.VALID_DATE_FROM, 'YYYY-MM-DD') as VALID_DATE_FROM,
+               TO_CHAR(a.VALID_DATE_TO, 'YYYY-MM-DD') as VALID_DATE_TO,
+               gvi.CONTENT AS NAME_VI,
+               gen.CONTENT AS NAME_EN,
+               gzh.CONTENT AS NAME_ZH,
+               gko.CONTENT AS NAME_KO
+        FROM AR_STATISTIC_DATE a
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.STAT_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.STAT_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.STAT_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.STAT_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        <where>
+            <if test="statNo != null and statNo != ''">
+                AND (
+                    a.STAT_NO LIKE '%' || #{statNo} || '%' OR 
+                    gvi.CONTENT LIKE '%' || #{statNo} || '%' OR
+                    gen.CONTENT LIKE '%' || #{statNo} || '%' OR
+                    gzh.CONTENT LIKE '%' || #{statNo} || '%' OR
+                    gko.CONTENT LIKE '%' || #{statNo} || '%'
+                )
+            </if>
+        </where>
+        ORDER BY a.ORDERNO, a.STAT_NO
+    </select>
+
+    <select id="selectByStatNo" resultMap="BaseResultMap">
+        SELECT a.*,
+               TO_CHAR(a.VALID_DATE_FROM, 'YYYY-MM-DD') as VALID_DATE_FROM,
+               TO_CHAR(a.VALID_DATE_TO, 'YYYY-MM-DD') as VALID_DATE_TO
+        FROM AR_STATISTIC_DATE a
+        WHERE a.STAT_NO = #{statNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArStatisticDate">
+        INSERT INTO AR_STATISTIC_DATE (
+            STAT_NO, 
+            BEGIN_MONTH_OFFSET, 
+            END_MONTH_OFFSET, 
+            VALID_DATE_FROM, 
+            VALID_DATE_TO, 
+            START_DAY, 
+            END_DAY, 
+            CREATE_DATE, 
+            CREATED_BY, 
+            UPDATE_DATE, 
+            UPDATED_BY, 
+            ACTIVITY, 
+            ORDERNO
+        ) VALUES (
+            #{statNo},
+            #{beginMonthOffset, jdbcType=NUMERIC},
+            #{endMonthOffset, jdbcType=NUMERIC},
+            <choose>
+                <when test="validDateFrom != null and validDateFrom != ''">TO_DATE(#{validDateFrom}, 'YYYY-MM-DD')</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
+            <choose>
+                <when test="validDateTo != null and validDateTo != ''">TO_DATE(#{validDateTo}, 'YYYY-MM-DD')</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
+            #{startDay, jdbcType=NUMERIC},
+            #{endDay, jdbcType=NUMERIC},
+            SYSDATE,
+            #{createdBy, jdbcType=VARCHAR},
+            SYSDATE,
+            #{updatedBy, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC},
+            #{orderno, jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArStatisticDate">
+        UPDATE AR_STATISTIC_DATE
+        <set>
+            <if test="beginMonthOffset != null">
+                BEGIN_MONTH_OFFSET = #{beginMonthOffset, jdbcType=NUMERIC},
+            </if>
+            <if test="endMonthOffset != null">
+                END_MONTH_OFFSET = #{endMonthOffset, jdbcType=NUMERIC},
+            </if>
+            <choose>
+                <when test="validDateFrom != null and validDateFrom != ''">
+                    VALID_DATE_FROM = TO_DATE(#{validDateFrom}, 'YYYY-MM-DD'),
+                </when>
+                <when test="validDateFrom == ''">
+                    VALID_DATE_FROM = NULL,
+                </when>
+            </choose>
+            <choose>
+                <when test="validDateTo != null and validDateTo != ''">
+                    VALID_DATE_TO = TO_DATE(#{validDateTo}, 'YYYY-MM-DD'),
+                </when>
+                <when test="validDateTo == ''">
+                    VALID_DATE_TO = NULL,
+                </when>
+            </choose>
+            <if test="startDay != null">
+                START_DAY = #{startDay, jdbcType=NUMERIC},
+            </if>
+            <if test="endDay != null">
+                END_DAY = #{endDay, jdbcType=NUMERIC},
+            </if>
+            <if test="activity != null">
+                ACTIVITY = #{activity, jdbcType=NUMERIC},
+            </if>
+            <if test="orderno != null">
+                ORDERNO = #{orderno, jdbcType=NUMERIC},
+            </if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{updatedBy, jdbcType=VARCHAR}
+        </set>
+        WHERE STAT_NO = #{statNo}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM AR_STATISTIC_DATE WHERE STAT_NO = #{statNo}
+    </delete>
+
+</mapper>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.sys.mapper.SyGlobalNameMapper">
+
+    <!-- Result Map -->
+    <resultMap id="SyGlobalNameResultMap" type="com.ait.sy.sys.model.SyGlobalName">
+        <id property="seq" column="SEQ"/>
+        <result property="no" column="NO"/>
+        <result property="language" column="LANGUAGE"/>
+        <result property="content" column="CONTENT"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="orderNo" column="ORDERNO"/>
+    </resultMap>
+
+    <!-- Lấy tất cả bản ghi đa ngôn ngữ -->
+    <select id="findAll" resultMap="SyGlobalNameResultMap">
+        SELECT * FROM SY_GLOBAL_NAME 
+        WHERE 1 = 1
+        ORDER BY ORDERNO, NO, LANGUAGE
+    </select>
+
+    <!-- Lấy bản ghi đa ngôn ngữ theo mã số và ngôn ngữ -->
+    <select id="findByNoAndLanguage" resultMap="SyGlobalNameResultMap">
+        SELECT * FROM SY_GLOBAL_NAME 
+        WHERE NO = #{no} AND LANGUAGE = #{language}
+    </select>
+
+    <!-- Lấy tất cả bản ghi đa ngôn ngữ theo mã số -->
+    <select id="findByNo" resultMap="SyGlobalNameResultMap">
+        SELECT * FROM SY_GLOBAL_NAME 
+        WHERE NO = #{no}
+        ORDER BY LANGUAGE
+    </select>
+
+    <!-- Lấy tất cả bản ghi đa ngôn ngữ theo ngôn ngữ -->
+    <select id="findByLanguage" resultMap="SyGlobalNameResultMap">
+        SELECT * FROM SY_GLOBAL_NAME 
+        WHERE LANGUAGE = #{language}
+        ORDER BY ORDERNO, NO
+    </select>
+
+    <!-- Lấy nội dung đa ngôn ngữ theo mã số và ngôn ngữ -->
+    <select id="getContentByNoAndLanguage" resultType="String">
+        SELECT CONTENT FROM SY_GLOBAL_NAME 
+        WHERE NO = #{no} AND LANGUAGE = #{language}
+    </select>
+
+    <!-- Lấy tất cả nội dung đa ngôn ngữ theo mã số -->
+    <select id="getContentsByNo" resultMap="SyGlobalNameResultMap">
+        SELECT * FROM SY_GLOBAL_NAME 
+        WHERE NO = #{no}
+        ORDER BY LANGUAGE
+    </select>
+
+    <!-- Thêm mới bản ghi đa ngôn ngữ -->
+    <insert id="insert" parameterType="com.ait.sy.sys.model.SyGlobalName">
+        <selectKey keyProperty="seq" resultType="Long" order="BEFORE">
+            SELECT SY_GLOBAL_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO SY_GLOBAL_NAME (
+            SEQ, NO, LANGUAGE, CONTENT, CREATE_DATE, CREATED_BY, 
+            UPDATE_DATE, UPDATED_BY, ACTIVITY, ORDERNO
+        ) VALUES (
+            #{seq}, #{no}, #{language}, #{content}, sysdate, #{createdBy, jdbcType=VARCHAR},
+            sysdate, #{adminID, jdbcType=VARCHAR}, #{activity}, #{orderNo}
+        )
+    </insert>
+
+    <!-- Cập nhật bản ghi đa ngôn ngữ -->
+    <update id="update" parameterType="com.ait.sy.sys.model.SyGlobalName">
+        UPDATE SY_GLOBAL_NAME SET
+            CONTENT = #{content},
+            UPDATE_DATE = sysdate,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ACTIVITY = #{activity},
+            ORDERNO = #{orderNo}
+        WHERE SEQ = #{seq}
+    </update>
+
+    <!-- Xóa bản ghi đa ngôn ngữ theo mã số và ngôn ngữ -->
+    <delete id="deleteByNoAndLanguage">
+        DELETE FROM SY_GLOBAL_NAME 
+        WHERE NO = #{no} AND LANGUAGE = #{language}
+    </delete>
+
+    <!-- Xóa tất cả bản ghi đa ngôn ngữ theo mã số -->
+    <delete id="deleteByNo">
+        DELETE FROM SY_GLOBAL_NAME WHERE NO = #{no}
+    </delete>
+
+    <!-- Kiểm tra tồn tại bản ghi theo mã số và ngôn ngữ -->
+    <select id="existsByNoAndLanguage" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM SY_GLOBAL_NAME 
+        WHERE NO = #{no} AND LANGUAGE = #{language}
+    </select>
+
+    <!-- Lấy danh sách mã số có đa ngôn ngữ -->
+    <select id="getDistinctNos" resultType="String">
+        SELECT DISTINCT NO FROM SY_GLOBAL_NAME 
+        ORDER BY NO
+    </select>
+
+    <!-- Lấy danh sách ngôn ngữ có sẵn -->
+    <select id="getAvailableLanguages" resultType="String">
+        SELECT DISTINCT LANGUAGE FROM SY_GLOBAL_NAME 
+        ORDER BY LANGUAGE
+    </select>
+
+    <!-- Lấy sequence cho NO -->
+    <select id="getNextNoSeq" resultType="String">
+        SELECT SY_GLOBAL_NO_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+</mapper>

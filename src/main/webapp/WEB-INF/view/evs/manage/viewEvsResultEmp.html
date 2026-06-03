@@ -1,0 +1,97 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vere_pageWrapper">
+
+            <!-- Bảng lịch sử kết quả đánh giá -->
+            <div class="card">
+                <div class="card-header py-2 px-3">
+                    <span class="fw-semibold" th:text="#{evs.viewEvsResultEmp.PINGJIAJIEGUOLVLI.a}">Lịch sử kết quả đánh giá</span>
+                </div>
+                <div class="card-body p-2">
+                    <table id="vere_table" class="table table-striped table-bordered table-hover table-sm"
+                        style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-center" style="width:60px">No.</th>
+                                <th class="text-center" th:text="#{evs.viewEvsResultEmp.evalYear}">Năm đánh giá</th>
+                                <th class="text-center" th:text="#{evs.viewEvsResultEmp.performance}">Thành tích</th>
+                                <th class="text-center" th:text="#{evs.viewEvsResultEmp.ability}">Năng lực</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vere_tbody">
+                            <tr>
+                                <td colspan="4" class="text-center">
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div><!-- /#vere_pageWrapper -->
+    </div><!-- /.row -->
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <style>
+        #vere_table th,
+        #vere_table td {
+            vertical-align: middle;
+        }
+
+        #vere_table thead th {
+            white-space: nowrap;
+        }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            var _vere_tabId = window._currentTabId || 'default-content';
+
+            var _vere_i18n = {
+                noData: /*[[#{evs.viewEvsResultEmp.noData}]]*/ 'Không có dữ liệu'
+            };
+
+            function vere$(sel) { return $('#' + _vere_tabId).find(sel); }
+
+            function vereEsc(s) {
+                if (s == null) return '';
+                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function vereLoadData() {
+                $.ajax({
+                    url: '/evs/manage/api/evsResultEmp/list',
+                    type: 'GET',
+                    success: function (rows) {
+                        if (!rows || rows.length === 0) {
+                            vere$('#vere_tbody').html(
+                                '<tr><td colspan="4" class="text-center text-muted">' + vereEsc(_vere_i18n.noData) + '</td></tr>'
+                            );
+                            return;
+                        }
+                        var html = '';
+                        rows.forEach(function (row, idx) {
+                            html += '<tr>'
+                                + '<td class="text-center">' + (idx + 1) + '</td>'
+                                + '<td class="text-center">' + vereEsc(row.evsYear || '') + '</td>'
+                                + '<td class="text-center">' + vereEsc(row.evsPerformance || '') + '</td>'
+                                + '<td class="text-center">' + vereEsc(row.evsAbility || '') + '</td>'
+                                + '</tr>';
+                        });
+                        vere$('#vere_tbody').html(html);
+                    },
+                    error: function () {
+                        vere$('#vere_tbody').html(
+                            '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>'
+                        );
+                    }
+                });
+            }
+
+            $(document).ready(function () {
+                vereLoadData();
+            });
+        })();
+    </script>
+</template>

@@ -1,0 +1,376 @@
+<div th:fragment="content">
+    <div class="row h-100">
+        <!-- LEft Pane: Organization Tree -->
+        <div class="col-md-3 border-end">
+            <div class="p-3">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Phiên bản thay đổi</label>
+                    <select id="histOrg_resumeSelect" class="form-select select2">
+                        <!-- Ajax load -->
+                    </select>
+                </div>
+
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Tìm kiếm phòng ban..."
+                        id="histOrg_searchTreeInput">
+                    <button class="btn btn-outline-secondary" type="button" id="histOrg_btnSearchTree">Tra cứu</button>
+                </div>
+
+                <div class="mb-2">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="histOrg_treeViewOption"
+                            id="histOrg_expandAll" value="expand">
+                        <label class="form-check-label" for="histOrg_expandAll">Mở tất cả</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="histOrg_treeViewOption"
+                            id="histOrg_collapseAll" value="collapse">
+                        <label class="form-check-label" for="histOrg_collapseAll">Đóng tất cả</label>
+                    </div>
+                </div>
+
+                <div class="tree-container" style="max-height: 600px; overflow-y: auto;">
+                    <div id="histOrg_tree"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Details & Employees -->
+        <div class="col-md-9">
+            <div class="p-3">
+
+                <!-- Org Detail Form -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Thông tin tổ chức</span>
+                        <div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="histOrg_detailForm">
+                            <input type="hidden" id="histOrg_resumeNoHidden">
+                            <input type="hidden" id="histOrg_isNewMode" value="false">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Phòng ban <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="histOrg_deptNo" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phòng ban trên</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="histOrg_parentDeptNo" readonly>
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            id="histOrg_btnSelectParent"><i class="bx bxs-folder-open"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Tên tiếng Anh</label>
+                                    <input type="text" class="form-control" id="histOrg_orgNameEng" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tên địa phương</label>
+                                    <input type="text" class="form-control" id="histOrg_orgNameLocal" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Loại tổ chức <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="histOrg_deptType" disabled>
+                                        <option value="TEAM">TEAM</option>
+                                        <option value="DEPT">DEPT</option>
+                                        <option value="DIV">DIV</option>
+                                        <option value="PART">PART</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Cấp</label>
+                                    <input type="number" class="form-control" id="histOrg_deptLevel" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Trưởng phòng</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="histOrg_managerEmpId" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" disabled><i
+                                                class="bx bx-search"></i></button>
+                                        <input type="text" class="form-control" id="histOrg_managerName" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ngày tạo <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="histOrg_dateCreated" readonly>
+                                </div>
+
+                                <div class="col-md-6 d-flex align-items-center mt-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="histOrg_isPartTime"
+                                            disabled>
+                                        <label class="form-check-label" for="histOrg_isPartTime">Kiêm nhiệm</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Mã chi phí</label>
+                                    <select class="form-select" id="histOrg_costCenter" disabled>
+                                        <option value="">-- Chọn --</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Employee List -->
+                <div class="card">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold me-2">Danh sách nhân viên</span>
+                            <span class="badge bg-primary" id="histOrg_totalEmployees">Total: 0</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="histOrg_empTable" class="table table-striped table-hover w-100">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th><input type="checkbox" id="histOrg_checkAllEmps"></th>
+                                        <th>Họ tên</th>
+                                        <th>Mã nhân viên</th>
+                                        <th>Chức vụ</th>
+                                        <th>Chức danh</th>
+                                        <th>Nhóm nhân viên</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Ajax loaded -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Scripts -->
+    <template id="fragmentScripts">
+        <!-- Include JSTree CSS/JS first -->
+        <link rel="stylesheet" href="/assets/plugins/jstree/style.min.css" />
+        <script src="/assets/plugins/jstree/jstree.min.js"></script>
+
+        <script th:inline="none">
+            $(document).ready(function () {
+                console.log("viewHistoryOrgInfo script started");
+
+                var employeeTable;
+                var cachedOrgData = null; // Cache for parent selection
+
+                // 2. Load Resume Versions (Do this first aka Critical Path)
+                // Use a try-catch block for safety around ajax setup if needed, but ajax usually safe
+                $.ajax({
+                    url: '/org/api/resume/dropdown',
+                    type: 'GET',
+                    success: function (data) {
+                        console.log("Resumes loaded:", data ? data.length : 0);
+                        var select = $('#histOrg_resumeSelect');
+                        select.empty();
+                        if (data && data.length > 0) {
+                            data.forEach(function (item) {
+                                var text = (item.no ? item.no + ' ' : '') + (item.resumeName || '');
+                                select.append(new Option(text, item.no));
+                            });
+                            // Select first and trigger load
+                            select.val(data[0].no).trigger('change');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error("Error loading resumes:", xhr);
+                    }
+                });
+
+                // 1. Initialize Components (Safe mode)
+                // We do this after kicking off the AJAX or in parallel.
+                if ($.fn.select2) {
+                    $('.select2').select2({ width: '100%' });
+                } else {
+                    console.warn("Select2 not found");
+                }
+
+                if ($.fn.DataTable) {
+                    employeeTable = $('#histOrg_empTable').DataTable({
+                        destroy: true,
+                        columns: [
+                            { data: null, render: function (d, t, r, m) { return m.row + 1; } },
+                            { data: null, render: function () { return '<input type="checkbox" class="emp-check" disabled>'; } }, // Disabled checkbox
+                            { data: 'localName' },
+                            { data: 'empId' },
+                            { data: 'dutyNo' },
+                            { data: 'postNo' },
+                            { data: 'empTypeCode' },
+                            { data: 'statusCode' }
+                        ],
+                        searching: true,
+                        paging: true,
+                        info: true,
+                        lengthChange: true,
+                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                        pageLength: 10
+                    });
+
+                } else {
+                    console.warn("DataTable not found");
+                }
+
+                // 3. Handle Resume Change -> Load Tree
+                $('#histOrg_resumeSelect').on('change', function () {
+                    var resumeNo = $(this).val();
+                    if (!resumeNo) return;
+
+                    console.log("Resume selected:", resumeNo);
+                    histOrg_loadTree(resumeNo);
+
+                    // Clear form and table
+                    $('#histOrg_detailForm')[0].reset();
+                    if (employeeTable) {
+                        employeeTable.clear().draw();
+                    }
+                    $('#histOrg_totalEmployees').text('Total: 0');
+                });
+
+                function histOrg_loadTree(resumeNo) {
+                    if (!$.fn.jstree) {
+                        console.warn("JSTree chưa được tải");
+                        return;
+                    }
+                    var $tree = $('#histOrg_tree');
+                    $tree.html('Đang tải dữ liệu...'); // User feedback directly in div
+
+                    $.ajax({
+                        url: '/org/api/compose/structure',
+                        data: { resumeNo: resumeNo },
+                        success: function (data) {
+                            cachedOrgData = data; // Cache data
+                            histOrg_buildTree(data);
+                        },
+                        error: function (xhr) {
+                            $tree.html('<div class="text-danger">Lỗi tải dữ liệu: ' + xhr.status + '</div>');
+                        }
+                    });
+                }
+
+                function histOrg_buildTree(data) {
+                    var $tree = $('#histOrg_tree');
+                    try { $tree.jstree("destroy"); } catch (e) { }
+
+                    if (!data || data.length === 0) {
+                        $tree.html('<div class="text-muted fst-italic p-2">Không có dữ liệu tổ chức</div>');
+                        return;
+                    }
+
+                    // 1. Collect Valid IDs to prevent orphans
+                    var idSet = new Set();
+                    data.forEach(function (item) { if (item.deptNo) idSet.add(item.deptNo); });
+
+                    // 2. Map Data
+                    var treeData = data.map(function (item) {
+                        // Resolve Parent: If parent doesn't exist in data, set to Root (#)
+                        var parentId = item.parentDeptNo;
+                        if (!parentId || parentId === 'ROOT' || !idSet.has(parentId)) {
+                            parentId = '#';
+                        }
+
+                        // Resolve Name
+                        var label = item.orgNameLocal || item.orgNameEng || item.deptNo || "N/A";
+
+                        return {
+                            id: item.deptNo,
+                            parent: parentId,
+                            text: label,
+                            data: item, // Store full object
+                            icon: 'bx bxs-folder', // Folder icon
+                            state: { opened: true } // Auto expand
+                        };
+                    });
+
+                    // 3. Initialize JSTree
+                    $tree.jstree({
+                        'core': {
+                            'data': treeData,
+                            'themes': {
+                                'name': 'default', // Must match the CSS loaded
+                                'responsive': true,
+                                'variant': 'large'
+                            }
+                        },
+                        'plugins': ['search', 'types']
+                    });
+
+                    // 4. Bind Events
+                    $tree.off("changed.jstree").on("changed.jstree", function (e, data) {
+                        if (data.selected.length) {
+                            var node = data.instance.get_node(data.selected[0]);
+                            if (node && node.data) {
+                                histOrg_loadOrgDetails(node.data);
+                            }
+                        }
+                    });
+                }
+
+
+                function histOrg_loadOrgDetails(orgInfo) {
+                    // Fill Form
+                    $('#histOrg_deptNo').val(orgInfo.deptNo);
+                    $('#histOrg_parentDeptNo').val(orgInfo.parentDeptNo);
+                    $('#histOrg_orgNameEng').val(orgInfo.orgNameEng);
+                    $('#histOrg_orgNameLocal').val(orgInfo.orgNameLocal);
+                    $('#histOrg_deptType').val(orgInfo.deptType);
+                    $('#histOrg_deptLevel').val(orgInfo.deptLevel);
+                    $('#histOrg_managerEmpId').val(orgInfo.managerEmpId);
+
+                    if (orgInfo.dateCreated) {
+                        var d = new Date(orgInfo.dateCreated);
+                        var day = ("0" + d.getDate()).slice(-2);
+                        var month = ("0" + (d.getMonth() + 1)).slice(-2);
+                        $('#histOrg_dateCreated').val(d.getFullYear() + "-" + month + "-" + day);
+                    } else {
+                        $('#histOrg_dateCreated').val('');
+                    }
+
+                    $('#histOrg_costCenter').val(orgInfo.costCenter);
+                    $('#histOrg_isPartTime').prop('checked', orgInfo.isPartTime === 'Y');
+
+                    // Load Employees
+                    var resumeNo = $('#histOrg_resumeSelect').val();
+                    if (employeeTable) {
+                        $.ajax({
+                            url: '/org/api/compose/employees',
+                            data: { resumeNo: resumeNo, deptNo: orgInfo.deptNo },
+                            success: function (emps) {
+                                employeeTable.clear();
+                                employeeTable.rows.add(emps);
+                                employeeTable.draw();
+                                $('#histOrg_totalEmployees').text('Total: ' + (emps ? emps.length : 0));
+                            }
+                        });
+                    }
+                }
+
+                // Toggle Tree
+                $('input[name="histOrg_treeViewOption"]').on('change', function () {
+                    if (!$.fn.jstree) return;
+                    if ($(this).val() === 'expand') {
+                        $('#histOrg_tree').jstree('open_all');
+                    } else {
+                        $('#histOrg_tree').jstree('close_all');
+                    }
+                });
+
+            });
+        </script>
+    </template>
+</div>

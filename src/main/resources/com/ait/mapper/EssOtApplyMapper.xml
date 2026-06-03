@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.infoApply.mapper.EssOtApplyMapper">
+
+    <resultMap id="EssOtApplyListResultMap" type="com.ait.ess.infoApply.dto.EssOtApplyListDto">
+        <id  property="applyNo"          column="APPLY_NO" />
+        <result property="personId"       column="PERSON_ID" />
+        <result property="otTypeCode"     column="OT_TYPE_CODE" />
+        <result property="otTypeName"     column="OT_TYPE_NAME" />
+        <result property="applyOtDate"    column="APPLY_OT_DATE" />
+        <result property="otFromTime"     column="OT_FROM_TIME" />
+        <result property="otToTime"       column="OT_TO_TIME" />
+        <result property="otApplyHour"    column="OT_APPLY_HOUR" />
+        <result property="deductYn"       column="DEDUCT_YN" />
+        <result property="applyOtRemark"  column="APPLY_OT_REMARK" />
+        <result property="affirmFlag"     column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="confirmFlag"    column="CONFIRM_FLAG" />
+        <result property="confirmFlagName" column="CONFIRM_FLAG_NAME" />
+        <result property="createdBy"      column="CREATED_BY" />
+        <result property="createdIp"      column="CREATED_IP" />
+    </resultMap>
+
+    <select id="selectMyOtApplyList" resultMap="EssOtApplyListResultMap">
+        SELECT
+            A.APPLY_NO,
+            A.PERSON_ID,
+            A.OT_TYPE_CODE,
+            GET_GLOBAL_NAME(A.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS OT_TYPE_NAME,
+            TO_CHAR(A.APPLY_OT_DATE, 'DD/MM/YYYY') AS APPLY_OT_DATE,
+            A.OT_FROM_TIME,
+            A.OT_TO_TIME,
+            A.OT_APPLY_HOUR,
+            A.DEDUCT_YN,
+            A.APPLY_OT_REMARK,
+            A.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(A.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            A.CONFIRM_FLAG,
+            GET_GLOBAL_NAME(TO_CHAR(A.CONFIRM_FLAG), #{lang, jdbcType=VARCHAR}) AS CONFIRM_FLAG_NAME,
+            A.CREATED_BY,
+            A.CREATED_IP
+        FROM ESS_APPLY_OT A
+        WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND A.ACTIVITY  = 1
+        <if test="otTypeCodeSearch != null and otTypeCodeSearch != ''">
+            AND A.OT_TYPE_CODE = #{otTypeCodeSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="affirmFlagSearch != null and affirmFlagSearch != ''">
+            AND A.AFFIRM_FLAG = #{affirmFlagSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND A.APPLY_OT_DATE &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND A.APPLY_OT_DATE &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+        ORDER BY A.APPLY_OT_DATE DESC, A.CREATE_DATE DESC
+    </select>
+
+    <select id="countLockedOtApply" resultType="int">
+        SELECT (
+            SELECT COUNT(1)
+            FROM AR_DETAIL_HTSV D
+            JOIN ESS_APPLY_OT ESS ON ESS.PERSON_ID = D.PERSON_ID
+            WHERE ESS.APPLY_NO IN
+            <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+                #{no, jdbcType=VARCHAR}
+            </foreach>
+            AND TO_CHAR(ESS.OT_FROM_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
+            AND D.LOCK_YN = 'Y'
+        ) + (
+            SELECT COUNT(1)
+            FROM AR_DEPARTMENT_MANAGE AD
+            JOIN HR_EMPLOYEE HE ON HE.DEPTNO = AD.DEPT_NO
+            JOIN ESS_APPLY_OT ESS ON ESS.PERSON_ID = HE.PERSON_ID
+            WHERE ESS.APPLY_NO IN
+            <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+                #{no, jdbcType=VARCHAR}
+            </foreach>
+            AND TO_CHAR(ESS.OT_FROM_TIME, 'YYYY-MM-DD') = AD.LOCK_DATE
+            AND (AD.LOCK_OT_FLAG = '1' OR AD.LOCK_OT_NIGHT_FLAG = '1')
+        ) AS LOCKED_COUNT
+        FROM DUAL
+    </select>
+
+    <update id="cancelMyOtApplyList">
+        UPDATE ESS_APPLY_OT
+        SET ACTIVITY    = 0,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP, jdbcType=VARCHAR}
+        WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND AFFIRM_FLAG = '14014306'
+          AND APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <select id="selectOtDateInfo" resultType="map">
+        SELECT
+            GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, 0, 0) AS OT_TYPE_CODE,
+            GET_GLOBAL_NAME(
+                GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, 0, 0),
+                #{lang, jdbcType=VARCHAR}
+            ) AS OT_TYPE_NAME,
+            GET_GLOBAL_NAME(
+                GET_AR_SHIFTNO(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}),
+                #{lang, jdbcType=VARCHAR}
+            ) AS SHIFT_NAME,
+            GET_AR_SHIFT_END_TIME(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) AS SHIFT_END_TIME,
+            GET_AR_SHIFT_START_TIME(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) AS SHIFT_START_TIME,
+            GET_AR_TIME_BY_CPNYID(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, 'IN',  #{cpnyId, jdbcType=VARCHAR}) AS INDOOR_TIME,
+            GET_AR_TIME_BY_CPNYID(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, 'OUT', #{cpnyId, jdbcType=VARCHAR}) AS OUTDOOR_TIME,
+            GET_AR_OT_TOTAIL(#{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, '30')     AS OT_TOTAIL_MONTH,
+            GET_AR_OT_TOTAIL(#{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, '200')    AS OT_TOTAIL,
+            GET_AR_OT_TOTAIL(#{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, '141444') AS WEEKDAY_OT_TOTAIL,
+            GET_AR_OT_TOTAIL(#{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, '141445') AS WEEKEND_OT_TOTAIL,
+            GET_AR_OT_TOTAIL(#{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, '141446') AS HOILDAY_OT_TOTAIL,
+            (SELECT OT_LIMIT     FROM HR_EMPLOYEE WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}) AS OT_LIMIT,
+            (SELECT OT_LIMIT_100 FROM HR_EMPLOYEE WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}) AS OT_LIMIT_100
+        FROM DUAL
+    </select>
+
+    <select id="selectOtDuration" resultType="map">
+        SELECT
+            GET_OT_LENGTH_SPC(
+                #{adminID, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                #{applyOtDate, jdbcType=VARCHAR},
+                GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyOtDate, jdbcType=VARCHAR}, 0, 0),
+                TO_CHAR(TO_DATE(#{otFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'HH24:MI'),
+                TO_CHAR(TO_DATE(#{otToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'HH24:MI'),
+                #{deductYn, jdbcType=VARCHAR}
+            ) AS OT_LENGTH
+        FROM DUAL
+    </select>
+
+</mapper>

@@ -1,0 +1,160 @@
+<div th:fragment="content">
+
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Sơ đồ tổ chức (Visual Chart)</h5>
+            <div class="card-tools">
+                <button class="btn btn-tool btn-sm" id="orgInfo_btnExpandAll"><i class="bx bx-expand"></i> Mở
+                    rộng</button>
+                <button class="btn btn-tool btn-sm" id="orgInfo_btnCollapseAll"><i class="bx bx-collapse"></i> Thu
+                    gọn</button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="org-container custom-scrollbar">
+                <div class="tf-tree" id="orgInfo_chart">
+                    <div class="text-center p-5">
+                        <i class="bx bx-loader-alt bx-spin fs-1"></i><br>Đang tải dữ liệu...
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-primary" id="orgInfo_btnReload">Tải lại dữ
+                                liệu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Template -->
+    <template id="fragmentScripts">
+        <script th:inline="none">
+            $(document).ready(function () {
+                console.log("ViewOrgInfo Scripts Executing via Template...");
+
+                orgInfo_loadTree();
+
+                $('#orgInfo_btnReload').click(function () { orgInfo_loadTree(); });
+                $('#orgInfo_btnExpandAll').click(function () { orgInfo_expandAll(); });
+                $('#orgInfo_btnCollapseAll').click(function () { orgInfo_collapseAll(); });
+
+                $('#orgInfo_chart').on('click', '.dept-node', function () { orgInfo_toggleNode(this); });
+
+                function orgInfo_loadTree() {
+                    console.log("Executing orgInfo_loadTree...");
+                    var $chart = $('#orgInfo_chart');
+                    if ($chart.find('.bx-loader-alt').length === 0) {
+                        $chart.html('<div class="text-center p-5"><i class="bx bx-loader-alt bx-spin fs-1"></i><br>Đang tải dữ liệu...</div>');
+                    }
+                    $.ajax({
+                        url: '/org/api/visual/tree',
+                        type: 'GET',
+                        contentType: 'application/json',
+                        success: function (data) {
+                            try { orgInfo_renderTree(data); }
+                            catch (e) { $chart.html('<div class="text-danger p-3">Lỗi hiển thị: ' + e.message + '</div>'); }
+                        },
+                        error: function (xhr, status, error) {
+                            $chart.html('<div class="text-danger p-3">Lỗi tải dữ liệu: ' + xhr.status + ' <button class="btn btn-sm btn-outline-primary mt-2" id="orgInfo_btnRetry">Thử lại</button></div>');
+                            $('#orgInfo_btnRetry').click(orgInfo_loadTree);
+                        }
+                    });
+                }
+
+                function orgInfo_renderTree(data) {
+                    if (!data || data.length === 0) { $('#orgInfo_chart').html('<div class="p-4">Không có dữ liệu</div>'); return; }
+                    var html = '<ul>';
+                    data.forEach(function (node) { html += orgInfo_buildNodeHtml(node); });
+                    html += '</ul>';
+                    $('#orgInfo_chart').html(html);
+                }
+
+                function orgInfo_buildNodeHtml(node) {
+                    var isCollapsed = (node.level >= 2 && node.children && node.children.length > 0);
+                    var liClass = isCollapsed ? 'collapsed' : '';
+
+                    var html = '<li class="' + liClass + '" data-level="' + node.level + '">';
+
+                    // Default image from user's earlier edit in Step 909
+                    var userImg = '/assets/images/users/dummy-avatar.jpg';
+
+                    if (node.type === 'DEPT') {
+                        html += `
+                            <div class="tf-nc dept-node">
+                                <div class="dept-header">${(node.name || node.code || '')}</div>
+                                <div class="dept-info">${(node.code || '')}</div>
+                                ${node.managerId ? `
+                                <div class="manager-info">
+                                    <img src="${node.imageUrl || '/assets/images/users/dummy-avatar.jpg'}" class="manager-img" onerror="this.src='/assets/images/users/dummy-avatar.jpg'">
+                                    <div class="manager-details">
+                                        <div class="manager-name">${node.managerName || ''}</div>
+                                        <div>ID: ${node.managerId}</div>
+                                    </div>
+                                </div>
+                                ` : ''}
+                                ${(node.children && node.children.length > 0) ? '<div class="toggle-btn">' + (isCollapsed ? '+' : '-') + '</div>' : ''}
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="tf-nc emp-node">
+                                <div class="emp-name">${(node.code || '')} - ${(node.name || '')}</div>
+                            </div>
+                        `;
+                    }
+
+                    if (node.children && node.children.length > 0) {
+                        // Vertical if NO Department children (i.e. only employees)
+                        var hasDepts = node.children.some(function (c) { return c.type === 'DEPT'; });
+                        var ulClass = hasDepts ? '' : 'vertical-children';
+                        html += '<ul class="' + ulClass + '">';
+
+                        // Sort: DEPT first, then EMP
+                        node.children.sort(function (a, b) {
+                            if (a.type !== b.type) return a.type === 'DEPT' ? -1 : 1;
+                            return (a.name || '').localeCompare(b.name || '');
+                        });
+
+                        node.children.forEach(function (child) {
+                            html += orgInfo_buildNodeHtml(child);
+                        });
+                        html += '</ul>';
+                    }
+
+                    html += '</li>';
+                    return html;
+                }
+
+                function orgInfo_toggleNode(el) {
+                    var $el = $(el);
+                    var btn = $el.find('.toggle-btn');
+                    if (btn.length === 0) return;
+
+                    var li = $el.closest('li');
+                    if (li.children('ul').length > 0) {
+                        li.toggleClass('collapsed');
+                        if (li.hasClass('collapsed')) {
+                            btn.text('+');
+                        } else {
+                            btn.text('-');
+                        }
+                    }
+                }
+
+                function orgInfo_expandAll() {
+                    $('.tf-tree li').removeClass('collapsed');
+                    $('.toggle-btn').text('-');
+                }
+
+                function orgInfo_collapseAll() {
+                    $('.tf-tree li').each(function () {
+                        if ($(this).children('ul').length > 0 && $(this).data('level') >= 1) {
+                            $(this).addClass('collapsed');
+                            $(this).find('> .tf-nc .toggle-btn').text('+');
+                        }
+                    });
+                }
+            });
+        </script>
+    </template>
+</div>

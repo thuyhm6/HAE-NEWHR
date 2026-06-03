@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.basicMaintenance.mapper.SyCodeParamMapper">
+
+    <!-- Result Map -->
+    <resultMap id="SyCodeParamResultMap" type="com.ait.sy.basicMaintenance.model.SyCodeParam">
+        <id property="paramNo" column="PARAM_NO"/>
+        <result property="codeNo" column="CODE_NO"/>
+        <result property="cpnyId" column="CPNY_ID"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="orderNo" column="ORDERNO"/>
+        <result property="activity" column="ACTIVITY"/>
+    </resultMap>
+
+    <!-- Lấy tất cả tham số code -->
+    <select id="findAll" resultMap="SyCodeParamResultMap">
+        SELECT * FROM SY_CODE_PARAM 
+        WHERE ACTIVITY = 1
+        ORDER BY ORDERNO, PARAM_NO
+    </select>
+
+    <!-- Lấy tham số code theo PARAM_NO -->
+    <select id="findByParamNo" resultMap="SyCodeParamResultMap">
+        SELECT * FROM SY_CODE_PARAM 
+        WHERE PARAM_NO = #{paramNo} AND ACTIVITY = 1
+    </select>
+
+    <!-- Lấy tham số code theo CODE_NO -->
+    <select id="findByCodeNo" resultMap="SyCodeParamResultMap">
+        SELECT * FROM SY_CODE_PARAM 
+        WHERE CODE_NO = #{codeNo} AND ACTIVITY = 1
+        ORDER BY ORDERNO, PARAM_NO
+    </select>
+
+    <!-- Lấy tham số code theo CPNY_ID -->
+    <select id="findByCpnyId" resultMap="SyCodeParamResultMap">
+        SELECT * FROM SY_CODE_PARAM 
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND ACTIVITY = 1
+        ORDER BY ORDERNO, PARAM_NO
+    </select>
+
+    <!-- Lấy tham số code theo CODE_NO và CPNY_ID -->
+    <select id="findByCodeNoAndCpnyId" resultMap="SyCodeParamResultMap">
+        SELECT * FROM SY_CODE_PARAM 
+        WHERE CODE_NO = #{codeNo} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND ACTIVITY = 1
+    </select>
+
+    <!-- Lấy danh sách công ty theo CODE_NO -->
+    <select id="getCpnyIdsByCodeNo" resultType="String">
+        SELECT DISTINCT CPNY_ID FROM SY_CODE_PARAM 
+        WHERE CODE_NO = #{codeNo} AND ACTIVITY = 1
+        ORDER BY CPNY_ID
+    </select>
+
+    <!-- Lấy danh sách CODE_NO theo CPNY_ID -->
+    <select id="getCodeNosByCpnyId" resultType="String">
+        SELECT DISTINCT CODE_NO FROM SY_CODE_PARAM 
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND ACTIVITY = 1
+        ORDER BY CODE_NO
+    </select>
+
+    <!-- Thêm mới tham số code -->
+    <insert id="insert" parameterType="com.ait.sy.basicMaintenance.model.SyCodeParam">
+        <selectKey keyProperty="paramNo" resultType="String" order="BEFORE">
+            SELECT SY_CODE_PARAM_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO SY_CODE_PARAM (
+            PARAM_NO, CODE_NO, CPNY_ID, CREATE_DATE, CREATED_BY,
+            UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
+        ) VALUES (
+            #{paramNo}, #{codeNo}, #{cpnyId, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR},
+            sysdate, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
+        )
+    </insert>
+
+    <!-- Cập nhật tham số code -->
+    <update id="update" parameterType="com.ait.sy.basicMaintenance.model.SyCodeParam">
+        UPDATE SY_CODE_PARAM SET
+            CODE_NO = #{codeNo},
+            CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            UPDATE_DATE = sysdate,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ORDERNO = #{orderNo},
+            ACTIVITY = #{activity}
+        WHERE PARAM_NO = #{paramNo}
+    </update>
+
+    <!-- Xóa tham số code -->
+    <delete id="deleteByParamNo">
+        DELETE FROM SY_CODE_PARAM WHERE PARAM_NO = #{paramNo}
+    </delete>
+
+    <!-- Xóa tham số code theo CODE_NO và CPNY_ID -->
+    <delete id="deleteByCodeNoAndCpnyId">
+        DELETE FROM SY_CODE_PARAM 
+        WHERE CODE_NO = #{codeNo} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- Kiểm tra tồn tại tham số code -->
+    <select id="existsByParamNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM SY_CODE_PARAM 
+        WHERE PARAM_NO = #{paramNo} AND ACTIVITY = 1
+    </select>
+
+    <!-- Kiểm tra tồn tại liên kết CODE_NO và CPNY_ID -->
+    <select id="existsByCodeNoAndCpnyId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM SY_CODE_PARAM 
+        WHERE CODE_NO = #{codeNo} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND ACTIVITY = 1
+    </select>
+
+
+    <!-- Result Map for DTO -->
+    <resultMap id="SyCodeParamDtoResultMap" type="com.ait.sy.basicMaintenance.dto.SyCodeParamDto">
+        <id property="codeNo" column="CODE_NO"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="depth" column="DEPTH"/>
+        <result property="parentCodeNo" column="PARENT_CODE_NO"/>
+        <result property="orderNo" column="ORDERNO"/>
+        <result property="activity" column="ACTIVITY"/>
+        
+        <result property="nameVi" column="NAME_VI"/>
+        <result property="nameEn" column="NAME_EN"/>
+        <result property="nameZh" column="NAME_ZH"/>
+        <result property="nameKo" column="NAME_KO"/>
+
+        <result property="assigned" column="IS_ASSIGNED"/>
+        <result property="paramNo" column="PARAM_NO"/>
+        <result property="paramOrderNo" column="PARAM_ORDER_NO"/>
+        <result property="paramActivity" column="PARAM_ACTIVITY"/>
+    </resultMap>
+
+    <select id="selectParamByParentAndCompany" resultMap="SyCodeParamDtoResultMap">
+        SELECT 
+            c.CODE_NO, c.DESCRIPTION, c.DEPTH, c.PARENT_CODE_NO, c.ORDERNO, c.ACTIVITY,
+            gvi.CONTENT AS NAME_VI,
+            gen.CONTENT AS NAME_EN,
+            gzh.CONTENT AS NAME_ZH,
+            gko.CONTENT AS NAME_KO,
+            p.PARAM_NO, 
+            p.ORDERNO AS PARAM_ORDER_NO, 
+            p.ACTIVITY AS PARAM_ACTIVITY,
+            CASE WHEN p.PARAM_NO IS NOT NULL THEN 1 ELSE 0 END AS IS_ASSIGNED
+        FROM SY_CODE c
+        LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON c.CODE_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON c.CODE_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON c.CODE_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        JOIN SY_CODE_PARAM p ON c.CODE_NO = p.CODE_NO AND p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        WHERE c.ACTIVITY = 1
+        <if test="parentCode != null and parentCode != '' and parentCode != 'ROOT'">
+            AND c.PARENT_CODE_NO = #{parentCode}
+        </if>
+        <if test="parentCode == 'ROOT' or parentCode == null or parentCode == ''">
+            AND (c.PARENT_CODE_NO IS NULL OR c.PARENT_CODE_NO = '')
+        </if>
+        ORDER BY c.ORDERNO, c.CODE_NO
+    </select>
+
+    <select id="getNextParamNoSeq" resultType="String">
+        SELECT SY_CODE_PARAM_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+</mapper>

@@ -1,0 +1,266 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="acrd_searchForm" class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label for="acrd_keyword" class="form-label" th:text="#{common.search.empIdOrName}">Mã nhân viên / Họ tên</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="acrd_keyword"
+                                       th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã hoặc họ tên">
+                                <button class="btn btn-outline-secondary" type="button" id="acrd_btnEmpSearch">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="acrd_fromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="acrd_fromDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="acrd_toDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="acrd_toDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="acrd_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="acrd_deptNo"
+                                   th:placeholder="#{common.select}" placeholder="Chọn phòng ban" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="acrd_shiftNoFilter" class="form-label" th:text="#{attSearch.shiftType}">Ca làm việc</label>
+                            <select class="form-select" id="acrd_shiftNoFilter">
+                                <option value="" th:text="#{attSearch.all}">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="acrd_missingCard" class="form-label" th:text="#{acrd.col.missingCard}">Trạng thái thiếu thẻ</label>
+                            <select class="form-select" id="acrd_missingCard">
+                                <option value=""  th:text="#{acrd.missingCard.all}">Tất cả</option>
+                                <option value="1" th:text="#{acrd.missingCard.yes}">Thiếu thẻ</option>
+                                <option value="2" th:text="#{acrd.missingCard.no}">Đủ thẻ</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-flex gap-2 flex-wrap justify-content-end">
+                            <button type="button" class="btn btn-primary" onclick="acrdSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="acrdClearSearch()">
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="acrdExportExcel()">
+                                <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất Excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table id="acrd_dataTable" class="table table-striped table-bordered table-hover" style="min-width: 100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th th:text="#{common.stt}">STT</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.empName}">Họ tên</th>
+                                    <th th:text="#{acrd.col.team}">TEAM</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{common.position}">Chức vụ</th>
+                                    <th th:text="#{attSearch.workDate}">Ngày công</th>
+                                    <th th:text="#{acrd.col.inDay}">Ngày vào</th>
+                                    <th th:text="#{acrd.col.inTime}">Thời gian vào</th>
+                                    <th th:text="#{acrd.col.outDay}">Ngày ra</th>
+                                    <th th:text="#{acrd.col.outTime}">Thời gian ra</th>
+                                    <th th:text="#{acr.col.remark}">Ghi chú</th>
+                                    <th th:text="#{acrd.col.shiftName}">Ca làm</th>
+                                    <th th:text="#{acrd.col.changeShiftPerson}">Người thay đổi Ca làm</th>
+                                    <th th:text="#{acrd.col.eatTime}">Eat time</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _acrd_table = null;
+        var _acrd_pageBooted = false;
+        var _acrd_selectedDeptCodes = [];
+
+        function acrdFormatDate(dateObj) {
+            var y = dateObj.getFullYear();
+            var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var d = String(dateObj.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        function acrdInitDefaultDateRange() {
+            var today = new Date();
+            var todayStr = acrdFormatDate(today);
+            $('#acrd_fromDate').val(todayStr);
+            $('#acrd_toDate').val(todayStr);
+            if ($('#acrd_fromDate').data('daterangepicker')) {
+                $('#acrd_fromDate').data('daterangepicker').setStartDate(todayStr);
+            }
+            if ($('#acrd_toDate').data('daterangepicker')) {
+                $('#acrd_toDate').data('daterangepicker').setStartDate(todayStr);
+            }
+        }
+
+        function acrdLoadShiftOptions() {
+            return $.ajax({
+                url: '/ar/attendanceSettings/api/shift',
+                type: 'GET',
+                success: function (data) {
+                    var html = '<option value="">-- Tất cả --</option>';
+                    (data || []).forEach(function (item) {
+                        var code = item.shiftNo || '';
+                        var name = item.nameVi || item.shiftName || code;
+                        html += '<option value="' + code + '">' + name + '</option>';
+                    });
+                    $('#acrd_shiftNoFilter').html(html);
+                }
+            });
+        }
+
+        function acrdInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') return;
+            DeptTree.init('#acrd_deptNo', function (selectedCodes) {
+                _acrd_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        function acrdInitTable() {
+            _acrd_table = $('#acrd_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                scrollY: 'calc(100vh - 350px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 50,
+                processing: true,
+                serverSide: true,
+                dom: 'Blfrtip',
+                buttons: [
+                    { extend: 'excel', title: 'du_lieu_quet_the_ca_lam' }
+                ],
+                ajax: {
+                    url: '/ar/attendanceMintenance/api/cardRecordDay/list',
+                    type: 'GET',
+                    data: function (d) {
+                        d.keyword       = $('#acrd_keyword').val();
+                        d.deptNos       = (_acrd_selectedDeptCodes || []).join(',');
+                        d.fromDate      = $('#acrd_fromDate').val();
+                        d.toDate        = $('#acrd_toDate').val();
+                        d.shiftNoFilter = $('#acrd_shiftNoFilter').val();
+                        d.missingCard   = $('#acrd_missingCard').val();
+                    }
+                },
+                initComplete: function () {
+                    $('#acrd_dataTable_wrapper').find('.dt-buttons').hide();
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row, meta) {
+                            var pageInfo = _acrd_table ? _acrd_table.page.info() : { start: 0 };
+                            return pageInfo.start + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',             className: 'text-center' },
+                    { data: 'localName' },
+                    { data: 'deptTeam' },
+                    { data: 'deptName' },
+                    { data: 'postGradeNoName' },
+                    { data: 'arDateStr',         className: 'text-center' },
+                    { data: 'inDay',             className: 'text-center' },
+                    { data: 'inTime',            className: 'text-center' },
+                    { data: 'outDay',            className: 'text-center' },
+                    { data: 'outTime',           className: 'text-center' },
+                    { data: 'leaveContent' },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row) {
+                            var name = row.shiftName || '';
+                            var time = row.shiftTime || '';
+                            return name + (time ? ' (' + time + ')' : '');
+                        }
+                    },
+                    { data: 'changeShiftPerson' },
+                    { data: 'eatTimes',          className: 'text-center' }
+                ]
+            });
+        }
+
+        function acrdBootPage() {
+            if (_acrd_pageBooted) return;
+            if (!document.getElementById('acrd_dataTable')) {
+                setTimeout(acrdBootPage, 30);
+                return;
+            }
+            _acrd_pageBooted = true;
+            acrdInitDefaultDateRange();
+            acrdInitDeptSelector();
+            $.when(acrdLoadShiftOptions()).always(function () {
+                acrdInitTable();
+                if (_acrd_table) _acrd_table.ajax.reload();
+            });
+
+            $('#acrd_btnEmpSearch').on('click', function () {
+                var keyword = $('#acrd_keyword').val().trim();
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    EmployeeSearchModal.open(function (emp) {
+                        $('#acrd_keyword').val(emp.empId + ' - ' + emp.localName);
+                        acrdSearchData();
+                    }, keyword);
+                }
+            });
+
+            $('#acrd_keyword').on('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    acrdSearchData();
+                }
+            });
+        }
+
+        window.acrdSearchData = function () {
+            if (_acrd_table) _acrd_table.ajax.reload();
+        };
+
+        window.acrdClearSearch = function () {
+            $('#acrd_keyword').val('');
+            $('#acrd_deptNo').val('');
+            $('#acrd_shiftNoFilter').val('');
+            $('#acrd_missingCard').val('');
+            _acrd_selectedDeptCodes = [];
+            $('.auth-dept-chk-global').prop('checked', false).trigger('change');
+            acrdInitDefaultDateRange();
+            if (_acrd_table) _acrd_table.ajax.reload();
+        };
+
+        window.acrdExportExcel = function () {
+            if (_acrd_table) _acrd_table.button('.buttons-excel').trigger();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', acrdBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(acrdBootPage);
+        } else {
+            acrdBootPage();
+        }
+    </script>
+</template>

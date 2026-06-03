@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrEducationMapper">
+
+    <resultMap id="HrEducationResultMap" type="com.ait.hrm.empinfo.model.HrEducation">
+        <id property="educNo" column="EDUC_NO"/>
+        <result property="personId" column="PERSON_ID"/>
+        <result property="degreeCode" column="DEGREE_CODE"/>
+        <result property="degreeName" column="DEGREE_NAME"/>
+        <result property="finalDegreeWhether" column="FINAL_DEGREE_WHETHER"/>
+        <result property="degreesCode" column="DEGREES_CODE"/>
+        <result property="institutionName" column="INSTITUTION_NAME"/>
+        <result property="subject" column="SUBJECT"/>
+        <result property="startDate" column="START_DATE"/>
+        <result property="endDate" column="END_DATE"/>
+        <result property="schoolLength" column="SCHOOL_LENGTH"/>
+        <result property="thesisNameLocal" column="THESIS_NAME_LOCAL"/>
+        <result property="thesisNameEng" column="THESIS_NAME_ENG"/>
+        <result property="subjectSecond" column="SUBJECT_SECOND"/>
+        <result property="eduDegNum" column="EDU_DEG_NUM"/>
+        <result property="siteCountry" column="SITE_COUNTRY"/>
+        <result property="siteCountryName" column="SITE_COUNTRY_NAME"/>
+        <result property="remark" column="REMARK"/>
+        <result property="orderNo" column="ORDERNO"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="place" column="PLACE"/>
+        <result property="studyExperience" column="STUDY_EXPERIENCE"/>
+        <result property="fileName" column="FILE_NAME"/>
+        <result property="fileUrl" column="FILE_URL"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        
+        <!-- Joined fields -->
+        <result property="empId" column="EMPID"/>
+        <result property="localName" column="LOCAL_NAME"/>
+        <result property="deptName" column="DEPT_NAME"/>
+    </resultMap>
+
+    <select id="searchEducation" resultMap="HrEducationResultMap">
+        SELECT 
+            t1.EDUC_NO, t1.PERSON_ID,
+            t1.DEGREE_CODE,
+            GET_GLOBAL_NAME(t1.DEGREE_CODE, #{lang, jdbcType=VARCHAR}) AS DEGREE_NAME,
+            t1.FINAL_DEGREE_WHETHER, t1.DEGREES_CODE, t1.INSTITUTION_NAME, t1.SUBJECT, t1.START_DATE, t1.END_DATE, t1.SCHOOL_LENGTH, t1.THESIS_NAME_LOCAL, t1.THESIS_NAME_ENG, t1.SUBJECT_SECOND, t1.EDU_DEG_NUM,
+            t1.SITE_COUNTRY,
+            GET_GLOBAL_NAME(t1.SITE_COUNTRY, #{lang, jdbcType=VARCHAR}) AS SITE_COUNTRY_NAME,
+            t1.REMARK, t1.CREATE_DATE, t1.CREATED_BY, t1.CREATED_IP, t1.UPDATE_DATE, t1.UPDATED_BY, t1.UPDATED_IP, t1.ORDERNO, t1.ACTIVITY, t1.PLACE, t1.STUDY_EXPERIENCE, t1.FILE_NAME, t1.FILE_URL,
+            t2.EMPID,
+            t2.LOCAL_NAME,
+            t3.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_EDUCATION t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE 1=1 AND t1.ACTIVITY = '1'
+        <if test="empId != null and empId != ''">
+            AND t2.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="personId != null and personId != ''">
+            AND t1.PERSON_ID = #{personId}
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(t2.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="institutionName != null and institutionName != ''">
+            AND t1.INSTITUTION_NAME LIKE '%' || #{institutionName} || '%'
+        </if>
+        ORDER BY t2.EMPID ASC
+    </select>
+
+    <select id="getById" resultMap="HrEducationResultMap">
+        SELECT 
+            t1.EDUC_NO, t1.PERSON_ID,
+            t1.DEGREE_CODE,
+            GET_GLOBAL_NAME(t1.DEGREE_CODE, #{lang, jdbcType=VARCHAR}) AS DEGREE_NAME,
+            t1.FINAL_DEGREE_WHETHER, t1.DEGREES_CODE, t1.INSTITUTION_NAME, t1.SUBJECT, t1.START_DATE, t1.END_DATE, t1.SCHOOL_LENGTH, t1.THESIS_NAME_LOCAL, t1.THESIS_NAME_ENG, t1.SUBJECT_SECOND, t1.EDU_DEG_NUM,
+            t1.SITE_COUNTRY,
+            GET_GLOBAL_NAME(t1.SITE_COUNTRY, #{lang, jdbcType=VARCHAR}) AS SITE_COUNTRY_NAME,
+            t1.REMARK, t1.CREATE_DATE, t1.CREATED_BY, t1.CREATED_IP, t1.UPDATE_DATE, t1.UPDATED_BY, t1.UPDATED_IP, t1.ORDERNO, t1.ACTIVITY, t1.PLACE, t1.STUDY_EXPERIENCE, t1.FILE_NAME, t1.FILE_URL,
+            t2.EMPID,
+            t2.LOCAL_NAME,
+            t3.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_EDUCATION t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE t1.ACTIVITY = '1' AND t1.EDUC_NO = #{educNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.hrm.empinfo.model.HrEducation">
+        INSERT INTO HR_EDUCATION (
+            EDUC_NO, PERSON_ID, DEGREE_CODE, FINAL_DEGREE_WHETHER, DEGREES_CODE,
+            INSTITUTION_NAME, SUBJECT, START_DATE, END_DATE, SCHOOL_LENGTH,
+            THESIS_NAME_LOCAL, THESIS_NAME_ENG, SUBJECT_SECOND, EDU_DEG_NUM, SITE_COUNTRY,
+            REMARK, ORDERNO, ACTIVITY, PLACE, STUDY_EXPERIENCE, FILE_NAME, FILE_URL,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            HR_EDU_SEQ.NEXTVAL, #{personId}, #{degreeCode}, #{finalDegreeWhether}, #{degreesCode},
+            #{institutionName}, #{subject}, #{startDate}, #{endDate}, #{schoolLength},
+            #{thesisNameLocal}, #{thesisNameEng}, #{subjectSecond}, #{eduDegNum}, #{siteCountry},
+            #{remark}, #{orderNo}, #{activity}, #{place}, #{studyExperience}, #{fileName}, #{fileUrl},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.hrm.empinfo.model.HrEducation">
+        UPDATE HR_EDUCATION
+        SET 
+            PERSON_ID = #{personId},
+            DEGREE_CODE = #{degreeCode},
+            FINAL_DEGREE_WHETHER = #{finalDegreeWhether},
+            DEGREES_CODE = #{degreesCode},
+            INSTITUTION_NAME = #{institutionName},
+            SUBJECT = #{subject},
+            START_DATE = #{startDate},
+            END_DATE = #{endDate},
+            SCHOOL_LENGTH = #{schoolLength},
+            THESIS_NAME_LOCAL = #{thesisNameLocal},
+            THESIS_NAME_ENG = #{thesisNameEng},
+            SUBJECT_SECOND = #{subjectSecond},
+            EDU_DEG_NUM = #{eduDegNum},
+            SITE_COUNTRY = #{siteCountry},
+            REMARK = #{remark},
+            ORDERNO = #{orderNo},
+            ACTIVITY = #{activity},
+            PLACE = #{place},
+            STUDY_EXPERIENCE = #{studyExperience},
+            FILE_NAME = #{fileName},
+            FILE_URL = #{fileUrl},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE EDUC_NO = #{educNo}
+    </update>
+
+    <delete id="delete">
+        UPDATE HR_EDUCATION 
+        SET ACTIVITY = '0',
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE EDUC_NO = #{educNo}
+    </delete>
+
+</mapper>

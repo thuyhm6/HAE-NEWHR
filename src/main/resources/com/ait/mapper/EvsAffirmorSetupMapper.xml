@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsAffirmorSetupMapper">
+
+    <!-- ── ResultMap: EVS_OBJECT + người đánh giá ─────────────────────────── -->
+    <resultMap id="EvsAffirmorSetupResultMap" type="com.ait.evs.manage.dto.EvsAffirmorSetupDto">
+        <id     column="SEQ"               property="seq"              jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ"        property="resumeSeq"        jdbcType="VARCHAR" />
+        <result column="PERSON_ID"         property="personId"         jdbcType="VARCHAR" />
+        <result column="EMPID"             property="empid"            jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"        property="localName"        jdbcType="VARCHAR" />
+        <result column="DEPTNO"            property="deptno"           jdbcType="VARCHAR" />
+        <result column="DEPTNAME"          property="deptname"         jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO"     property="postGradeNo"      jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME"   property="postGradeName"    jdbcType="VARCHAR" />
+        <result column="MAIN_BUSINESS"     property="mainBusiness"     jdbcType="VARCHAR" />
+        <result column="MAIN_BUSINESS_NAME" property="mainBusinessName" jdbcType="VARCHAR" />
+        <result column="OBJECT_TYPE"       property="objectType"       jdbcType="VARCHAR" />
+        <result column="OBJECT_TYPE_NAME"  property="objectTypeName"   jdbcType="VARCHAR" />
+        <result column="DATE_STARTED"      property="dateStarted"      jdbcType="VARCHAR" />
+        <result column="LIST_TYPE_NAME"    property="listTypeName"     jdbcType="VARCHAR" />
+        <result column="EVS_GROUP_NAME"    property="evsGroupName"     jdbcType="VARCHAR" />
+        <result column="EVS_OCC_GROUP"     property="evsOccGroup"      jdbcType="VARCHAR" />
+        <result column="EVS_OCC_GROUP_NAME" property="evsOccGroupName" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"       property="updateDate"       jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"        property="updatedBy"        jdbcType="VARCHAR" />
+        <!-- Người đánh giá lần 0 (bản thân) -->
+        <result column="LOCAL_NAME0"       property="localName0"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME0"  property="postGradeName0"   jdbcType="VARCHAR" />
+        <!-- Người đánh giá lần 1 -->
+        <result column="LOCAL_NAME1"       property="localName1"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME1"  property="postGradeName1"   jdbcType="VARCHAR" />
+        <result column="PERSON_ID1"        property="personId1"        jdbcType="VARCHAR" />
+        <!-- Người đánh giá lần 2 -->
+        <result column="LOCAL_NAME2"       property="localName2"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME2"  property="postGradeName2"   jdbcType="VARCHAR" />
+        <result column="PERSON_ID2"        property="personId2"        jdbcType="VARCHAR" />
+        <!-- Người đánh giá lần 3 -->
+        <result column="LOCAL_NAME3"       property="localName3"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME3"  property="postGradeName3"   jdbcType="VARCHAR" />
+        <result column="PERSON_ID3"        property="personId3"        jdbcType="VARCHAR" />
+        <!-- Người đánh giá lần 4 -->
+        <result column="LOCAL_NAME4"       property="localName4"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME4"  property="postGradeName4"   jdbcType="VARCHAR" />
+        <result column="PERSON_ID4"        property="personId4"        jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── ResultMap: tìm kiếm nhân viên ──────────────────────────────────── -->
+    <resultMap id="EmployeeSearchResultMap" type="com.ait.evs.manage.dto.EvsAffirmorSetupDto">
+        <id     column="PERSON_ID"       property="personId"       jdbcType="VARCHAR" />
+        <result column="EMPID"           property="empid"          jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"      property="localName"      jdbcType="VARCHAR" />
+        <result column="DEPTNAME"        property="deptname"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME" property="postGradeName"  jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── selectList ─────────────────────────────────────────────────────── -->
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto"
+            resultMap="EvsAffirmorSetupResultMap">
+        SELECT A.SEQ,
+               A.RESUME_SEQ,
+               A.PERSON_ID,
+               A.EMPID,
+               A.LOCAL_NAME,
+               A.DEPTNO,
+               GET_DEPT_NAME(A.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+               A.POST_GRADE_NO,
+               A.POST_GRADE_NAME,
+               A.MAIN_BUSINESS,
+               GET_GLOBAL_NAME(A.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+               A.OBJECT_TYPE,
+               A.OBJECT_TYPE_NAME,
+               TO_CHAR(A.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+               A.LIST_TYPE_NAME,
+               A.EVS_GROUP_NAME,
+               A.EVS_OCC_GROUP,
+               A.EVS_OCC_GROUP_NAME,
+               TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+               GET_UPDATED_INFO(A.UPDATED_BY) || ' ' || A.UPDATED_IP UPDATED_BY,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'LOCAL_NAME')      LOCAL_NAME0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'LOCAL_NAME')      LOCAL_NAME1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'LOCAL_NAME')      LOCAL_NAME2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'LOCAL_NAME')      LOCAL_NAME3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'LOCAL_NAME')      LOCAL_NAME4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 0, 'POST_GRADE_NAME') POST_GRADE_NAME0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'POST_GRADE_NAME') POST_GRADE_NAME1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'POST_GRADE_NAME') POST_GRADE_NAME2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'POST_GRADE_NAME') POST_GRADE_NAME3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'POST_GRADE_NAME') POST_GRADE_NAME4,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'AFFIRMOR_ID')     PERSON_ID1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'AFFIRMOR_ID')     PERSON_ID2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'AFFIRMOR_ID')     PERSON_ID3,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'AFFIRMOR_ID')     PERSON_ID4
+          FROM EVS_OBJECT A
+         WHERE A.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        <if test="deptNos != null and deptNos != ''">
+            AND A.DEPTNO IN
+            <foreach item="dno" collection="deptNos.split(',')" open="(" separator="," close=")">
+                #{dno, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="affirmorKeyword != null and affirmorKeyword != ''">
+            AND (PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 1, 'LOCAL_NAME') LIKE '%' || #{affirmorKeyword, jdbcType=VARCHAR} || '%'
+              OR PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 2, 'LOCAL_NAME') LIKE '%' || #{affirmorKeyword, jdbcType=VARCHAR} || '%'
+              OR PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 3, 'LOCAL_NAME') LIKE '%' || #{affirmorKeyword, jdbcType=VARCHAR} || '%'
+              OR PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(A.SEQ, 4, 'LOCAL_NAME') LIKE '%' || #{affirmorKeyword, jdbcType=VARCHAR} || '%')
+        </if>
+         ORDER BY A.PERSON_ID ASC
+    </select>
+
+    <!-- ── searchEmployee: tìm nhân viên để chọn làm người đánh giá ────────── -->
+    <select id="searchEmployee" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto"
+            resultMap="EmployeeSearchResultMap">
+        SELECT E.PERSON_ID,
+               E.EMPID,
+               E.LOCAL_NAME,
+               GET_DEPT_NAME(E.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+               E.POST_GRADE_NAME
+          FROM HR_EMPLOYEE E
+         WHERE E.ACTIVITY = 1
+        <if test="affirmorKeyword != null and affirmorKeyword != ''">
+            AND (CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{affirmorKeyword, jdbcType=VARCHAR})) || '%'
+              OR E.EMPID      LIKE '%' || #{affirmorKeyword, jdbcType=VARCHAR} || '%')
+        </if>
+         ORDER BY E.EMPID ASC
+    </select>
+
+    <!-- ── updateAffirmor: cập nhật người đánh giá vào EVS_AFFIRM ────────── -->
+    <!-- Gọi procedure/package để cập nhật người đánh giá theo level          -->
+    <update id="updateAffirmor" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto">
+        MERGE INTO EVS_AFFIRM T
+        USING (
+            SELECT #{seq,      jdbcType=VARCHAR} AS OBJ_SEQ,
+                   1            AS AFFIRM_LEVEL,
+                   #{personId1, jdbcType=VARCHAR} AS AFFIRMOR_ID
+            FROM DUAL
+            WHERE #{personId1, jdbcType=VARCHAR} IS NOT NULL
+            UNION ALL
+            SELECT #{seq,      jdbcType=VARCHAR},
+                   2,
+                   #{personId2, jdbcType=VARCHAR}
+            FROM DUAL
+            WHERE #{personId2, jdbcType=VARCHAR} IS NOT NULL
+            UNION ALL
+            SELECT #{seq,      jdbcType=VARCHAR},
+                   3,
+                   #{personId3, jdbcType=VARCHAR}
+            FROM DUAL
+            WHERE #{personId3, jdbcType=VARCHAR} IS NOT NULL
+            UNION ALL
+            SELECT #{seq,      jdbcType=VARCHAR},
+                   4,
+                   #{personId4, jdbcType=VARCHAR}
+            FROM DUAL
+            WHERE #{personId4, jdbcType=VARCHAR} IS NOT NULL
+        ) S ON (T.OBJ_SEQ = S.OBJ_SEQ AND T.AFFIRM_LEVEL = S.AFFIRM_LEVEL)
+        WHEN MATCHED THEN
+            UPDATE SET T.AFFIRMOR_ID = S.AFFIRMOR_ID,
+                       T.UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+                       T.UPDATED_IP  = #{adminIP, jdbcType=VARCHAR},
+                       T.UPDATE_DATE = SYSDATE
+        WHEN NOT MATCHED THEN
+            INSERT (OBJ_SEQ, AFFIRM_LEVEL, AFFIRMOR_ID, CREATED_BY, CREATED_IP, CREATE_DATE)
+            VALUES (S.OBJ_SEQ, S.AFFIRM_LEVEL, S.AFFIRMOR_ID,
+                    #{adminID, jdbcType=VARCHAR},
+                    #{adminIP, jdbcType=VARCHAR},
+                    SYSDATE)
+    </update>
+
+
+    <!-- ── callAddEvsObject: gọi stored procedure thêm đối tượng ─────────────── -->
+    <update id="callAddEvsObject" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_ADD_EVS_OBJECT(
+            #{resumeSeq,    jdbcType=VARCHAR, mode=IN},
+            #{personId,     jdbcType=VARCHAR, mode=IN},
+            #{adminID,      jdbcType=VARCHAR, mode=IN},
+            #{adminIP,      jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,       jdbcType=VARCHAR, mode=IN},
+            #{message,      jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <!-- ── selectNewObjSeq: lấy SEQ của đối tượng vừa thêm ─────────────────── -->
+    <select id="selectNewObjSeq" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto"
+            resultType="String">
+        SELECT SEQ
+          FROM EVS_OBJECT
+         WHERE RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+           AND PERSON_ID  = #{personId,  jdbcType=VARCHAR}
+         ORDER BY CREATE_DATE DESC
+         FETCH FIRST 1 ROW ONLY
+    </select>
+
+    <!-- ── callModifyAffirmInfo: gọi stored procedure lưu người đánh giá ──────── -->
+    <update id="callModifyAffirmInfo" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_MODIFY_AFFIRM_INFO(
+            #{resumeSeq,      jdbcType=VARCHAR, mode=IN},
+            #{seq,            jdbcType=VARCHAR, mode=IN},
+            #{personIdAffirm, jdbcType=VARCHAR, mode=IN},
+            #{affirmLevel,    jdbcType=VARCHAR, mode=IN},
+            #{adminID,        jdbcType=VARCHAR, mode=IN},
+            #{adminIP,        jdbcType=VARCHAR, mode=IN},
+            #{message,        jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+
+    <!-- ── updateEvsObject: cập nhật thông tin đối tượng đánh giá ─────────── -->
+    <update id="updateEvsObject" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto">
+        UPDATE EVS_OBJECT
+           <set>
+                <if test="listTypeName != null and listTypeName != ''">
+                    LIST_TYPE         = GET_CODE_NO(#{listTypeName,    jdbcType=VARCHAR}, #{resumeSeq, jdbcType=VARCHAR}, 'LIST',   'EVS_PARAM'),
+                    LIST_TYPE_NAME    = #{listTypeName,    jdbcType=VARCHAR},
+                </if>
+                <if test="evsGroupName != null and evsGroupName != ''">
+                    EVS_GROUP         = GET_CODE_NO(#{evsGroupName,    jdbcType=VARCHAR}, #{resumeSeq, jdbcType=VARCHAR}, 'GROUP',  'EVS_PARAM'),
+                    EVS_GROUP_NAME    = #{evsGroupName,    jdbcType=VARCHAR},
+                </if>
+                <if test="evsOccGroupName != null and evsOccGroupName != ''">
+                    EVS_OCC_GROUP     = GET_CODE_NO(#{evsOccGroupName, jdbcType=VARCHAR}, #{resumeSeq, jdbcType=VARCHAR}, 'FAMILY', 'EVS_PARAM'),
+                    EVS_OCC_GROUP_NAME = #{evsOccGroupName, jdbcType=VARCHAR},
+                </if>
+               UPDATE_DATE       = SYSDATE,
+               UPDATED_BY        = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP        = #{adminIP, jdbcType=VARCHAR}
+            </set>
+         WHERE SEQ = #{seq, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── callEvsStart: bắt đầu đánh giá ──────────────────────────────────── -->
+    <update id="callEvsStart" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_EVS_START(
+            #{resumeSeq, jdbcType=VARCHAR, mode=IN},
+            #{adminID,   jdbcType=VARCHAR, mode=IN},
+            #{adminIP,   jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,    jdbcType=VARCHAR, mode=IN},
+            #{message,   jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <!-- ── callCreateEvsTarget: tạo mục tiêu đánh giá ───────────────────────── -->
+    <update id="callCreateEvsTarget" parameterType="com.ait.evs.manage.dto.EvsAffirmorSetupDto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_CREATE_EVS_TARGET(
+            #{resumeSeq, jdbcType=VARCHAR, mode=IN},
+            #{adminID,   jdbcType=VARCHAR, mode=IN},
+            #{adminIP,   jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,    jdbcType=VARCHAR, mode=IN},
+            #{message,   jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <!-- ── deleteObjects: xóa các đối tượng đánh giá theo danh sách SEQ ────── -->
+    <delete id="deleteObjects">
+        DELETE FROM EVS_OBJECT
+         WHERE SEQ IN
+        <foreach collection="seqList" item="seq" open="(" separator="," close=")">
+            #{seq, jdbcType=VARCHAR}
+        </foreach>
+    </delete>
+
+</mapper>

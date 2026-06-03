@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Processing Modal</title></head>
+<body>
+
+<div th:fragment="content">
+    <div class="modal fade" id="processingModal" tabindex="-1"
+         data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body text-center py-4">
+                    <div class="spinner-border text-primary mb-3" role="status"
+                         style="width:2.5rem;height:2.5rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div id="processingModalMessage" class="fw-semibold"
+                         th:text="#{common.processing}">Đang thực hiện...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

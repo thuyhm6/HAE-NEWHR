@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArMacRecordEatMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
+        <result property="seq"           column="SEQ"/>
+        <result property="empId"         column="EMPID"/>
+        <result property="eatDate"       column="EAT_DATE"/>
+        <result property="eatName"       column="EAT_NAME"/>
+        <result property="localName"     column="LOCAL_NAME"/>
+        <result property="rDate"         column="R_DATE"/>
+        <result property="rTime"         column="R_TIME"/>
+        <result property="amount"        column="AMOUNT"/>
+        <result property="attendanceDate" column="ATTENDANCE_DATE"/>
+        <result property="outdoorTime"   column="OUTDOOR_TIME"/>
+        <result property="deptName"      column="DEPTNAME"/>
+        <result property="remark"        column="REMARK"/>
+        <result property="postGradeName" column="POST_GRADE_NAME"/>
+        <result property="insertBy"      column="INSERT_BY"/>
+    </resultMap>
+
+    <!-- EMPID của AR_MAC_RECORDS_HTSV_EAT LEFT JOIN HR_EMPLOYEE. Nếu không tìm thấy thì LOCAL_NAME thay bằng EMPLOYEE_NAME -->
+    <sql id="baseQuery">
+        SELECT A.SEQ,
+               A.EMPID,
+               A.EAT_DATE,
+               A.EAT_NAME,
+               NVL(B.LOCAL_NAME, A.EMPLOYEE_NAME) AS LOCAL_NAME,
+               TO_CHAR(A.R_TIME, 'YYYY/MM/DD')          AS R_DATE,
+               TO_CHAR(A.R_TIME, 'HH24:MI')             AS R_TIME,
+               A.AMOUNT,
+               (CASE WHEN A.EAT_DATE IN ('BREAKFAST', 'NIGHT')
+                     THEN TO_CHAR(A.R_TIME - 1, 'YYYY/MM/DD')
+                     ELSE TO_CHAR(A.R_TIME, 'YYYY/MM/DD') END) AS ATTENDANCE_DATE,
+               GET_AR_TIME_BY_CPNYID(
+                   GET_PERSON_ID(A.EMPID),
+                   CASE WHEN A.EAT_DATE IN ('BREAKFAST', 'NIGHT')
+                        THEN TO_CHAR(A.R_TIME - 1, 'YYYY/MM/DD')
+                        ELSE TO_CHAR(A.R_TIME, 'YYYY/MM/DD') END,
+                   'OUT_DATE_TIME',
+                   #{cpnyId, jdbcType=VARCHAR}
+               ) AS OUTDOOR_TIME,
+               CASE WHEN GET_DEPT_NAME(B.DEPTNO, #{lang, jdbcType=VARCHAR}) = ''
+                      OR GET_DEPT_NAME(B.DEPTNO, #{lang, jdbcType=VARCHAR}) IS NULL
+                    THEN A.DEPART_NAME
+                    ELSE GET_DEPT_NAME(B.DEPTNO, #{lang, jdbcType=VARCHAR}) END AS DEPTNAME,
+               A.REMARK,
+               GET_CODE_NAME(B.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               A.INSERT_BY
+          FROM AR_MAC_RECORDS_HTSV_EAT A
+          LEFT JOIN HR_EMPLOYEE B ON A.EMPID = B.EMPID
+         WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+           AND (
+               UPPER(A.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+               OR CONVERTTOUNSIGN(UPPER(NVL(B.LOCAL_NAME, A.EMPLOYEE_NAME)))
+                  LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+           )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+           AND B.DEPTNO IS NOT NULL
+           AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || B.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+           AND A.R_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+           AND A.R_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+        <if test="eatDate != null and eatDate != ''">
+           AND A.EAT_DATE = #{eatDate, jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <select id="countList" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
+        SELECT COUNT(*) FROM (
+            <include refid="baseQuery"/>
+        )
+    </select>
+
+    <select id="selectListPage" resultMap="DtoResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY A.R_TIME DESC, A.EMPID
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <select id="selectListAll" resultMap="DtoResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
+        <include refid="baseQuery"/>
+        ORDER BY A.R_TIME DESC, A.EMPID
+    </select>
+
+    <!-- Kiểm tra trùng: cùng EMPID + CARD_TIME + DOOR_NAME -->
+    <select id="countDuplicateEat" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
+        SELECT COUNT(*)
+          FROM AR_MAC_RECORDS_HTSV_EAT
+         WHERE EMPID     = #{empId,    jdbcType=VARCHAR}
+           AND R_TIME = TO_DATE(#{cardTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
+           AND EAT_NAME = #{doorName, jdbcType=VARCHAR}
+    </select>
+
+    <!-- Insert từ thiết bị Access Control (reader suất ăn DeviceIDX 1033, 1034) -->
+    <insert id="insertFromDevice"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
+        INSERT INTO AR_MAC_RECORDS_HTSV_EAT (
+            SEQ,
+            CPNY_ID,
+            EMPID,
+            EMPLOYEE_NAME,
+            R_TIME,
+            EAT_NAME,
+            DEPART_NAME,
+            INSERT_BY
+        ) VALUES (
+            AR_MAC_RECORDS_TSTO_EAT_SEQ.NEXTVAL,
+            #{cpnyId,       jdbcType=VARCHAR},
+            #{empId,        jdbcType=VARCHAR},
+            #{employeeName, jdbcType=VARCHAR},
+            TO_DATE(#{cardTime,    jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            #{doorName,     jdbcType=VARCHAR},
+            #{departName,   jdbcType=VARCHAR},
+            'M'
+        )
+    </insert>
+
+</mapper>

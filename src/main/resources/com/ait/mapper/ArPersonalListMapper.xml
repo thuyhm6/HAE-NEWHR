@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.ArPersonalListMapper">
+
+    <resultMap id="ArPersonalListItemResultMap" type="com.ait.ess.viewDept.dto.ArPersonalListDto">
+        <id     column="ITEM_ID"   property="itemId"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME" property="itemName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--
+        Danh sách loại chấm công active từ AR_ITEM.
+        ITEM_ID ở đây chính là tên cột trong AR_EMP_DAY_TOTAL.
+        Dùng GET_GLOBAL_NAME để lấy tên hiển thị cho header cột.
+    -->
+    <select id="selectItemList" resultMap="ArPersonalListItemResultMap">
+        SELECT AI.ITEM_ID,
+               GET_GLOBAL_NAME(AI.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME
+        FROM AR_ITEM AI
+        WHERE AI.ITEM_ID  IS NOT NULL
+          AND AI.ACTIVITY = 1
+          <if test="itemGroup != '1433'">
+            AND AI.ITEM_GROUP_CODE != '1433'
+          </if>
+          <if test="itemGroup == '1433'">
+            AND AI.ITEM_GROUP_CODE = '1433'
+          </if>
+        ORDER BY AI.ITEM_ID
+    </select>
+
+    <!-- Chỉ lấy ITEM_ID thuần để service truyền vào build SQL động -->
+    <select id="selectActiveItemIds" parameterType="com.ait.ess.viewDept.dto.ArPersonalListDto" resultType="java.lang.String">
+        SELECT AI.ITEM_ID
+        FROM AR_ITEM AI
+        WHERE AI.ITEM_ID  IS NOT NULL
+          AND AI.ACTIVITY = 1
+          <if test="itemGroup != '1433'">
+            AND AI.ITEM_GROUP_CODE != '1433'
+          </if>
+          <if test="itemGroup == '1433'">
+            AND AI.ITEM_GROUP_CODE = '1433'
+          </if>
+        ORDER BY AI.ITEM_ID
+    </select>
+
+    <!--
+        Tổng hợp chấm công: mỗi row = 1 nhân viên.
+        NORMAL_WORK và LATE_EARLY_GO_TOTAL là cột cố định.
+        Các cột còn lại được build động từ params.itemIds (tên cột trong AR_EMP_DAY_TOTAL).
+        Dùng ${itemId} (không phải #{itemId}) vì đây là tên cột, không phải bind parameter.
+        Giá trị itemId luôn lấy từ AR_ITEM.ITEM_ID (do chính hệ thống quản lý) nên an toàn.
+    -->
+    <select id="selectSummaryList" parameterType="com.ait.ess.viewDept.dto.ArPersonalListDto"
+            resultType="java.util.LinkedHashMap">
+        SELECT HE.PERSON_ID,
+               HE.EMPID,
+               HE.LOCAL_NAME,
+               GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR})          AS DEPT_NAME,
+               GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME,
+               HE.EMP_TYPE_CODE,
+               SUM(NVL(T.NORMAL_WORK / NVL(NULLIF(T.SHIFT_LENGTH, 0), 8), 0))                                   AS NORMAL_WORK,
+               SUM(NVL(T.LATE_ARRIVE,  0) + NVL(T.EARLY_LEAVE, 0) + NVL(T.GO_OUT, 0)) AS LATE_EARLY_GO_TOTAL
+               <if test="itemIds != null and !itemIds.isEmpty()">
+                   <foreach collection="itemIds" item="itemId" separator="">
+                       , SUM(NVL(T.${itemId}, 0)) AS ${itemId}
+                   </foreach>
+               </if>
+        FROM AR_EMP_DAY_TOTAL T
+        JOIN HR_EMPLOYEE HE
+            ON  HE.PERSON_ID = T.PERSON_ID
+            AND HE.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+        WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        AND T.PERSON_ID NOT LIKE '1111%'  /* Loại bỏ nhân viên giả lập dùng cho chấm công thủ công */
+        <if test="startDate != null and startDate != ''">
+            AND T.DATE_STR &gt;= #{startDate, jdbcType=VARCHAR}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND T.DATE_STR &lt;= #{endDate, jdbcType=VARCHAR}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HE.EMPID)      LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR UPPER(HE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="empTypeCode != null and empTypeCode != ''">
+            AND HE.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+        </if>
+        GROUP BY HE.PERSON_ID, HE.EMPID, HE.LOCAL_NAME, HE.DEPTNO, HE.POST_GRADE_NO, HE.EMP_TYPE_CODE
+        ORDER BY HE.EMPID
+    </select>
+
+
+    <resultMap id="ArPersonalListDetailResultMap" type="com.ait.ess.viewDept.dto.ArPersonalListDetailDto">
+        <id     column="PK_NO"         property="pkNo"        jdbcType="VARCHAR" />
+        <result column="PERSON_ID"     property="personId"    jdbcType="VARCHAR" />
+        <result column="EMPID"         property="empId"       jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"    property="localName"   jdbcType="VARCHAR" />
+        <result column="SHIFT_NO"      property="shiftNo"     jdbcType="VARCHAR" />
+        <result column="SHIFT_NAME"    property="shiftName"   jdbcType="VARCHAR" />
+        <result column="AR_DATE_STR"   property="arDateStr"   jdbcType="VARCHAR" />
+        <result column="ITEM_NO"       property="itemNo"      jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"     property="itemName"    jdbcType="VARCHAR" />
+        <result column="FROM_TIME_STR" property="fromTimeStr" jdbcType="VARCHAR" />
+        <result column="TO_TIME_STR"   property="toTimeStr"   jdbcType="VARCHAR" />
+        <result column="QUANTITY"      property="quantity"    jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!--
+        Chi tiết chấm công từ AR_DETAIL_HTSV cho 1 nhân viên + 1 loại (tìm ITEM_NO qua AR_ITEM.ITEM_ID).
+        startDate / endDate định dạng YYYY/MM/DD, so sánh trực tiếp với AR_DATE_STR.
+    -->
+    <select id="selectDetailList" parameterType="com.ait.ess.viewDept.dto.ArPersonalListDetailDto"
+            resultMap="ArPersonalListDetailResultMap">
+        SELECT TO_CHAR(D.PK_NO)                                       AS PK_NO,
+               D.PERSON_ID,
+               HE.EMPID,
+               HE.LOCAL_NAME,
+               D.SHIFT_NO,
+               GET_GLOBAL_NAME(D.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               D.AR_DATE_STR,
+               D.ITEM_NO,
+               GET_GLOBAL_NAME(D.ITEM_NO,  #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+               TO_CHAR(D.FROM_TIME, 'HH24:MI')                        AS FROM_TIME_STR,
+               TO_CHAR(D.TO_TIME,   'HH24:MI')                        AS TO_TIME_STR,
+               TO_CHAR(D.QUANTITY)                                     AS QUANTITY
+        FROM AR_DETAIL_HTSV D, HR_EMPLOYEE HE
+        WHERE HE.PERSON_ID = D.PERSON_ID
+          AND D.PERSON_ID  = #{personId, jdbcType=VARCHAR}
+          AND D.ITEM_NO    = (
+              SELECT AI.ITEM_NO FROM AR_ITEM AI
+              WHERE AI.ITEM_ID = #{itemId, jdbcType=VARCHAR}
+                AND ROWNUM = 1
+          )
+        <if test="startDate != null and startDate != ''">
+          AND D.AR_DATE_STR &gt;= #{startDate, jdbcType=VARCHAR}
+        </if>
+        <if test="endDate != null and endDate != ''">
+          AND D.AR_DATE_STR &lt;= #{endDate, jdbcType=VARCHAR}
+        </if>
+        ORDER BY D.AR_DATE_STR
+    </select>
+
+</mapper>

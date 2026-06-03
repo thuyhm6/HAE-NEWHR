@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.EssLeaveApplyMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.hrm.empinfo.dto.EmployeeNameDto">
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPT_NO" property="deptNo" />
+        <result column="DEPT_NAME" property="deptName" />
+        <result column="POSITION_NO" property="positionNo" />
+        <result column="POSITION_NO_NAME" property="positionNoName" />
+        <result column="POST_GRADE_NO" property="postGradeNo" />
+        <result column="POST_GRADE_NAME" property="postGradeName" />
+        <result column="EMP_TYPE_CODE" property="empTypeCode" />
+        <result column="EMP_TYPE_NAME" property="empTypeName" />
+        <result column="MAIN_BUSINESS_NO" property="mainBusinessNo" />
+        <result column="MAIN_BUSINESS_NAME" property="mainBusinessName" />
+        <result column="DUTY_NO" property="dutyNo" />
+        <result column="DUTY_NAME" property="dutyName" />
+        <result column="POST_NO" property="postNo" />
+        <result column="POST_NAME" property="postName" />
+        <result column="STATUS_CODE_NO" property="statusCodeNo" />
+        <result column="STATUS_CODE_NAME" property="statusCodeName" />
+        <result column="SHIFT_NO" property="shiftNo" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="EMP_OFFICE" property="empOffice" />
+        <result column="EMP_OFFICE_NAME" property="empOfficeName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="POST_FAMILY_NAME" property="postFamilyName" />
+        <result column="WORK_HOUR_TYPE" property="workHourType" />
+        <result column="WORK_HOUR_TYPE_NAME" property="workHourTypeName" />
+        <result column="POSITION" property="position" />
+        <result column="POSITION_NAME" property="positionName" />
+    </resultMap>
+
+    <resultMap id="EssLeaveApplyResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto" extends="DtoResultMap">
+        <id property="applyNo" column="APPLY_NO" />
+        <result property="personId" column="PERSON_ID" />
+        <result property="leaveFromTime" column="LEAVE_FROM_TIME" />
+        <result property="leaveToTime" column="LEAVE_TO_TIME" />
+        <result property="leaveReason" column="LEAVE_REASON" />
+        <result property="leaveTypeNo" column="LEAVE_TYPE_NO" />
+        <result property="leaveTypeCode" column="LEAVE_TYPE_CODE" />
+        <result property="applyLength" column="APPLY_LENGTH" />
+        <result property="dayHours" column="DAY_HOURS" />
+        <result property="applyTime" column="CREATE_DATE" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="confirmFlag" column="CONFIRM_FLAG" />
+        <result property="createDate" column="CREATE_DATE" />
+        <result property="createdBy" column="CREATED_BY" />
+        <result property="createdIp" column="CREATED_IP" />
+        <result property="updateDate" column="UPDATE_DATE" />
+        <result property="updatedBy" column="UPDATED_BY" />
+        <result property="updatedIp" column="UPDATED_IP" />
+        <result property="activity" column="ACTIVITY" />
+        <result property="orderNo" column="ORDERNO" />
+        <result property="confirmDate" column="CONFIRM_DATE" />
+        <result property="confirmIp" column="CONFIRM_IP" />
+        <result property="confirmBy" column="CONFIRM_BY" />
+        <result property="cpnyId" column="CPNY_ID" />
+        <result property="batchYn" column="BATCH_YN" />
+        <result property="detailType" column="DETAIL_TYPE" />
+        <result property="proofYn" column="PROOF_YN" />
+        <result property="proofConfirmDate" column="PROOF_CONFIRM_DATE" />
+        <result property="proofConfirmBy" column="PROOF_CONFIRM_BY" />
+        <result property="proofConfirmIp" column="PROOF_CONFIRM_IP" />
+        <result property="batchNo" column="BATCH_NO" />
+        <result property="hrComment" column="HR_COMMENT" />
+        <result property="annualLeaveCount" column="ANNUAL_LEAVE_COUNT" />
+        <result property="affirmStr" column="AFFIRM_STR" />
+    </resultMap>
+
+    <resultMap id="EssLeaveApplyDetailResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto" extends="DtoResultMap">
+        <id property="applyNo" column="APPLY_NO" />
+        <result property="personId" column="PERSON_ID" />
+        <result property="cpnyId" column="CPNY_ID" />
+        <result property="leaveTypeCode" column="LEAVE_TYPE_CODE" />
+        <result property="leaveTypeName" column="LEAVE_TYPE_NAME" />
+        <result property="leaveFromTime" column="LEAVE_FROM_TIME" />
+        <result property="leaveToTime" column="LEAVE_TO_TIME" />
+        <result property="applyLength" column="APPLY_LENGTH" />
+        <result property="dayHours" column="DAY_HOURS" />
+        <result property="leaveReason" column="LEAVE_REASON" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="createDate" column="CREATE_DATE" />
+        <result property="detailType" column="DETAIL_TYPE" />
+        <result property="detailTypeName" column="DETAIL_TYPE_NAME" />
+        <result property="activity" column="ACTIVITY" />
+        <result property="confirmFlag" column="CONFIRM_FLAG" />
+    </resultMap>
+
+    <resultMap id="EssLeaveApprovalInfoResultMap" type="com.ait.sy.syAffirm.dto.SyAffirmEmailDto">
+        <result property="seq" column="SEQ" />
+        <result property="affirmType" column="AFFIRM_TYPE" />
+        <result property="affirmTypeName" column="AFFIRM_TYPE_NAME" />
+        <result property="applyNo" column="APPLY_NO" />
+        <result property="applyType" column="APPLY_TYPE" />
+        <result property="applyFlag" column="APPLY_FLAG" />
+        <result property="applyPersonId" column="APPLY_PERSON_ID" />
+        <result property="affirmPersonId" column="AFFIRM_PERSON_ID" />
+        <result property="title" column="TITLE" />
+        <result property="affirmLevel" column="AFFIRM_LEVEL" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmUrl" column="AFFIRM_URL" />
+        <result property="applyTypeCode" column="APPLY_TYPE_CODE" />
+        <result property="applyPersonInfo" column="APPLY_PERSON_INFO" />
+        <result property="activity" column="ACTIVITY" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="affirmName" column="AFFIRM_NAME" />
+        <result property="deptName" column="DEPTNAME" />
+        <result property="applyAffirmFlagNo" column="APPLY_AFFIRM_FLAG_NO" />
+        <result property="applyAffirmFlag" column="APPLY_AFFIRM_FLAG" />
+        <result property="updateDate" column="UPDATE_DATE" />
+        <result property="affirmContent" column="AFFIRM_CONTENT" />
+    </resultMap>
+
+    <resultMap id="EssLeaveApplyImportTempResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyImportTempDto">
+        <result property="deptNo" column="DEPTNO" />
+        <result property="deptName" column="DEPTNAME" />
+        <result property="empId" column="EMPID" />
+        <result property="applyName" column="APPLY_NAME" />
+        <result property="leaveTypeCode" column="LEAVE_TYPE_CODE" />
+        <result property="leaveTypeName" column="LEAVE_TYPE_NAME" />
+        <result property="leaveFromDate" column="LEAVE_FROM_DATE" />
+        <result property="leaveFromTime" column="LEAVE_FROM_TIME" />
+        <result property="leaveToDate" column="LEAVE_TO_DATE" />
+        <result property="leaveToTime" column="LEAVE_TO_TIME" />
+        <result property="applyLength" column="APPLY_LENGTH" />
+        <result property="leaveReason" column="LEAVE_REASON" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="uploadBy" column="UPLOAD_BY" />
+        <result property="uploadDate" column="UPLOAD_DATE" />
+        <result property="cpnyId" column="CPNY_ID" />
+        <result property="lineId" column="LINE_ID" />
+        <result property="uploadErrorMsg" column="UPLOAD_ERROR_MSG" />
+        <result property="resultFlag" column="RESULT_FLAG" />
+    </resultMap>
+
+    <select id="selectList" resultMap="EssLeaveApplyResultMap">
+        SELECT
+            A.APPLY_NO,
+            A.PERSON_ID,
+            E.EMPID,
+            E.LOCAL_NAME,
+            E.DEPTNO AS DEPT_NO,
+            TO_CHAR(A.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS LEAVE_FROM_TIME,
+            TO_CHAR(A.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI') AS LEAVE_TO_TIME,
+            A.LEAVE_REASON,
+            A.LEAVE_TYPE_NO,
+            A.LEAVE_TYPE_CODE,
+            A.APPLY_LENGTH,
+            AR_GET_DAY_HOURS(A.PERSON_ID, TO_CHAR(A.LEAVE_FROM_TIME, 'YYYY/MM/DD')) AS DAY_HOURS,
+            GET_VAC_COUNT(A.PERSON_ID, A.CPNY_ID, TO_CHAR(A.LEAVE_FROM_TIME, 'YYYY-MM-DD'), TO_CHAR(A.LEAVE_TO_TIME, 'YYYY-MM-DD')) AS ANNUAL_LEAVE_COUNT,
+            TO_CHAR(A.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+            GET_DEPT_NAME(E.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            A.AFFIRM_FLAG,
+            GET_UPDATED_INFO(A.CREATED_BY) AS CREATED_BY,
+            A.CREATED_IP,
+            TO_CHAR(A.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
+            GET_UPDATED_INFO(A.UPDATED_BY) AS UPDATED_BY,
+            A.UPDATED_IP,
+            (
+                SELECT LISTAGG('&lt;p&gt;' || S.AFFIRM_LEVEL || '. ' || NVL(HE.EMPID, '') || ' - ' || NVL(HE.LOCAL_NAME, '') || '&lt;/p&gt;', '')
+                           WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL)
+                FROM SY_AFFIRM_EMAIL S
+                LEFT JOIN HR_EMPLOYEE HE ON S.AFFIRM_PERSON_ID = HE.PERSON_ID
+                WHERE S.APPLY_NO = TO_CHAR(A.APPLY_NO)
+                  AND S.AFFIRM_LEVEL &gt; 0
+            ) AS AFFIRM_STR
+        FROM ESS_LEAVE_APPLY_TB A
+        LEFT JOIN HR_EMPLOYEE E ON E.PERSON_ID = A.PERSON_ID
+        WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="empId != null and empId != ''">
+            AND UPPER(E.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="localName != null and localName != ''">
+            AND UPPER(E.LOCAL_NAME) LIKE '%' || UPPER(#{localName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND A.LEAVE_FROM_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND A.LEAVE_FROM_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+        <if test="affirmFlag != null and affirmFlag != ''">
+            AND A.AFFIRM_FLAG = #{affirmFlag, jdbcType=VARCHAR}
+        </if>
+        <if test="confirmFlag != null and confirmFlag != ''">
+            AND TO_CHAR(A.CONFIRM_FLAG) = #{confirmFlag, jdbcType=VARCHAR}
+        </if>
+        <if test="leaveTypeCode != null and leaveTypeCode != ''">
+            AND A.LEAVE_TYPE_CODE = #{leaveTypeCode, jdbcType=VARCHAR}
+        </if>
+        AND EXISTS (
+              SELECT B1.DEPTID
+              FROM HR_DEPARTMENT B1
+              WHERE B1.DEPTNO = E.DEPTNO
+              START WITH B1.DEPTNO IN (
+                  SELECT HRD.DEPTID
+                  FROM HR_DEPARTMENT HRD
+                  WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+              )
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT ASI.DEPTNO
+              FROM AR_SUPERVISOR_INFO ASI
+              WHERE ASI.DEPTNO = E.DEPTNO
+                AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          )
+        ORDER BY A.CREATE_DATE DESC, E.EMPID
+    </select>
+
+    <select id="selectLeaveApplyInfo" resultMap="EssLeaveApplyDetailResultMap">
+        SELECT
+            HE.EMPID,
+            HE.LOCAL_NAME,
+            HE.PERSON_ID,
+            HE.DEPTNO AS DEPT_NO,
+            HE.CPNY_ID,
+            HE.POST_GRADE_NO,
+            ESS.APPLY_NO,
+            ESS.LEAVE_TYPE_CODE,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            GET_GLOBAL_NAME(ESS.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS LEAVE_TYPE_NAME,
+            TO_CHAR(ESS.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') AS LEAVE_FROM_TIME,
+            TO_CHAR(ESS.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI') AS LEAVE_TO_TIME,
+            ESS.APPLY_LENGTH,
+            AR_GET_DAY_HOURS(HE.PERSON_ID, TO_CHAR(ESS.LEAVE_FROM_TIME, 'YYYY/MM/DD')) AS DAY_HOURS,
+            ESS.LEAVE_REASON,
+            ESS.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(ESS.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            TO_CHAR(ESS.CREATE_DATE, 'YYYY/MM/DD HH24:MI:SS') AS CREATE_DATE,
+            ESS.DETAIL_TYPE,
+            GET_GLOBAL_NAME(ESS.DETAIL_TYPE, #{lang, jdbcType=VARCHAR}) AS DETAIL_TYPE_NAME,
+            ESS.ACTIVITY,
+            ESS.CONFIRM_FLAG
+        FROM ESS_LEAVE_APPLY_TB ESS
+        INNER JOIN HR_EMPLOYEE HE ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE TO_CHAR(ESS.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectApprovalInfo" resultMap="EssLeaveApprovalInfoResultMap">
+        SELECT
+            T.SEQ,
+            T.AFFIRM_TYPE,
+            T.AFFIRM_TYPE_NAME,
+            T.APPLY_NO,
+            T.APPLY_TYPE,
+            T.APPLY_FLAG,
+            T.APPLY_PERSON_ID,
+            T.AFFIRM_PERSON_ID,
+            T.TITLE,
+            T.AFFIRM_LEVEL,
+            T.AFFIRM_FLAG,
+            T.AFFIRM_URL,
+            T.APPLY_TYPE_CODE,
+            T.APPLY_PERSON_INFO,
+            T.ACTIVITY,
+            T.AFFIRM_FLAG_NAME,
+            T.AFFIRM_NAME,
+            T.DEPTNAME,
+            T.APPLY_AFFIRM_FLAG_NO,
+            T.APPLY_AFFIRM_FLAG,
+            T.UPDATE_DATE,
+            T.AFFIRM_CONTENT
+        FROM (
+            SELECT
+                A.SEQ,
+                A.AFFIRM_TYPE,
+                DECODE(A.AFFIRM_TYPE,  '1', 'Approval',  '2', 'Agreement',  '3', 'Announcement',  '4', 'Proposal',  'Approval') AS AFFIRM_TYPE_NAME,
+                A.APPLY_NO,
+                A.APPLY_TYPE,
+                A.APPLY_FLAG,
+                A.APPLY_PERSON_ID,
+                A.AFFIRM_PERSON_ID,
+                A.TITLE,
+                TO_CHAR(A.AFFIRM_LEVEL) AS AFFIRM_LEVEL,
+                A.AFFIRM_FLAG,
+                A.AFFIRM_URL,
+                A.APPLY_TYPE_CODE,
+                A.APPLY_PERSON_INFO,
+                A.ACTIVITY,
+                DECODE(A.AFFIRM_TYPE, '3', DECODE(A.AFFIRM_FLAG, '0', 'Unannounced', 'Announced'),
+                                      '4', DECODE(A.AFFIRM_FLAG, '2', 'Cancelled', 'Submitted'),
+                                        DECODE(A.AFFIRM_FLAG, '0', 'Pending', '1', 'Approved', 'Rejected')
+                                    ) AS AFFIRM_FLAG_NAME,
+                HR.LOCAL_NAME || '/' || GET_CODE_NAME(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS AFFIRM_NAME,
+                GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPTNAME,
+                A.APPLY_AFFIRM_FLAG AS APPLY_AFFIRM_FLAG_NO,
+                GET_CODE_NAME(A.APPLY_AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS APPLY_AFFIRM_FLAG,
+                TO_CHAR(A.AFFIRM_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE,
+                A.AFFIRM_CONTENT
+            FROM SY_AFFIRM_EMAIL A
+            INNER JOIN HR_EMPLOYEE HR ON A.AFFIRM_PERSON_ID = HR.PERSON_ID
+            WHERE TO_CHAR(A.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+            <if test="applyType != null and applyType != ''">
+              AND A.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+            </if>
+              AND A.APPLY_AFFIRM_FLAG &lt;&gt; '14014310'
+            UNION ALL
+            SELECT
+                '' AS SEQ,
+                '' AS AFFIRM_TYPE,
+                '' AS AFFIRM_TYPE_NAME,
+                TO_CHAR(B.APPLY_NO) AS APPLY_NO,
+                '' AS APPLY_TYPE,
+                '' AS APPLY_FLAG,
+                '' AS APPLY_PERSON_ID,
+                '' AS AFFIRM_PERSON_ID,
+                '' AS TITLE,
+                '100' AS AFFIRM_LEVEL,
+                TO_CHAR(B.CONFIRM_FLAG) AS AFFIRM_FLAG,
+                '' AS AFFIRM_URL,
+                '' AS APPLY_TYPE_CODE,
+                '' AS APPLY_PERSON_INFO,
+                '' AS ACTIVITY,
+                '' AS AFFIRM_FLAG_NAME,
+                GET_LOCAL_NAME_BY_PERSONID(B.CONFIRM_BY, #{lang, jdbcType=VARCHAR}) AS AFFIRM_NAME,
+                'HR' AS DEPTNAME,
+                '' AS APPLY_AFFIRM_FLAG_NO,
+                '' AS APPLY_AFFIRM_FLAG,
+                TO_CHAR(B.CONFIRM_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE,
+                B.HR_COMMENT AS AFFIRM_CONTENT
+            FROM ESS_LEAVE_APPLY_TB B
+            WHERE TO_CHAR(B.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) T
+        ORDER BY TO_NUMBER(T.AFFIRM_LEVEL)
+    </select>
+
+    <select id="selectImportTempList" resultMap="EssLeaveApplyImportTempResultMap">
+        SELECT
+            ESS.DEPTNO,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPTNAME,
+            ESS.EMPID,
+            ESS.APPLY_NAME,
+            ESS.LEAVE_TYPE_CODE,
+            GET_GLOBAL_NAME(ESS.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS LEAVE_TYPE_NAME,
+            ESS.LEAVE_FROM_DATE,
+            ESS.LEAVE_FROM_TIME,
+            ESS.LEAVE_TO_DATE,
+            ESS.LEAVE_TO_TIME,
+            CASE
+                WHEN REGEXP_LIKE(ESS.LEAVE_FROM_DATE, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+                 AND REGEXP_LIKE(ESS.LEAVE_TO_DATE, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+                 AND REGEXP_LIKE(ESS.LEAVE_FROM_TIME, '^[0-9]{2}:[0-9]{2}$')
+                 AND REGEXP_LIKE(ESS.LEAVE_TO_TIME, '^[0-9]{2}:[0-9]{2}$')
+                THEN GET_AR_LEAVE_LENGTH(
+                    GET_EMP_PERSONID(ESS.EMPID, ESS.CPNY_ID),
+                    ESS.CPNY_ID,
+                    COMPOSE_DATE(TO_DATE(ESS.LEAVE_FROM_DATE, 'YYYY-MM-DD'), ESS.LEAVE_FROM_TIME),
+                    COMPOSE_DATE(TO_DATE(ESS.LEAVE_TO_DATE, 'YYYY-MM-DD'), ESS.LEAVE_TO_TIME),
+                    ESS.LEAVE_TYPE_CODE
+                )
+                ELSE NULL
+            END AS APPLY_LENGTH,
+            ESS.LEAVE_REASON,
+            ESS.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(ESS.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            GET_UPDATED_INFO(ESS.UPLOAD_BY) AS UPLOAD_BY,
+            TO_CHAR(ESS.UPLOAD_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPLOAD_DATE,
+            ESS.CPNY_ID,
+            ESS.LINE_ID,
+            ESS.UPLOAD_ERROR_MSG,
+            ESS.RESULT_FLAG
+        FROM ESS_LEAVE_APPLY_TB_EXCEL_TEMP ESS
+        INNER JOIN HR_EMPLOYEE HE
+            ON ESS.EMPID = HE.EMPID
+           AND ESS.CPNY_ID = HE.CPNY_ID
+        WHERE ESS.UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+        <if test="errorOnly != null and errorOnly != '' and errorOnly == 'Y'">
+            AND NVL(TRIM(ESS.UPLOAD_ERROR_MSG), '') &lt;&gt; ''
+        </if>
+        <if test="errorOnly != null and errorOnly != '' and errorOnly == 'N'">
+            AND NVL(TRIM(ESS.UPLOAD_ERROR_MSG), '') = ''
+        </if>
+        ORDER BY
+            CASE
+                WHEN REGEXP_LIKE(ESS.LINE_ID, '^[0-9]+$') THEN TO_NUMBER(ESS.LINE_ID)
+                ELSE 99999999
+            END,
+            ESS.LINE_ID
+    </select>
+
+    <select id="getNextApplySeq" resultType="java.lang.Long">
+        SELECT ESS_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertLeaveApply" useGeneratedKeys="false">
+        INSERT INTO ESS_LEAVE_APPLY_TB (
+            APPLY_NO, PERSON_ID, APPLY_TIME, LEAVE_FROM_TIME, LEAVE_TO_TIME,
+            LEAVE_REASON, LEAVE_TYPE_NO, LEAVE_TYPE_CODE,
+            APPLY_LENGTH,
+            AFFIRM_FLAG,
+            CONFIRM_FLAG, CPNY_ID, CREATE_DATE, CREATED_BY, CREATED_IP, ACTIVITY
+        ) VALUES (
+            #{applyNo, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, SYSDATE,
+            TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            #{leaveReason, jdbcType=VARCHAR}, '21', #{leaveTypeCode, jdbcType=VARCHAR},
+            GET_AR_LEAVE_LENGTH(
+                #{personId, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR}, '21', #{cpnyId, jdbcType=VARCHAR}, 'CODE')
+            ),
+            '14014306',
+            0, #{cpnyId, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, 1
+        )
+    </insert>
+
+    <update id="updateLeaveApply">
+        UPDATE ESS_LEAVE_APPLY_TB
+        SET PERSON_ID = #{personId, jdbcType=VARCHAR},
+            APPLY_TIME = SYSDATE,
+            LEAVE_FROM_TIME = TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            LEAVE_TO_TIME = TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            LEAVE_REASON = #{leaveReason, jdbcType=VARCHAR},
+            LEAVE_TYPE_CODE = #{leaveTypeCode, jdbcType=VARCHAR},
+            APPLY_LENGTH = GET_AR_LEAVE_LENGTH(
+                #{personId, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR}, '21', #{cpnyId, jdbcType=VARCHAR}, 'CODE')
+            ),
+            AFFIRM_FLAG = '14014306',
+            ACTIVITY = 1,
+            CONFIRM_FLAG = 0,
+            CONFIRM_DATE = NULL,
+            CONFIRM_BY = NULL,
+            CONFIRM_IP = NULL,
+            CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="callDeleteLeaveConfirm" statementType="CALLABLE">
+        {CALL PKG_AFFIRM_EMAIL.PR_DELETE_LEAVE_CONFIRM(
+            #{applyNo, jdbcType=VARCHAR, mode=IN},
+            #{message, jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <update id="callImportAttendanceTemp" statementType="CALLABLE">
+        {CALL PKG_ESS_LEAVE_EXCEL_IMP.PR_IMPORT_ASS_LEAVE_DATA(
+            #{adminID, jdbcType=VARCHAR, mode=IN},
+            #{cpnyId, jdbcType=VARCHAR, mode=IN},
+            #{message, jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <delete id="deleteArApplyResult">
+        DELETE FROM AR_APPLY_RESULT WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </delete>
+
+    <delete id="deleteLeaveApplyByApplyNo">
+        DELETE FROM ESS_LEAVE_APPLY_TB WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </delete>
+
+    <select id="selectLeaveLength" resultType="map">
+        SELECT
+            AR_GET_DAY_HOURS(#{adminID, jdbcType=VARCHAR},
+                TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')) AS DAY_HOUR,
+            GET_AR_LEAVE_LENGTH(
+                #{adminID, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR}, '21', #{cpnyId, jdbcType=VARCHAR}, 'CODE')
+            ) AS LEAVE_LENGTH
+        FROM DUAL
+    </select>
+
+    <resultMap id="EssLeaveApplyListResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto">
+        <id property="applyNo" column="APPLY_NO" />
+        <result property="personId" column="PERSON_ID" />
+        <result property="itemNo" column="ITEM_NO" />
+        <result property="leaveTypeName" column="LEAVE_TYPE_NAME" />
+        <result property="applyDate" column="APPLY_DATE" />
+        <result property="leaveFromDate" column="LEAVE_FROM_DATE" />
+        <result property="leaveFromTimeOnly" column="LEAVE_FROM_TIME_ONLY" />
+        <result property="leaveToDate" column="LEAVE_TO_DATE" />
+        <result property="leaveToTimeOnly" column="LEAVE_TO_TIME_ONLY" />
+        <result property="applyLength" column="APPLY_LENGTH" />
+        <result property="dayHours" column="DAY_HOURS" />
+        <result property="leaveReason" column="LEAVE_REASON" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="hrComment" column="HR_COMMENT" />
+        <result property="confirmFlag" column="CONFIRM_FLAG" />
+        <result property="confirmFlagName" column="CONFIRM_FLAG_NAME" />
+        <result property="createdBy" column="CREATED_BY" />
+        <result property="createdIp" column="CREATED_IP" />
+        <result property="leaveTypeCode" column="LEAVE_TYPE_CODE" />
+    </resultMap>
+
+    <select id="selectMyLeaveApplyList" resultMap="EssLeaveApplyListResultMap">
+        SELECT
+            A.APPLY_NO,
+            A.PERSON_ID,
+            A.LEAVE_TYPE_CODE AS ITEM_NO,
+            GET_GLOBAL_NAME(A.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS LEAVE_TYPE_NAME,
+            TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY') AS APPLY_DATE,
+            TO_CHAR(A.LEAVE_FROM_TIME, 'DD/MM/YYYY') AS LEAVE_FROM_DATE,
+            TO_CHAR(A.LEAVE_FROM_TIME, 'HH24:MI') AS LEAVE_FROM_TIME_ONLY,
+            TO_CHAR(A.LEAVE_TO_TIME, 'DD/MM/YYYY') AS LEAVE_TO_DATE,
+            TO_CHAR(A.LEAVE_TO_TIME, 'HH24:MI') AS LEAVE_TO_TIME_ONLY,
+            A.APPLY_LENGTH,
+            AR_GET_DAY_HOURS(A.PERSON_ID, A.LEAVE_FROM_TIME) AS DAY_HOURS,
+            A.LEAVE_REASON,
+            A.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(A.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            A.HR_COMMENT,
+            A.CONFIRM_FLAG,
+            GET_GLOBAL_NAME(A.CONFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS CONFIRM_FLAG_NAME,
+            GET_UPDATED_INFO(A.CREATED_BY) AS CREATED_BY,
+            A.CREATED_IP,
+            A.LEAVE_TYPE_CODE
+        FROM ESS_LEAVE_APPLY_TB A
+        WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND A.ACTIVITY = 1
+        <if test="leaveTypeCode != null and leaveTypeCode != ''">
+            AND A.LEAVE_TYPE_CODE = #{leaveTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="affirmFlag != null and affirmFlag != ''">
+            AND A.AFFIRM_FLAG = #{affirmFlag, jdbcType=VARCHAR}
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND A.LEAVE_FROM_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND A.LEAVE_FROM_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+        ORDER BY A.CREATE_DATE DESC
+    </select>
+
+    <select id="countLockedByArDetailHtsv" resultType="int">
+        SELECT COUNT(1) FROM AR_DETAIL_HTSV D
+        JOIN ESS_LEAVE_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
+        WHERE ESS.APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+        AND TO_CHAR(ESS.LEAVE_FROM_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
+        AND D.LOCK_YN = 'Y'
+    </select>
+
+    <select id="countLockedByArDeptManage" resultType="int">
+        SELECT COUNT(1) FROM AR_DEPARTMENT_MANAGE AD
+        JOIN HR_EMPLOYEE HE ON HE.DEPTNO = AD.DEPT_NO
+        JOIN ESS_LEAVE_APPLY_TB ESS ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE ESS.APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+        AND TO_CHAR(ESS.LEAVE_FROM_TIME, 'YYYY-MM-DD') = AD.LOCK_DATE
+        AND (AD.LOCK_ATTEN_FLAG = '1' OR AD.LOCK_ATTEN_ANNUAL_FLAG = '1'
+            OR AD.LOCK_ATTEN_ANNUAL_NIGHT_FLAG = '1' OR AD.LOCK_ATTEN_NIGHT_FLAG = '1')
+    </select>
+
+    <update id="cancelMyLeaveApplyList">
+        UPDATE ESS_LEAVE_APPLY_TB
+        SET ACTIVITY = 0,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND AFFIRM_FLAG = '14014306'
+          AND APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
+    <select id="selectMyVacationInfo" resultType="map">
+        SELECT
+            SUM(TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC) AS TOT_VAC_CNT,
+            SUM(USE_VAC + AFFIRM_USE_VAC + USE_VAC_CNT) AS USE_VAC,
+            SUM(TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC - USE_VAC - AFFIRM_USE_VAC - USE_VAC_CNT) AS REMAIN_VAC,
+            SUM(TOT_VAC_CNT) AS YEAR_VAC_CNT,
+            SUM(ADD_VAC) AS ADD_VAC,
+            SUM(LAST_YEAR_VAC) AS LAST_YEAR_VAC
+        FROM (
+            SELECT A.TOT_VAC_CNT,
+                   A.ADD_VAC,
+                   A.MENT_VAC,
+                   A.USE_VAC_CNT,
+                   A.LAST_YEAR_VAC,
+                   AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'CONFIRM') AS USE_VAC,
+                   AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM') AS AFFIRM_USE_VAC
+              FROM AR_VAC_EMP A
+             WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+               AND A.ACTIVITY = 1
+               AND SYSDATE BETWEEN A.STRT_DATE AND A.END_DATE
+        )
+    </select>
+
+    <select id="selectEmpDefaultInfo" resultType="map">
+        WITH SHIFT_DATA AS (
+            SELECT
+                get_ar_shift_start_time(#{personId, jdbcType=VARCHAR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD'), #{cpnyId, jdbcType=VARCHAR}) AS START_TIME,
+                get_ar_shift_end_time(#{personId, jdbcType=VARCHAR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD'), #{cpnyId, jdbcType=VARCHAR}) AS END_TIME
+            FROM DUAL
+        )
+        SELECT
+            SD.START_TIME,
+            SD.END_TIME,
+            GET_VAC_COUNT(
+                #{personId, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                SUBSTR(NVL(SD.START_TIME, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI')), 1, 10),
+                SUBSTR(NVL(SD.END_TIME, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI')), 1, 10)
+            ) AS VAC_COUNT,
+            GET_GLOBAL_NAME(
+                GET_AR_SHIFTNO(#{personId, jdbcType=VARCHAR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD'), #{cpnyId, jdbcType=VARCHAR}),
+                #{lang, jdbcType=VARCHAR}
+            ) AS SHIFT_NAME,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME
+        FROM SHIFT_DATA SD, HR_EMPLOYEE HE
+        WHERE HE.PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectLeaveLengthForPerson" resultType="map">
+        SELECT
+            GET_AR_LEAVE_LENGTH(
+                #{personId, jdbcType=VARCHAR},
+                #{cpnyId, jdbcType=VARCHAR},
+                TO_DATE(#{fromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                TO_DATE(#{toTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+                GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR}, '21', #{cpnyId, jdbcType=VARCHAR}, 'CODE')
+            ) AS LEAVE_LENGTH
+        FROM DUAL
+    </select>
+
+    <select id="selectLeaveClash" resultType="java.lang.Integer">
+        SELECT AR_GET_LEAVE_CLASH('', #{personId, jdbcType=VARCHAR}, #{fromTime, jdbcType=VARCHAR}, #{toTime, jdbcType=VARCHAR}) FROM DUAL
+    </select>
+
+    <update id="updateCancelLeaveApply">
+        UPDATE ESS_LEAVE_APPLY_TB
+        SET ACTIVITY = 1,
+            AFFIRM_FLAG = '14014310',
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectAffirmEmailForCancel" resultType="map">
+        SELECT SY.APPLY_NO, SY.APPLY_TYPE, SY.APPLY_FLAG
+          FROM SY_AFFIRM_EMAIL SY
+         WHERE EXISTS (SELECT 1
+                  FROM SY_AFFIRM_EMAIL SY2
+                 WHERE SY.APPLY_NO = SY2.APPLY_NO
+                   AND SY.APPLY_TYPE = SY2.APPLY_TYPE
+                   AND SY.APPLY_FLAG = SY2.APPLY_FLAG
+                   AND SY2.SEQ = (SELECT MAX(SEQ)
+                                    FROM SY_AFFIRM_EMAIL
+                                   WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}))
+           AND ROWNUM &lt; 2
+    </select>
+
+    <update id="callAffirmCancel" statementType="CALLABLE">
+        {CALL PKG_AFFIRM_EMAIL.PR_AFFIRM_CANCEL(
+            #{applyNo, jdbcType=VARCHAR, mode=IN},
+            #{applyType, jdbcType=VARCHAR, mode=IN},
+            #{applyFlag, jdbcType=VARCHAR, mode=IN},
+            #{adminID, jdbcType=VARCHAR, mode=IN},
+            #{adminIP, jdbcType=VARCHAR, mode=IN},
+            #{message, jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <!--
+        Kiểm tra xung đột thời gian nghỉ phép của cùng một nhân viên.
+        Bỏ qua record bị huỷ/từ chối (AFFIRM_FLAG IN '14014309','14014310') hoặc chưa xác nhận HR (CONFIRM_FLAG = 0).
+    -->
+    <select id="countConflictLeaveApply" resultType="int">
+        SELECT COUNT(*)
+        FROM ESS_LEAVE_APPLY_TB A
+        WHERE A.PERSON_ID = #{personId, jdbcType=VARCHAR}
+          AND A.ACTIVITY = 1
+          AND A.AFFIRM_FLAG NOT IN ('14014309', '14014310')
+          AND NVL(A.CONFIRM_FLAG, 0) != 0
+          AND A.LEAVE_FROM_TIME &lt; TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+          AND A.LEAVE_TO_TIME &gt; TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI')
+        <if test="applyNo != null and applyNo != '' and applyNo != '0'">
+          AND TO_CHAR(A.APPLY_NO) != #{applyNo, jdbcType=VARCHAR}
+        </if>
+    </select>
+
+</mapper>

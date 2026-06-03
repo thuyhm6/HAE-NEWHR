@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArStaFormulaMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArStaFormula">
+        <id column="FORMULAR_NO" property="formularNo" />
+        <result column="ITEM_NO" property="itemNo" />
+        <result column="CONDITION" property="condition" />
+        <result column="FORMULAR" property="formular" />
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArStaFormulaDto" extends="BaseResultMap">
+        <result column="ITEM_NAME_VI" property="itemNameVi" />
+        <result column="ITEM_NAME_EN" property="itemNameEn" />
+        <result column="ITEM_NAME_ZH" property="itemNameZh" />
+        <result column="ITEM_NAME_KO" property="itemNameKo" />
+    </resultMap>
+
+    <select id="getNextFormularNoSeq" resultType="Long">
+        SELECT AR_STA_FORMULAR_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <select id="getParamItemsForLeftTree" resultType="java.util.Map">
+        SELECT p.ITEM_NO as id,
+               p.ITEM_NO as itemNo,
+               gvi.CONTENT as nameVi,
+               gen.CONTENT as nameEn,
+               gzh.CONTENT as nameZh,
+               gko.CONTENT as nameKo,
+               p.CAL_ORDER as calOrder
+        FROM AR_STA_ITEM_PARAM p
+        LEFT JOIN SY_GLOBAL_NAME gvi ON p.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON p.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON p.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON p.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND p.ACTIVITY = 1
+        ORDER BY p.CAL_ORDER ASC
+    </select>
+
+    <select id="findByItemNo" resultMap="DtoResultMap">
+        SELECT a.*,
+               gvi.CONTENT AS ITEM_NAME_VI,
+               gen.CONTENT AS ITEM_NAME_EN,
+               gzh.CONTENT AS ITEM_NAME_ZH,
+               gko.CONTENT AS ITEM_NAME_KO
+        FROM AR_STA_FORMULAR a
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          <if test="itemNo != null and itemNo != ''">
+              AND a.ITEM_NO = #{itemNo}
+          </if>
+        ORDER BY a.ORDERNO, a.FORMULAR_NO
+    </select>
+
+    <select id="selectByFormularNo" resultMap="BaseResultMap">
+        SELECT *
+        FROM AR_STA_FORMULAR
+        WHERE FORMULAR_NO = #{formularNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArStaFormula">
+        INSERT INTO AR_STA_FORMULAR (
+            FORMULAR_NO, ITEM_NO, CONDITION, FORMULAR, CPNY_ID, 
+            ACTIVITY, ORDERNO, CREATE_DATE, CREATED_BY
+        ) VALUES (
+            #{formularNo}, #{itemNo}, #{condition}, #{formular}, #{cpnyId, jdbcType=VARCHAR}, 
+            #{activity}, #{orderno}, SYSDATE, #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArStaFormula">
+        UPDATE AR_STA_FORMULAR
+        SET CONDITION = #{condition},
+            FORMULAR = #{formular},
+            ACTIVITY = #{activity},
+            ORDERNO = #{orderno},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        WHERE FORMULAR_NO = #{formularNo}
+    </update>
+
+    <delete id="delete" parameterType="Long">
+        DELETE FROM AR_STA_FORMULAR WHERE FORMULAR_NO = #{formularNo}
+    </delete>
+
+    <select id="getAttItems" resultType="java.util.Map">
+        SELECT DISTINCT A.ITEM_ID as "itemId",
+               S2.CONTENT as "itemName",
+               S1.CONTENT as "itemGroupName"
+        FROM AR_ITEM A
+        JOIN AR_ITEM_PARAM C ON A.ITEM_NO = C.ITEM_NO
+        LEFT JOIN SY_GLOBAL_NAME S1 ON A.ITEM_GROUP_CODE = S1.NO AND S1.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME S2 ON A.ITEM_NO = S2.NO AND S2.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        WHERE C.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        ORDER BY A.ITEM_ID
+    </select>
+
+    <select id="getStaItems" resultType="java.util.Map">
+        SELECT T.ITEM_NO as "itemNo",
+               S1.CONTENT as "itemName",
+               PA.CAL_ORDER as "calOrder",
+               T.STA_ITEM_ID as "staItemId",
+               T.DATATYPE as "dataType",
+               S2.CONTENT as "dataTypeName"
+        FROM AR_STA_ITEM T
+        JOIN AR_STA_ITEM_PARAM PA ON T.ITEM_NO = PA.ITEM_NO
+        LEFT JOIN SY_GLOBAL_NAME S1 ON PA.ITEM_NO = S1.NO AND S1.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME S2 ON T.DATATYPE = S2.NO AND S2.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        WHERE PA.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND T.ACTIVITY = 1 
+          AND PA.ACTIVITY = 1
+        ORDER BY PA.CAL_ORDER
+    </select>
+
+    <select id="getBasicInfos" resultType="java.util.Map">
+        SELECT D.DISTINCT_FIELD as "distinctField",
+               S1.CONTENT as "fieldName"
+        FROM PA_DISTINCT_LIST D
+        LEFT JOIN SY_GLOBAL_NAME S1 ON D.ID = S1.NO AND S1.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        WHERE D.TABLE_NAME = 'PA_HR_V'
+          AND D.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND D.ACTIVITY = 1
+        ORDER BY D.ORDERNO
+    </select>
+
+</mapper>

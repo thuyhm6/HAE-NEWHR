@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.EssPersonalInfoMapper">
+
+    <select id="findMyInfo" resultType="com.ait.ess.empinfo.dto.EssPersonalInfoDto">
+        SELECT 
+            HE.EMPID AS empId,
+            HE.PERSON_ID AS personId,
+            HE.LOCAL_NAME AS localName,
+            HE.POST_FAMILY AS postFamily,
+            HE.POST_GRADE_NO AS postGradeNo,
+            HE.POSITION_NO AS positionNo,
+            D.ORG_NAME_LOCAL AS deptName,
+            GET_DEPT_MANAGER_INFO(HE.DEPTNO) headDepartment,
+            GET_GLOBAL_NAME(HE.DUTY_NO, #{lang, jdbcType=VARCHAR}) AS dutyName,
+            GET_GLOBAL_NAME(HE.POST_FAMILY, #{lang, jdbcType=VARCHAR}) AS postFamilyName,
+            GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS postGradeName,
+            GET_GLOBAL_NAME(HE.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS positionNoName,
+            TO_CHAR(HE.DATE_STARTED, 'DD/MM/YYYY') AS dateStarted,
+            
+            TO_CHAR(HP.DOB, 'YYYY-MM-DD') AS dob,
+            HP.SEXCODE AS sexCode,
+            GET_GLOBAL_NAME(HP.SEXCODE, #{lang, jdbcType=VARCHAR}) AS sexName,
+            HP.MARITAL_STATUS_CODE AS maritalStatusCode,
+            GET_GLOBAL_NAME(HP.MARITAL_STATUS_CODE, #{lang, jdbcType=VARCHAR}) AS maritalStatusName,
+            HP.NATION_CODE AS nationCode,
+            GET_GLOBAL_NAME(HP.NATION_CODE, #{lang, jdbcType=VARCHAR}) AS nationName,
+            HP.NATIONALITY_CODE AS nationalityCode,
+            GET_GLOBAL_NAME(HP.NATIONALITY_CODE, #{lang, jdbcType=VARCHAR}) AS nationalityName,
+            
+            HP.HOUSE_TP AS houseTp,
+            HP.HOME_PHONE AS homePhone,
+            HP.COMPANY_PHONE AS companyPhone,
+            HP.CELLPHONE AS cellphone,
+            HP.RESIDENTIAL_DISTINCTION AS residentialDistinction,
+            HP.EXIST_SINGLE AS existSingle,
+            HP.EMAIL AS email,
+            HP.EMAIL_SECOND AS emailSecond,
+            HP.SING_ID AS singId,
+            HP.HOME_ADDRESS AS homeAddress,
+            HP.OFFICE_PHONE AS officePhone,
+            HP.IDCARD_NO AS idcardNo
+        FROM HR_EMPLOYEE HE
+        LEFT JOIN HR_PERSONAL_INFO HP ON HE.PERSON_ID = HP.PERSON_ID AND HP.ACTIVITY = 1
+        LEFT JOIN HR_DEPARTMENT D ON HE.DEPTNO = D.DEPTNO
+        WHERE HE.PERSON_ID = #{personId, jdbcType=VARCHAR} 
+          AND HE.ACTIVITY = 1
+    </select>
+
+</mapper>

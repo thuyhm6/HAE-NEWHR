@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.evs.manage.mapper.EvsItemMapper">
+
+    <resultMap id="EvsItemResultMap" type="com.ait.evs.manage.dto.EvsItemDto">
+        <id     column="SEQ"          property="seq"        jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ"   property="resumeSeq"  jdbcType="VARCHAR" />
+        <result column="GROUP_NO"     property="groupNo"    jdbcType="VARCHAR" />
+        <result column="GROUP_NAME"   property="groupName"  jdbcType="VARCHAR" />
+        <result column="ITEM_CODE"    property="itemCode"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"    property="itemName"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME_KO" property="itemNameKo" jdbcType="VARCHAR" />
+        <result column="REMARK"       property="remark"     jdbcType="VARCHAR" />
+        <result column="REMARK_KO"    property="remarkKo"   jdbcType="VARCHAR" />
+        <result column="ACTIVITY"     property="activity"   jdbcType="VARCHAR" />
+        <result column="ORDERNO"      property="orderNo"    jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"  property="updateDate" jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"   property="updatedBy"  jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── selectList ────────────────────────────────────────────────────────── -->
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsItemDto"
+            resultMap="EvsItemResultMap">
+        SELECT SEQ,
+               RESUME_SEQ,
+               GROUP_NO,
+               GET_CODE_NAME(GROUP_NO, #{lang, jdbcType=VARCHAR}) GROUP_NAME,
+               ITEM_CODE,
+               ITEM_NAME,
+               ITEM_NAME_KO,
+               REMARK,
+               REMARK_KO,
+               ACTIVITY,
+               TO_CHAR(ORDERNO) ORDERNO,
+               TO_CHAR(UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE,
+               GET_UPDATED_INFO(UPDATED_BY) || ' ' || UPDATED_IP UPDATED_BY
+          FROM EVS_ITEM A
+         WHERE ACTIVITY &lt;&gt; 2
+        <if test="resumeSeq != null and resumeSeq != ''">
+            AND RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        </if>
+        <if test="groupNo != null and groupNo != ''">
+            AND GROUP_NO = #{groupNo, jdbcType=VARCHAR}
+        </if>
+         ORDER BY TO_NUMBER(SEQ)
+    </select>
+
+    <!-- ── getNextSeq ─────────────────────────────────────────────────────────── -->
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_PARAM_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <!-- ── insert ────────────────────────────────────────────────────────────── -->
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsItemDto">
+        INSERT INTO EVS_ITEM (
+            SEQ, RESUME_SEQ, GROUP_NO, ITEM_CODE,
+            ITEM_NAME, ITEM_NAME_KO, REMARK, REMARK_KO,
+            ACTIVITY, ORDERNO,
+            CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,        jdbcType=VARCHAR},
+            #{resumeSeq,  jdbcType=VARCHAR},
+            #{groupNo,    jdbcType=VARCHAR},
+            #{itemCode,   jdbcType=VARCHAR},
+            #{itemName,   jdbcType=VARCHAR},
+            #{itemNameKo, jdbcType=VARCHAR},
+            #{remark,     jdbcType=VARCHAR},
+            #{remarkKo,   jdbcType=VARCHAR},
+            1,
+            <choose>
+                <when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR},</when>
+                <otherwise>200,</otherwise>
+            </choose>
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- ── update ────────────────────────────────────────────────────────────── -->
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsItemDto">
+        UPDATE EVS_ITEM
+           SET GROUP_NO     = #{groupNo,    jdbcType=VARCHAR},
+               ITEM_CODE    = #{itemCode,   jdbcType=VARCHAR},
+               ITEM_NAME    = #{itemName,   jdbcType=VARCHAR},
+               ITEM_NAME_KO = #{itemNameKo, jdbcType=VARCHAR},
+               REMARK       = #{remark,     jdbcType=VARCHAR},
+               REMARK_KO    = #{remarkKo,   jdbcType=VARCHAR},
+               UPDATED_BY   = #{adminID,    jdbcType=VARCHAR},
+               UPDATED_IP   = #{adminIP,    jdbcType=VARCHAR},
+               UPDATE_DATE  = SYSDATE
+         WHERE SEQ          = #{seq,        jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── deleteBySeq: soft delete (ACTIVITY = 2) ───────────────────────────── -->
+    <update id="deleteBySeq">
+        UPDATE EVS_ITEM
+           SET ACTIVITY    = 2,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP  = #{adminIP, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE SEQ         = #{seq, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

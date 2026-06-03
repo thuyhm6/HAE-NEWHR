@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArEmpGroupMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArEmpGroup">
+        <result column="PERSON_ID" property="personId" />
+        <result column="GROUP_NO" property="groupNo" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArEmpGroupDto">
+        <result column="PERSON_ID" property="personId" />
+        <result column="GROUP_NO" property="groupNo" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPTNO" property="deptNo" />
+        <result column="DEPT_NAME" property="deptName" />
+    </resultMap>
+
+    <select id="getList" resultMap="DtoResultMap" parameterType="map">
+        SELECT 
+            g.PERSON_ID,
+            g.GROUP_NO,
+            g.ACTIVITY,
+            g.ORDERNO,
+            g.UPDATE_DATE,
+            g.UPDATED_BY,
+            e.EMPID,
+            e.LOCAL_NAME,
+            e.DEPTNO,
+            GET_DEPT_NAME(e.DEPTNO, #{lang, jdbcType=VARCHAR}) as DEPT_NAME
+        FROM AR_EMP_GROUP g
+        LEFT JOIN HR_EMPLOYEE e ON g.PERSON_ID = e.PERSON_ID
+        <where>
+            g.GROUP_NO = '80000084'
+            <if test="empId != null and empId != ''">
+                AND (e.EMPID LIKE '%' || #{empId} || '%' OR CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empId})) || '%')
+            </if>
+        </where>
+        ORDER BY g.ORDERNO ASC, g.UPDATE_DATE DESC
+    </select>
+
+    <select id="getByPersonId" resultMap="DtoResultMap">
+        SELECT 
+            g.PERSON_ID,
+            g.GROUP_NO,
+            g.ACTIVITY,
+            g.ORDERNO,
+            e.EMPID,
+            e.LOCAL_NAME
+        FROM AR_EMP_GROUP g
+        LEFT JOIN HR_EMPLOYEE e ON g.PERSON_ID = e.PERSON_ID
+        WHERE g.PERSON_ID = #{personId} AND g.GROUP_NO = #{groupNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArEmpGroup">
+        INSERT INTO AR_EMP_GROUP (
+            PERSON_ID,
+            GROUP_NO,
+            ORDERNO,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY
+        ) VALUES (
+            #{personId, jdbcType=VARCHAR},
+            #{groupNo, jdbcType=VARCHAR},
+            #{orderno, jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArEmpGroup">
+        UPDATE AR_EMP_GROUP
+        <set>
+            <if test="activity != null">
+                ACTIVITY = #{activity, jdbcType=NUMERIC},
+            </if>
+            <if test="orderno != null">
+                ORDERNO = #{orderno, jdbcType=NUMERIC},
+            </if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        </set>
+        WHERE PERSON_ID = #{personId} AND GROUP_NO = #{groupNo}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM AR_EMP_GROUP WHERE PERSON_ID = #{personId} AND GROUP_NO = #{groupNo}
+    </delete>
+
+</mapper>

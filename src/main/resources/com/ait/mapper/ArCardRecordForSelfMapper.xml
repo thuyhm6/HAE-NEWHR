@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArCardRecordForSelfMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceMintenance.dto.ArCardRecordForSelfDto">
+        <result property="recordNo"       column="RECORD_NO"/>
+        <result property="cardNo"         column="CARD_NO"/>
+        <result property="personId"       column="PERSON_ID"/>
+        <result property="doorType"       column="DOOR_TYPE"/>
+        <result property="insertBy"       column="INSERT_BY"/>
+        <result property="dataSourceName" column="DATA_SOURCE_NAME"/>
+        <result property="remark"         column="REMARK"/>
+        <result property="arDateStr"      column="AR_DATE_STR"/>
+        <result property="swipeDate"      column="SWIPE_DATE"/>
+        <result property="swipeTime"      column="SWIPE_TIME"/>
+        <result property="employeeName"   column="EMPLOYEE_NAME"/>
+        <result property="deviceName"     column="DEVICENAME"/>
+        <result property="empId"          column="EMPID"/>
+        <result property="localName"      column="LOCAL_NAME"/>
+        <result property="deptNo"         column="DEPTNO"/>
+        <result property="deptName"       column="DEPT_NAME"/>
+    </resultMap>
+
+    <!-- CARD_NO trong AR_MAC_RECORDS_SST tương ứng EMPID trong HR_EMPLOYEE -->
+    <!-- Nếu CARD_NO không có trong HR_EMPLOYEE thì vẫn hiển thị CARD_NO thay cho EMPID và LOCAL_NAME -->
+    <sql id="baseQuery">
+        SELECT SST.RECORD_NO,
+               SST.CARD_NO,
+               SST.PERSON_ID,
+               SST.DOOR_TYPE,
+               SST.INSERT_BY,
+               CASE SST.INSERT_BY
+                   WHEN 'M' THEN 'Tự động'
+                   WHEN 'A' THEN 'Xin phép'
+                   ELSE 'Thủ công'
+               END AS DATA_SOURCE_NAME,
+               SST.REMARK,
+               SST.AR_DATE_STR,
+               TO_CHAR(SST.R_TIME, 'YYYY/MM/DD')         AS SWIPE_DATE,
+               TO_CHAR(SST.R_TIME, 'YYYY/MM/DD HH24:MI') AS SWIPE_TIME,
+               SST.EMPLOYEE_NAME,
+               SST.DEVICENAME,
+               CASE WHEN HE.EMPID IS NOT NULL THEN HE.EMPID ELSE SST.CARD_NO END         AS EMPID,
+               CASE WHEN HE.LOCAL_NAME IS NOT NULL THEN HE.LOCAL_NAME ELSE SST.CARD_NO END AS LOCAL_NAME,
+               HE.DEPTNO,
+               GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME
+          FROM AR_MAC_RECORDS_SST SST
+          LEFT JOIN HR_EMPLOYEE HE ON SST.CARD_NO = HE.EMPID
+         WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+           AND (
+               UPPER(CASE WHEN HE.EMPID IS NOT NULL THEN HE.EMPID ELSE SST.CARD_NO END)
+                   LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+               OR CONVERTTOUNSIGN(UPPER(
+                   CASE WHEN HE.LOCAL_NAME IS NOT NULL THEN HE.LOCAL_NAME ELSE SST.CARD_NO END
+               )) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+           )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+           AND HE.DEPTNO IS NOT NULL
+           AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+           AND SST.R_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+           AND SST.R_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+    </sql>
+
+    <select id="countList" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordForSelfDto">
+        SELECT COUNT(*) FROM (
+            <include refid="baseQuery"/>
+        )
+    </select>
+
+    <select id="selectListPage" resultMap="DtoResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordForSelfDto">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY SST.R_TIME DESC, SST.CARD_NO
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <select id="selectListAll" resultMap="DtoResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordForSelfDto">
+        <include refid="baseQuery"/>
+        ORDER BY SST.R_TIME DESC, SST.CARD_NO
+    </select>
+
+    <select id="countDuplicate" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordForSelfDto">
+        SELECT COUNT(*)
+          FROM AR_MAC_RECORDS_SST
+         WHERE CARD_NO   = #{cardNo,        jdbcType=VARCHAR}
+           AND R_TIME    = TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
+           AND DOOR_TYPE = #{doorType,      jdbcType=VARCHAR}
+           AND ACTIVITY  = 1
+    </select>
+
+    <insert id="insertFromDevice" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordForSelfDto">
+        <selectKey keyProperty="recordNo" resultType="long" order="BEFORE">
+            SELECT NVL(MAX(RECORD_NO), 0) + 1 FROM AR_MAC_RECORDS_SST
+        </selectKey>
+        INSERT INTO AR_MAC_RECORDS_SST (
+            RECORD_NO,
+            CARD_NO,
+            PERSON_ID,
+            DOOR_TYPE,
+            INSERT_BY,
+            AR_DATE_STR,
+            R_TIME,
+            ACTIVITY,
+            EMPLOYEE_NAME,
+            DEVICENAME
+        ) VALUES (
+            #{recordNo,      jdbcType=NUMERIC},
+            #{cardNo,        jdbcType=VARCHAR},
+            #{personId,      jdbcType=VARCHAR},
+            #{doorType,      jdbcType=VARCHAR},
+            'M',
+            #{arDateStr,     jdbcType=VARCHAR},
+            TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            1,
+            #{employeeName,  jdbcType=VARCHAR},
+            #{deviceName,    jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="findPersonIdByEmpId" resultType="String">
+        SELECT PERSON_ID
+          FROM HR_EMPLOYEE
+         WHERE EMPID = #{empId, jdbcType=VARCHAR}
+           AND ROWNUM = 1
+    </select>
+
+</mapper>

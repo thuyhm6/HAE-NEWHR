@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.org.orgManage.mapper.OrgBusinessRelationMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.org.orgManage.model.OrgBusinessRelation">
+        <result column="SEQ" property="seq" jdbcType="VARCHAR" />
+        <result column="RESUME_NO" property="resumeNo" jdbcType="VARCHAR" />
+        <result column="CPNY_ID" property="cpnyId" jdbcType="VARCHAR" />
+        <result column="DEPTNO" property="deptNo" jdbcType="VARCHAR" />
+        <result column="CODE_NO" property="codeNo" jdbcType="VARCHAR" />
+        <result column="IS_DEFAULT" property="isDefault" jdbcType="VARCHAR" />
+        <result column="ACTIVITY" property="activity" jdbcType="VARCHAR" />
+        <result column="ORDERNO" property="orderNo" jdbcType="DECIMAL" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="CREATED_BY" property="createdBy" jdbcType="VARCHAR" />
+        <result column="CREATED_IP" property="createdIp" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR" />
+        <result column="UPDATED_IP" property="updatedIp" jdbcType="VARCHAR" />
+        <result column="BUSINESS_NAME" property="businessName" jdbcType="VARCHAR" />
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        SEQ, RESUME_NO, CPNY_ID, DEPTNO, CODE_NO, IS_DEFAULT, ACTIVITY, ORDERNO,
+        CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+    </sql>
+
+    <select id="selectByDept" resultMap="BaseResultMap">
+        SELECT 
+            T1.SEQ, T1.RESUME_NO, T1.CPNY_ID, T1.DEPTNO, T1.CODE_NO, T1.IS_DEFAULT, 
+            T1.ACTIVITY, T1.ORDERNO, T1.CREATE_DATE, T1.CREATED_BY, T1.CREATED_IP, 
+            T1.UPDATE_DATE, T1.UPDATED_BY, T1.UPDATED_IP,
+            GET_GLOBAL_NAME(T1.CODE_NO, #{lang, jdbcType=VARCHAR}) as BUSINESS_NAME,
+            T2.ORG_NAME_LOCAL as DEPT_NAME
+        FROM ORG_BUSINESS_RELATION T1
+        LEFT JOIN ORG_INFO T2 
+            ON T1.DEPTNO = T2.DEPTNO 
+        WHERE T2.RESUME_NO = #{resumeNo}
+          AND T1.DEPTNO = #{deptNo}
+          AND T1.ACTIVITY = '1'
+        ORDER BY T1.ORDERNO
+    </select>
+
+    <select id="selectBySeq" resultMap="BaseResultMap">
+        SELECT 
+            <include refid="Base_Column_List" />,
+            GET_GLOBAL_NAME(CODE_NO, #{lang, jdbcType=VARCHAR}) as BUSINESS_NAME
+        FROM ORG_BUSINESS_RELATION
+        WHERE SEQ = #{seq}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.org.orgManage.model.OrgBusinessRelation">
+        INSERT INTO ORG_BUSINESS_RELATION (
+            SEQ, RESUME_NO, CPNY_ID, DEPTNO, CODE_NO, IS_DEFAULT, 
+            ACTIVITY, ORDERNO, CREATE_DATE, CREATED_BY, CREATED_IP, 
+            UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            ORG_BUSINESS_RELATION_SEQ.NEXTVAL, #{resumeNo}, #{cpnyId, jdbcType=VARCHAR}, #{deptNo}, #{codeNo}, #{isDefault}, 
+            '1', #{orderNo}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{createdIp}, 
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{updatedIp}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.org.orgManage.model.OrgBusinessRelation">
+        UPDATE ORG_BUSINESS_RELATION
+        SET 
+            CODE_NO = #{codeNo},
+            IS_DEFAULT = #{isDefault},
+            ORDERNO = #{orderNo},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{updatedIp}
+        WHERE SEQ = #{seq}
+    </update>
+
+    <update id="delete">
+        UPDATE ORG_BUSINESS_RELATION
+        SET ACTIVITY = '0',
+            UPDATE_DATE = SYSDATE
+        WHERE SEQ = #{seq}
+    </update>
+</mapper>

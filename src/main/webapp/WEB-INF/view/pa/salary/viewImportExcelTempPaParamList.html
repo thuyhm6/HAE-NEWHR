@@ -1,0 +1,209 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="viept_searchForm" class="row g-3 mb-3 align-items-end">
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="form-text fw-bold mb-2">
+                                <span th:text="#{impParam.totalRows}">Tổng số hàng:</span>
+                                <span id="viept_totalRows">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="form-text fw-bold mb-2">
+                                <span th:text="#{impParam.errorRows}">Số hàng lỗi:</span>
+                                <span id="viept_errorRows">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="viept_errorOnly" class="form-label"
+                                   th:text="#{impParam.errorFilter}">Gặp lỗi hay không</label>
+                            <select id="viept_errorOnly" class="form-select">
+                                <option value="" th:text="#{impParam.all}">Tất cả</option>
+                                <option value="Y" th:text="#{impParam.onlyError}">Chỉ hiển thị dòng lỗi</option>
+                                <option value="N" th:text="#{impParam.onlyValid}">Chỉ hiển thị dòng hợp lệ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5 d-flex align-items-end gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary" onclick="vieptSearch()">
+                                <i class="bx bx-search"></i>
+                                <span th:text="#{common.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success" id="viept_saveBtn" onclick="vieptSave(this)">
+                                <i class="bx bx-save"></i>
+                                <span th:text="#{common.save}">Lưu</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="vieptCancel()">
+                                <i class="bx bx-x"></i>
+                                <span th:text="#{common.cancel}">Hủy bỏ</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="viept_errorAlert" class="alert alert-danger d-none mb-3" role="alert"></div>
+
+                    <div class="table-responsive" style="overflow-x: auto;">
+                        <table id="viept_resultTable"
+                               class="table table-striped table-bordered table-hover table-sm w-100">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th th:text="#{impParam.line}">STT</th>
+                                    <th th:text="#{impParam.empId}">Mã nhân viên</th>
+                                    <th th:text="#{impParam.localName}">Họ tên</th>
+                                    <th th:text="#{impParam.startMonth}">Tháng bắt đầu</th>
+                                    <th th:text="#{impParam.endMonth}">Tháng kết thúc</th>
+                                    <th th:text="#{impParam.returnValue}">Trị số</th>
+                                    <th th:text="#{impParam.remark}">Ghi chú</th>
+                                    <th th:text="#{impParam.errorMsg}">Nguyên nhân lỗi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _viept_table  = null;
+        var _viept_booted = false;
+        var _viept_paramNo = new URLSearchParams(
+            ((window._currentTabUrl || window.location.href).split('?')[1] || '')
+        ).get('paramNo') || '';
+
+        var _viept_i18n = {
+            saving:   /*[[#{impParam.saving}]]*/ 'Đang lưu...',
+            saveOk:   /*[[#{impParam.saveOk}]]*/ 'Lưu thành công',
+            saveFail: /*[[#{impParam.saveFail}]]*/ 'Lưu thất bại'
+        };
+
+        function vieptSafeText(v) { return v == null ? '' : v; }
+
+        function vieptUpdateCounter(rows) {
+            var list = rows || [];
+            var errCount = list.filter(function (r) {
+                return r && r.uploadErrorMsg && String(r.uploadErrorMsg).trim() !== '';
+            }).length;
+            $('#viept_totalRows').text(list.length);
+            $('#viept_errorRows').text(errCount);
+        }
+
+        function vieptCloseTab() {
+            try {
+                if (typeof tabSystem !== 'undefined' && tabSystem && typeof tabSystem.closeTab === 'function') {
+                    var tabId = tabSystem.activeTabId;
+                    if (!tabId) {
+                        var el = document.getElementById('viept_resultTable');
+                        if (el) {
+                            var panes = document.querySelectorAll('#tab-content-area > .tab-pane');
+                            for (var i = 0; i < panes.length; i++) {
+                                if (panes[i].contains(el)) { tabId = panes[i].id; break; }
+                            }
+                        }
+                    }
+                    if (tabId) tabSystem.closeTab(tabId);
+                }
+            } catch (e) {}
+        }
+
+        function vieptInitTable() {
+            _viept_table = $('#viept_resultTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                autoWidth: false,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                order: [],
+                ajax: {
+                    url: '/pa/salary/inputItemData/api/importTemp/list',
+                    dataSrc: function (json) {
+                        var rows = json || [];
+                        vieptUpdateCounter(rows);
+                        return rows;
+                    },
+                    data: function (d) {
+                        d.errorOnly = $('#viept_errorOnly').val();
+                    }
+                },
+                columns: [
+                    { data: 'lineId',        width: '50px',  className: 'text-center', render: function (v) { return vieptSafeText(v); } },
+                    { data: 'empId',         width: '110px', className: 'text-center', render: function (v) { return vieptSafeText(v); } },
+                    { data: 'localName',     width: '180px', render: function (v) { return vieptSafeText(v); } },
+                    { data: 'startMonth',    width: '110px', className: 'text-center', render: function (v) { return vieptSafeText(v); } },
+                    { data: 'endMonth',      width: '110px', className: 'text-center', render: function (v) { return vieptSafeText(v); } },
+                    { data: 'returnValue',   width: '100px', className: 'text-end',    render: function (v) { return vieptSafeText(v); } },
+                    { data: 'remark',        width: '200px', render: function (v) { return vieptSafeText(v); } },
+                    {
+                        data: 'uploadErrorMsg', width: '250px',
+                        render: function (v) {
+                            if (!v || String(v).trim() === '') return '';
+                            return '<span class="text-danger">' + $('<span>').text(v).html() + '</span>';
+                        }
+                    }
+                ]
+            });
+        }
+
+        function vieptBootPage() {
+            if (_viept_booted) return;
+            if (!document.getElementById('viept_resultTable')) {
+                setTimeout(vieptBootPage, 30);
+                return;
+            }
+            _viept_booted = true;
+            vieptInitTable();
+        }
+
+        window.vieptSearch = function () {
+            if (_viept_table) _viept_table.ajax.reload();
+        };
+
+        window.vieptSave = function (btn) {
+            var $btn = $(btn || '#viept_saveBtn');
+            if ($btn.prop('disabled')) return;
+            var origHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> ' + _viept_i18n.saving);
+            $('#viept_errorAlert').addClass('d-none').html('');
+
+            $.ajax({
+                url: '/pa/salary/inputItemData/api/importTemp/save',
+                type: 'POST',
+                data: { paramNo: _viept_paramNo },
+                success: function (res) {
+                    $btn.prop('disabled', false).html(origHtml);
+                    if (res && res.success) {
+                        toastr && toastr.success(res.message || _viept_i18n.saveOk);
+                        vieptCloseTab();
+                        return;
+                    }
+                    var errMsg = (res && (res.error || res.message)) || _viept_i18n.saveFail;
+                    $('#viept_errorAlert').html(errMsg).removeClass('d-none');
+                    if (_viept_table) _viept_table.ajax.reload();
+                    toastr && toastr.error(errMsg);
+                },
+                error: function () {
+                    $btn.prop('disabled', false).html(origHtml);
+                    toastr && toastr.error('Lỗi kết nối khi lưu dữ liệu');
+                }
+            });
+        };
+
+        window.vieptCancel = function () { vieptCloseTab(); };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', vieptBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(vieptBootPage);
+        } else {
+            vieptBootPage();
+        }
+    </script>
+</template>

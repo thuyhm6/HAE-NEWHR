@@ -1,0 +1,272 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="as_searchForm" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="as_keyword" class="form-label" th:text="#{common.search.empIdOrName}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="as_keyword" th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="as_deptNo" th:placeholder="#{common.select}" placeholder="Chọn phòng ban"
+                                readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="as_fromDate" class="form-label" th:text="#{common.fromDate}">Ngày bắt đầu</label>
+                            <input type="text" class="form-control js-daterangepicker" id="as_fromDate"
+                                data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="as_toDate" class="form-label" th:text="#{common.toDate}">Ngày kết thúc</label>
+                            <input type="text" class="form-control js-daterangepicker" id="as_toDate"
+                                data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="as_postFamily" class="form-label" th:text="#{attSearch.empGroup}">Nhóm nhân viên</label>
+                            <select class="form-select" id="as_postFamily" data-parent-code="14015812"
+                                th:data-default-text="#{attSearch.selectAttCode}" data-default-text="-- Chọn mã chấm công --">
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_shiftNo" class="form-label" th:text="#{attSearch.shiftType}">Ca làm việc</label>
+                            <select class="form-select" id="as_shiftNo">
+                                <option value="" th:text="#{attSearch.all}">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_itemNo" class="form-label" th:text="#{attSearch.leaveType}">Loại nghỉ phép</label>
+                            <select class="form-select" id="as_itemNo">
+                                <option value="" th:text="#{attSearch.all}">-- Tất cả --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+                            <button type="button" class="btn btn-primary" onclick="asSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="asClearSearch()">
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="asExportExcel()">
+                                <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table id="as_dataTable" class="table table-striped table-bordered table-hover"
+                            style="width: 100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th th:text="#{common.stt}">STT</th>
+                                    <th th:text="#{attSearch.workDate}">Ngày công</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.empName}">Tên nhân viên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{attSearch.position}">Chức vụ</th>
+                                    <th th:text="#{attSearch.shiftType}">Ca làm việc</th>
+                                    <th th:text="#{attSearch.leaveType}">Loại nghỉ phép</th>
+                                    <th th:text="#{attSearch.fromTime}">Từ thời gian</th>
+                                    <th th:text="#{attSearch.toTime}">Đến thời gian</th>
+                                    <th th:text="#{attSearch.quantity}">Số lượng</th>
+                                    <th th:text="#{attSearch.unit}">Đơn vị</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _as_table = null;
+        var _as_pageBooted = false;
+        var _as_selectedDeptCodes = [];
+
+        function asFormatDate(dateObj) {
+            var y = dateObj.getFullYear();
+            var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var d = String(dateObj.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        function asInitDefaultDateRange() {
+            var today = new Date();
+            var yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            var fromValue = asFormatDate(yesterday);
+            var toValue = asFormatDate(today);
+            $('#as_fromDate').val(fromValue);
+            $('#as_toDate').val(toValue);
+
+            if ($('#as_fromDate').data('daterangepicker')) {
+                $('#as_fromDate').data('daterangepicker').setStartDate(fromValue);
+            }
+            if ($('#as_toDate').data('daterangepicker')) {
+                $('#as_toDate').data('daterangepicker').setStartDate(toValue);
+            }
+        }
+
+        function asLoadShiftOptions() {
+            return $.ajax({
+                url: '/ar/attendanceSettings/api/shift',
+                type: 'GET',
+                success: function (data) {
+                    var html = '<option value="">-- Tất cả --</option>';
+                    (data || []).forEach(function (item) {
+                        var code = item.shiftNo || '';
+                        var name = item.nameVi || item.shiftName || code;
+                        html += '<option value="' + code + '">' + name + '</option>';
+                    });
+                    $('#as_shiftNo').html(html);
+                }
+            });
+        }
+
+        function asLoadItemOptions() {
+            return $.ajax({
+                url: '/ar/attendanceSettings/api/arItemParam/options',
+                type: 'GET',
+                data: { type: 'attendance' },
+                success: function (data) {
+                    var html = '<option value="">-- Tất cả --</option>';
+                    (data || []).forEach(function (item) {
+                        var code = item.itemNo || '';
+                        var name = item.itemName || code;
+                        html += '<option value="' + code + '">' + name + '</option>';
+                    });
+                    $('#as_itemNo').html(html);
+                }
+            });
+        }
+
+        function asInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') {
+                return;
+            }
+            DeptTree.init('#as_deptNo', function (selectedCodes) {
+                _as_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        function asInitTable() {
+            _as_table = $('#as_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                scrollY: "calc(100vh - 330px)",
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                columnDefs: [
+                    { "width": "2%", "targets": 0 },
+                ],
+                dom: 'Blfrtip',
+                buttons: [
+                    {
+                        extend: 'excel',
+                        title: 'attendance_search_export'
+                    }
+                ],
+                ajax: {
+                    url: '/ar/attendanceMintenance/api/attendanceSearch/list',
+                    dataSrc: '',
+                    data: function (d) {
+                        d.keyword = $('#as_keyword').val();
+                        d.deptNos = (_as_selectedDeptCodes || []).join(',');
+                        d.fromDate = $('#as_fromDate').val();
+                        d.toDate = $('#as_toDate').val();
+                        d.postFamily = $('#as_postFamily').val();
+                        d.shiftNo = $('#as_shiftNo').val();
+                        d.itemNo = $('#as_itemNo').val();
+                    }
+                },
+                initComplete: function () {
+                    var $wrapper = $('#as_dataTable_wrapper');
+                    $wrapper.find('.dt-buttons').hide();
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { data: 'arDateStr', className: 'text-center' },
+                    { data: 'empId', className: 'text-center' },
+                    { data: 'localName' },
+                    { data: 'deptName' },
+                    { data: 'postGradeName' },
+                    { data: 'shiftName', className: 'text-center' },
+                    { data: 'itemName' },
+                    { data: 'fromTime', className: 'text-center' },
+                    { data: 'toTime', className: 'text-center' },
+                    { data: 'quantity', className: 'text-end' },
+                    { data: 'unit', className: 'text-center' }
+                ]
+            });
+        }
+
+        function asBootPage() {
+            if (_as_pageBooted) {
+                return;
+            }
+            if (!document.getElementById('as_dataTable')) {
+                setTimeout(asBootPage, 30);
+                return;
+            }
+            _as_pageBooted = true;
+            asInitDefaultDateRange();
+            asInitDeptSelector();
+            $.when(asLoadShiftOptions(), asLoadItemOptions()).always(function () {
+                asInitTable();
+                if (_as_table) {
+                    _as_table.ajax.reload();
+                }
+            });
+        }
+
+        window.asSearchData = function () {
+            if (_as_table) {
+                _as_table.ajax.reload();
+            }
+        };
+
+        window.asClearSearch = function () {
+            $('#as_keyword').val('');
+            $('#as_postFamily').val('');
+            $('#as_shiftNo').val('');
+            $('#as_itemNo').val('');
+            $('#as_deptNo').val('');
+            _as_selectedDeptCodes = [];
+            $('.auth-dept-chk-global').prop('checked', false).trigger('change');
+            asInitDefaultDateRange();
+            if (_as_table) {
+                _as_table.ajax.reload();
+            }
+        };
+
+        window.asExportExcel = function () {
+            if (_as_table) {
+                _as_table.button('.buttons-excel').trigger();
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', asBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(asBootPage);
+        } else {
+            asBootPage();
+        }
+    </script>
+</template>

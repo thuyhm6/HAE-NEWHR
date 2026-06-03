@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArDetailCalculateMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceMintenance.dto.ArDetailCalculateDto">
+        <result column="CALTYPE" property="caltype" />
+        <result column="FROM_DATE" property="fromDate" />
+        <result column="TO_DATE" property="toDate" />
+        <result column="DEPT_ID" property="deptId" />
+        <result column="SON_DEPT_FLAG" property="sonDeptFlag" />
+        <result column="PERSON_ID" property="personId" />
+    </resultMap>
+
+    <update id="callDetailCalculateProcedure"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArDetailCalculateDto"
+            statementType="CALLABLE">
+        {CALL AR_DETAIL_CAL_P(
+            #{fromDate, jdbcType=VARCHAR, mode=IN},
+            #{toDate, jdbcType=VARCHAR, mode=IN},
+            #{caltype, jdbcType=VARCHAR, mode=IN},
+            NULL,
+            #{deptId, jdbcType=VARCHAR, mode=IN},
+            #{sonDeptFlag, jdbcType=VARCHAR, mode=IN},
+            #{cpnyId, jdbcType=VARCHAR, mode=IN},
+            'ALL',
+            #{personId, jdbcType=VARCHAR, mode=INOUT}
+        )}
+    </update>
+</mapper>

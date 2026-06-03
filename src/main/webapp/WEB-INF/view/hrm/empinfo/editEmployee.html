@@ -1,0 +1,258 @@
+<div th:fragment="content">
+<!-- Modal Edit Employee -->
+<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-labelledby="editEmployeeModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEmployeeModalTitle">
+                    <i class="bx bx-edit me-2"></i>
+                    Chỉnh sửa thông tin nhân viên
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editEmployeeForm">
+                    <input type="hidden" id="editPersonId" name="personId">
+                    
+                    <!-- Thông tin cơ bản -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="bx bx-user me-2"></i>
+                                Thông tin cơ bản
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="editEmpId" class="form-label">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="editEmpId" name="empId" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editLocalName" class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="editLocalName" name="localName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="editDeptNo" class="form-label">Mã phòng ban</label>
+                            <input type="text" class="form-control" id="editDeptNo" name="deptNo">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editPosition" class="form-label">Chức vụ</label>
+                            <input type="text" class="form-control" id="editPosition" name="position">
+                        </div>
+                    </div>
+                    
+                    <!-- Thông tin đặc biệt -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="bx bx-star me-2"></i>
+                                Thông tin đặc biệt
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="editSpecialNo" class="form-label">Số đặc biệt</label>
+                            <input type="text" class="form-control" id="editSpecialNo" name="specialNo">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editActivity" class="form-label">Hoạt động</label>
+                            <select class="form-select" id="editActivity" name="activity">
+                                <option value="1">Hoạt động</option>
+                                <option value="0">Không hoạt động</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="editStartDate" class="form-label">Ngày bắt đầu</label>
+                            <input type="date" class="form-control" id="editStartDate" name="startDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editEndDate" class="form-label">Ngày kết thúc</label>
+                            <input type="date" class="form-control" id="editEndDate" name="endDate">
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="editOtFlag" class="form-label">Trạng thái OT</label>
+                            <select class="form-select" id="editOtFlag" name="otFlag">
+                                <option value="1">Có OT</option>
+                                <option value="0">Không OT</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editSpecialContent" class="form-label">Nội dung đặc biệt</label>
+                            <textarea class="form-control" id="editSpecialContent" name="specialContent" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Thông tin hệ thống -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="bx bx-info-circle me-2"></i>
+                                Thông tin hệ thống
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="editCreateDate" class="form-label">Ngày tạo</label>
+                            <input type="datetime-local" class="form-control" id="editCreateDate" name="createDate" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editCreatedBy" class="form-label">Người tạo</label>
+                            <input type="text" class="form-control" id="editCreatedBy" name="createdBy" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="editUpdateDate" class="form-label">Ngày cập nhật</label>
+                            <input type="datetime-local" class="form-control" id="editUpdateDate" name="updateDate" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="editUpdatedBy" class="form-label">Người cập nhật</label>
+                            <input type="text" class="form-control" id="editUpdatedBy" name="updatedBy" readonly>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveEmployeeChanges()">
+                    <i class="bx bx-save me-1"></i> Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Add New Employee -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEmployeeModalTitle">
+                    <i class="bx bx-plus me-2"></i>
+                    Thêm mới nhân viên
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeeForm">
+                    <!-- Thông tin cơ bản -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="bx bx-user me-2"></i>
+                                Thông tin cơ bản
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="addEmpId" class="form-label">Mã nhân viên <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="addEmpId" name="empId" readonly required>
+                                <button type="button" class="btn btn-outline-primary" onclick="openEmployeeSearchModal()" title="Tìm kiếm nhân viên">
+                                    <i class="bx bx-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="addLocalName" class="form-label">Họ tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addLocalName" name="localName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="addDeptNo" class="form-label">Mã phòng ban</label>
+                            <input type="text" class="form-control" id="addDeptNo" name="deptNo">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="addPosition" class="form-label">Chức vụ</label>
+                            <input type="text" class="form-control" id="addPosition" name="position">
+                        </div>
+                    </div>
+                    
+                    <!-- Thông tin đặc biệt -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="bx bx-star me-2"></i>
+                                Thông tin đặc biệt
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="addSpecialNo" class="form-label">Số đặc biệt</label>
+                            <input type="text" class="form-control" id="addSpecialNo" name="specialNo">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="addActivity" class="form-label">Hoạt động</label>
+                            <select class="form-select" id="addActivity" name="activity">
+                                <option value="1">Hoạt động</option>
+                                <option value="0">Không hoạt động</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="addStartDate" class="form-label">Ngày bắt đầu</label>
+                            <input type="date" class="form-control" id="addStartDate" name="startDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="addEndDate" class="form-label">Ngày kết thúc</label>
+                            <input type="date" class="form-control" id="addEndDate" name="endDate">
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="addOtFlag" class="form-label">Trạng thái OT</label>
+                            <select class="form-select" id="addOtFlag" name="otFlag">
+                                <option value="1">Có OT</option>
+                                <option value="0">Không OT</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="addSpecialContent" class="form-label">Nội dung đặc biệt</label>
+                            <textarea class="form-control" id="addSpecialContent" name="specialContent" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bx bx-x me-1"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-success" onclick="saveNewEmployee()">
+                    <i class="bx bx-plus me-1"></i> Thêm mới
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tìm kiếm Nhân viên -->
+<!-- Employee Search Modal is now included globally in master.html -->
+
+</div>

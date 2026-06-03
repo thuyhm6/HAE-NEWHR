@@ -1,0 +1,531 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="poi_pageWrapper">
+
+            <!-- Thông tin nhân viên -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <span class="fw-semibold small" th:text="#{poi.field.otType}">Tăng ca</span>
+                        <select class="form-select form-select-sm" id="poi_otTypeCode"
+                            data-parent-code="31"
+                            th:attr="data-default-text=#{common.selectOne}"
+                            style="width:150px;">
+                        </select>
+                        <span class="fw-semibold small" th:text="#{common.approvalStatus}">Trạng thái duyệt</span>
+                        <select class="form-select form-select-sm" id="poi_affirmFlag"
+                            data-parent-code="14014304"
+                            th:attr="data-default-text=#{common.selectOne}"
+                            style="width:150px;">
+                        </select>
+                        <span class="fw-semibold small" th:text="#{poi.field.dateRange}">Thời gian</span>
+                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                            id="poi_fromDate"
+                            data-drp-format="DD/MM/YYYY"
+                            data-drp-auto-update-input="false"
+                            autocomplete="off"
+                            style="width:130px;">
+                        <span>~</span>
+                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                            id="poi_toDate"
+                            data-drp-format="DD/MM/YYYY"
+                            data-drp-auto-update-input="false"
+                            autocomplete="off"
+                            style="width:130px;">
+                        <button class="btn btn-primary btn-sm ms-1" onclick="poiSearch()"
+                            th:text="#{common.search}">Tra cứu</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="small" th:text="#{common.quickFilter}">Lọc nhanh</span>
+                <input type="text" class="form-control form-control-sm" id="poi_filterInput"
+                    style="max-width:160px;" oninput="poiQuickFilter(this.value)">
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button class="btn btn-danger btn-sm" onclick="poiCancel()"
+                        th:text="#{common.cancel}">Hủy bỏ</button>
+                    <button class="btn btn-success btn-sm" onclick="poiGoApply()"
+                        th:text="#{poi.btn.applyOt}">Xin tăng ca</button>
+                    <span class="small" th:text="#{common.perPage}">Mỗi trang</span>
+                    <select class="form-select form-select-sm" id="poi_pageSize" style="width:70px;"
+                        onchange="poiChangePageSize(this.value)">
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="small" th:text="#{poi.label.rows}">Dữ liệu</span>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="poi_table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;" th:text="#{common.no.serial}">NO</th>
+                                    <th class="text-center" style="width:40px;">
+                                        <input type="checkbox" id="poi_checkAll" onclick="poiToggleAll(this)">
+                                    </th>
+                                    <th class="text-center" style="min-width:120px;" th:text="#{poi.field.otType}">Tăng ca</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{poi.col.otDate}">Ngày tăng ca</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.startTime}">Thời gian bắt đầu</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.endTime}">Thời gian kết thúc</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.duration}">Thời lượng</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{poi.col.mealRest}">Bảo cơm / Nghỉ ngơi (30')</th>
+                                    <th class="text-center" style="min-width:180px;" th:text="#{common.reason}">Lý do</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{common.approvalStatus}">Trạng thái duyệt</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{common.status}">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="poi_tableBody">
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted py-3" th:text="#{poi.msg.loading}">Đang tải dữ liệu...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang -->
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2" id="poi_paginationBar">
+                        <span id="poi_pageInfo" class="small text-muted"></span>
+                        <div id="poi_pagination" class="d-flex gap-1"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#poi_pageWrapper -->
+    </div><!-- /.row -->
+</div>
+
+<!-- Modal chi tiết phê duyệt -->
+<div class="modal fade" id="poi_applyDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="poi_applyDetailTitle" th:text="#{poi.modal.title}">[Xin tăng ca]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:160px;" th:text="#{poi.modal.subject}">Tiêu đề</th>
+                                <td id="poi_modalApplyTitle"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{poi.modal.applicant}">Người đăng ký</th>
+                                <td id="poi_modalApplicant"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:50px;" th:text="#{common.no.serial}">STT</th>
+                                <th style="width:90px;" th:text="#{poi.col.approvalSeq}">Trình tự duyệt</th>
+                                <th style="width:110px;" th:text="#{common.approvalStatus}">Trạng thái duyệt</th>
+                                <th th:text="#{common.name}">Họ tên</th>
+                                <th th:text="#{poi.modal.opinion}">Ý kiến</th>
+                                <th style="width:170px;" th:text="#{poi.col.actionTime}">Thời gian thực hiện</th>
+                                <th style="width:120px;" th:text="#{common.deptName}">Phòng ban</th>
+                            </tr>
+                        </thead>
+                        <tbody id="poi_modalApprovalBody"></tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2" th:text="#{poi.modal.empInfo}">Thông tin nhân viên</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{common.name}">Họ tên</th>
+                                <td id="poi_modalEmpName"></td>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{common.empId}">Mã nhân viên</th>
+                                <td id="poi_modalEmpId"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{common.deptName}">Phòng ban</th>
+                                <td id="poi_modalEmpDept"></td>
+                                <th class="table-light text-center" th:text="#{common.position}">Chức vụ</th>
+                                <td id="poi_modalEmpPost"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2" th:text="#{poi.modal.otInfo}">Thông tin tăng ca</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th th:text="#{poi.field.otType}">Loại tăng ca</th>
+                                <th style="width:130px;" th:text="#{poi.col.otDate}">Ngày tăng ca</th>
+                                <th style="width:130px;" th:text="#{common.startTime}">Bắt đầu</th>
+                                <th style="width:130px;" th:text="#{common.endTime}">Kết thúc</th>
+                                <th style="width:110px;" th:text="#{poi.col.hours}">Số giờ</th>
+                                <th th:text="#{common.reason}">Lý do</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="poi_modalType"   class="text-center"></td>
+                                <td id="poi_modalDate"   class="text-center"></td>
+                                <td id="poi_modalFrom"   class="text-center"></td>
+                                <td id="poi_modalTo"     class="text-center"></td>
+                                <td id="poi_modalHour"   class="text-center"></td>
+                                <td id="poi_modalRemark"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    th:text="#{common.close}">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{fragments/essEmpInfoCard :: script}"></th:block>
+    <script th:inline="javascript">
+        var _poi_data       = [];
+        var _poi_filtered   = [];
+        var _poi_pageBooted = false;
+        var _poi_detailModal = null;
+        var _poi_pageSize   = 50;
+        var _poi_currentPage = 1;
+
+        var _poi_msgLoading          = /*[[#{poi.msg.loading}]]*/'Đang tải...';
+        var _poi_msgNoData           = /*[[#{poi.msg.noData}]]*/'Không có dữ liệu';
+        var _poi_msgLoadErr          = /*[[#{poi.msg.loadError}]]*/'Lỗi tải dữ liệu';
+        var _poi_msgNoApproval       = /*[[#{poi.msg.noApprovalData}]]*/'Không có dữ liệu phê duyệt';
+        var _poi_msgSelectMin        = /*[[#{poi.msg.selectMinOne}]]*/'Vui lòng chọn ít nhất một dòng để hủy bỏ.';
+        var _poi_msgConfirmCancel1   = /*[[#{poi.msg.confirmCancel1}]]*/'Bạn có chắc muốn hủy bỏ';
+        var _poi_msgConfirmCancel2   = /*[[#{poi.msg.confirmCancel2}]]*/'đơn xin tăng ca đã chọn?';
+        var _poi_msgCancelSuccess    = /*[[#{poi.msg.cancelSuccess}]]*/'Hủy bỏ thành công.';
+        var _poi_msgCancelFailed     = /*[[#{poi.msg.cancelFailed}]]*/'Hủy bỏ thất bại.';
+        var _poi_msgCancelError      = /*[[#{poi.msg.cancelError}]]*/'Lỗi khi hủy bỏ đơn.';
+        var _poi_msgLoadApprovalFail = /*[[#{poi.msg.loadApprovalFailed}]]*/'Không tải được thông tin phê duyệt';
+        var _poi_msgLoadDetailFail   = /*[[#{poi.msg.loadDetailFailed}]]*/'Tải dữ liệu thất bại';
+        var _poi_msgPageInfo         = /*[[#{poi.msg.pageInfo}]]*/'Hiển thị {0} - {1} / {2} dòng';
+        var _poi_valYes              = /*[[#{poi.val.yes}]]*/'Có';
+        var _poi_valNo               = /*[[#{poi.val.no}]]*/'Không';
+        var _poi_unitHour            = /*[[#{poi.unit.hour}]]*/'Tiếng';
+        var _poi_unitMin             = /*[[#{poi.unit.minute}]]*/'Phút';
+        var _poi_titleApplyOt        = /*[[#{poi.btn.applyOt}]]*/'Xin tăng ca';
+
+        function poiEscHtml(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function poiFormatHour(h) {
+            var v = parseFloat(h);
+            if (isNaN(v)) return poiEscHtml(h || '');
+            var hrs  = Math.floor(v);
+            var mins = Math.round((v - hrs) * 60);
+            var text = '';
+            if (hrs  > 0) text += hrs  + ' ' + _poi_unitHour;
+            if (mins > 0) text += (text ? ' ' : '') + mins + ' ' + _poi_unitMin;
+            return text || String(v);
+        }
+
+        function poiConvertDrpDate(val) {
+            if (!val) return '';
+            var p = val.split('/');
+            return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : '';
+        }
+
+        function poiGetDefaultDateRange() {
+            var now  = new Date();
+            var year = now.getFullYear();
+            var mon  = now.getMonth() + 1;
+            var mm   = String(mon).padStart(2, '0');
+            var last = new Date(year, mon, 0).getDate();
+            return {
+                from: '01/' + mm + '/' + year,
+                to  : String(last).padStart(2, '0') + '/' + mm + '/' + year
+            };
+        }
+
+        // ── Search ───────────────────────────────────────────────────────────
+        window.poiSearch = function() {
+            var params = {
+                otTypeCode: $('#poi_otTypeCode').val() || '',
+                affirmFlag: $('#poi_affirmFlag').val() || '',
+                fromDate  : poiConvertDrpDate($('#poi_fromDate').val()),
+                toDate    : poiConvertDrpDate($('#poi_toDate').val())
+            };
+            $('#poi_tableBody').html('<tr><td colspan="11" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgLoading) + '</td></tr>');
+            $('#poi_checkAll').prop('checked', false);
+
+            $.ajax({
+                url : '/ess/infoApply/api/myOtApply/list',
+                type: 'GET',
+                data: params,
+                success: function(rows) {
+                    _poi_data     = rows || [];
+                    _poi_filtered = _poi_data.slice();
+                    _poi_currentPage = 1;
+                    poiRenderPage();
+                },
+                error: function() {
+                    $('#poi_tableBody').html('<tr><td colspan="11" class="text-center text-danger py-3">' + poiEscHtml(_poi_msgLoadErr) + '</td></tr>');
+                }
+            });
+        };
+
+        // ── Render bảng ──────────────────────────────────────────────────────
+        function poiRenderPage() {
+            var rows     = _poi_filtered;
+            var total    = rows.length;
+            var totalPg  = Math.max(1, Math.ceil(total / _poi_pageSize));
+            if (_poi_currentPage > totalPg) _poi_currentPage = totalPg;
+            var start = (_poi_currentPage - 1) * _poi_pageSize;
+            var end   = Math.min(start + _poi_pageSize, total);
+            var page  = rows.slice(start, end);
+
+            var $tbody = $('#poi_tableBody');
+            if (!page.length) {
+                $tbody.html('<tr><td colspan="11" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgNoData) + '</td></tr>');
+            } else {
+                var html = '';
+                page.forEach(function(r, idx) {
+                    var rowNo    = start + idx + 1;
+                    var deduct   = r.deductYn === '1' ? _poi_valYes : _poi_valNo;
+                    var applyNo  = poiEscHtml(r.applyNo);
+                    var otType   = poiEscHtml(r.otTypeCode || '');
+                    html += '<tr style="cursor:pointer;" onclick="poiOpenDetail(event,\'' + applyNo + '\',\'' + otType + '\')">'
+                        + '<td class="text-center">' + rowNo + '</td>'
+                        + '<td class="text-center" onclick="event.stopPropagation()">' + (['14014306','14014307','14014308'].indexOf(r.affirmFlag) >= 0 ? '<input type="checkbox" class="poi_rowCheck" value="' + applyNo + '">' : '') + '</td>'
+                        + '<td><a href="javascript:void(0)" onclick="event.stopPropagation();poiOpenDetail(event,\'' + applyNo + '\',\'' + otType + '\')">'
+                            + poiEscHtml(r.otTypeName || r.otTypeCode || '') + '</a></td>'
+                        + '<td class="text-center">' + poiEscHtml(r.applyOtDate || '') + '</td>'
+                        + '<td class="text-center">' + poiEscHtml(r.otFromTime  || '') + '</td>'
+                        + '<td class="text-center">' + poiEscHtml(r.otToTime    || '') + '</td>'
+                        + '<td class="text-center">' + poiFormatHour(r.otApplyHour) + '</td>'
+                        + '<td class="text-center">' + poiEscHtml(deduct) + '</td>'
+                        + '<td>' + poiEscHtml(r.applyOtRemark || '') + '</td>'
+                        + '<td class="text-center">' + poiEscHtml(r.affirmFlagName  || r.affirmFlag  || '') + '</td>'
+                        + '<td class="text-center">' + poiEscHtml(r.confirmFlagName || '') + '</td>'
+                        + '</tr>';
+                });
+                $tbody.html(html);
+            }
+
+            var pageInfoText = _poi_msgPageInfo
+                .replace('{0}', total ? start + 1 : 0)
+                .replace('{1}', end)
+                .replace('{2}', total);
+            $('#poi_pageInfo').text(pageInfoText);
+            poiRenderPagination(totalPg);
+        }
+
+        function poiRenderPagination(totalPg) {
+            var cur  = _poi_currentPage;
+            var html = '';
+            var prev = cur > 1 ? cur - 1 : 1;
+            var next = cur < totalPg ? cur + 1 : totalPg;
+            html += '<button class="btn btn-outline-secondary btn-sm px-2 py-0" ' + (cur === 1 ? 'disabled' : '') + ' onclick="poiGoPage(' + prev + ')">‹</button>';
+            var s = Math.max(1, cur - 2), e = Math.min(totalPg, s + 4);
+            s = Math.max(1, e - 4);
+            for (var i = s; i <= e; i++) {
+                html += '<button class="btn btn-sm px-2 py-0 ' + (i === cur ? 'btn-primary' : 'btn-outline-secondary') + '" onclick="poiGoPage(' + i + ')">' + i + '</button>';
+            }
+            html += '<button class="btn btn-outline-secondary btn-sm px-2 py-0" ' + (cur === totalPg ? 'disabled' : '') + ' onclick="poiGoPage(' + next + ')">›</button>';
+            $('#poi_pagination').html(html);
+        }
+
+        window.poiGoPage = function(p) {
+            _poi_currentPage = p;
+            poiRenderPage();
+        };
+
+        window.poiChangePageSize = function(val) {
+            _poi_pageSize    = parseInt(val, 10) || 50;
+            _poi_currentPage = 1;
+            poiRenderPage();
+        };
+
+        // ── Lọc nhanh ────────────────────────────────────────────────────────
+        window.poiQuickFilter = function(kw) {
+            if (!kw || !kw.trim()) {
+                _poi_filtered    = _poi_data.slice();
+            } else {
+                var k = kw.trim().toLowerCase();
+                _poi_filtered = _poi_data.filter(function(r) {
+                    return [r.otTypeName, r.otTypeCode, r.applyOtDate, r.otFromTime,
+                            r.otToTime, r.applyOtRemark, r.affirmFlagName, r.confirmFlagName]
+                        .some(function(v) { return v && String(v).toLowerCase().indexOf(k) !== -1; });
+                });
+            }
+            _poi_currentPage = 1;
+            poiRenderPage();
+        };
+
+        window.poiToggleAll = function(cb) {
+            $('.poi_rowCheck').prop('checked', cb.checked);
+        };
+
+        // ── Hủy bỏ ───────────────────────────────────────────────────────────
+        window.poiCancel = function() {
+            var selected = $('.poi_rowCheck:checked').map(function() { return this.value; }).get();
+            if (!selected.length) { alert(_poi_msgSelectMin); return; }
+            if (!confirm(_poi_msgConfirmCancel1 + ' ' + selected.length + ' ' + _poi_msgConfirmCancel2)) return;
+
+            $.ajax({
+                url        : '/ess/infoApply/api/myOtApply/cancel',
+                type       : 'POST',
+                contentType: 'application/json',
+                data       : JSON.stringify(selected),
+                success    : function(res) {
+                    if (res && res.success) { alert(res.message || _poi_msgCancelSuccess); poiSearch(); }
+                    else { alert(res && res.error ? res.error : _poi_msgCancelFailed); }
+                },
+                error: function() { alert(_poi_msgCancelError); }
+            });
+        };
+
+        window.poiGoApply = function() {
+            if (typeof tabSystem !== 'undefined') {
+                tabSystem.openTab('/ess/infoApply/viewSSTOtApplyInfo', _poi_titleApplyOt);
+            } else {
+                location.href = '/ess/infoApply/viewSSTOtApplyInfo';
+            }
+        };
+
+        // ── Modal phê duyệt ──────────────────────────────────────────────────
+        function poiSetText(sel, val) { $(sel).text(val || ''); }
+
+        function poiBuildApplyTitle(info) {
+            if (!info) return '';
+            return (info.otTypeName || '') + '/Apply(' + (info.localName || '') + ')[Date: '
+                + (info.detailFromDateTime || '') + ' ~ ' + (info.detailToDateTime || '') + ']';
+        }
+
+        function poiResetDetailModal() {
+            poiSetText('#poi_modalApplyTitle', '');
+            poiSetText('#poi_modalApplicant',  '');
+            poiSetText('#poi_modalEmpName',    '');
+            poiSetText('#poi_modalEmpId',      '');
+            poiSetText('#poi_modalEmpDept',    '');
+            poiSetText('#poi_modalEmpPost',    '');
+            poiSetText('#poi_modalType',       '');
+            poiSetText('#poi_modalDate',       '');
+            poiSetText('#poi_modalFrom',       '');
+            poiSetText('#poi_modalTo',         '');
+            poiSetText('#poi_modalHour',       '');
+            poiSetText('#poi_modalRemark',     '');
+            $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + poiEscHtml(_poi_msgLoading) + '</td></tr>');
+        }
+
+        function poiRenderApprovalRows(approvalList) {
+            if (!approvalList || !approvalList.length) {
+                $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + poiEscHtml(_poi_msgNoApproval) + '</td></tr>');
+                return;
+            }
+            var html = '';
+            approvalList.forEach(function(item, idx) {
+                var stt = item.affirmLevel || (idx + 1);
+                if (String(stt) === '100') stt = 'HR';
+                html += '<tr>'
+                    + '<td class="text-center">' + poiEscHtml(stt) + '</td>'
+                    + '<td class="text-center">' + poiEscHtml(item.affirmTypeName || '') + '</td>'
+                    + '<td class="text-center">' + poiEscHtml(item.affirmFlagName || '') + '</td>'
+                    + '<td>'                      + poiEscHtml(item.affirmName    || '') + '</td>'
+                    + '<td>'                      + poiEscHtml(item.affirmContent || '') + '</td>'
+                    + '<td class="text-center">' + poiEscHtml(item.updateDate    || '') + '</td>'
+                    + '<td class="text-center">' + poiEscHtml(item.deptName      || '') + '</td>'
+                    + '</tr>';
+            });
+            $('#poi_modalApprovalBody').html(html);
+        }
+
+        function poiRenderDetailData(data) {
+            var otInfo       = (data && data.otInfo)       ? data.otInfo       : {};
+            var employeeInfo = (data && data.employeeInfo) ? data.employeeInfo : otInfo;
+            var approvalList = (data && data.approvalList) ? data.approvalList : [];
+
+            $('#poi_applyDetailTitle').text('[' + (otInfo.otTypeName || _poi_titleApplyOt) + ']');
+            poiSetText('#poi_modalApplyTitle', poiBuildApplyTitle(otInfo));
+            poiSetText('#poi_modalApplicant',  (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
+            poiSetText('#poi_modalEmpName',    employeeInfo.localName    || '');
+            poiSetText('#poi_modalEmpId',      employeeInfo.empId        || '');
+            poiSetText('#poi_modalEmpDept',    employeeInfo.deptName     || '');
+            poiSetText('#poi_modalEmpPost',    employeeInfo.postGradeName || '');
+            poiSetText('#poi_modalType',       otInfo.otTypeName         || '');
+            poiSetText('#poi_modalDate',       otInfo.applyOtDate        || '');
+            poiSetText('#poi_modalFrom',       otInfo.detailFromDateTime || '');
+            poiSetText('#poi_modalTo',         otInfo.detailToDateTime   || '');
+            poiSetText('#poi_modalHour',       otInfo.otApplyHour        || '');
+            poiSetText('#poi_modalRemark',     otInfo.applyOtRemark      || '');
+            poiRenderApprovalRows(approvalList);
+        }
+
+        window.poiOpenDetail = function(event, applyNo, applyType) {
+            if (!applyNo) return;
+            if (!_poi_detailModal && window.bootstrap) {
+                var el = document.getElementById('poi_applyDetailModal');
+                if (el) _poi_detailModal = new bootstrap.Modal(el);
+            }
+            poiResetDetailModal();
+            if (_poi_detailModal) _poi_detailModal.show();
+
+            $.ajax({
+                url : '/ar/attendanceMintenance/api/overtime/detail',
+                type: 'GET',
+                data: { applyNo: applyNo, applyType: applyType || '' },
+                success: function(res) { poiRenderDetailData(res || {}); },
+                error  : function() {
+                    $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">' + poiEscHtml(_poi_msgLoadDetailFail) + '</td></tr>');
+                    toastr && toastr.error(_poi_msgLoadApprovalFail);
+                }
+            });
+        };
+
+        // ── Boot ─────────────────────────────────────────────────────────────
+        function poiBootPage() {
+            if (_poi_pageBooted) return;
+            if (!document.getElementById('poi_fromDate')) { setTimeout(poiBootPage, 30); return; }
+            _poi_pageBooted = true;
+
+            loadEssEmpInfoCard();
+
+            if (typeof initCodeSelects      === 'function') initCodeSelects('#poi_pageWrapper');
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#poi_pageWrapper');
+
+            var dr = poiGetDefaultDateRange();
+            $('#poi_fromDate').val(dr.from);
+            $('#poi_toDate'  ).val(dr.to);
+
+            poiSearch();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', poiBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(poiBootPage);
+        } else {
+            poiBootPage();
+        }
+    </script>
+</template>

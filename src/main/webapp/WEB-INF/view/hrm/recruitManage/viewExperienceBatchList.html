@@ -1,0 +1,568 @@
+<div th:fragment="content">
+    <div class="card" id="ebl_pageWrapper">
+        <div class="card-body p-2">
+
+            <!-- ════ Toolbar ════ -->
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <label class="form-label mb-0 fw-semibold small" th:text="#{ebl.label.registerDate}">Ngày đăng ký</label>
+                <select class="form-select form-select-sm" id="ebl_registerSeq" style="max-width:200px;"
+                        onchange="eblLoadBatchList()">
+                </select>
+                <button class="btn btn-primary btn-sm" onclick="eblOpenRegisterModal()">
+                    <i class="bi bi-plus-lg"></i>
+                    <span th:text="#{ebl.btn.register}">Đăng ký</span>
+                </button>
+
+                <div class="ms-auto d-flex flex-wrap gap-1">
+                    <button id="ebl_btnTemplate" class="btn btn-info btn-sm text-white" onclick="eblDownloadTemplate()">
+                        <i class="bi bi-download"></i>
+                        <span th:text="#{common.downloadTemplate}">Bản mẫu</span>
+                    </button>
+                    <button id="ebl_btnConfirm" class="btn btn-success btn-sm" onclick="eblConfirmExecute()">
+                        <i class="bi bi-check2-circle"></i>
+                        <span th:text="#{common.confirm}">Xác nhận</span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="eblLoadBatchList()">
+                        <i class="bi bi-search"></i>
+                        <span th:text="#{common.search}">Tra cứu</span>
+                    </button>
+                    <button id="ebl_btnDelete" class="btn btn-danger btn-sm" onclick="eblDeleteSelected()">
+                        <i class="bi bi-trash"></i>
+                        <span th:text="#{common.delete}">Xóa</span>
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="eblExportExcel()">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        <span th:text="#{common.exportExcel}">Xuất Excel</span>
+                    </button>
+                    <button id="ebl_btnInsertFile" class="btn btn-warning btn-sm" onclick="eblOpenImportModal()">
+                        <i class="bi bi-upload"></i>
+                        <span th:text="#{ebl.btn.insertFile}">Chèn file</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ════ Tổng số bản ghi ════ -->
+            <div class="small text-muted mb-1">Total:<span id="ebl_totalCount">0</span></div>
+
+            <!-- ════ Bảng dữ liệu ════ -->
+            <div class="table-responsive">
+                <table id="ebl_dataTable" class="table table-bordered table-hover table-sm"
+                       style="min-width:1800px; font-size:.82rem;">
+                    <thead class="table-light text-center align-middle">
+                        <tr>
+                            <th style="width:44px;">No.</th>
+                            <th style="width:36px;"><input type="checkbox" id="ebl_chkAll" title="Chọn tất cả"></th>
+                            <th th:text="#{ebl.col.processed}">Đã xử lý</th>
+                            <th th:text="#{common.empName}">Họ tên</th>
+                            <th th:text="#{common.empId}">Mã nhân viên</th>
+                            <th th:text="#{ebl.col.startDate}">Thời gian</th>
+                            <th th:text="#{ebl.col.decision}">Quyết định</th>
+                            <th th:text="#{ebl.col.reason}">Lý do</th>
+                            <th th:text="#{common.deptName}">Phòng ban</th>
+                            <th th:text="#{ebl.col.group}">Nhóm nhân viên</th>
+                            <th th:text="#{ebl.col.level}">Chức vụ</th>
+                            <th th:text="#{ebl.col.jobTitle}">Chức danh</th>
+                            <th th:text="#{ebl.col.empType}">Loại nhân viên</th>
+                            <th th:text="#{ebl.col.job}">Công việc</th>
+                            <th th:text="#{ebl.col.costCenter}">Mã chi phí</th>
+                            <th style="width:70px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="ebl_tbody"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ════ Modal: Đăng ký ngày ════ -->
+    <div class="modal fade" id="ebl_registerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title" th:text="#{ebl.modal.register.title}">Đăng ký ngày</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-danger"
+                               th:text="#{ebl.modal.register.date}">Ngày đăng ký *</label>
+                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                               id="ebl_regDate" placeholder="DD/MM/YYYY"
+                               data-drp-format="DD/MM/YYYY" data-drp-single="true" data-drp-auto-apply="true">
+                    </div>
+                    <div>
+                        <label class="form-label small" th:text="#{ebl.modal.register.remark}">Ghi chú</label>
+                        <textarea class="form-control form-control-sm" id="ebl_regRemark" rows="2" maxlength="2000"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer py-1">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                            th:text="#{common.cancel}">Hủy</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="eblSaveRegister()">
+                        <span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════ Modal: Chỉnh sửa dòng ════ -->
+    <div class="modal fade" id="ebl_editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title" th:text="#{ebl.modal.edit.title}">Chỉnh sửa thông tin</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="ebl_editSeq">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{common.empId}">Mã nhân viên</label>
+                            <input type="text" class="form-control form-control-sm" id="ebl_editEmpId" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{common.empName}">Họ tên</label>
+                            <input type="text" class="form-control form-control-sm" id="ebl_editLocalName" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.startDate}">Thời gian</label>
+                            <input type="text" class="form-control form-control-sm" id="ebl_editStartDate"
+                                   placeholder="YYYY/MM/DD">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.decision}">Quyết định</label>
+                            <select class="form-select form-select-sm" id="ebl_editTransCode"
+                                    data-parent-code="14013956"
+                                    onchange="eblOnEditTransCodeChange()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.reason}">Lý do</label>
+                            <select class="form-select form-select-sm" id="ebl_editTransReason"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control form-control-sm" id="ebl_editDeptnoDisplay"
+                                   readonly style="background:#fff;cursor:pointer;" onclick="eblOpenDeptTree()">
+                            <input type="hidden" id="ebl_editDeptno">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.group}">Nhóm nhân viên</label>
+                            <select class="form-select form-select-sm" id="ebl_editPostFamily"
+                                    data-parent-code="14015812"
+                                    onchange="eblOnEditPostFamilyChange()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.level}">Chức vụ</label>
+                            <select class="form-select form-select-sm" id="ebl_editNewPostGradeNo"
+                                    data-parent-code="400001"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.jobTitle}">Chức danh</label>
+                            <select class="form-select form-select-sm" id="ebl_editPositionNo"
+                                    data-parent-code="14014036"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.empType}">Loại nhân viên</label>
+                            <select class="form-select form-select-sm" id="ebl_editEmpTypeCode"
+                                    data-parent-code="13864"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.job}">Công việc</label>
+                            <select class="form-select form-select-sm" id="ebl_editMainBusiness"
+                                    data-parent-code="400098"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small mb-0" th:text="#{ebl.col.costCenter}">Mã chi phí</label>
+                            <input type="text" class="form-control form-control-sm" id="ebl_editCostCenter">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small mb-0" th:text="#{common.remark}">Ghi chú</label>
+                            <input type="text" class="form-control form-control-sm" id="ebl_editRemarks" maxlength="200">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer py-1">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                            th:text="#{common.cancel}">Hủy</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="eblSaveBatchItem()">
+                        <span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<template id="fragmentScripts">
+<style>
+    #ebl_dataTable tbody tr:hover { background: #f0f4ff; }
+    #ebl_dataTable { border-collapse: collapse; }
+</style>
+<script th:inline="javascript">
+(function () {
+    var _ebl_tabId = window._currentTabId || 'default-content';
+    var _ebl_table = null;
+    var _ebl_pageBooted = false;
+
+    var MSG_SELECT_REGISTER = /*[[#{ebl.js.selectRegister}]]*/ 'Vui lòng chọn Ngày đăng ký trước';
+    var MSG_CONFIRM_EXECUTE  = /*[[#{ebl.js.confirmExecute}]]*/ 'Xác nhận thực hiện quyết định hàng loạt?';
+    var MSG_CONFIRM_DELETE   = /*[[#{ebl.js.confirmDelete}]]*/ 'Bạn có chắc muốn xóa không?';
+    var MSG_SELECT_ROW       = /*[[#{ebl.js.selectRow}]]*/ 'Vui lòng chọn ít nhất một dòng';
+    var MSG_IMPORT_SUCCESS   = /*[[#{ebl.js.importSuccess}]]*/ 'Nhập file thành công';
+    var MSG_IMPORT_FAILED    = /*[[#{ebl.js.importFailed}]]*/ 'Nhập file thất bại';
+
+    function ebl$(sel) { return $('#' + _ebl_tabId).find(sel); }
+
+    function eblToggleActionButtons(allProcessed) {
+        var $btns = ebl$('#ebl_btnDelete, #ebl_btnConfirm, #ebl_btnTemplate, #ebl_btnInsertFile');
+        if (allProcessed) {
+            $btns.hide().prop('disabled', true);
+            ebl$('#ebl_chkAll').prop('disabled', true).closest('th').css('opacity', '0.4');
+        } else {
+            $btns.show().prop('disabled', false);
+            ebl$('#ebl_chkAll').prop('disabled', false).closest('th').css('opacity', '');
+        }
+    }
+
+    function eblEsc(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Load danh sách Ngày đăng ký ─────────────────────────────────────────
+
+    function eblLoadRegisterList(selectSeq) {
+        $.ajax({
+            url: '/hrm/recruitManage/api/expBatch/registerList',
+            type: 'GET',
+            success: function(list) {
+                var $sel = ebl$('#ebl_registerSeq');
+                var curVal = selectSeq || $sel.val();
+                $sel.find('option:not(:first)').remove();
+                (list || []).forEach(function(r) {
+                    $sel.append('<option value="' + eblEsc(r.registerSeq) + '">' + eblEsc(r.registerDate || '') + (r.registerRemark ? ' - ' + eblEsc(r.registerRemark) : '') + '</option>');
+                });
+                if (curVal) $sel.val(curVal);
+                if ($sel.val()) eblLoadBatchList();
+            },
+            error: function() { console.error('Lỗi load danh sách đăng ký'); }
+        });
+    }
+
+    // ── Load danh sách batch theo registerSeq ───────────────────────────────
+
+    window.eblLoadBatchList = function() {
+        var registerSeq = ebl$('#ebl_registerSeq').val();
+        if (!registerSeq) {
+            ebl$('#ebl_tbody').html('');
+            ebl$('#ebl_totalCount').text('0');
+            return;
+        }
+        if (_ebl_table) {
+            _ebl_table.ajax.reload(null, false);
+            return;
+        }
+        eblBootDataTable(registerSeq);
+    };
+
+    function eblBootDataTable(registerSeq) {
+        if (_ebl_table) { _ebl_table.destroy(); _ebl_table = null; }
+        _ebl_table = ebl$('#ebl_dataTable').DataTable({
+            serverSide: true,
+            processing: true,
+            paging: true,
+            pageLength: 50,
+            lengthMenu: [20, 50, 100],
+            ordering: false,
+            searching: false,
+            language: { url: '/assets/vendor/libs/datatables/i18n/vi.json' },
+            ajax: {
+                url: '/hrm/recruitManage/api/expBatch/list',
+                type: 'POST',
+                contentType: 'application/json',
+                data: function(d) {
+                    d.registerSeq = ebl$('#ebl_registerSeq').val();
+                    return JSON.stringify(d);
+                },
+                dataSrc: function(json) {
+                    ebl$('#ebl_totalCount').text(json.recordsTotal || 0);
+                    ebl$('#ebl_chkAll').prop('checked', false);
+                    eblToggleActionButtons(!!json.allProcessed);
+                    return json.data || [];
+                }
+            },
+            columns: [
+                { data: null, orderable: false, width: '44px',
+                  render: function(d, t, r, meta) { return meta.row + 1 + meta.settings._iDisplayStart; }
+                },
+                { data: null, orderable: false, width: '36px',
+                  render: function(d, t, r) {
+                      if (r.activity == '1') return '';
+                      return '<input type="checkbox" class="ebl-chk" data-seq="' + eblEsc(r.seq) + '">';
+                  }
+                },
+                { data: 'activity', orderable: false,
+                  render: function(v) {
+                      return v == '1' ? '<span class="badge bg-success">&#10003;</span>' : '<span class="badge bg-secondary">-</span>';
+                  }
+                },
+                { data: 'localName',        orderable: false, defaultContent: '' },
+                { data: 'empId',            orderable: false, defaultContent: '' },
+                { data: 'startDate',        orderable: false, defaultContent: '' },
+                { data: 'transCodeName',    orderable: false, defaultContent: '' },
+                { data: 'transReasonName',  orderable: false, defaultContent: '' },
+                { data: 'deptName',         orderable: false, defaultContent: '' },
+                { data: 'postFamilyName',   orderable: false, defaultContent: '' },
+                { data: 'postGradeName',    orderable: false, defaultContent: '' },
+                { data: 'positionNoName',   orderable: false, defaultContent: '' },
+                { data: 'empTypeName',      orderable: false, defaultContent: '' },
+                { data: 'mainBusinessName', orderable: false, defaultContent: '' },
+                { data: 'costCenter',       orderable: false, defaultContent: '' },
+                { data: null, orderable: false, width: '70px',
+                  render: function(d, t, r) {
+                      return '<button class="btn btn-outline-primary btn-xs py-0 px-1" style="font-size:.75rem;" onclick="eblOpenEditModal(\'' + eblEsc(r.seq) + '\')" title="Sửa"><i class="bi bi-pencil"></i></button>';
+                  }
+                }
+            ]
+        });
+    }
+
+    // ── Chọn tất cả ─────────────────────────────────────────────────────────
+
+    ebl$('#ebl_chkAll').on('change', function() {
+        ebl$('.ebl-chk').prop('checked', $(this).is(':checked'));
+    });
+
+    // ── Modal Đăng ký ────────────────────────────────────────────────────────
+
+    window.eblOpenRegisterModal = function() {
+        ebl$('#ebl_regDate').val('');
+        ebl$('#ebl_regRemark').val('');
+        var $m = $('#ebl_registerModal');
+        if (typeof bootstrap !== 'undefined') new bootstrap.Modal($m[0]).show();
+        else $m.modal('show');
+    };
+
+    window.eblSaveRegister = function() {
+        var regDate = ebl$('#ebl_regDate').val().trim();
+        if (!regDate) {
+            alert(/*[[#{ebl.modal.register.date}]]*/ 'Ngày đăng ký');
+            return;
+        }
+        $.ajax({
+            url: '/hrm/recruitManage/api/expBatch/register',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ registerDate: regDate, registerRemark: ebl$('#ebl_regRemark').val() }),
+            success: function(res) {
+                if (res.success) {
+                    var $m = $('#ebl_registerModal');
+                    if (typeof bootstrap !== 'undefined') bootstrap.Modal.getInstance($m[0]) && bootstrap.Modal.getInstance($m[0]).hide();
+                    else $m.modal('hide');
+                    if (typeof tabSystem !== 'undefined' && window._currentTabId) {
+                        var _tab = tabSystem.tabs.get(window._currentTabId);
+                        if (_tab) {
+                            sessionStorage.setItem('ebl_pendingRegisterSeq', res.registerSeq || '');
+                            tabSystem.loadTabContent(_tab);
+                            return;
+                        }
+                    }
+                    eblLoadRegisterList(res.registerSeq);
+                } else {
+                    alert(res.message || /*[[#{common.error}]]*/ 'Lỗi');
+                }
+            },
+            error: function() { alert(/*[[#{common.error}]]*/ 'Lỗi'); }
+        });
+    };
+
+    // ── Tải bản mẫu ─────────────────────────────────────────────────────────
+
+    window.eblDownloadTemplate = function() {
+        window.location.href = '/sy/excel/api/downloadTemplate?templateName=StartPoint_add_Template';
+    };
+
+    // ── Chèn file (Import Excel) ─────────────────────────────────────────────
+
+    window.eblOpenImportModal = function() {
+        var registerSeq = ebl$('#ebl_registerSeq').val();
+        if (!registerSeq) { alert(MSG_SELECT_REGISTER); return; }
+        var importUrl = '/hrm/recruitManage/api/expBatch/import?registerSeq=' + encodeURIComponent(registerSeq);
+        ExcelImport.open(importUrl, function(res) {
+            if (res && res.success) {
+                toastr ? toastr.success(MSG_IMPORT_SUCCESS + ' (' + (res.successCount || 0) + ' dòng)') : alert(MSG_IMPORT_SUCCESS);
+            } else {
+                toastr ? toastr.warning(MSG_IMPORT_FAILED) : alert(MSG_IMPORT_FAILED);
+            }
+            if (_ebl_table) _ebl_table.ajax.reload(null, false);
+            else eblLoadBatchList();
+        });
+    };
+
+    // ── Xác nhận hàng loạt ──────────────────────────────────────────────────
+
+    window.eblConfirmExecute = function() {
+        var registerSeq = ebl$('#ebl_registerSeq').val();
+        if (!registerSeq) { alert(MSG_SELECT_REGISTER); return; }
+        if (!confirm(MSG_CONFIRM_EXECUTE)) return;
+        $.ajax({
+            url: '/hrm/recruitManage/api/execute',
+            type: 'POST',
+            data: { personIds: registerSeq, type: 'EXP_BATCH' },
+            success: function(res) {
+                if (res.success) {
+                    toastr ? toastr.success(res.message || /*[[#{common.success}]]*/ 'Thành công') : alert(res.message || 'Thành công');
+                    if (_ebl_table) _ebl_table.ajax.reload(null, false);
+                } else {
+                    alert(res.message || /*[[#{common.error}]]*/ 'Lỗi');
+                }
+            },
+            error: function() { alert(/*[[#{common.error}]]*/ 'Lỗi'); }
+        });
+    };
+
+    // ── Xóa các dòng đã chọn ────────────────────────────────────────────────
+
+    window.eblDeleteSelected = function() {
+        var seqs = [];
+        ebl$('.ebl-chk:checked').each(function() { seqs.push($(this).data('seq')); });
+        if (!seqs.length) { alert(MSG_SELECT_ROW); return; }
+        if (!confirm(MSG_CONFIRM_DELETE)) return;
+        var promises = seqs.map(function(seq) {
+            return $.ajax({ url: '/hrm/recruitManage/api/expBatch/delete', type: 'POST', data: { seq: seq } });
+        });
+        $.when.apply($, promises).then(function() {
+            if (_ebl_table) _ebl_table.ajax.reload(null, false);
+        });
+    };
+
+    // ── Xuất Excel ──────────────────────────────────────────────────────────
+
+    window.eblExportExcel = function() {
+        var registerSeq = ebl$('#ebl_registerSeq').val();
+        if (!registerSeq) { alert(MSG_SELECT_REGISTER); return; }
+        window.location.href = '/hrm/recruitManage/api/expBatch/export?registerSeq=' + encodeURIComponent(registerSeq);
+    };
+
+    // ── Modal Chỉnh sửa ─────────────────────────────────────────────────────
+
+    window.eblOpenEditModal = function(seq) {
+        var row = null;
+        if (_ebl_table) {
+            _ebl_table.rows().every(function() {
+                if (String(this.data().seq) === String(seq)) { row = this.data(); }
+            });
+        }
+        if (!row) return;
+        ebl$('#ebl_editSeq').val(row.seq || '');
+        ebl$('#ebl_editEmpId').val(row.empId || '');
+        ebl$('#ebl_editLocalName').val(row.localName || '');
+        ebl$('#ebl_editStartDate').val(row.startDate || '');
+        ebl$('#ebl_editCostCenter').val(row.costCenter || '');
+        ebl$('#ebl_editRemarks').val(row.remarks || '');
+        ebl$('#ebl_editDeptno').val(row.deptno || '');
+        ebl$('#ebl_editDeptnoDisplay').val(row.deptName || row.deptno || '');
+        if (typeof reloadCodeSelect === 'function') {
+            var sc = '#' + _ebl_tabId + ' ';
+            reloadCodeSelect(sc + '#ebl_editTransCode',      '14013956',                '', row.transCode      || '');
+            reloadCodeSelect(sc + '#ebl_editTransReason',    row.transCode || '',        '', row.transReason    || '');
+            reloadCodeSelect(sc + '#ebl_editPostFamily',     '14015812',                '', row.postFamily      || '');
+            reloadCodeSelect(sc + '#ebl_editNewPostGradeNo', row.postFamily || '400001', '', row.newPostGradeNo || '');
+            reloadCodeSelect(sc + '#ebl_editPositionNo',     '14014036',                '', row.positionNo      || '');
+            reloadCodeSelect(sc + '#ebl_editEmpTypeCode',    '13864',                   '', row.empTypeCode     || '');
+            reloadCodeSelect(sc + '#ebl_editMainBusiness',   '400098',                  '', row.mainBusiness    || '');
+        }
+        var $m = $('#ebl_editModal');
+        if (typeof bootstrap !== 'undefined') new bootstrap.Modal($m[0]).show();
+        else $m.modal('show');
+    };
+
+    window.eblOnEditTransCodeChange = function() {
+        var val = ebl$('#ebl_editTransCode').val();
+        if (typeof reloadCodeSelect === 'function') {
+            reloadCodeSelect('#' + _ebl_tabId + ' #ebl_editTransReason', val || '', '', '');
+        }
+    };
+
+    window.eblOnEditPostFamilyChange = function() {
+        var val = ebl$('#ebl_editPostFamily').val();
+        if (typeof reloadCodeSelect === 'function') {
+            reloadCodeSelect('#' + _ebl_tabId + ' #ebl_editNewPostGradeNo', val || '400001', '', '');
+        }
+    };
+
+    function eblOpenDeptTree() {
+        if (typeof DeptTree === 'undefined') return;
+        var sc = '#' + _ebl_tabId + ' ';
+        DeptTree.openFor(sc + '#ebl_editDeptnoDisplay', function(codes) {
+            if (codes && codes.length > 0) {
+                ebl$('#ebl_editDeptno').val(codes[0]);
+            } else {
+                ebl$('#ebl_editDeptno').val('');
+            }
+        });
+    }
+
+    window.eblSaveBatchItem = function() {
+        var seq = ebl$('#ebl_editSeq').val();
+        if (!seq) return;
+        var payload = {
+            seq:            seq,
+            startDate:      ebl$('#ebl_editStartDate').val(),
+            transCode:      ebl$('#ebl_editTransCode').val(),
+            transReason:    ebl$('#ebl_editTransReason').val(),
+            deptno:         ebl$('#ebl_editDeptno').val(),
+            postFamily:     ebl$('#ebl_editPostFamily').val(),
+            newPostGradeNo: ebl$('#ebl_editNewPostGradeNo').val(),
+            positionNo:     ebl$('#ebl_editPositionNo').val(),
+            empTypeCode:    ebl$('#ebl_editEmpTypeCode').val(),
+            mainBusiness:   ebl$('#ebl_editMainBusiness').val(),
+            costCenter:     ebl$('#ebl_editCostCenter').val(),
+            remarks:        ebl$('#ebl_editRemarks').val()
+        };
+        $.ajax({
+            url: '/hrm/recruitManage/api/expBatch/update',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload),
+            success: function(res) {
+                if (res.success) {
+                    var $m = $('#ebl_editModal');
+                    if (typeof bootstrap !== 'undefined') bootstrap.Modal.getInstance($m[0]) && bootstrap.Modal.getInstance($m[0]).hide();
+                    else $m.modal('hide');
+                    if (_ebl_table) _ebl_table.ajax.reload(null, false);
+                } else {
+                    alert(res.message || /*[[#{common.error}]]*/ 'Lỗi');
+                }
+            },
+            error: function() { alert(/*[[#{common.error}]]*/ 'Lỗi'); }
+        });
+    };
+
+    // ── Khởi động ────────────────────────────────────────────────────────────
+
+    function eblBoot() {
+        if (_ebl_pageBooted) return;
+        if (!document.getElementById('ebl_dataTable')) {
+            setTimeout(eblBoot, 30);
+            return;
+        }
+        _ebl_pageBooted = true;
+
+        // DeptTree cho edit modal
+        if (typeof DeptTree !== 'undefined') {
+            var sc = '#' + _ebl_tabId + ' ';
+            DeptTree.init(sc + '#ebl_editDeptnoDisplay', function(){}, { singleSelect: true });
+        }
+
+        var _pendingSeq = sessionStorage.getItem('ebl_pendingRegisterSeq');
+        sessionStorage.removeItem('ebl_pendingRegisterSeq');
+        eblLoadRegisterList(_pendingSeq || undefined);
+    }
+
+    $(document).ready(function() { eblBoot(); });
+})();
+</script>
+</template>
+</div><!-- th:fragment="content" -->

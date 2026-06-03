@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrEmergencyAddressMapper">
+
+    <resultMap id="HrEmergencyAddressResultMap" type="com.ait.hrm.empinfo.model.HrEmergencyAddress">
+        <id property="emergencyNo" column="EMERGENCY_NO"/>
+        <result property="personId" column="PERSON_ID"/>
+        <result property="emerName" column="EMER_NAME"/>
+        <result property="emerPhone" column="EMER_PHONE"/>
+        <result property="emerPhoneSecond" column="EMER_PHONE_SECOND"/>
+        <result property="emerEmail" column="EMER_EMAIL"/>
+        <result property="mainLiaisonOffice" column="MAIN_LIAISON_OFFICE"/>
+        <result property="emerAddress" column="EMER_ADDRESS"/>
+        <result property="emerTypeCode" column="EMER_TYPE_CODE"/>
+        <result property="emerTypeName" column="EMER_TYPE_NAME"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="isEmergencyAddress" column="ISEMERGENCYADDRESS"/>
+        <result property="nationality" column="NATIONALITY"/>
+        <result property="emerCellphone" column="EMER_CELLPHONE"/>
+        <result property="emerWorkPhone" column="EMER_WORK_PHONE"/>
+        <result property="mainContactAddress" column="MAIN_CONTACT_ADDRESS"/>
+        
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdIp" column="CREATED_IP"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedIp" column="UPDATED_IP"/>
+        
+        <!-- Joined fields -->
+        <result property="empId" column="EMPID"/>
+        <result property="localName" column="LOCAL_NAME"/>
+        <result property="deptName" column="ORG_NAME_LOCAL"/>
+    </resultMap>
+
+    <select id="searchEmergencyAddress" resultMap="HrEmergencyAddressResultMap">
+        SELECT 
+            t1.EMERGENCY_NO, t1.PERSON_ID, t1.EMER_NAME, t1.EMER_PHONE, t1.EMER_PHONE_SECOND, t1.EMER_EMAIL, t1.MAIN_LIAISON_OFFICE, t1.EMER_ADDRESS,
+            t1.EMER_TYPE_CODE,
+            GET_GLOBAL_NAME(t1.EMER_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMER_TYPE_NAME,
+            t1.ACTIVITY, t1.ISEMERGENCYADDRESS, t1.NATIONALITY, t1.UPDATE_DATE, t1.CREATE_DATE, t1.UPDATED_BY, t1.CREATED_BY, t1.CREATED_IP, t1.UPDATED_IP, t1.EMER_CELLPHONE, t1.EMER_WORK_PHONE, t1.MAIN_CONTACT_ADDRESS,
+            t2.EMPID,
+            t2.LOCAL_NAME,
+            t3.ORG_NAME_LOCAL
+        FROM HR_EMERGENCY_ADDRESS t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE 1=1 AND (t1.ACTIVITY = 1 OR t1.ACTIVITY IS NULL)
+        <if test="empId != null and empId != ''">
+            AND t2.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="personId != null and personId != ''">
+            AND t1.PERSON_ID = #{personId}
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(t2.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="emerName != null and emerName != ''">
+            AND t1.EMER_NAME LIKE '%' || #{emerName} || '%'
+        </if>
+        ORDER BY t1.EMERGENCY_NO DESC
+    </select>
+
+    <select id="getById" resultMap="HrEmergencyAddressResultMap">
+        SELECT 
+            t1.EMERGENCY_NO, t1.PERSON_ID, t1.EMER_NAME, t1.EMER_PHONE, t1.EMER_PHONE_SECOND, t1.EMER_EMAIL, t1.MAIN_LIAISON_OFFICE, t1.EMER_ADDRESS,
+            t1.EMER_TYPE_CODE,
+            GET_GLOBAL_NAME(t1.EMER_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMER_TYPE_NAME,
+            t1.ACTIVITY, t1.ISEMERGENCYADDRESS, t1.NATIONALITY, t1.UPDATE_DATE, t1.CREATE_DATE, t1.UPDATED_BY, t1.CREATED_BY, t1.CREATED_IP, t1.UPDATED_IP, t1.EMER_CELLPHONE, t1.EMER_WORK_PHONE, t1.MAIN_CONTACT_ADDRESS,
+            t2.EMPID,
+            t2.LOCAL_NAME,
+            t3.ORG_NAME_LOCAL
+        FROM HR_EMERGENCY_ADDRESS t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE t1.EMERGENCY_NO = #{emergencyNo} AND (t1.ACTIVITY = 1 OR t1.ACTIVITY IS NULL)
+    </select>
+
+    <insert id="insert" parameterType="com.ait.hrm.empinfo.model.HrEmergencyAddress">
+        INSERT INTO HR_EMERGENCY_ADDRESS (
+            EMERGENCY_NO, PERSON_ID, EMER_NAME, EMER_PHONE, EMER_PHONE_SECOND,
+            EMER_EMAIL, MAIN_LIAISON_OFFICE, EMER_ADDRESS, EMER_TYPE_CODE, ACTIVITY,
+            ISEMERGENCYADDRESS, NATIONALITY, EMER_CELLPHONE, EMER_WORK_PHONE, MAIN_CONTACT_ADDRESS,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            HR_EMERGENCY_ADDRESS_SEQ.NEXTVAL, #{personId}, #{emerName}, #{emerPhone}, #{emerPhoneSecond},
+            #{emerEmail}, #{mainLiaisonOffice}, #{emerAddress}, #{emerTypeCode}, 1,
+            #{isEmergencyAddress}, #{nationality}, #{emerCellphone}, #{emerWorkPhone}, #{mainContactAddress},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.hrm.empinfo.model.HrEmergencyAddress">
+        UPDATE HR_EMERGENCY_ADDRESS
+        SET 
+            PERSON_ID = #{personId},
+            EMER_NAME = #{emerName},
+            EMER_PHONE = #{emerPhone},
+            EMER_PHONE_SECOND = #{emerPhoneSecond},
+            EMER_EMAIL = #{emerEmail},
+            MAIN_LIAISON_OFFICE = #{mainLiaisonOffice},
+            EMER_ADDRESS = #{emerAddress},
+            EMER_TYPE_CODE = #{emerTypeCode},
+            ISEMERGENCYADDRESS = #{isEmergencyAddress},
+            NATIONALITY = #{nationality},
+            EMER_CELLPHONE = #{emerCellphone},
+            EMER_WORK_PHONE = #{emerWorkPhone},
+            MAIN_CONTACT_ADDRESS = #{mainContactAddress},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE EMERGENCY_NO = #{emergencyNo}
+    </update>
+
+    <delete id="delete">
+        UPDATE HR_EMERGENCY_ADDRESS 
+        SET ACTIVITY = 0,
+            UPDATE_DATE = SYSDATE, 
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}, 
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR} 
+        WHERE EMERGENCY_NO = #{emergencyNo}
+    </delete>
+
+    <select id="findByPersonAndName" resultMap="HrEmergencyAddressResultMap">
+        SELECT *
+        FROM HR_EMERGENCY_ADDRESS
+        WHERE PERSON_ID = #{personId}
+          AND EMER_NAME = #{emerName}
+    </select>
+
+</mapper>

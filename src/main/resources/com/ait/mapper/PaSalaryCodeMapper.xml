@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.salarycode.mapper.PaSalaryCodeMapper">
+
+    <resultMap id="PaSalaryCodeResultMap" type="com.ait.pa.salarycode.dto.PaSalaryCodeDto">
+        <result column="ITEM_TYPE"   property="itemType"   jdbcType="NUMERIC" />
+        <result column="ITEM_NO"     property="itemNo"     jdbcType="VARCHAR" />
+        <result column="ITEM_ID"     property="itemId"     jdbcType="VARCHAR" />
+        <result column="MAP_CODE"    property="mapCode"    jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"   property="itemName"   jdbcType="VARCHAR" />
+        <result column="NAME_EN"     property="nameEn"     jdbcType="VARCHAR" />
+        <result column="NAME_KO"     property="nameKo"     jdbcType="VARCHAR" />
+        <result column="NAME_VI"     property="nameVi"     jdbcType="VARCHAR" />
+        <result column="NAME_ZH"     property="nameZh"     jdbcType="VARCHAR" />
+        <result column="DATA_TYPE"   property="dataType"   jdbcType="VARCHAR" />
+        <result column="DESCR"       property="descr"      jdbcType="VARCHAR" />
+        <result column="CREATED_BY"  property="createdBy"  jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR" />
+        <result column="ACTIVITY"         property="activity"        jdbcType="NUMERIC" />
+        <result column="COMPANY_USAGE_STR" property="companyUsageStr" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── SQL điều kiện cho PA_PARAM_ITEM ─────────────────────────────────── -->
+    <sql id="whereParamItem">
+        AND P.ACTIVITY = 1
+        <if test="itemTypeSearch != null">
+            <choose>
+                <when test="itemTypeSearch == 6">AND 1 = 0</when>
+                <otherwise>AND P.ITEM_TYPE = #{itemTypeSearch, jdbcType=NUMERIC}</otherwise>
+            </choose>
+        </if>
+        <if test="itemNameSearch != null and itemNameSearch != ''">
+            AND (P.PARAM_ITEM_ID LIKE '%' || #{itemNameSearch, jdbcType=VARCHAR} || '%'
+              OR SY2.CONTENT     LIKE '%' || #{itemNameSearch, jdbcType=VARCHAR} || '%')
+        </if>
+    </sql>
+
+    <!-- ── SQL điều kiện cho PA_ITEM ────────────────────────────────────────── -->
+    <sql id="whereItem">
+        AND PA.ACTIVITY = 1
+        <if test="itemTypeSearch != null and itemTypeSearch != 6">AND 1 = 0</if>
+        <if test="itemNameSearch != null and itemNameSearch != ''">
+            AND (PA.ITEM_ID  LIKE '%' || #{itemNameSearch, jdbcType=VARCHAR} || '%'
+              OR SY3.CONTENT LIKE '%' || #{itemNameSearch, jdbcType=VARCHAR} || '%')
+        </if>
+    </sql>
+
+    <!-- ── Đếm tổng số bản ghi ──────────────────────────────────────────────── -->
+    <select id="countList" parameterType="com.ait.pa.salarycode.dto.PaSalaryCodeDto" resultType="long">
+        SELECT COUNT(1) FROM (
+            SELECT P.PARAM_ITEM_NO
+              FROM PA_PARAM_ITEM P, SY_GLOBAL_NAME SY2
+             WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+               AND SY2.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+            <include refid="whereParamItem"/>
+            UNION ALL
+            SELECT PA.ITEM_NO
+              FROM PA_ITEM PA, SY_GLOBAL_NAME SY3
+             WHERE PA.ITEM_NO = SY3.NO(+)
+               AND SY3.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+            <include refid="whereItem"/>
+        )
+    </select>
+
+    <!-- ── Phân trang phía server – Oracle ROWNUM ───────────────────────────── -->
+    <select id="selectListPage" parameterType="com.ait.pa.salarycode.dto.PaSalaryCodeDto"
+            resultMap="PaSalaryCodeResultMap">
+        SELECT ITEM_TYPE, ITEM_NO, ITEM_ID, MAP_CODE, ITEM_NAME,
+               DATA_TYPE, DESCR, CREATED_BY, CREATE_DATE, ACTIVITY, COMPANY_USAGE_STR
+        FROM (
+            SELECT a.*, ROWNUM AS RN
+            FROM (
+                SELECT P.ITEM_TYPE,
+                       P.PARAM_ITEM_NO                                                           AS ITEM_NO,
+                       P.PARAM_ITEM_ID                                                           AS ITEM_ID,
+                       P.MAP_CODE,
+                       SY2.CONTENT                                                               AS ITEM_NAME,
+                       P.DATA_TYPE,
+                       P.DESCR,
+                       get_emp_local_name(P.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})
+                           || ' ' || P.CREATED_IP                                                AS CREATED_BY,
+                       TO_CHAR(P.CREATE_DATE, 'YYYY-MM-DD HH24:MI')                             AS CREATE_DATE,
+                       P.ACTIVITY,
+                       (SELECT LISTAGG(PP.CPNY_ID, ', ') WITHIN GROUP (ORDER BY PP.ORDERNO)
+                          FROM PA_PARAM_ITEM_PARAM PP
+                         WHERE PP.PARAM_ITEM_NO = P.PARAM_ITEM_NO
+                           AND PP.ACTIVITY = 1)                                                  AS COMPANY_USAGE_STR
+                  FROM PA_PARAM_ITEM P, SY_GLOBAL_NAME SY2
+                 WHERE P.PARAM_ITEM_NO = SY2.NO(+)
+                   AND SY2.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+                <include refid="whereParamItem"/>
+                UNION ALL
+                SELECT 6                                                                         AS ITEM_TYPE,
+                       PA.ITEM_NO,
+                       PA.ITEM_ID,
+                       PA.MAP_CODE,
+                       SY3.CONTENT                                                               AS ITEM_NAME,
+                       PA.DATATYPE                                                               AS DATA_TYPE,
+                       PA.DESCR,
+                       get_emp_local_name(PA.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})
+                           || ' ' || PA.CREATED_IP                                               AS CREATED_BY,
+                       TO_CHAR(PA.CREATE_DATE, 'YYYY-MM-DD HH24:MI')                            AS CREATE_DATE,
+                       PA.ACTIVITY,
+                       (SELECT LISTAGG(IP.CPNY_ID, ', ') WITHIN GROUP (ORDER BY IP.ORDERNO)
+                          FROM PA_ITEM_PARAM IP
+                         WHERE IP.ITEM_NO = PA.ITEM_NO
+                           AND IP.ACTIVITY = 1)                                                  AS COMPANY_USAGE_STR
+                  FROM PA_ITEM PA, SY_GLOBAL_NAME SY3
+                 WHERE PA.ITEM_NO = SY3.NO(+)
+                   AND SY3.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+                <include refid="whereItem"/>
+                ORDER BY ITEM_TYPE, ITEM_ID
+            ) a
+            WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        )
+        WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Lấy một bản ghi PA_PARAM_ITEM (kèm 4 ngôn ngữ) để chỉnh sửa ────── -->
+    <select id="selectOneParamItem" resultMap="PaSalaryCodeResultMap">
+        SELECT P.ITEM_TYPE,
+               P.PARAM_ITEM_NO AS ITEM_NO,
+               P.PARAM_ITEM_ID AS ITEM_ID,
+               P.MAP_CODE,
+               P.DATA_TYPE,
+               P.DESCR,
+               P.ACTIVITY,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = P.PARAM_ITEM_NO AND LANGUAGE = 'en') AS NAME_EN,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = P.PARAM_ITEM_NO AND LANGUAGE = 'ko') AS NAME_KO,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = P.PARAM_ITEM_NO AND LANGUAGE = 'vi') AS NAME_VI,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = P.PARAM_ITEM_NO AND LANGUAGE = 'zh') AS NAME_ZH
+          FROM PA_PARAM_ITEM P
+         WHERE P.PARAM_ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Lấy một bản ghi PA_ITEM (kèm 4 ngôn ngữ) để chỉnh sửa ─────────── -->
+    <select id="selectOneItem" resultMap="PaSalaryCodeResultMap">
+        SELECT 6           AS ITEM_TYPE,
+               PA.ITEM_NO,
+               PA.ITEM_ID,
+               PA.MAP_CODE,
+               PA.DATATYPE AS DATA_TYPE,
+               PA.DESCR,
+               PA.ACTIVITY,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = PA.ITEM_NO AND LANGUAGE = 'en') AS NAME_EN,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = PA.ITEM_NO AND LANGUAGE = 'ko') AS NAME_KO,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = PA.ITEM_NO AND LANGUAGE = 'vi') AS NAME_VI,
+               (SELECT CONTENT FROM SY_GLOBAL_NAME
+                 WHERE NO = PA.ITEM_NO AND LANGUAGE = 'zh') AS NAME_ZH
+          FROM PA_ITEM PA
+         WHERE PA.ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Sequence dùng chung: SY_GLOBAL_NO_SEQ làm ITEM_NO / PARAM_ITEM_NO ─ -->
+    <select id="getNextNo" resultType="string">
+        SELECT TO_CHAR(SY_GLOBAL_NO_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <!-- ── Thêm mới PA_PARAM_ITEM ───────────────────────────────────────────── -->
+    <insert id="insertParamItem" parameterType="com.ait.pa.salarycode.dto.PaSalaryCodeDto">
+        INSERT INTO PA_PARAM_ITEM (
+            PARAM_ITEM_NO, PARAM_ITEM_ID, DATA_TYPE, DESCR,
+            MAP_CODE, ITEM_TYPE, ACTIVITY,
+            CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{itemNo,   jdbcType=VARCHAR},
+            #{itemId,   jdbcType=VARCHAR},
+            #{dataType, jdbcType=VARCHAR},
+            #{descr,    jdbcType=VARCHAR},
+            #{mapCode,  jdbcType=VARCHAR},
+            #{itemType, jdbcType=NUMERIC},
+            1,
+            #{adminID,  jdbcType=VARCHAR},
+            #{adminIP,  jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- ── Thêm mới PA_ITEM (ORDERNO tự tính từ MAX+1) ──────────────────────── -->
+    <insert id="insertItem" parameterType="com.ait.pa.salarycode.dto.PaSalaryCodeDto">
+        INSERT INTO PA_ITEM (
+            ITEM_NO, ITEM_ID, DATATYPE, DESCR,
+            MAP_CODE, ACTIVITY, ORDERNO,
+            CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{itemNo,   jdbcType=VARCHAR},
+            #{itemId,   jdbcType=VARCHAR},
+            #{dataType, jdbcType=VARCHAR},
+            #{descr,    jdbcType=VARCHAR},
+            #{mapCode,  jdbcType=VARCHAR},
+            1,
+            (SELECT NVL(MAX(ORDERNO), 0) + 1 FROM PA_ITEM),
+            #{adminID,  jdbcType=VARCHAR},
+            #{adminIP,  jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- ── Cập nhật PA_PARAM_ITEM ───────────────────────────────────────────── -->
+    <update id="updateParamItem" parameterType="com.ait.pa.salarycode.dto.PaSalaryCodeDto">
+        UPDATE PA_PARAM_ITEM
+           SET PARAM_ITEM_ID = #{itemId,   jdbcType=VARCHAR},
+               DATA_TYPE     = #{dataType, jdbcType=VARCHAR},
+               DESCR         = #{descr,    jdbcType=VARCHAR},
+               MAP_CODE      = #{mapCode,  jdbcType=VARCHAR},
+               UPDATED_BY    = #{adminID,  jdbcType=VARCHAR},
+               UPDATED_IP    = #{adminIP,  jdbcType=VARCHAR},
+               UPDATE_DATE   = SYSDATE
+         WHERE PARAM_ITEM_NO = #{itemNo,   jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── Cập nhật PA_ITEM ─────────────────────────────────────────────────── -->
+    <update id="updateItem" parameterType="com.ait.pa.salarycode.dto.PaSalaryCodeDto">
+        UPDATE PA_ITEM
+           SET ITEM_ID     = #{itemId,   jdbcType=VARCHAR},
+               DATATYPE    = #{dataType, jdbcType=VARCHAR},
+               DESCR       = #{descr,    jdbcType=VARCHAR},
+               MAP_CODE    = #{mapCode,  jdbcType=VARCHAR},
+               UPDATED_BY  = #{adminID,  jdbcType=VARCHAR},
+               UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE ITEM_NO     = #{itemNo,   jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── Xóa mềm PA_PARAM_ITEM (ACTIVITY = 0) ────────────────────────────── -->
+    <update id="deleteParamItem">
+        UPDATE PA_PARAM_ITEM
+           SET ACTIVITY      = 0,
+               UPDATED_BY    = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP    = #{adminIP, jdbcType=VARCHAR},
+               UPDATE_DATE   = SYSDATE
+         WHERE PARAM_ITEM_NO = #{itemNo,  jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── Xóa mềm PA_ITEM (ACTIVITY = 0) ──────────────────────────────────── -->
+    <update id="deleteItem">
+        UPDATE PA_ITEM
+           SET ACTIVITY    = 0,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP  = #{adminIP, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE ITEM_NO     = #{itemNo,  jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── Lấy danh sách công ty sử dụng của PA_PARAM_ITEM ────────────────── -->
+    <select id="selectParamItemCompanies" resultType="string">
+        SELECT CPNY_ID
+          FROM PA_PARAM_ITEM_PARAM
+         WHERE PARAM_ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </select>
+
+    <!-- ── Lấy danh sách công ty sử dụng của PA_ITEM ──────────────────────── -->
+    <select id="selectItemCompanies" resultType="string">
+        SELECT CPNY_ID
+          FROM PA_ITEM_PARAM
+         WHERE ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </select>
+
+    <!-- ── Thêm một bản ghi công ty vào PA_PARAM_ITEM_PARAM ───────────────── -->
+    <insert id="insertParamItemParam">
+        INSERT INTO PA_PARAM_ITEM_PARAM (
+            PARAM_NO, PARAM_ITEM_NO, CPNY_ID,
+            ACTIVITY, ORDERNO, APPLY_TYPE,
+            CREATE_DATE, CREATED_BY
+        ) VALUES (
+            PA_PARAM_ITEM_PARAM_SEQ.NEXTVAL,
+            #{itemNo,       jdbcType=VARCHAR},
+            #{selectedCpny, jdbcType=VARCHAR},
+            1,
+            (SELECT NVL(MAX(ORDERNO), 0) + 1 FROM PA_PARAM_ITEM_PARAM WHERE PARAM_ITEM_NO = #{itemNo, jdbcType=VARCHAR}),
+            1,
+            SYSDATE,
+            #{adminID,      jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ── Thêm một bản ghi công ty vào PA_ITEM_PARAM ─────────────────────── -->
+    <insert id="insertItemParam">
+        INSERT INTO PA_ITEM_PARAM (
+            PARAM_NO, ITEM_NO, CPNY_ID, CALCU_ORDER,
+            ACTIVITY, APPLY_TYPE, ORDERNO, HAVE_FORMULAR,
+            CREATE_DATE, CREATED_BY
+        ) VALUES (
+            PA_ITEM_PARAM_SEQ.NEXTVAL,
+            #{itemNo,       jdbcType=VARCHAR},
+            #{selectedCpny, jdbcType=VARCHAR},
+            (SELECT NVL(MAX(T.CALCU_ORDER), 0) + 1 FROM PA_ITEM_PARAM T WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}),
+            1,
+            1,
+            (SELECT NVL(MAX(ORDERNO), 0) + 1 FROM PA_ITEM_PARAM WHERE ITEM_NO = #{itemNo, jdbcType=VARCHAR}),
+            0,
+            SYSDATE,
+            #{adminID,      jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ── Vô hiệu hóa tất cả PARAM của PA_PARAM_ITEM_PARAM ──────────────── -->
+    <update id="deactivateParamItemParams">
+        UPDATE PA_PARAM_ITEM_PARAM
+           SET ACTIVITY    = 0,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE PARAM_ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </update>
+
+    <!-- ── Vô hiệu hóa tất cả PARAM của PA_ITEM_PARAM ────────────────────── -->
+    <update id="deactivateItemParams">
+        UPDATE PA_ITEM_PARAM
+           SET ACTIVITY    = 0,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE ITEM_NO  = #{itemNo, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </update>
+
+    <!-- ── Upsert tên đa ngôn ngữ vào SY_GLOBAL_NAME (1 dòng / ngôn ngữ) ──── -->
+    <update id="mergeGlobalNameRow">
+        MERGE INTO SY_GLOBAL_NAME T
+        USING (SELECT #{no,       jdbcType=VARCHAR} AS NO,
+                      #{language, jdbcType=VARCHAR} AS LANGUAGE
+                 FROM DUAL) S
+        ON (T.NO = S.NO AND T.LANGUAGE = S.LANGUAGE)
+        WHEN MATCHED THEN
+            UPDATE SET T.CONTENT     = #{content,  jdbcType=VARCHAR},
+                       T.UPDATE_DATE = SYSDATE,
+                       T.UPDATED_BY  = #{adminID,  jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN
+            INSERT (SEQ, NO, LANGUAGE, CONTENT, CREATE_DATE, CREATED_BY,
+                    UPDATE_DATE, UPDATED_BY, ACTIVITY, ORDERNO)
+            VALUES (SY_GLOBAL_SEQ.NEXTVAL,
+                    #{no,       jdbcType=VARCHAR},
+                    #{language, jdbcType=VARCHAR},
+                    #{content,  jdbcType=VARCHAR},
+                    SYSDATE,
+                    #{adminID,  jdbcType=VARCHAR},
+                    SYSDATE,
+                    #{adminID,  jdbcType=VARCHAR},
+                    1, 1)
+    </update>
+
+</mapper>

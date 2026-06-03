@@ -1,0 +1,501 @@
+/* Custom Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Hiển thị đầy đủ text, không cắt chữ, không xuống dòng */
+table.dataTable td,
+table.dataTable th {
+    white-space: nowrap;
+}
+
+/* Override width: 100% của DataTables CSS - để bảng tự co giãn theo nội dung */
+/* DataTables mặc định set width: 100% khiến cột bị chia đều */
+table.dataTable {
+    width: auto !important;
+    min-width: 100%;
+}
+
+/* Wrapper cuộn ngang + dọc dùng chung cho tất cả DataTable */
+.dt-table-wrapper {
+    overflow: auto;
+}
+
+/* Header sticky khi cuộn dọc trong wrapper */
+.dt-table-wrapper table.dataTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #f8f9fa;
+}
+
+/* Đổi màu cả dòng */
+table.dataTable tbody tr:hover {
+    background-color: #d1e7dd !important;
+}
+
+/* CSS này giúp giữ màu nền khi dòng được chọn */
+table.dataTable tbody tr.table-active {
+    background-color: #d1e7dd !important;
+}
+
+/* Đổi màu luôn cả các ô trong dòng đó (để đè lên màu của cột sorting) */
+table.dataTable tbody tr:hover>.sorting_1 {
+    background-color: #d1e7dd !important;
+    /* Đặt cùng màu với bên trên */
+}
+
+/* ==========================================================================
+   Full Height Layout - v3 (Absolute Position Footer)
+   ========================================================================== */
+
+/* Process / Workflow Diagram Styles */
+.process-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.process-group {
+    border: 2px solid #fd7e14;
+    border-radius: 15px;
+    background-color: #fff5f0;
+    padding: 15px;
+    min-width: 250px;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.process-header {
+    text-align: center;
+    color: #d35400;
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.process-header::before,
+.process-header::after {
+    content: '•';
+    margin: 0 10px;
+    color: #fd7e14;
+}
+
+.step-item {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.step-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    text-align: center;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background: linear-gradient(to bottom, #ffffff 0%, #f1f1f1 100%);
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.step-btn.active-step {
+    background: linear-gradient(to bottom, #f39c12 0%, #e67e22 100%);
+    color: white;
+    border-color: #d35400;
+}
+
+.step-btn.checkbox-step {
+    background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.step-arrow-down {
+    text-align: center;
+    color: #aaa;
+    margin: -10px 0 5px 0;
+    font-size: 20px;
+}
+
+.group-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    color: #aaa;
+    font-size: 24px;
+}
+
+.vertical-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.jstree-default .jstree-clicked {
+    background: #0d6efd !important;
+    color: white !important;
+    border-radius: 4px;
+
+}
+
+
+
+/* --- Custom JSTree Styles for #code_tree, #codeParam_tree --- */
+
+/* Force remove bullets (dots) */
+#code_tree ul,
+#codeParam_tree ul,
+#menuParam_tree ul,
+#code_tree li,
+#codeParam_tree li,
+#menuParam_tree li {
+    list-style: none !important;
+    list-style-type: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* JSTree Nesting Indentation */
+#code_tree ul,
+#codeParam_tree ul,
+#menuParam_tree ul {
+    padding-left: 20px !important;
+}
+
+/* Hide default JSTree theme icons (arrows/dots) */
+#code_tree .jstree-ocl,
+#codeParam_tree .jstree-ocl,
+#menuParam_tree .jstree-ocl {
+    background: none !important;
+    width: 24px !important;
+    position: relative;
+    vertical-align: top;
+}
+
+/* Custom (+) Icon for Closed state */
+#code_tree .jstree-closed>.jstree-ocl::before,
+#codeParam_tree .jstree-closed>.jstree-ocl::before,
+#menuParam_tree .jstree-closed>.jstree-ocl::before {
+    content: "+";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 12px;
+    text-align: center;
+    border: 1px solid #999;
+    background-color: #fff;
+    color: #000;
+    font-weight: bold;
+    border-radius: 2px;
+}
+
+/* Custom (-) Icon for Open state */
+#code_tree .jstree-open>.jstree-ocl::before,
+#codeParam_tree .jstree-open>.jstree-ocl::before,
+#menuParam_tree .jstree-open>.jstree-ocl::before {
+    content: "-";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 10px;
+    text-align: center;
+    border: 1px solid #999;
+    background-color: #fff;
+    color: #000;
+    font-weight: bold;
+    border-radius: 2px;
+}
+
+/* Hide toggle icon for Leaf nodes */
+#code_tree .jstree-leaf>.jstree-ocl::before,
+#codeParam_tree .jstree-leaf>.jstree-ocl::before,
+#menuParam_tree .jstree-leaf>.jstree-ocl::before {
+    display: none;
+}
+
+
+/* Fix Toastr Z-Index issue with Modals */
+#toast-container {
+    z-index: 99999 !important;
+}
+
+/* Fix Employee Search Modal Z-Index */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* ==========================================================================
+   Org Chart Visual Tree Styles
+   ========================================================================== */
+.org-container {
+    width: 100%;
+    height: calc(100vh - 200px);
+    overflow: auto;
+    background: #f8f9fa;
+    text-align: left;
+    padding: 20px;
+    white-space: nowrap;
+    /* Force horizontal scrolling if needed */
+}
+
+/* Tree CSS Base */
+.tf-tree * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.tf-tree {
+    display: inline-block;
+    min-width: 100%;
+    width: max-content;
+    /* Ensure container expands to fit content */
+}
+
+/* Default Horizontal UL */
+.tf-tree ul {
+    display: flex;
+    padding-top: 20px;
+    position: relative;
+    justify-content: flex-start;
+    /* Align left to prevent clipping */
+}
+
+.tf-tree li {
+    float: left;
+    text-align: center;
+    list-style-type: none;
+    position: relative;
+    padding: 20px 5px 0 5px;
+}
+
+/* Horizontal Connectors */
+.tf-tree li::before,
+.tf-tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 2px solid #ccc;
+    width: 50%;
+    height: 20px;
+}
+
+.tf-tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 2px solid #ccc;
+}
+
+.tf-tree li:only-child::after,
+.tf-tree li:only-child::before {
+    display: none;
+}
+
+.tf-tree li:only-child {
+    padding-top: 0;
+}
+
+.tf-tree li:first-child::before,
+.tf-tree li:last-child::after {
+    border: 0 none;
+}
+
+.tf-tree li:last-child::before {
+    border-right: 2px solid #ccc;
+    border-radius: 0 5px 0 0;
+}
+
+.tf-tree li:first-child::after {
+    border-radius: 5px 0 0 0;
+}
+
+.tf-tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: 2px solid #ccc;
+    width: 0;
+    height: 20px;
+}
+
+/* --- Vertical Children Override --- */
+.tf-tree ul.vertical-children {
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+}
+
+.tf-tree ul.vertical-children>li {
+    float: none;
+    display: block;
+    padding: 2px 0;
+}
+
+/* Hide Horizontal Curves for Vertical Items */
+.tf-tree ul.vertical-children>li::before,
+.tf-tree ul.vertical-children>li::after {
+    display: none;
+}
+
+/* Vertical Spine Line */
+.tf-tree ul.vertical-children::before {
+    height: 100%;
+    bottom: 0;
+    top: 0;
+    z-index: -1;
+}
+
+
+
+/* Nodes */
+.tf-nc {
+    display: inline-block;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fff;
+    text-decoration: none;
+    color: #333;
+    min-width: 200px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 10;
+}
+
+.tf-nc:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+}
+
+/* Dept Node */
+.dept-node {
+    border-top: 4px solid #007bff;
+}
+
+.dept-header {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #0056b3;
+    font-size: 14px;
+}
+
+.dept-info {
+    font-size: 12px;
+    color: #666;
+}
+
+.manager-info {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    border-top: 1px dashed #eee;
+    padding-top: 5px;
+    text-align: left;
+}
+
+.manager-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #eee;
+    margin-right: 8px;
+    object-fit: cover;
+}
+
+.manager-details div {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.manager-name {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Emp Node - Compact */
+.emp-node {
+    border-top: 4px solid #28a745;
+    min-width: 200px;
+    padding: 5px;
+    text-align: center;
+}
+
+.emp-name {
+    font-weight: bold;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.emp-id {
+    font-size: 11px;
+    color: #666;
+}
+
+/* Collapse/Expand */
+.tf-tree li.collapsed>ul {
+    display: none;
+}
+
+.toggle-btn {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 18px;
+    font-size: 16px;
+    color: #666;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.toggle-btn:hover {
+    background: #eee;
+    color: #000;
+}
+
+.emp-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 5px;
+    border: 2px solid #fff;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Highlighting Active Menu --- */
+.nav-link.active-menu,
+.sub-nav-link.active-menu {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    color: #fcfcfc !important;
+    font-weight: bold;
+    border-bottom: 3px solid #ffffff;
+    border-radius: 4px;
+}

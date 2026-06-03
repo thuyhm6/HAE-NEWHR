@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.hrm.empinfo.mapper.HrWorkExperienceMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.hrm.empinfo.model.HrWorkExperience">
+        <id column="WORK_EXPER_NO" property="workExpNo" />
+        <result column="PERSON_ID" property="personId" />
+        <result column="CPNY_NAME" property="cpnyName" />
+        <result column="DEPT_NAME" property="deptName" />
+        <result column="POSITION" property="position" />
+        <result column="DUTY" property="duty" />
+        <result column="PAY_YEAR" property="payYear" />
+        <result column="RESIGN_REASON" property="resignReason" />
+        <result column="WITNESS" property="witness" />
+        <result column="CELLPHONE" property="cellphone" />
+        <result column="AGE_LIMIT" property="ageLimit" />
+        <result column="WORK_ADDRESS" property="workAddress" />
+        <result column="SENIORITY_RESPONSE" property="seniorityResponse" />
+        <result column="ORDERNO" property="orderNo" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="REMARK" property="remark" />
+        <result column="CPNY_ENGLISH_NAME" property="cpnyEnglishName" />
+        <result column="PRO_CPNY_PHONE" property="proCpnyPhone" />
+        <result column="OVERSEAS" property="overseas" />
+        <result column="NATIONALITY" property="nationality" />
+        <result column="START_MONTH" property="startMonth" />
+        <result column="END_MONTH" property="endMonth" />
+        <result column="START_DATE" property="startDate" />
+        <result column="END_DATE" property="endDate" />
+        
+        <!-- Audit Fields -->
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="UPDATED_IP" property="updatedIp" />
+        
+        <!-- Joined Fields -->
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPTNO" property="deptNo" />
+    </resultMap>
+
+    <select id="getByPersonId" resultMap="BaseResultMap">
+        SELECT 
+            wx.*
+        FROM hr_work_experience wx
+        WHERE wx.PERSON_ID = #{personId}
+          AND wx.ACTIVITY = 1
+        ORDER BY wx.START_DATE DESC
+    </select>
+
+    <select id="searchWorkExperience" resultMap="BaseResultMap">
+        SELECT 
+            wx.*,
+            e.EMPID,
+            e.LOCAL_NAME,
+            e.DEPTNO
+        FROM hr_work_experience wx
+        INNER JOIN hr_employee e ON wx.PERSON_ID = e.PERSON_ID
+        WHERE wx.ACTIVITY = 1
+          AND e.ACTIVITY = 1
+        <if test="empId != null and empId != ''">
+            AND e.EMPID LIKE '%' || #{empId} || '%'
+        </if>
+        <if test="localName != null and localName != ''">
+            AND CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName})) || '%'
+        </if>
+        <if test="companyName != null and companyName != ''">
+            AND wx.CPNY_NAME LIKE '%' || #{companyName} || '%'
+        </if>
+        ORDER BY e.EMPID, wx.START_DATE DESC
+    </select>
+
+    <select id="getById" resultMap="BaseResultMap">
+        SELECT 
+            wx.*,
+            e.EMPID,
+            e.LOCAL_NAME,
+            e.DEPTNO
+        FROM hr_work_experience wx
+        LEFT JOIN hr_employee e ON wx.PERSON_ID = e.PERSON_ID
+        WHERE wx.WORK_EXPER_NO = #{workExpNo}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO hr_work_experience (
+            WORK_EXPER_NO, PERSON_ID, CPNY_NAME, DEPT_NAME, POSITION,
+            DUTY, PAY_YEAR, RESIGN_REASON, WITNESS, CELLPHONE,
+            AGE_LIMIT, WORK_ADDRESS, SENIORITY_RESPONSE, REMARK,
+            CPNY_ENGLISH_NAME, PRO_CPNY_PHONE, OVERSEAS, NATIONALITY,
+            START_MONTH, END_MONTH, START_DATE, END_DATE, ORDERNO,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATED_BY, UPDATED_IP, ACTIVITY
+        ) VALUES (
+            HR_W_EXP_SEQ.NEXTVAL, #{personId}, #{cpnyName}, #{deptName}, #{position},
+            #{duty}, #{payYear}, #{resignReason}, #{witness}, #{cellphone},
+            #{ageLimit}, #{workAddress}, #{seniorityResponse}, #{remark},
+            #{cpnyEnglishName}, #{proCpnyPhone}, #{overseas}, #{nationality},
+            #{startMonth}, #{endMonth}, #{startDate}, #{endDate}, #{orderNo},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, 1
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE hr_work_experience
+        SET 
+            CPNY_NAME = #{cpnyName},
+            DEPT_NAME = #{deptName},
+            POSITION = #{position},
+            DUTY = #{duty},
+            PAY_YEAR = #{payYear},
+            RESIGN_REASON = #{resignReason},
+            WITNESS = #{witness},
+            CELLPHONE = #{cellphone},
+            AGE_LIMIT = #{ageLimit},
+            WORK_ADDRESS = #{workAddress},
+            SENIORITY_RESPONSE = #{seniorityResponse},
+            REMARK = #{remark},
+            CPNY_ENGLISH_NAME = #{cpnyEnglishName},
+            PRO_CPNY_PHONE = #{proCpnyPhone},
+            OVERSEAS = #{overseas},
+            NATIONALITY = #{nationality},
+            START_MONTH = #{startMonth},
+            END_MONTH = #{endMonth},
+            START_DATE = #{startDate},
+            END_DATE = #{endDate},
+            ORDERNO = #{orderNo},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE WORK_EXPER_NO = #{workExpNo}
+    </update>
+
+    <update id="delete">
+        UPDATE hr_work_experience
+        SET ACTIVITY = 0,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE WORK_EXPER_NO = #{workExpNo}
+    </update>
+
+</mapper>

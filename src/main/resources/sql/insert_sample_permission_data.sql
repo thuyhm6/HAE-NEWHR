@@ -1,0 +1,139 @@
+-- Script chèn dữ liệu mẫu cho hệ thống phân quyền
+-- Dữ liệu test cho hệ thống authentication và phân quyền
+
+-- Xóa dữ liệu cũ nếu có
+DELETE FROM sy_role_relation WHERE ROLE_NO IN ('ROLE001', 'ROLE002', 'ROLE003', 'ROLE004', 'ROLE005');
+DELETE FROM sy_menu WHERE MENU_NO IN ('MENU001', 'MENU002', 'MENU003', 'MENU004', 'MENU005', 'MENU006', 'MENU007', 'MENU008');
+DELETE FROM sy_role_group_relation WHERE ROLE_GROUP_NO IN ('RG001', 'RG002', 'RG003');
+DELETE FROM sy_role WHERE ROLE_NO IN ('ROLE001', 'ROLE002', 'ROLE003', 'ROLE004', 'ROLE005');
+DELETE FROM sy_user_relation WHERE USER_NO IN ('USER001', 'USER002', 'USER003', 'USER004', 'USER005');
+DELETE FROM sy_role_group WHERE ROLE_GROUP_NO IN ('RG001', 'RG002', 'RG003');
+
+-- Chèn dữ liệu mẫu cho sy_role_group
+INSERT INTO sy_role_group (ROLE_GROUP_NO, ROLE_GROUP_ID, JOIN_DEFAULT, CPNY_ID, 
+    CREATE_DATE, CREATED_BY, ORDERNO, ACTIVITY, SYS_TYPE) VALUES
+('RG001', 'ADMIN_GROUP', 'N', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 1, 1, 'HR'),
+
+('RG002', 'MANAGER_GROUP', 'N', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 2, 1, 'HR'),
+
+('RG003', 'EMPLOYEE_GROUP', 'Y', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 3, 'Y', 'HR');
+
+-- Chèn dữ liệu mẫu cho sy_role
+INSERT INTO sy_role (ROLE_NO, ROLE_ID, CPNY_ID, 
+    CREATE_DATE, CREATED_BY, ORDERNO, ACTIVITY, SYS_TYPE) VALUES
+('ROLE001', 'ADMIN', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 1, 1, 'HR'),
+
+('ROLE002', 'HR_MANAGER', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 2, 1, 'HR'),
+
+('ROLE003', 'IT_MANAGER', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 3, 1, 'HR'),
+
+('ROLE004', 'HR_USER', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 4, 1, 'HR'),
+
+('ROLE005', 'EMPLOYEE', 'COMP001', 
+    CURRENT_TIMESTAMP, 'ADMIN', 5, 1, 'HR');
+
+-- Chèn dữ liệu mẫu cho sy_role_group_relation
+INSERT INTO sy_role_group_relation (ROLE_GROUP_NO, ROLE_NO, 
+    CREATE_DATE, CREATED_BY, ORDERNO, ACTIVITY) VALUES
+('RG001', 'ROLE001', CURRENT_TIMESTAMP, 'ADMIN', 1, 'Y'),
+
+('RG002', 'ROLE002', CURRENT_TIMESTAMP, 'ADMIN', 1, 'Y'),
+('RG002', 'ROLE003', CURRENT_TIMESTAMP, 'ADMIN', 2, 'Y'),
+
+('RG003', 'ROLE004', CURRENT_TIMESTAMP, 'ADMIN', 1, 'Y'),
+('RG003', 'ROLE005', CURRENT_TIMESTAMP, 'ADMIN', 2, 'Y');
+
+-- Chèn dữ liệu mẫu cho sy_menu
+INSERT INTO sy_menu (MENU_NO, MENU_PARENT_NO, MENU_CODE, MENU_IMG, DEPTH, MENU_URL, 
+    CREATE_DATE, CREATED_BY, ORDERNO, ACTIVITY) VALUES
+('MENU001', NULL, 'DASHBOARD', 'dashboard.png', 1, '/dashboard', 
+    CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+('MENU002', NULL, 'HR_MANAGEMENT', 'hr.png', 1, '/hr', 
+    CURRENT_TIMESTAMP, 'ADMIN', 2, 1),
+
+('MENU003', 'MENU002', 'EMPLOYEE_MANAGEMENT', 'employee.png', 2, '/hr/employees', 
+    CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+('MENU004', 'MENU002', 'DEPARTMENT_MANAGEMENT', 'department.png', 2, '/hr/departments', 
+    CURRENT_TIMESTAMP, 'ADMIN', 2, 1),
+
+('MENU005', NULL, 'SYSTEM_ADMIN', 'admin.png', 1, '/admin', 
+    CURRENT_TIMESTAMP, 'ADMIN', 3, 1),
+
+('MENU006', 'MENU005', 'USER_MANAGEMENT', 'user.png', 2, '/admin/users', 
+    CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+('MENU007', 'MENU005', 'ROLE_MANAGEMENT', 'role.png', 2, '/admin/roles', 
+    CURRENT_TIMESTAMP, 'ADMIN', 2, 1),
+
+('MENU008', 'MENU005', 'PERMISSION_MANAGEMENT', 'permission.png', 2, '/admin/permissions', 
+    CURRENT_TIMESTAMP, 'ADMIN', 3, 'Y');
+
+-- Chèn dữ liệu mẫu cho sy_role_relation (phân quyền)
+INSERT INTO sy_role_relation (ROLE_NO, MENU_NO, SELECTR, INSERTR, UPDATER, DELETER, 
+    CREATE_DATE, CREATED_BY, ORDERNO, ACTIVITY) VALUES
+-- ADMIN có tất cả quyền
+('ROLE001', 'MENU001', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+('ROLE001', 'MENU002', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 2, 1),
+('ROLE001', 'MENU003', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 3, 1),
+('ROLE001', 'MENU004', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 4, 1),
+('ROLE001', 'MENU005', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 5, 1),
+('ROLE001', 'MENU006', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 6, 1),
+('ROLE001', 'MENU007', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 7, 1),
+('ROLE001', 'MENU008', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 8, 1),
+
+-- HR_MANAGER có quyền HR
+('ROLE002', 'MENU001', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+('ROLE002', 'MENU002', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 2, 1),
+('ROLE002', 'MENU003', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 3, 1),
+('ROLE002', 'MENU004', 'Y', 'Y', 'Y', 'Y', CURRENT_TIMESTAMP, 'ADMIN', 4, 1),
+
+-- IT_MANAGER có quyền IT
+('ROLE003', 'MENU001', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+('ROLE003', 'MENU002', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 2, 1),
+('ROLE003', 'MENU003', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 3, 1),
+('ROLE003', 'MENU004', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 4, 1),
+
+-- HR_USER có quyền xem HR
+('ROLE004', 'MENU001', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+('ROLE004', 'MENU002', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 2, 1),
+('ROLE004', 'MENU003', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 3, 1),
+('ROLE004', 'MENU004', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 4, 1),
+
+-- EMPLOYEE chỉ có quyền xem dashboard
+('ROLE005', 'MENU001', 'Y', 'N', 'N', 'N', CURRENT_TIMESTAMP, 'ADMIN', 1, 1);
+
+-- Chèn dữ liệu mẫu cho sy_user_relation (gán role group cho user)
+INSERT INTO sy_user_relation (USER_NO, ROLE_GROUP_NO, 
+    CREATE_DATE, CREATED_BY, ORDERNO, ACTIVITY) VALUES
+-- admin có ADMIN_GROUP
+('USER001', 'RG001', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+-- itmanager có MANAGER_GROUP
+('USER002', 'RG002', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+-- finance có MANAGER_GROUP
+('USER003', 'RG002', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+-- recruiter có EMPLOYEE_GROUP
+('USER004', 'RG003', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+-- developer có EMPLOYEE_GROUP
+('USER005', 'RG003', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+-- testuser1 có EMPLOYEE_GROUP
+('USER006', 'RG003', CURRENT_TIMESTAMP, 'ADMIN', 1, 1),
+
+-- testuser2 có EMPLOYEE_GROUP
+('USER007', 'RG003', CURRENT_TIMESTAMP, 'ADMIN', 1, 1);
+
+-- Commit transaction
+COMMIT;

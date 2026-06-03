@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.pa.workManagement.mapper.PaPayScheduleMapper">
+
+    <resultMap id="PaPayScheduleResultMap" type="com.ait.pa.workManagement.dto.PaPayScheduleDto">
+        <id     column="PAY_SCHEDULE_NO"  property="payScheduleNo"   jdbcType="VARCHAR" />
+        <result column="PAY_DATE"         property="payDate"          jdbcType="VARCHAR" />
+        <result column="SALARY_DISTIN_NO" property="salaryDistinNo"   jdbcType="VARCHAR" />
+        <result column="SALARY_DISTIN_NAME" property="salaryDistinName" jdbcType="VARCHAR" />
+        <result column="HR_START_DATE"    property="hrStartDate"      jdbcType="VARCHAR" />
+        <result column="HR_END_DATE"      property="hrEndDate"        jdbcType="VARCHAR" />
+        <result column="AR_START_DATE"    property="arStartDate"      jdbcType="VARCHAR" />
+        <result column="AR_END_DATE"      property="arEndDate"        jdbcType="VARCHAR" />
+        <result column="PA_OPEN_DATE"     property="paOpenDate"       jdbcType="VARCHAR" />
+        <result column="PA_TRANS_DATE"    property="paTransDate"      jdbcType="VARCHAR" />
+        <result column="EMP_OPINION"      property="empOpinion"       jdbcType="VARCHAR" />
+        <result column="ACTIVITY"         property="activity"         jdbcType="VARCHAR" />
+        <result column="CREATE_DATE"      property="createDate"       jdbcType="VARCHAR" />
+        <result column="CREATED_BY"       property="createdBy"        jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"      property="updateDate"       jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"       property="updatedBy"        jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Danh sách kế hoạch trả lương -->
+    <select id="selectList" parameterType="com.ait.pa.workManagement.dto.PaPayScheduleDto"
+            resultMap="PaPayScheduleResultMap">
+        SELECT TO_CHAR(S.PAY_SCHEDULE_NO)                           AS PAY_SCHEDULE_NO,
+               TO_CHAR(S.PAY_DATE, 'DD-MM-YYYY')                    AS PAY_DATE,
+               TO_CHAR(S.SALARY_DISTIN_NO)                          AS SALARY_DISTIN_NO,
+               GET_GLOBAL_NAME(TO_CHAR(S.SALARY_DISTIN_NO), #{lang, jdbcType=VARCHAR}) AS SALARY_DISTIN_NAME,
+               TO_CHAR(S.HR_START_DATE, 'DD-MM-YYYY')               AS HR_START_DATE,
+               TO_CHAR(S.HR_END_DATE,   'DD-MM-YYYY')               AS HR_END_DATE,
+               TO_CHAR(S.AR_START_DATE, 'DD-MM-YYYY')               AS AR_START_DATE,
+               TO_CHAR(S.AR_END_DATE,   'DD-MM-YYYY')               AS AR_END_DATE,
+               TO_CHAR(S.PA_OPEN_DATE,  'DD-MM-YYYY')               AS PA_OPEN_DATE,
+               TO_CHAR(S.PA_TRANS_DATE, 'DD-MM-YYYY')               AS PA_TRANS_DATE,
+               S.EMP_OPINION,
+               TO_CHAR(S.ACTIVITY)                                   AS ACTIVITY,
+               TO_CHAR(S.CREATE_DATE, 'DD-MM-YYYY HH24:MI')         AS CREATE_DATE,
+               S.CREATED_BY,
+               TO_CHAR(S.UPDATE_DATE, 'DD-MM-YYYY HH24:MI')         AS UPDATE_DATE,
+               S.UPDATED_BY
+        FROM PA_PAY_SCHEDULE S
+        WHERE S.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+          AND S.ACTIVITY != 0
+        <if test="fromDate != null and fromDate != ''">
+            AND S.PAY_DATE &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND S.PAY_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="salaryDistinNo != null and salaryDistinNo != ''">
+            AND S.SALARY_DISTIN_NO = #{salaryDistinNo, jdbcType=VARCHAR}
+        </if>
+        ORDER BY S.PAY_DATE DESC
+    </select>
+
+    <!-- Danh sách kế hoạch trả lương đã mở cho nhân viên xem (PA_OPEN_FLAG = 1) -->
+    <select id="selectOpenList" resultMap="PaPayScheduleResultMap">
+        SELECT TO_CHAR(S.PAY_SCHEDULE_NO)                           AS PAY_SCHEDULE_NO,
+               TO_CHAR(S.PAY_DATE, 'DD-MM-YYYY')                    AS PAY_DATE,
+               TO_CHAR(S.SALARY_DISTIN_NO)                          AS SALARY_DISTIN_NO,
+               GET_GLOBAL_NAME(TO_CHAR(S.SALARY_DISTIN_NO), #{lang, jdbcType=VARCHAR}) AS SALARY_DISTIN_NAME,
+               TO_CHAR(S.HR_START_DATE, 'DD-MM-YYYY')               AS HR_START_DATE,
+               TO_CHAR(S.HR_END_DATE,   'DD-MM-YYYY')               AS HR_END_DATE,
+               TO_CHAR(S.AR_START_DATE, 'DD-MM-YYYY')               AS AR_START_DATE,
+               TO_CHAR(S.AR_END_DATE,   'DD-MM-YYYY')               AS AR_END_DATE,
+               TO_CHAR(S.PA_OPEN_DATE,  'DD-MM-YYYY')               AS PA_OPEN_DATE,
+               TO_CHAR(S.PA_TRANS_DATE, 'DD-MM-YYYY')               AS PA_TRANS_DATE,
+               S.EMP_OPINION,
+               TO_CHAR(S.ACTIVITY)                                   AS ACTIVITY,
+               TO_CHAR(S.CREATE_DATE, 'DD-MM-YYYY HH24:MI')         AS CREATE_DATE,
+               S.CREATED_BY,
+               TO_CHAR(S.UPDATE_DATE, 'DD-MM-YYYY HH24:MI')         AS UPDATE_DATE,
+               S.UPDATED_BY
+          FROM PA_PAY_SCHEDULE S
+          JOIN PA_WORK_FLOW    W ON W.PAY_SCHEDULE_NO = S.PAY_SCHEDULE_NO
+         WHERE S.CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+           AND S.ACTIVITY != 0
+           AND W.PA_OPEN_FLAG = 1
+         ORDER BY S.PAY_DATE DESC
+    </select>
+
+    <!-- Chi tiết 1 bản ghi -->
+    <select id="selectOne" resultMap="PaPayScheduleResultMap">
+        SELECT TO_CHAR(S.PAY_SCHEDULE_NO)                           AS PAY_SCHEDULE_NO,
+               TO_CHAR(S.PAY_DATE, 'YYYY-MM-DD')                    AS PAY_DATE,
+               TO_CHAR(S.SALARY_DISTIN_NO)                          AS SALARY_DISTIN_NO,
+               TO_CHAR(S.HR_START_DATE, 'YYYY-MM-DD')               AS HR_START_DATE,
+               TO_CHAR(S.HR_END_DATE,   'YYYY-MM-DD')               AS HR_END_DATE,
+               TO_CHAR(S.AR_START_DATE, 'YYYY-MM-DD')               AS AR_START_DATE,
+               TO_CHAR(S.AR_END_DATE,   'YYYY-MM-DD')               AS AR_END_DATE,
+               TO_CHAR(S.PA_OPEN_DATE,  'YYYY-MM-DD')               AS PA_OPEN_DATE,
+               TO_CHAR(S.PA_TRANS_DATE, 'YYYY-MM-DD')               AS PA_TRANS_DATE,
+               S.EMP_OPINION,
+               TO_CHAR(S.ACTIVITY)                                   AS ACTIVITY,
+               TO_CHAR(S.CREATE_DATE, 'DD-MM-YYYY HH24:MI')         AS CREATE_DATE,
+               S.CREATED_BY,
+               TO_CHAR(S.UPDATE_DATE, 'DD-MM-YYYY HH24:MI')         AS UPDATE_DATE,
+               S.UPDATED_BY
+        FROM PA_PAY_SCHEDULE S
+        WHERE S.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+    </select>
+
+    <!-- Lấy số thứ tự mới từ sequence -->
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(PA_PAY_SCHEDULE_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <!-- Thêm mới -->
+    <insert id="insert" parameterType="com.ait.pa.workManagement.dto.PaPayScheduleDto">
+        INSERT INTO PA_PAY_SCHEDULE (
+            PAY_SCHEDULE_NO,
+            PAY_DATE,
+            SALARY_DISTIN_NO,
+            HR_START_DATE,
+            HR_END_DATE,
+            AR_START_DATE,
+            AR_END_DATE,
+            PA_OPEN_DATE,
+            PA_TRANS_DATE,
+            PA_LOCK_FLAG,
+            AR_LOCK_FLAG,
+            EMP_OPINION,
+            ACTIVITY,
+            CPNY_ID,
+            CREATED_BY,
+            CREATED_IP,
+            CREATE_DATE
+        ) VALUES (
+            #{payScheduleNo,  jdbcType=VARCHAR},
+            <choose>
+                <when test="payDate != null and payDate != ''">
+                    TO_DATE(#{payDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            #{salaryDistinNo, jdbcType=VARCHAR},
+            <choose>
+                <when test="hrStartDate != null and hrStartDate != ''">
+                    TO_DATE(#{hrStartDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            <choose>
+                <when test="hrEndDate != null and hrEndDate != ''">
+                    TO_DATE(#{hrEndDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            <choose>
+                <when test="arStartDate != null and arStartDate != ''">
+                    TO_DATE(#{arStartDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            <choose>
+                <when test="arEndDate != null and arEndDate != ''">
+                    TO_DATE(#{arEndDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            <choose>
+                <when test="paOpenDate != null and paOpenDate != ''">
+                    TO_DATE(#{paOpenDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            <choose>
+                <when test="paTransDate != null and paTransDate != ''">
+                    TO_DATE(#{paTransDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            0,
+            0,
+            #{empOpinion, jdbcType=VARCHAR},
+            1,
+            #{cpnyId,    jdbcType=VARCHAR},
+            #{adminID,   jdbcType=VARCHAR},
+            #{adminIP,   jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- Cập nhật -->
+    <update id="update" parameterType="com.ait.pa.workManagement.dto.PaPayScheduleDto">
+        UPDATE PA_PAY_SCHEDULE
+        SET PAY_DATE        = <choose>
+                                  <when test="payDate != null and payDate != ''">TO_DATE(#{payDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')</when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            SALARY_DISTIN_NO = #{salaryDistinNo, jdbcType=VARCHAR},
+            HR_START_DATE   = <choose>
+                                  <when test="hrStartDate != null and hrStartDate != ''">TO_DATE(#{hrStartDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')</when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            HR_END_DATE     = <choose>
+                                  <when test="hrEndDate != null and hrEndDate != ''">TO_DATE(#{hrEndDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')</when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            AR_START_DATE   = <choose>
+                                  <when test="arStartDate != null and arStartDate != ''">TO_DATE(#{arStartDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')</when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            AR_END_DATE     = <choose>
+                                  <when test="arEndDate != null and arEndDate != ''">TO_DATE(#{arEndDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')</when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            PA_OPEN_DATE    = <choose>
+                                  <when test="paOpenDate != null and paOpenDate != ''">TO_DATE(#{paOpenDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')</when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            PA_TRANS_DATE   = <choose>
+                                  <when test="paTransDate != null and paTransDate != ''">TO_DATE(#{paTransDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')</when>
+                                  <otherwise>NULL</otherwise>
+                              </choose>,
+            EMP_OPINION     = #{empOpinion, jdbcType=VARCHAR},
+            UPDATED_BY      = #{adminID,    jdbcType=VARCHAR},
+            UPDATED_IP      = #{adminIP,    jdbcType=VARCHAR},
+            UPDATE_DATE     = SYSDATE
+        WHERE PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+          AND CPNY_ID         = #{cpnyId,         jdbcType=VARCHAR}
+    </update>
+
+    <!-- Xóa mềm (ACTIVITY=0) -->
+    <update id="delete">
+        UPDATE PA_PAY_SCHEDULE
+        SET ACTIVITY    = 0,
+            UPDATED_BY  = #{adminID,       jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,       jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+          AND CPNY_ID         = #{cpnyId,         jdbcType=VARCHAR}
+    </update>
+
+</mapper>

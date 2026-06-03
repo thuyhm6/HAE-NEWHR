@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.OtApplyPersonalSelfMapper">
+
+    <resultMap id="OtApplyPersonalSelfResultMap" type="com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto">
+        <result column="PERSON_ID"      property="personId"      jdbcType="VARCHAR" />
+        <result column="EMPID"          property="empId"         jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"     property="localName"     jdbcType="VARCHAR" />
+        <result column="DEPTNO"         property="deptNo"        jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"      property="deptName"      jdbcType="VARCHAR" />
+        <result column="ITEM_NO"        property="itemNo"        jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"      property="itemName"      jdbcType="VARCHAR" />
+        <result column="TOTAL_QUANTITY" property="totalQuantity" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="OtApplyPersonalSelfItemResultMap" type="com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto">
+        <id     column="ITEM_NO"   property="itemNo"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME" property="itemName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="OtApplyPersonalSelfDetailResultMap" type="com.ait.ess.viewDept.dto.OtApplyPersonalSelfDetailDto">
+        <id     column="PK_NO"         property="pkNo"        jdbcType="VARCHAR" />
+        <result column="PERSON_ID"     property="personId"    jdbcType="VARCHAR" />
+        <result column="EMPID"         property="empId"       jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"    property="localName"   jdbcType="VARCHAR" />
+        <result column="SHIFT_NO"      property="shiftNo"     jdbcType="VARCHAR" />
+        <result column="SHIFT_NAME"    property="shiftName"   jdbcType="VARCHAR" />
+        <result column="WORK_TIME"     property="workTime"    jdbcType="VARCHAR" />
+        <result column="AR_DATE_STR"   property="arDateStr"   jdbcType="VARCHAR" />
+        <result column="ITEM_NO"       property="itemNo"      jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"     property="itemName"    jdbcType="VARCHAR" />
+        <result column="FROM_TIME_STR" property="fromTimeStr" jdbcType="VARCHAR" />
+        <result column="TO_TIME_STR"   property="toTimeStr"   jdbcType="VARCHAR" />
+        <result column="QUANTITY"      property="quantity"    jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- Tổng hợp tăng ca của chính người dùng đang đăng nhập (ITEM_GROUP_CODE = '1433') -->
+    <select id="selectSummaryList" parameterType="com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto"
+            resultMap="OtApplyPersonalSelfResultMap">
+        SELECT Q.PERSON_ID, Q.EMPID, Q.LOCAL_NAME, Q.DEPTNO, Q.ITEM_NO, Q.TOTAL_QUANTITY,
+               GET_DEPT_NAME(Q.DEPTNO, #{lang, jdbcType=VARCHAR})    AS DEPT_NAME,
+               GET_GLOBAL_NAME(Q.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME
+        FROM (
+            SELECT HE.PERSON_ID, HE.EMPID, HE.LOCAL_NAME, HE.DEPTNO,
+                   D.ITEM_NO, TO_CHAR(SUM(D.QUANTITY)) AS TOTAL_QUANTITY
+            FROM AR_DETAIL_HTSV D, HR_EMPLOYEE HE
+            WHERE HE.PERSON_ID = D.PERSON_ID
+              AND D.PERSON_ID  = #{adminID, jdbcType=VARCHAR}
+              AND D.ITEM_NO IN (
+                  SELECT AIP.ITEM_NO FROM AR_ITEM_PARAM AIP, AR_ITEM AI
+                  WHERE AIP.ITEM_NO      = AI.ITEM_NO
+                    AND AIP.CPNY_ID      = #{cpnyId, jdbcType=VARCHAR}
+                    AND AI.ITEM_GROUP_CODE = '1433'
+              )
+            <if test="startDate != null and startDate != ''">
+              AND D.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+              AND D.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+            </if>
+            GROUP BY HE.PERSON_ID, HE.EMPID, HE.LOCAL_NAME, HE.DEPTNO, D.ITEM_NO
+        ) Q
+        ORDER BY Q.ITEM_NO
+    </select>
+
+    <!-- Danh sách loại tăng ca để làm cột tiêu đề (ITEM_GROUP_CODE = '1433') -->
+    <select id="selectItemList" resultMap="OtApplyPersonalSelfItemResultMap">
+        SELECT DISTINCT AIP.ITEM_NO,
+               GET_GLOBAL_NAME(AIP.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME
+        FROM AR_ITEM_PARAM AIP, AR_ITEM AI
+        WHERE AIP.ITEM_NO        = AI.ITEM_NO
+          AND AIP.CPNY_ID        = #{cpnyId, jdbcType=VARCHAR}
+          AND AI.ITEM_GROUP_CODE = '1433'
+        ORDER BY AIP.ITEM_NO
+    </select>
+
+    <!-- Chi tiết từng bản ghi tăng ca của 1 nhân viên + 1 loại -->
+    <select id="selectDetailList" parameterType="com.ait.ess.viewDept.dto.OtApplyPersonalSelfDetailDto"
+            resultMap="OtApplyPersonalSelfDetailResultMap">
+        SELECT TO_CHAR(D.PK_NO)                                                AS PK_NO,
+               D.PERSON_ID,
+               HE.EMPID,
+               HE.LOCAL_NAME,
+               D.SHIFT_NO,
+               GET_GLOBAL_NAME(D.SHIFT_NO, #{lang, jdbcType=VARCHAR})           AS SHIFT_NAME,
+               (SELECT TO_CHAR(MIN(S.FROM_TIME), 'HH24:MI')
+                           || ' - ' || TO_CHAR(MAX(S.TO_TIME), 'HH24:MI')
+                FROM AR_SHIFT020 S
+                WHERE S.SHIFT_NO = D.SHIFT_NO)                                  AS WORK_TIME,
+               D.AR_DATE_STR,
+               D.ITEM_NO,
+               GET_GLOBAL_NAME(D.ITEM_NO, #{lang, jdbcType=VARCHAR})            AS ITEM_NAME,
+               TO_CHAR(D.FROM_TIME, 'HH24:MI')                                  AS FROM_TIME_STR,
+               TO_CHAR(D.TO_TIME,   'HH24:MI')                                  AS TO_TIME_STR,
+               TO_CHAR(D.QUANTITY)                                               AS QUANTITY
+        FROM AR_DETAIL_HTSV D, HR_EMPLOYEE HE
+        WHERE HE.PERSON_ID = D.PERSON_ID
+          AND D.PERSON_ID  = #{personId, jdbcType=VARCHAR}
+          AND D.ITEM_NO    = #{itemNo,   jdbcType=VARCHAR}
+        <if test="startDate != null and startDate != ''">
+          AND D.AR_DATE_STR &gt;= TO_CHAR(TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        <if test="endDate != null and endDate != ''">
+          AND D.AR_DATE_STR &lt;= TO_CHAR(TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'), 'YYYY/MM/DD')
+        </if>
+        ORDER BY D.AR_DATE_STR
+    </select>
+
+</mapper>

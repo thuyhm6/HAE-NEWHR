@@ -1,0 +1,473 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vpcipl_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="row g-2 align-items-start">
+                        <div class="col-8 d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.computeItemParam.itemName}">Tên hạng mục</label>
+                            <input type="text" class="form-control form-control-sm" id="vpcipl_aliasNameSearch"
+                                style="max-width:240px;"
+                                onkeydown="if(event.key==='Enter') vpciplSearch()">
+                        </div>
+                        <div class="col-4 d-flex gap-2 align-items-start justify-content-end flex-wrap">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="vpciplSearch()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{pa.computeItemParam.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="vpciplOpenAddModal()">
+                                <i class="bi bi-plus-circle"></i>
+                                <span th:text="#{pa.computeItemParam.addNew}">Thêm mới</span>
+                            </button>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="vpciplEditSelected()">
+                                <i class="bi bi-pencil"></i>
+                                <span th:text="#{pa.computeItemParam.edit}">Sửa</span>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="vpciplDeleteSelected()">
+                                <i class="bi bi-trash"></i>
+                                <span th:text="#{pa.computeItemParam.delete}">Xóa</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table id="vpcipl_table" class="table table-striped table-bordered table-hover table-sm"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;">
+                                        <input type="checkbox" id="vpcipl_checkAll">
+                                    </th>
+                                    <th class="text-center" style="width:40px;" th:text="#{pa.computeItemParam.no}">STT</th>
+                                    <th th:text="#{pa.computeItemParam.company}">Công ty</th>
+                                    <th th:text="#{pa.computeItemParam.itemName}">Tên hạng mục</th>
+                                    <th class="text-center" style="width:120px;" th:text="#{pa.computeItemParam.pricision}">Tính chính xác</th>
+                                    <th class="text-center" style="width:140px;" th:text="#{pa.computeItemParam.carryBit}">Tiền 1 đơn vị</th>
+                                    <th th:text="#{pa.computeItemParam.applyType}">Loại áp dụng</th>
+                                    <th class="text-center" style="width:120px;" th:text="#{pa.computeItemParam.calcuOrder}">Trình tự tính</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vpcipl_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- ── Modal thêm mới ──────────────────────────────────────────────────── -->
+    <div class="modal fade" id="vpcipl_addModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{pa.computeItemParam.addTitle}">Thêm mới thông số mục tính toán</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:38%;">
+                            <col style="width:62%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.computeItemParam.itemName}">Tên hạng mục</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vpcipl_addItemNo">
+                                        <option value=""></option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.computeItemParam.pricision}">Độ chính xác</span>
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" id="vpcipl_addPricision"
+                                        style="max-width:160px;" min="0" step="1">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.computeItemParam.carryBit}">Số chữ số sau dấu phẩy</span>
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" id="vpcipl_addCarryBit"
+                                        style="max-width:160px;" step="any">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.computeItemParam.applyType}">Loại áp dụng</span>
+                                </th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vpcipl_addApplyType">
+                                        <option value=""></option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-success btn-sm" onclick="vpciplSaveAdd()">
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{pa.computeItemParam.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal chỉnh sửa ──────────────────────────────────────────────────── -->
+    <div class="modal fade" id="vpcipl_editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{pa.computeItemParam.editTitle}">Chỉnh sửa thông số mục tính toán</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="vpcipl_editParamNo">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:38%;">
+                            <col style="width:62%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-end pe-3" th:text="#{pa.computeItemParam.company}">Công ty</th>
+                                <td><span id="vpcipl_editCpnyName" class="form-control-plaintext form-control-sm"></span></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3" th:text="#{pa.computeItemParam.itemName}">Tên hạng mục</th>
+                                <td><span id="vpcipl_editAliasName" class="form-control-plaintext form-control-sm"></span></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.computeItemParam.pricision}">Độ chính xác</span>
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" id="vpcipl_editPricision"
+                                        style="max-width:160px;" min="0" step="1">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.computeItemParam.carryBit}">Số chữ số sau dấu phẩy</span>
+                                </th>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" id="vpcipl_editCarryBit"
+                                        style="max-width:160px;" step="any">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.computeItemParam.applyType}">Loại áp dụng</span>
+                                </th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vpcipl_editApplyType">
+                                        <option value=""></option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="vpciplSaveEdit()">
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{pa.computeItemParam.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vpcipl_table = null;
+        var vpcipl_msgConfirmDelete  = /*[[#{pa.computeItemParam.confirmDelete}]]*/  'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?';
+        var vpcipl_msgSelectRequired = /*[[#{pa.computeItemParam.selectRequired}]]*/ 'Vui lòng chọn ít nhất một bản ghi!';
+        var vpcipl_msgSelectOne      = /*[[#{pa.computeItemParam.selectOne}]]*/      'Vui lòng chọn đúng một bản ghi để sửa!';
+        var vpcipl_msgValidate       = /*[[#{pa.computeItemParam.validateRequired}]]*/ 'Vui lòng nhập đầy đủ thông tin bắt buộc!';
+
+        function vpciplBuildApplyTypeOptions(list, selectId) {
+            var html = '<option value=""></option>';
+            $.each(list, function (i, item) {
+                html += '<option value="' + item.applyType + '">'
+                    + (item.applyTypeName || item.applyType) + '</option>';
+            });
+            $(selectId).html(html);
+        }
+
+        $(document).ready(function () {
+
+            // Load danh sách APPLY_TYPE
+            $.ajax({
+                url: '/pa/salary/computeitemparam/api/applyTypeList',
+                type: 'GET',
+                success: function (list) {
+                    vpciplBuildApplyTypeOptions(list, '#vpcipl_addApplyType');
+                    vpciplBuildApplyTypeOptions(list, '#vpcipl_editApplyType');
+                },
+                error: function () {
+                    console.warn('Không thể tải danh sách APPLY_TYPE');
+                }
+            });
+
+            vpcipl_table = $('#vpcipl_table').DataTable({
+                destroy: true,
+                scrollY: 'calc(100vh - 330px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 20,
+                lengthMenu: [10, 20, 50, 100],
+                processing: true,
+                serverSide: true,
+                columnDefs: [
+                    { targets: 0, width: '36px',  className: 'text-center', orderable: false },
+                    { targets: 1, width: '40px',  className: 'text-center', orderable: false },
+                    { targets: [4, 5, 7], className: 'text-center' }
+                ],
+                ajax: {
+                    url: '/pa/salary/computeitemparam/api/list',
+                    type: 'GET',
+                    data: function (d) {
+                        d.aliasNameSearch = $('#vpcipl_aliasNameSearch').val();
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            return '<input type="checkbox" class="vpcipl_rowCheck"'
+                                + ' data-paramno="' + row.paramNo + '">';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'cpnyName',      defaultContent: '' },
+                    { data: 'aliasName',     defaultContent: '' },
+                    { data: 'pricision',     defaultContent: '' },
+                    { data: 'carryBit',      defaultContent: '' },
+                    { data: 'applyTypeName', defaultContent: '' },
+                    {
+                        data: 'calcuOrder',
+                        defaultContent: '',
+                        render: function (data, type, row) {
+                            if (type !== 'display') return data;
+                            return '<span class="me-1">' + (data != null ? data : '') + '</span>'
+                                + '<button type="button" class="btn btn-sm p-0 px-1 border-0 text-success vpcipl_btnUp"'
+                                + ' data-paramno="' + row.paramNo + '" title="Lên">'
+                                + '<i class="bi bi-arrow-up-circle-fill fs-6"></i></button>'
+                                + '<button type="button" class="btn btn-sm p-0 px-1 border-0 text-primary vpcipl_btnDown"'
+                                + ' data-paramno="' + row.paramNo + '" title="Xuống">'
+                                + '<i class="bi bi-arrow-down-circle-fill fs-6"></i></button>';
+                        }
+                    }
+                ],
+                drawCallback: function () {
+                    $('#vpcipl_checkAll').off('change').on('change', function () {
+                        $('.vpcipl_rowCheck').prop('checked', $(this).is(':checked'));
+                    });
+                    // Nút hoán đổi thứ tự
+                    $('#vpcipl_table tbody')
+                        .off('click', '.vpcipl_btnUp, .vpcipl_btnDown')
+                        .on('click', '.vpcipl_btnUp, .vpcipl_btnDown', function (e) {
+                            e.stopPropagation();
+                            var paramNo   = $(this).data('paramno');
+                            var direction = $(this).hasClass('vpcipl_btnUp') ? 'up' : 'down';
+                            vpciplSwapOrder(paramNo, direction);
+                        });
+                    // Click hàng để mở modal sửa
+                    $('#vpcipl_table tbody').off('click', 'tr').on('click', 'tr', function (e) {
+                        if ($(e.target).is('input[type=checkbox]')) return;
+                        if ($(e.target).closest('button').length > 0) return;
+                        var rowData = vpcipl_table.row(this).data();
+                        if (rowData) vpciplOpenEditModal(rowData.paramNo);
+                    });
+                }
+            });
+
+            window.vpciplSearch = function () {
+                vpcipl_table.ajax.reload();
+            };
+
+            window.vpciplSwapOrder = function (paramNo, direction) {
+                $.ajax({
+                    url: '/pa/salary/computeitemparam/api/swapOrder',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ paramNo: paramNo, direction: direction }),
+                    success: function () {
+                        vpcipl_table.ajax.reload(null, false);
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vpciplOpenAddModal = function () {
+                $.ajax({
+                    url: '/pa/salary/computeitemparam/api/itemList',
+                    type: 'GET',
+                    success: function (list) {
+                        var html = '<option value=""></option>';
+                        $.each(list, function (i, item) {
+                            html += '<option value="' + item.itemNo + '">'
+                                + (item.itemName || item.itemId || item.itemNo) + '</option>';
+                        });
+                        $('#vpcipl_addItemNo').html(html);
+                    },
+                    error: function () {
+                        console.warn('Không thể tải danh sách hạng mục');
+                    }
+                });
+                $('#vpcipl_addPricision').val('');
+                $('#vpcipl_addCarryBit').val('');
+                $('#vpcipl_addApplyType').val('');
+                new bootstrap.Modal(document.getElementById('vpcipl_addModal')).show();
+            };
+
+            window.vpciplSaveAdd = function () {
+                var itemNo = $('#vpcipl_addItemNo').val();
+                if (!itemNo) {
+                    toastr ? toastr.warning(vpcipl_msgValidate) : alert(vpcipl_msgValidate);
+                    return;
+                }
+                var payload = {
+                    itemNo:    itemNo,
+                    pricision: $('#vpcipl_addPricision').val() !== '' ? parseInt($('#vpcipl_addPricision').val()) : null,
+                    carryBit:  $('#vpcipl_addCarryBit').val()  !== '' ? parseFloat($('#vpcipl_addCarryBit').val())  : null,
+                    applyType: $('#vpcipl_addApplyType').val() || null
+                };
+                $.ajax({
+                    url: '/pa/salary/computeitemparam/api/insert',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Thêm mới thành công') : alert(res.message || 'Thêm mới thành công');
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('vpcipl_addModal'));
+                        if (modal) modal.hide();
+                        vpcipl_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vpciplEditSelected = function () {
+                var selected = [];
+                $('.vpcipl_rowCheck:checked').each(function () {
+                    selected.push($(this).data('paramno'));
+                });
+                if (selected.length !== 1) {
+                    toastr ? toastr.warning(vpcipl_msgSelectOne) : alert(vpcipl_msgSelectOne);
+                    return;
+                }
+                vpciplOpenEditModal(selected[0]);
+            };
+
+            window.vpciplOpenEditModal = function (paramNo) {
+                $.ajax({
+                    url: '/pa/salary/computeitemparam/api/' + paramNo,
+                    type: 'GET',
+                    success: function (dto) {
+                        $('#vpcipl_editParamNo').val(dto.paramNo);
+                        $('#vpcipl_editCpnyName').text(dto.cpnyName || dto.cpnyId || '');
+                        $('#vpcipl_editAliasName').text(dto.aliasName || dto.itemId || '');
+                        $('#vpcipl_editPricision').val(dto.pricision != null ? dto.pricision : '');
+                        $('#vpcipl_editCarryBit').val(dto.carryBit  != null ? dto.carryBit  : '');
+                        $('#vpcipl_editApplyType').val(dto.applyType || '');
+                        new bootstrap.Modal(document.getElementById('vpcipl_editModal')).show();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vpciplSaveEdit = function () {
+                var payload = {
+                    paramNo:   $('#vpcipl_editParamNo').val(),
+                    pricision: $('#vpcipl_editPricision').val() !== '' ? parseInt($('#vpcipl_editPricision').val()) : null,
+                    carryBit:  $('#vpcipl_editCarryBit').val()  !== '' ? parseFloat($('#vpcipl_editCarryBit').val())  : null,
+                    applyType: $('#vpcipl_editApplyType').val() || null
+                };
+                $.ajax({
+                    url: '/pa/salary/computeitemparam/api/update',
+                    type: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Cập nhật thành công') : alert(res.message || 'Cập nhật thành công');
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('vpcipl_editModal'));
+                        if (modal) modal.hide();
+                        vpcipl_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vpciplDeleteSelected = function () {
+                var selected = [];
+                $('.vpcipl_rowCheck:checked').each(function () {
+                    selected.push($(this).data('paramno'));
+                });
+                if (selected.length === 0) {
+                    toastr ? toastr.warning(vpcipl_msgSelectRequired) : alert(vpcipl_msgSelectRequired);
+                    return;
+                }
+                if (!confirm(vpcipl_msgConfirmDelete)) return;
+                $.ajax({
+                    url: '/pa/salary/computeitemparam/api/deleteList',
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selected),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Xóa thành công') : alert(res.message || 'Xóa thành công');
+                        vpcipl_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+        });
+    </script>
+</template>

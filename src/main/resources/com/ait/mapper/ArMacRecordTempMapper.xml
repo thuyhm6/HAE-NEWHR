@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArMacRecordTempMapper">
+
+    <resultMap id="TempResultMap" type="com.ait.ar.attendanceMintenance.dto.ArMacRecordTempDto">
+        <result property="lineId"         column="LINE_ID"/>
+        <result property="cardNo"         column="CARD_NO"/>
+        <result property="rTime"          column="R_TIME"/>
+        <result property="doorType"       column="DOOR_TYPE"/>
+        <result property="insertBy"       column="INSERT_BY"/>
+        <result property="empId"          column="EMPID"/>
+        <result property="remark"         column="REMARK"/>
+        <result property="cpnyId"         column="CPNY_ID"/>
+        <result property="activity"       column="ACTIVITY"/>
+        <result property="orderno"        column="ORDERNO"/>
+        <result property="uploadDate"     column="UPLOAD_DATE"/>
+        <result property="uploadBy"       column="UPLOAD_BY"/>
+        <result property="uploadErrorMsg" column="UPLOAD_ERROR_MSG"/>
+        <result property="resultFlag"     column="RESULT_FLAG"/>
+        <result property="localName"      column="LOCAL_NAME"/>
+        <result property="dept"           column="DEPT"/>
+        <result property="rDate"          column="R_DATE"/>
+        <result property="arDateStr"      column="AR_DATE_STR"/>
+    </resultMap>
+
+    <delete id="deleteTempByUploader">
+        DELETE FROM AR_MAC_RECORDS_TEMP
+         WHERE UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+           AND CPNY_ID   = #{cpnyId,  jdbcType=VARCHAR}
+    </delete>
+
+    <insert id="insertTemp" parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordTempDto">
+        INSERT INTO AR_MAC_RECORDS_TEMP (
+            CARD_NO,
+            R_TIME,
+            DOOR_TYPE,
+            INSERT_BY,
+            EMPID,
+            REMARK,
+            CPNY_ID,
+            ACTIVITY,
+            ORDERNO,
+            UPLOAD_DATE,
+            UPLOAD_BY,
+            UPLOAD_ERROR_MSG,
+            LINE_ID,
+            RESULT_FLAG,
+            LOCAL_NAME,
+            UPDATED_IP,
+            CREATED_IP,
+            R_DATE,
+            AR_DATE_STR
+        ) VALUES (
+            #{cardNo,         jdbcType=VARCHAR},
+            #{rTime,          jdbcType=VARCHAR},
+            #{doorType,       jdbcType=VARCHAR},
+            'H',
+            #{empId,          jdbcType=VARCHAR},
+            #{remark,         jdbcType=VARCHAR},
+            #{cpnyId,         jdbcType=VARCHAR},
+            1,
+            #{lineId,         jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID,        jdbcType=VARCHAR},
+            #{uploadErrorMsg, jdbcType=VARCHAR},
+            #{lineId,         jdbcType=NUMERIC},
+            'N',
+            #{localName,      jdbcType=VARCHAR},
+            #{adminIP,        jdbcType=VARCHAR},
+            #{adminIP,        jdbcType=VARCHAR},
+            #{rDate,          jdbcType=VARCHAR},
+            #{arDateStr,      jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="selectList" resultMap="TempResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordTempDto">
+        SELECT LINE_ID, CARD_NO, R_TIME, DOOR_TYPE, INSERT_BY, EMPID, REMARK,
+               CPNY_ID, ACTIVITY, ORDERNO,
+               TO_CHAR(UPLOAD_DATE, 'YYYY/MM/DD HH24:MI') AS UPLOAD_DATE,
+               UPLOAD_BY, UPLOAD_ERROR_MSG, RESULT_FLAG, LOCAL_NAME,
+               R_DATE, AR_DATE_STR
+          FROM AR_MAC_RECORDS_TEMP
+         WHERE UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+           AND CPNY_ID   = #{cpnyId,  jdbcType=VARCHAR}
+        <if test="errorOnly == 'Y'">
+           AND UPLOAD_ERROR_MSG IS NOT NULL AND UPLOAD_ERROR_MSG != ''
+        </if>
+        <if test="errorOnly == 'N'">
+           AND (UPLOAD_ERROR_MSG IS NULL OR UPLOAD_ERROR_MSG = '')
+        </if>
+         ORDER BY LINE_ID
+    </select>
+
+    <select id="selectAllForConfirm" resultMap="TempResultMap">
+        SELECT LINE_ID, CARD_NO, R_TIME, DOOR_TYPE, EMPID, REMARK,
+               LOCAL_NAME, R_DATE, AR_DATE_STR, UPLOAD_ERROR_MSG, RESULT_FLAG
+          FROM AR_MAC_RECORDS_TEMP
+         WHERE UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+           AND CPNY_ID   = #{cpnyId,  jdbcType=VARCHAR}
+         ORDER BY LINE_ID
+    </select>
+
+    <select id="findPersonIdByEmpId" resultType="String">
+        SELECT PERSON_ID
+          FROM HR_EMPLOYEE
+         WHERE EMPID  = #{empId, jdbcType=VARCHAR}
+           AND ROWNUM = 1
+    </select>
+
+    <select id="countDuplicateInHtsv" resultType="int">
+        SELECT COUNT(*)
+          FROM AR_MAC_RECORDS_HTSV
+         WHERE CARD_NO   = #{cardNo,           jdbcType=VARCHAR}
+           AND R_TIME    = TO_DATE(#{combinedDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
+           AND DOOR_TYPE = #{doorType,         jdbcType=VARCHAR}
+           AND ACTIVITY  = 1
+    </select>
+
+    <insert id="insertIntoHtsv" parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordTempDto">
+        INSERT INTO AR_MAC_RECORDS_HTSV (
+            RECORD_NO,
+            CARD_NO,
+            PERSON_ID,
+            DOOR_TYPE,
+            INSERT_BY,
+            REMARK,
+            AR_DATE_STR,
+            R_TIME,
+            ACTIVITY
+        ) VALUES (
+            AR_RECORDS_SEQ.NEXTVAL,
+            #{cardNo,    jdbcType=VARCHAR},
+            #{empId,     jdbcType=VARCHAR},
+            #{doorType,  jdbcType=VARCHAR},
+            'H',
+            #{remark,    jdbcType=VARCHAR},
+            #{arDateStr, jdbcType=VARCHAR},
+            TO_DATE(#{rDate, jdbcType=VARCHAR} || ' ' || #{rTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            1
+        )
+    </insert>
+
+</mapper>

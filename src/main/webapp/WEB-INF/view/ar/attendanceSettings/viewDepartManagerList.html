@@ -1,0 +1,414 @@
+<div th:fragment="content">
+    <div class="card mb-2">
+        <div class="card-body p-2">
+            <!-- Form Tìm kiếm -->
+            <div class="row align-items-center mb-2">
+                <div class="col-md-2 d-flex align-items-center">
+                    <label class="me-2 fw-bold whitespace-nowrap">Ngày:</label>
+                    <input type="date" class="form-control form-control-sm" id="manage_lockDate">
+                </div>
+                <div class="col-md-3 d-flex align-items-center">
+                    <label class="me-2 fw-bold whitespace-nowrap">Phòng ban:</label>
+                    <input type="text" class="form-control form-control-sm" id="manage_deptNo"
+                        placeholder="Mã / Tên phòng">
+                </div>
+                <div class="col-md-7 text-end">
+                    <button class="btn btn-primary btn-sm me-1" id="btnManageSearch"><i class="bx bx-search"></i> Tra
+                        cứu</button>
+                    <button class="btn btn-warning btn-sm me-1" id="btnManageSave"><i class="bx bx-save"></i>
+                        Lưu</button>
+                    <button class="btn btn-success btn-sm" id="btnManageExport"><i class="bx bx-export"></i> Xuất
+                        Excel</button>
+                </div>
+            </div>
+
+            <!-- Toolbar tác động nhanh (Mass Actions) -->
+            <div class="bg-light p-2 border rounded">
+                <div class="row align-items-center text-center header-filters" style="font-size: 0.85rem;">
+                    <!-- Nghỉ phép năm -->
+                    <div class="col-md-2 border-end">
+                        <div class="fw-bold mb-1">Nghỉ phép năm</div>
+                        <div>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_attnAnnualDay"
+                                value="lockAttenAnnualFlag"> <label class="me-2">Ca ngày</label>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_attnAnnualNight"
+                                value="lockAttenAnnualNightFlag"> <label>Ca đêm</label>
+                        </div>
+                    </div>
+                    <!-- Nghỉ phép -->
+                    <div class="col-md-2 border-end">
+                        <div class="fw-bold mb-1">Nghỉ phép</div>
+                        <div>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_attnDay"
+                                value="lockAttenFlag"> <label class="me-2">Ca ngày</label>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_attnNight"
+                                value="lockAttenNightFlag"> <label>Ca đêm</label>
+                        </div>
+                    </div>
+                    <!-- Tăng ca -->
+                    <div class="col-md-2 border-end">
+                        <div class="fw-bold mb-1">Tăng ca</div>
+                        <div>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_otDay"
+                                value="lockOtFlag"> <label class="me-2">Ca ngày</label>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_otNight"
+                                value="lockOtNightFlag"> <label>Ca đêm</label>
+                        </div>
+                    </div>
+                    <!-- Bất thường -->
+                    <div class="col-md-2 border-end">
+                        <div class="fw-bold mb-1">Bất thường</div>
+                        <div>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_exDay"
+                                value="lockAttenExFlag"> <label class="me-2">Ca ngày</label>
+                            <input type="checkbox" class="form-check-input mass-toggle" id="mass_exNight"
+                                value="lockAttenExNightFlag"> <label>Ca đêm</label>
+                        </div>
+                    </div>
+                    <!-- Action buttons mass -->
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-outline-success btn-sm me-1" onclick="applyMassToggle('0')"><i
+                                class="bx bx-lock-open"></i> Mở xin phép</button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="applyMassToggle('1')"><i
+                                class="bx bx-lock"></i> Đóng xin phép</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card" style="height: calc(100vh - 200px);">
+        <div class="card-body p-0">
+            <div class="table-responsive h-100 position-relative">
+                <table class="table table-bordered table-hover m-0 align-middle text-center" style="font-size: 0.85rem;"
+                    id="manageTable">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th rowspan="2" class="align-middle text-start" style="width: 25%;">Phòng ban</th>
+                            <th rowspan="2" class="align-middle">Ngày</th>
+                            <th colspan="2">Nghỉ phép năm</th>
+                            <th colspan="2">Nghỉ phép</th>
+                            <th colspan="2">Tăng ca</th>
+                            <th colspan="2">Bất thường</th>
+                            <th rowspan="2" class="align-middle">Người thay đổi</th>
+                            <th rowspan="2" class="align-middle" style="width: 10%;">Thời gian thay đổi</th>
+                        </tr>
+                        <tr>
+                            <!-- Nghỉ phép năm -->
+                            <th style="min-width: 30px;">Ca ngày <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockAttenAnnualFlag"></th>
+                            <th style="min-width: 30px;">Ca đêm <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockAttenAnnualNightFlag"></th>
+                            <!-- Nghỉ phép -->
+                            <th style="min-width: 30px;">Ca ngày <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockAttenFlag"></th>
+                            <th style="min-width: 30px;">Ca đêm <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockAttenNightFlag"></th>
+                            <!-- Tăng ca -->
+                            <th style="min-width: 30px;">Ca ngày <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockOtFlag"></th>
+                            <th style="min-width: 30px;">Ca đêm <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockOtNightFlag"></th>
+                            <!-- Bất thường -->
+                            <th style="min-width: 30px;">Ca ngày <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockAttenExFlag"></th>
+                            <th style="min-width: 30px;">Ca đêm <input type="checkbox"
+                                    class="form-check-input select-all-col" data-col="lockAttenExNightFlag"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="manageTbody">
+                        <!-- Data Appended by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <style>
+        .tree-icon {
+            cursor: pointer;
+            width: 20px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .whitespace-nowrap {
+            white-space: nowrap;
+        }
+    </style>
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            // Set default date = current date
+            var today = new Date().toISOString().split('T')[0];
+            $('#manage_lockDate').val(today);
+
+            var treeData = [];
+            var dataMap = {};
+
+            // Initialize Shared Dept Tree Component
+            DeptTree.init('#manage_deptNo');
+
+            function loadData() {
+                var lockDate = $('#manage_lockDate').val();
+                if (!lockDate) {
+                    toastr.warning("Vui lòng chọn ngày");
+                    return;
+                }
+
+                $('#btnManageSearch').prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> Đang tải');
+
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/departmentManage/list',
+                    data: {
+                        lockDate: lockDate,
+                        deptNo: DeptTree.getSelectedCodes().join(',') // Use common component to get IDs
+                    },
+                    success: function (res) {
+                        $('#btnManageSearch').prop('disabled', false).html('<i class="bx bx-search"></i> Tra cứu');
+                        treeData = res;
+                        dataMap = {};
+                        $('#manageTbody').empty();
+
+                        if (!res || res.length === 0) {
+                            $('#manageTbody').append('<tr><td colspan="12" class="text-muted py-3">Không có dữ liệu (có thể hệ thống chưa đồng bộ phòng ban).</td></tr>');
+                            return;
+                        }
+
+                        // Xây dựng bản đồ
+                        res.forEach(function (itm) {
+                            dataMap[itm.deptNo] = itm;
+                            itm.childrenMap = [];
+                            itm.isOpen = true; // Mặc định mở
+                        });
+
+                        // Liên kết cây cha con
+                        var roots = [];
+                        res.forEach(function (itm) {
+                            if (itm.parentDeptNo && itm.parentDeptNo !== '0' && dataMap[itm.parentDeptNo]) {
+                                dataMap[itm.parentDeptNo].childrenMap.push(itm.deptNo);
+                            } else {
+                                roots.push(itm.deptNo);
+                            }
+                        });
+
+                        // Render
+                        var html = [];
+
+                        function buildTreeHTML(deptNo, level) {
+                            var item = dataMap[deptNo];
+                            var childCount = item.childrenMap.length;
+                            var pl = level * 20;
+
+                            var icon = '';
+                            if (childCount > 0) {
+                                icon = `<i class="bx bx-minus border rounded bg-white text-primary tree-icon" onclick="toggleRow('${deptNo}')" id="icon_${deptNo}"></i>`;
+                            } else {
+                                icon = `<span class="tree-icon"></span>`; // padding placeholder
+                            }
+
+                            // Chuyển format hiển thị ngày (YYYY-MM-DD -> DD/MM/YYYY)
+                            var displayDate = item.lockDate;
+                            if (displayDate && displayDate.includes('-')) {
+                                displayDate = displayDate.split('-').reverse().join('/');
+                            } else if (displayDate && displayDate.length === 8) {
+                                displayDate = displayDate.replace(/(\d{4})(\d{2})(\d{2})/, '$3/$2/$1');
+                            }
+
+                            // Format Update Date
+                            var updateDtm = '';
+                            if (item.updateDate) {
+                                var d = new Date(item.updateDate);
+                                updateDtm = d.toLocaleString('vi-VN');
+                            }
+
+                            var rowHtml = `
+                                <tr id="row_${deptNo}" data-parent="${item.parentDeptNo}" data-deptno="${deptNo}" class="row-dept">
+                                    <td class="text-start" style="padding-left: ${pl + 10}px;">
+                                        ${icon} <span class="fw-bold ms-1" title="${deptNo}">${item.dispDeptName}</span>
+                                    </td>
+                                    <td>${displayDate || ''}</td>
+                                    ${genCheckCell(item, 'lockAttenAnnualFlag')}
+                                    ${genCheckCell(item, 'lockAttenAnnualNightFlag')}
+                                    
+                                    ${genCheckCell(item, 'lockAttenFlag')}
+                                    ${genCheckCell(item, 'lockAttenNightFlag')}
+                                    
+                                    ${genCheckCell(item, 'lockOtFlag')}
+                                    ${genCheckCell(item, 'lockOtNightFlag')}
+                                    
+                                    ${genCheckCell(item, 'lockAttenExFlag')}
+                                    ${genCheckCell(item, 'lockAttenExNightFlag')}
+
+                                    <td>${item.updatedBy || ''}</td>
+                                    <td style="font-size:0.75rem;">${updateDtm}</td>
+                                </tr>
+                            `;
+                            html.push(rowHtml);
+
+                            // Children recursive
+                            item.childrenMap.forEach(function (childNo) {
+                                buildTreeHTML(childNo, level + 1);
+                            });
+                        }
+
+                        roots.forEach(function (rootNo) {
+                            buildTreeHTML(rootNo, 0);
+                        });
+
+                        $('#manageTbody').html(html.join(''));
+
+                        // Listen for changes
+                        $('.chk-manage').on('change', function () {
+                            var dt = $(this).data();
+                            var deptNo = dt.deptId;
+                            var col = dt.col;
+                            var checked = $(this).is(':checked') ? '1' : '0';
+                            dataMap[deptNo][col] = checked;
+                            dataMap[deptNo].isModified = true;
+                            $(this).closest('tr').addClass('table-warning'); // Đánh dấu row thay đổi
+                        });
+                    },
+                    error: function () {
+                        toastr.error('Lỗi khi tải dữ liệu');
+                        $('#btnManageSearch').prop('disabled', false).html('<i class="bx bx-search"></i> Tra cứu');
+                    }
+                });
+            }
+
+            function genCheckCell(item, colName) {
+                var checked = item[colName] === '1' ? 'checked' : '';
+                return `<td><input type="checkbox" class="form-check-input chk-manage c-${colName}" data-dept-id="${item.deptNo}" data-col="${colName}" ${checked}></td>`;
+            }
+
+            // Function toggle +/- UI (Hide/show child rows)
+            window.toggleRow = function (deptNo) {
+                var icon = $('#icon_' + deptNo);
+                var isOpening = icon.hasClass('bx-plus'); // If + then trying to open
+
+                if (isOpening) {
+                    icon.removeClass('bx-plus').addClass('bx-minus');
+                    dataMap[deptNo].isOpen = true;
+                    // Mở các con trực tiếp
+                    showChildren(deptNo);
+                } else {
+                    icon.removeClass('bx-minus').addClass('bx-plus');
+                    dataMap[deptNo].isOpen = false;
+                    // Ẩn toàn bộ con / cháu
+                    hideChildren(deptNo);
+                }
+            };
+
+            function showChildren(parentNo) {
+                dataMap[parentNo].childrenMap.forEach(function (childNo) {
+                    $('#row_' + childNo).show();
+                    // Nếu node con này cũng đang trạng thái mở thì tiếp tục mở cháu của nó
+                    if (dataMap[childNo].isOpen) {
+                        showChildren(childNo);
+                    }
+                });
+            }
+
+            function hideChildren(parentNo) {
+                dataMap[parentNo].childrenMap.forEach(function (childNo) {
+                    $('#row_' + childNo).hide();
+                    hideChildren(childNo); // Recursive hides all
+                });
+            }
+
+            loadData(); // initial Load
+
+            $('#btnManageSearch').click(loadData);
+
+            // ---------------------------------------------------------------- //
+            // MASS UI ACTIONS
+
+            // Header checkbox toggle whole col
+            $('.select-all-col').change(function () {
+                var colName = $(this).data('col');
+                var isCheck = $(this).is(':checked');
+                $('.c-' + colName).prop('checked', isCheck).trigger('change');
+            });
+
+            // "Mở" / "Đóng xin phép" action bar
+            window.applyMassToggle = function (value) {
+                // Determine which mass toggles are checked in the toolbar
+                var checkedCols = [];
+                $('.mass-toggle:checked').each(function () {
+                    checkedCols.push($(this).val());
+                });
+
+                if (checkedCols.length === 0) {
+                    toastr.warning('Vui lòng tích chọn nhóm ngày/đêm ở phía trên trước khi Đóng/Mở xin phép!');
+                    return;
+                }
+
+                var isC = (value === '1');
+                checkedCols.forEach(function (col) {
+                    $('.c-' + col).prop('checked', isC).trigger('change');
+                });
+                toastr.success((isC ? 'Đóng' : 'Mở') + ' đồng loạt thành công. Vui lòng bấm Lưu để cập nhật!');
+            };
+
+            // ---------------------------------------------------------------- //
+            // SAVE LOGIC
+            $('#btnManageSave').click(function () {
+                var lockDateForm = $('#manage_lockDate').val();
+                if (!lockDateForm) {
+                    toastr.error('Ngày không hợp lệ để lưu.');
+                    return;
+                }
+
+                var toSave = [];
+                // Only save modified rows to backend payload to save time
+                Object.values(dataMap).forEach(function (itm) {
+                    if (itm.isModified) {
+                        toSave.push({
+                            deptNo: itm.deptNo,
+                            lockDate: lockDateForm,
+                            lockAttenAnnualFlag: itm.lockAttenAnnualFlag,
+                            lockAttenAnnualNightFlag: itm.lockAttenAnnualNightFlag,
+                            lockAttenFlag: itm.lockAttenFlag,
+                            lockAttenNightFlag: itm.lockAttenNightFlag,
+                            lockOtFlag: itm.lockOtFlag,
+                            lockOtNightFlag: itm.lockOtNightFlag,
+                            lockAttenExFlag: itm.lockAttenExFlag,
+                            lockAttenExNightFlag: itm.lockAttenExNightFlag
+                        });
+                    }
+                });
+
+                if (toSave.length === 0) {
+                    toastr.info('Không có thay đổi nào để lưu.');
+                    return;
+                }
+
+                $('#btnManageSave').prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> Đang lưu...');
+
+                $.ajax({
+                    url: '/ar/attendanceSettings/api/departmentManage/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(toSave),
+                    success: function (res) {
+                        $('#btnManageSave').prop('disabled', false).html('<i class="bx bx-save"></i> Lưu');
+                        if (res.success) {
+                            toastr.success(res.message);
+                            loadData(); // Re-fetch to view update_by
+                        } else {
+                            toastr.error(res.error || 'Server error');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Lỗi kết nối');
+                        $('#btnManageSave').prop('disabled', false).html('<i class="bx bx-save"></i> Lưu');
+                    }
+                });
+            });
+
+        });
+    </script>
+</template>
+</div>

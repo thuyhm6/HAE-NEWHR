@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.syRole.mapper.SyUserMapper">
+
+    <!-- Result Map cho SyUser -->
+    <resultMap id="SyUserResultMap" type="com.ait.sy.syRole.model.SyUser">
+        <id column="USER_NO" property="userNo"/>
+        <result column="PERSON_ID" property="personId"/>
+        <result column="CPNY_ID" property="cpnyId"/>
+        <result column="USER_NAME" property="userName"/>
+        <result column="PASSWORD" property="password"/>
+        <result column="SPECIAL_PARAM" property="specialParam"/>
+        <result column="SPECIAL_VALUE" property="specialValue"/>
+        <result column="USER_TYPE" property="userType"/>
+        <result column="PASSWORD_FIRST" property="passwordFirst"/>
+        <result column="PASSWORD_SECOND" property="passwordSecond"/>
+        <result column="PASSWORD_THIRD" property="passwordThird"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ORDERNO" property="orderNo"/>
+        <result column="ACTIVITY" property="activity"/>
+        <result column="PERSONAL_DATA_FLAG" property="personalDataFlag"/>
+        <result column="PERSONAL_DATA_UPDATE_DATE" property="personalDataUpdateDate"/>
+        <result column="PERSONAL_DATA_UPDATED_IP" property="personalDataUpdatedIp"/>
+        <result column="PERSONAL_DATA_UPDATED_BY" property="personalDataUpdatedBy"/>
+        <result column="PERSONAL_SEND_DATA_FLAG" property="personalSendDataFlag"/>
+        <result column="PERSONAL_SEND_DATA_UPDATE_DATE" property="personalSendDataUpdateDate"/>
+        <result column="PERSONAL_SEND_DATA_UPDATED_IP" property="personalSendDataUpdatedIp"/>
+        <result column="PERSONAL_SEND_DATA_UPDATED_BY" property="personalSendDataUpdatedBy"/>
+        <result column="EMP_NAME" property="empName"/>
+        <result column="DEPT_NAME" property="deptName"/>
+    </resultMap>
+
+    <!-- Tìm user theo username -->
+    <select id="findByUserName" resultMap="SyUserResultMap">
+        SELECT 
+            USER_NO,
+            PERSON_ID,
+            CPNY_ID,
+            USER_NAME,
+            PASSWORD,
+            SPECIAL_PARAM,
+            SPECIAL_VALUE,
+            USER_TYPE,
+            PASSWORD_FIRST,
+            PASSWORD_SECOND,
+            PASSWORD_THIRD,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            PERSONAL_DATA_FLAG,
+            PERSONAL_DATA_UPDATE_DATE,
+            PERSONAL_DATA_UPDATED_IP,
+            PERSONAL_DATA_UPDATED_BY,
+            PERSONAL_SEND_DATA_FLAG,
+            PERSONAL_SEND_DATA_UPDATE_DATE,
+            PERSONAL_SEND_DATA_UPDATED_IP,
+            PERSONAL_SEND_DATA_UPDATED_BY
+        FROM sy_user 
+        WHERE USER_NAME = #{userName}
+    </select>
+
+    <!-- Tìm user theo userNo -->
+    <select id="findByUserNo" resultMap="SyUserResultMap">
+        SELECT 
+            USER_NO,
+            PERSON_ID,
+            CPNY_ID,
+            USER_NAME,
+            PASSWORD,
+            SPECIAL_PARAM,
+            SPECIAL_VALUE,
+            USER_TYPE,
+            PASSWORD_FIRST,
+            PASSWORD_SECOND,
+            PASSWORD_THIRD,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            PERSONAL_DATA_FLAG,
+            PERSONAL_DATA_UPDATE_DATE,
+            PERSONAL_DATA_UPDATED_IP,
+            PERSONAL_DATA_UPDATED_BY,
+            PERSONAL_SEND_DATA_FLAG,
+            PERSONAL_SEND_DATA_UPDATE_DATE,
+            PERSONAL_SEND_DATA_UPDATED_IP,
+            PERSONAL_SEND_DATA_UPDATED_BY
+        FROM sy_user 
+        WHERE USER_NO = #{userNo}
+    </select>
+
+    <!-- Tìm user theo personId -->
+    <select id="findByPersonId" resultMap="SyUserResultMap">
+        SELECT 
+            USER_NO,
+            PERSON_ID,
+            CPNY_ID,
+            USER_NAME,
+            PASSWORD,
+            SPECIAL_PARAM,
+            SPECIAL_VALUE,
+            USER_TYPE,
+            PASSWORD_FIRST,
+            PASSWORD_SECOND,
+            PASSWORD_THIRD,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            PERSONAL_DATA_FLAG,
+            PERSONAL_DATA_UPDATE_DATE,
+            PERSONAL_DATA_UPDATED_IP,
+            PERSONAL_DATA_UPDATED_BY,
+            PERSONAL_SEND_DATA_FLAG,
+            PERSONAL_SEND_DATA_UPDATE_DATE,
+            PERSONAL_SEND_DATA_UPDATED_IP,
+            PERSONAL_SEND_DATA_UPDATED_BY
+        FROM sy_user 
+        WHERE PERSON_ID = #{personId}
+    </select>
+
+    <!-- Xác thực đăng nhập -->
+    <select id="authenticate" resultMap="SyUserResultMap">
+        <![CDATA[
+        SELECT 
+            USER_NO,
+            PERSON_ID,
+            CPNY_ID,
+            USER_NAME,
+            PASSWORD,
+            SPECIAL_PARAM,
+            SPECIAL_VALUE,
+            USER_TYPE,
+            PASSWORD_FIRST,
+            PASSWORD_SECOND,
+            PASSWORD_THIRD,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            PERSONAL_DATA_FLAG,
+            PERSONAL_DATA_UPDATE_DATE,
+            PERSONAL_DATA_UPDATED_IP,
+            PERSONAL_DATA_UPDATED_BY,
+            PERSONAL_SEND_DATA_FLAG,
+            PERSONAL_SEND_DATA_UPDATE_DATE,
+            PERSONAL_SEND_DATA_UPDATED_IP,
+            PERSONAL_SEND_DATA_UPDATED_BY
+        FROM sy_user 
+        WHERE USER_NAME = #{userName} 
+          AND PASSWORD = #{password}
+          AND ACTIVITY = 1
+        ]]>
+    </select>
+
+    <!-- Đăng nhập với validation đầy đủ -->
+    <select id="loginWithValidation" resultMap="SyUserResultMap">
+        <![CDATA[
+        SELECT 
+            u.USER_NO,
+            u.PERSON_ID,
+            u.CPNY_ID,
+            u.USER_NAME,
+            u.PASSWORD,
+            u.SPECIAL_PARAM,
+            u.SPECIAL_VALUE,
+            u.USER_TYPE,
+            u.PASSWORD_FIRST,
+            u.PASSWORD_SECOND,
+            u.PASSWORD_THIRD,
+            u.CREATE_DATE,
+            u.CREATED_BY,
+            u.UPDATE_DATE,
+            u.UPDATED_BY,
+            u.ORDERNO,
+            u.ACTIVITY,
+            u.PERSONAL_DATA_FLAG,
+            u.PERSONAL_DATA_UPDATE_DATE,
+            u.PERSONAL_DATA_UPDATED_IP,
+            u.PERSONAL_DATA_UPDATED_BY,
+            u.PERSONAL_SEND_DATA_FLAG,
+            u.PERSONAL_SEND_DATA_UPDATE_DATE,
+            u.PERSONAL_SEND_DATA_UPDATED_IP,
+            u.PERSONAL_SEND_DATA_UPDATED_BY
+        FROM sy_user u
+        INNER JOIN hr_employee e ON u.PERSON_ID = e.PERSON_ID
+        INNER JOIN hr_department d ON e.DEPTNO = d.DEPTNO
+        WHERE u.USER_NAME = #{userName} 
+          AND u.PASSWORD = #{password}
+          AND u.ACTIVITY = 1
+          AND e.ACTIVITY = 1
+          AND d.ACTIVITY = 1
+          AND d.USE_YN = 'Y'
+        ]]>
+    </select>
+
+    <!-- Cập nhật thời gian đăng nhập cuối -->
+    <update id="updateLastLogin">
+        UPDATE sy_user 
+        SET UPDATE_DATE = SYSDATE
+        WHERE USER_NO = #{userNo}
+    </update>
+
+    <!-- Kiểm tra username đã tồn tại chưa -->
+    <select id="existsByUserName" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM sy_user 
+        WHERE USER_NAME = #{userName}
+    </select>
+
+    <!-- Kiểm tra userNo đã tồn tại chưa -->
+    <select id="existsByUserNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM sy_user 
+        WHERE USER_NO = #{userNo}
+    </select>
+
+    <!-- Lấy tất cả users (cho password migration) -->
+    <select id="findAll" resultMap="SyUserResultMap">
+        SELECT 
+            USER_NO,
+            PERSON_ID,
+            CPNY_ID,
+            USER_NAME,
+            PASSWORD,
+            SPECIAL_PARAM,
+            SPECIAL_VALUE,
+            USER_TYPE,
+            PASSWORD_FIRST,
+            PASSWORD_SECOND,
+            PASSWORD_THIRD,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY,
+            PERSONAL_DATA_FLAG,
+            PERSONAL_DATA_UPDATE_DATE,
+            PERSONAL_DATA_UPDATED_IP,
+            PERSONAL_DATA_UPDATED_BY,
+            PERSONAL_SEND_DATA_FLAG,
+            PERSONAL_SEND_DATA_UPDATE_DATE,
+            PERSONAL_SEND_DATA_UPDATED_IP,
+            PERSONAL_SEND_DATA_UPDATED_BY
+        FROM sy_user 
+        WHERE ACTIVITY = 1
+        ORDER BY USER_NO
+    </select>
+
+    <!-- Tìm users theo từ khóa -->
+    <select id="searchUsers" resultMap="SyUserResultMap">
+        SELECT 
+            u.USER_NO,
+            u.PERSON_ID,
+            u.CPNY_ID,
+            u.USER_NAME,
+            u.PASSWORD,
+            u.SPECIAL_PARAM,
+            u.SPECIAL_VALUE,
+            u.USER_TYPE,
+            u.PASSWORD_FIRST,
+            u.PASSWORD_SECOND,
+            u.PASSWORD_THIRD,
+            u.CREATE_DATE,
+            u.CREATED_BY,
+            u.UPDATE_DATE,
+            u.UPDATED_BY,
+            u.ORDERNO,
+            u.ACTIVITY,
+            e.LOCAL_NAME as EMP_NAME,
+            d.ORG_NAME_LOCAL as DEPT_NAME
+        FROM sy_user u
+        LEFT JOIN hr_employee e ON u.PERSON_ID = e.PERSON_ID
+        LEFT JOIN hr_department d ON e.DEPTNO = d.DEPTNO
+        <where>
+            u.ACTIVITY = 1
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    LOWER(u.USER_NO) LIKE LOWER('%' || #{keyword} || '%')
+                    OR LOWER(u.USER_NAME) LIKE LOWER('%' || #{keyword} || '%')
+                    OR LOWER(u.PERSON_ID) LIKE LOWER('%' || #{keyword} || '%')
+                    OR LOWER(e.LOCAL_NAME) LIKE LOWER('%' || #{keyword} || '%')
+                )
+            </if>
+        </where>
+        ORDER BY u.USER_NO
+    </select>
+
+    <!-- Cập nhật password cho user -->
+    <update id="updatePassword">
+        <![CDATA[
+        UPDATE sy_user 
+        SET PASSWORD = #{password},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = 'PASSWORD_MIGRATION'
+        WHERE USER_NO = #{userNo}
+        ]]>
+    </update>
+
+    <!-- Đếm số users cần migration (password chưa được mã hóa) -->
+    <select id="countUsersNeedingMigration" resultType="int">
+        SELECT COUNT(*)
+        FROM sy_user 
+        WHERE ACTIVITY = 1
+          AND PASSWORD IS NOT NULL
+          AND PASSWORD NOT LIKE '$2%'
+    </select>
+
+    <!-- Kiểm tra migration đã hoàn thành chưa -->
+    <select id="isMigrationCompleted" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) = 0 THEN 1 ELSE 0 END
+        FROM sy_user 
+        WHERE ACTIVITY = 1
+          AND PASSWORD IS NOT NULL
+          AND PASSWORD NOT LIKE '$2%'
+    </select>
+
+</mapper>

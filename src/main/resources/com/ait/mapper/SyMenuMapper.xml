@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.basicMaintenance.mapper.SyMenuMapper">
+
+    <!-- Result Map cho SyMenu -->
+    <resultMap id="SyMenuResultMap" type="com.ait.sy.basicMaintenance.model.SyMenu">
+        <id column="MENU_NO" property="menuNo"/>
+        <result column="MENU_PARENT_NO" property="menuParentNo"/>
+        <result column="MENU_CODE" property="menuCode"/>
+        <result column="MENU_IMG" property="menuImg"/>
+        <result column="DEPTH" property="depth"/>
+        <result column="MENU_URL" property="menuUrl"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ORDERNO" property="orderNo"/>
+        <result column="ACTIVITY" property="activity"/>
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.sy.basicMaintenance.dto.SyMenuDto" extends="SyMenuResultMap">
+        <result column="NAME_VI" property="nameVi" />
+        <result column="NAME_EN" property="nameEn" />
+        <result column="NAME_ZH" property="nameZh" />
+        <result column="NAME_KO" property="nameKo" />
+        <result column="PARENT_MENU_NAME" property="parentMenuName" />
+    </resultMap>
+
+    <!-- Tìm menu theo menuNo -->
+    <select id="findByMenuNo" resultMap="SyMenuResultMap">
+        SELECT * FROM sy_menu WHERE MENU_NO = #{menuNo}
+    </select>
+
+    <!-- Tìm menus theo menuParentNo -->
+    <select id="findByParentNo" resultMap="SyMenuResultMap">
+        SELECT * FROM sy_menu 
+        WHERE MENU_PARENT_NO = #{menuParentNo} AND ACTIVITY = 1
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Lấy danh sách menus hoạt động -->
+    <select id="findAllActive" resultMap="SyMenuResultMap">
+        SELECT * FROM sy_menu WHERE ACTIVITY = 1 ORDER BY DEPTH, ORDERNO
+    </select>
+
+    <!-- Lấy menu tree (cây menu) -->
+    <select id="findMenuTree" resultMap="SyMenuResultMap">
+        SELECT * FROM sy_menu WHERE ACTIVITY = 1 ORDER BY DEPTH, ORDERNO
+    </select>
+
+    <!-- Lấy menu tree theo roleNo (có quyền) -->
+    <select id="findMenuTreeByRoleNo" resultMap="SyMenuResultMap">
+        SELECT DISTINCT m.*
+        FROM sy_menu m
+        INNER JOIN sy_role_relation rr ON m.MENU_NO = rr.MENU_NO
+        WHERE m.ACTIVITY = 1 AND rr.ACTIVITY = 1 AND rr.ROLE_NO = #{roleNo}
+        ORDER BY m.DEPTH, m.ORDERNO
+    </select>
+
+    <!-- Lấy menu tree theo userNo (có quyền) -->
+    <!-- Note: Original query was incorrect because it joined RoleGroupRelation which connects Role to RoleGroup, then UserRelation connects RoleGroup to User. Assumed structure: User -> UserRelation (RoleGroup) -> RoleGroupRelation (Role) -> RoleRelation (Menu) -->
+    <select id="findMenuTreeByUserNo" resultMap="SyMenuResultMap">
+        SELECT DISTINCT m.*
+        FROM sy_menu m
+        INNER JOIN sy_role_relation rr ON m.MENU_NO = rr.MENU_NO
+        INNER JOIN sy_role r ON rr.ROLE_NO = r.ROLE_NO
+        INNER JOIN sy_role_group_relation rgr ON rr.ROLE_NO = rgr.ROLE_NO
+        INNER JOIN sy_user_relation ur ON rgr.ROLE_GROUP_NO = ur.ROLE_GROUP_NO
+        WHERE m.ACTIVITY = 1
+          AND rr.ACTIVITY = 1
+          AND r.ACTIVITY = 1
+          AND rgr.ACTIVITY = 1
+          AND ur.ACTIVITY = 1
+          AND NVL(TO_CHAR(r.SYS_TYPE), '0') = '1'
+          AND ur.USER_NO = #{userNo}
+        ORDER BY m.DEPTH, m.ORDERNO
+    </select>
+
+    <!-- Kiểm tra menu có tồn tại và hoạt động không -->
+    <select id="existsAndActive" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM sy_menu 
+        WHERE MENU_NO = #{menuNo} AND ACTIVITY = 1
+    </select>
+
+    <!-- CRUD Operations -->
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT m.*,
+               gvi.CONTENT AS NAME_VI,
+               gen.CONTENT AS NAME_EN,
+               gzh.CONTENT AS NAME_ZH,
+               gko.CONTENT AS NAME_KO,
+               pvi.CONTENT AS PARENT_MENU_NAME
+        FROM SY_MENU m
+        LEFT JOIN SY_GLOBAL_NAME gvi ON m.MENU_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON m.MENU_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON m.MENU_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON m.MENU_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        LEFT JOIN SY_GLOBAL_NAME pvi ON m.MENU_PARENT_NO = pvi.NO AND pvi.LANGUAGE = 'vi'
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (
+                m.MENU_CODE LIKE '%' || #{keyword} || '%' OR 
+                gvi.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gen.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gzh.CONTENT LIKE '%' || #{keyword} || '%' OR
+                gko.CONTENT LIKE '%' || #{keyword} || '%'
+            )
+        </if>
+        ORDER BY m.DEPTH, m.ORDERNO
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SY_MENU (
+            MENU_NO, MENU_PARENT_NO, MENU_CODE, MENU_IMG, DEPTH, MENU_URL,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
+        ) VALUES (
+            #{menuNo}, #{menuParentNo}, #{menuCode}, #{menuImg}, #{depth}, #{menuUrl},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE SY_MENU SET
+            MENU_PARENT_NO = #{menuParentNo},
+            MENU_CODE = #{menuCode},
+            MENU_IMG = #{menuImg},
+            DEPTH = #{depth},
+            MENU_URL = #{menuUrl},
+            ORDERNO = #{orderNo},
+            ACTIVITY = #{activity},
+            UPDATE_DATE = sysdate,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        WHERE MENU_NO = #{menuNo}
+    </update>
+
+    <delete id="deleteByMenuNo">
+        UPDATE SY_MENU SET ACTIVITY = 0, UPDATE_DATE = sysdate, UPDATED_BY = #{adminID, jdbcType=VARCHAR} 
+        WHERE MENU_NO = #{menuNo}
+    </delete>
+
+    <select id="getNextGlobalNoSeq" resultType="String">
+        SELECT SY_GLOBAL_NO_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+</mapper>

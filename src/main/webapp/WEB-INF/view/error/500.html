@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/master :: master}">
+<head>
+    <title>Lỗi hệ thống - HR-11</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="container-fluid">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card shadow text-center">
+                    <div class="card-body py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h1 class="display-4 text-danger mb-3">500</h1>
+                        <h2 class="mb-3" th:text="#{error.500.title}">Lỗi hệ thống</h2>
+                        <p class="lead mb-4" th:text="#{error.500.message}">Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                <span th:text="#{common.back}">Quay lại</span>
+                            </a>
+                            <a href="/login/dashboard" class="btn btn-primary">
+                                <i class="fas fa-home me-1"></i>
+                                <span th:text="#{common.goHome}">Về trang chủ</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

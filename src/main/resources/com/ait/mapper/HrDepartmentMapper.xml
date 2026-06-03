@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.org.orgManage.mapper.HrDepartmentMapper">
+
+    <!-- Result Map -->
+    <resultMap id="HrDepartmentResultMap" type="com.ait.org.orgManage.model.HrDepartment">
+        <id column="DEPTID" property="deptId"/>
+        <result column="CPNY_ID" property="cpnyId"/>
+        <result column="DATE_CREATED" property="dateCreated"/>
+        <result column="DATE_ENDED" property="dateEnded"/>
+        <result column="DEPT_LEVEL" property="deptLevel"/>
+        <result column="MANAGER_EMP_ID" property="managerEmpId"/>
+        <result column="DEPTNO" property="deptNo"/>
+        <result column="PARENT_DEPT_NO" property="parentDeptNo"/>
+        <result column="WORK_AREA" property="workArea"/>
+        <result column="DEPT_TYPE" property="deptType"/>
+        <result column="ORG_NAME_ENG" property="orgNameEng"/>
+        <result column="ORG_NAME_LOCAL" property="orgNameLocal"/>
+        <result column="ORG_LEVEL" property="orgLevel"/>
+        <result column="COST_CENTER" property="costCenter"/>
+        <result column="USE_YN" property="useYn"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ORDERNO" property="orderNo"/>
+        <result column="ACTIVITY" property="activity"/>
+        <result column="IS_DEPT" property="isDept"/>
+        <result column="IS_PART_TIME" property="isPartTime"/>
+        <result column="PRODUCT_TYPE" property="productType"/>
+        <result column="CREATED_IP" property="createdIp"/>
+        <result column="UPDATED_IP" property="updatedIp"/>
+        <result column="RESUME_NO" property="resumeNo"/>
+        <result column="REMARK" property="remark"/>
+        <result column="FEE_STANDARD" property="feeStandard"/>
+        <result column="DEPT_DISTINGUISH_STANDARD" property="deptDistinguishStandard"/>
+        <result column="PREP_MANAGER_EMP_ID" property="prepManagerEmpId"/>
+        <result column="ORDER_NO" property="orderNo"/>
+        <result column="ORG_NAME_KO" property="orgNameKo"/>
+        <result column="ORG_NAME_VI" property="orgNameVi"/>
+        <result column="COST_CENTER_NAME" property="costCenterName"/>
+        <result column="MANAGER_EMP_NAME" property="managerEmpName"/>
+    </resultMap>
+
+    <!-- ============================================ -->
+    <!-- SQL FRAGMENTS - Tái sử dụng -->
+    <!-- ============================================ -->
+
+    <!-- Fragment 1: Base columns SELECT -->
+    <sql id="baseColumns">
+        hd.DEPTID,
+        hd.CPNY_ID,
+        hd.DATE_CREATED,
+        hd.DATE_ENDED,
+        hd.DEPT_LEVEL,
+        hd.MANAGER_EMP_ID,
+        hd.DEPTNO,
+        hd.PARENT_DEPT_NO,
+        hd.WORK_AREA,
+        hd.DEPT_TYPE,
+        hd.ORG_NAME_ENG,
+        hd.ORG_NAME_LOCAL,
+        hd.ORG_LEVEL,
+        hd.COST_CENTER,
+        hd.USE_YN,
+        hd.CREATE_DATE,
+        hd.CREATED_BY,
+        hd.UPDATE_DATE,
+        hd.UPDATED_BY,
+        hd.ORDERNO,
+        hd.ACTIVITY,
+        hd.IS_DEPT,
+        hd.IS_PART_TIME,
+        hd.PRODUCT_TYPE,
+        hd.CREATED_IP,
+        hd.UPDATED_IP,
+        hd.RESUME_NO,
+        hd.REMARK,
+        hd.FEE_STANDARD,
+        hd.DEPT_DISTINGUISH_STANDARD,
+        hd.PREP_MANAGER_EMP_ID,
+        hd.ORDER_NO,
+        hd.ORG_NAME_KO,
+        hd.ORG_NAME_VI
+    </sql>
+
+    <!-- Fragment 2: Base FROM clause -->
+    <sql id="baseFromClause">
+        FROM hr_department hd
+    </sql>
+
+    <!-- Fragment 3: Base WHERE clause -->
+    <sql id="baseWhereClause">
+        WHERE 1 = 1
+    </sql>
+
+    <!-- Fragment 4: Active departments filter -->
+    <sql id="activeDepartmentsFilter">
+        AND hd.ACTIVITY = 1
+        AND hd.USE_YN = 'Y'
+    </sql>
+
+    <!-- Fragment 5: Keyword search conditions -->
+    <sql id="keywordSearchConditions">
+        <if test="searchValue != null and searchValue != ''">
+            AND (
+                UPPER(hd.DEPTNO) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.DEPTID) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.ORG_NAME_LOCAL) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.ORG_NAME_ENG) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.ORG_NAME_KO) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.ORG_NAME_VI) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.WORK_AREA) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.DEPT_TYPE) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.MANAGER_EMP_ID) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.COST_CENTER) LIKE UPPER('%' || #{searchValue} || '%')
+                OR UPPER(hd.CPNY_ID) LIKE UPPER('%' || #{searchValue} || '%')
+            )
+        </if>
+    </sql>
+
+    <!-- Fragment 6: Advanced search conditions -->
+    <sql id="advancedSearchConditions">
+        <if test="searchParams != null and !searchParams.isEmpty()">
+            <if test="searchParams.deptNo != null and searchParams.deptNo != ''">
+                AND hd.DEPTNO LIKE '%' || #{searchParams.deptNo} || '%'
+            </if>
+            <if test="searchParams.deptId != null and searchParams.deptId != ''">
+                AND hd.DEPTID LIKE '%' || #{searchParams.deptId} || '%'
+            </if>
+            <if test="searchParams.cpnyId != null and searchParams.cpnyId != ''">
+                AND hd.CPNY_ID = #{searchParams.cpnyId}
+            </if>
+            <if test="searchParams.parentDeptNo != null and searchParams.parentDeptNo != ''">
+                AND hd.PARENT_DEPT_NO = #{searchParams.parentDeptNo}
+            </if>
+            <if test="searchParams.deptLevel != null and searchParams.deptLevel != ''">
+                AND hd.DEPT_LEVEL = #{searchParams.deptLevel}
+            </if>
+            <if test="searchParams.deptType != null and searchParams.deptType != ''">
+                AND hd.DEPT_TYPE = #{searchParams.deptType}
+            </if>
+            <if test="searchParams.workArea != null and searchParams.workArea != ''">
+                AND hd.WORK_AREA = #{searchParams.workArea}
+            </if>
+            <if test="searchParams.managerEmpId != null and searchParams.managerEmpId != ''">
+                AND hd.MANAGER_EMP_ID = #{searchParams.managerEmpId}
+            </if>
+            <if test="searchParams.useYn != null and searchParams.useYn != ''">
+                AND hd.USE_YN = #{searchParams.useYn}
+            </if>
+            <if test="searchParams.activity != null and searchParams.activity != ''">
+                AND hd.ACTIVITY = #{searchParams.activity}
+            </if>
+            <if test="searchParams.isDept != null and searchParams.isDept != ''">
+                AND hd.IS_DEPT = #{searchParams.isDept}
+            </if>
+            <if test="searchParams.isPartTime != null and searchParams.isPartTime != ''">
+                AND hd.IS_PART_TIME = #{searchParams.isPartTime}
+            </if>
+            <if test="searchParams.createDateFrom != null and searchParams.createDateFrom != ''">
+                AND TRUNC(hd.CREATE_DATE) &gt;= TO_DATE(#{searchParams.createDateFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.createDateTo != null and searchParams.createDateTo != ''">
+                AND TRUNC(hd.CREATE_DATE) &lt;= TO_DATE(#{searchParams.createDateTo}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.updateDateFrom != null and searchParams.updateDateFrom != ''">
+                AND TRUNC(hd.UPDATE_DATE) &gt;= TO_DATE(#{searchParams.updateDateFrom}, 'YYYY-MM-DD')
+            </if>
+            <if test="searchParams.updateDateTo != null and searchParams.updateDateTo != ''">
+                AND TRUNC(hd.UPDATE_DATE) &lt;= TO_DATE(#{searchParams.updateDateTo}, 'YYYY-MM-DD')
+            </if>
+        </if>
+    </sql>
+
+    <!-- Fragment 7: Direct parameter search conditions (for export) -->
+    <sql id="directSearchConditions">
+        <if test="deptNo != null and deptNo != ''">
+            AND hd.DEPTNO LIKE '%' || #{deptNo} || '%'
+        </if>
+        <if test="deptId != null and deptId != ''">
+            AND hd.DEPTID LIKE '%' || #{deptId} || '%'
+        </if>
+        <if test="cpnyId != null and cpnyId != ''">
+            AND hd.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+        <if test="parentDeptNo != null and parentDeptNo != ''">
+            AND hd.PARENT_DEPT_NO = #{parentDeptNo}
+        </if>
+        <if test="deptLevel != null and deptLevel != ''">
+            AND hd.DEPT_LEVEL = #{deptLevel}
+        </if>
+        <if test="deptType != null and deptType != ''">
+            AND hd.DEPT_TYPE = #{deptType}
+        </if>
+        <if test="workArea != null and workArea != ''">
+            AND hd.WORK_AREA = #{workArea}
+        </if>
+        <if test="managerEmpId != null and managerEmpId != ''">
+            AND hd.MANAGER_EMP_ID = #{managerEmpId}
+        </if>
+        <if test="useYn != null and useYn != ''">
+            AND hd.USE_YN = #{useYn}
+        </if>
+        <if test="activity != null and activity != ''">
+            AND hd.ACTIVITY = #{activity}
+        </if>
+        <if test="isDept != null and isDept != ''">
+            AND hd.IS_DEPT = #{isDept}
+        </if>
+        <if test="isPartTime != null and isPartTime != ''">
+            AND hd.IS_PART_TIME = #{isPartTime}
+        </if>
+        <if test="createDateFrom != null and createDateFrom != ''">
+            AND TRUNC(hd.CREATE_DATE) &gt;= TO_DATE(#{createDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="createDateTo != null and createDateTo != ''">
+            AND TRUNC(hd.CREATE_DATE) &lt;= TO_DATE(#{createDateTo}, 'YYYY-MM-DD')
+        </if>
+        <if test="updateDateFrom != null and updateDateFrom != ''">
+            AND TRUNC(hd.UPDATE_DATE) &gt;= TO_DATE(#{updateDateFrom}, 'YYYY-MM-DD')
+        </if>
+        <if test="updateDateTo != null and updateDateTo != ''">
+            AND TRUNC(hd.UPDATE_DATE) &lt;= TO_DATE(#{updateDateTo}, 'YYYY-MM-DD')
+        </if>
+    </sql>
+
+    <!-- Fragment 8: Dynamic ORDER BY clause -->
+    <sql id="dynamicOrderBy">
+        <choose>
+            <when test="orderColumn != null and orderColumn != ''">
+                <choose>
+                    <when test="orderColumn == 'deptNo'">hd.DEPTNO</when>
+                    <when test="orderColumn == 'deptId'">hd.DEPTID</when>
+                    <when test="orderColumn == 'orgNameLocal'">hd.ORG_NAME_LOCAL</when>
+                    <when test="orderColumn == 'orgNameEng'">hd.ORG_NAME_ENG</when>
+                    <when test="orderColumn == 'deptLevel'">hd.DEPT_LEVEL</when>
+                    <when test="orderColumn == 'deptType'">hd.DEPT_TYPE</when>
+                    <when test="orderColumn == 'workArea'">hd.WORK_AREA</when>
+                    <when test="orderColumn == 'managerEmpId'">hd.MANAGER_EMP_ID</when>
+                    <when test="orderColumn == 'useYn'">hd.USE_YN</when>
+                    <when test="orderColumn == 'activity'">hd.ACTIVITY</when>
+                    <when test="orderColumn == 'createDate'">hd.CREATE_DATE</when>
+                    <when test="orderColumn == 'updateDate'">hd.UPDATE_DATE</when>
+                    <when test="orderColumn == 'orderNo'">hd.ORDERNO</when>
+                    <otherwise>hd.DEPT_LEVEL</otherwise>
+                </choose>
+                <choose>
+                    <when test="orderDir == 'asc'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>hd.DEPT_LEVEL ASC, hd.ORDERNO ASC</otherwise>
+        </choose>
+    </sql>
+
+    <!-- ============================================ -->
+    <!-- QUERIES - Sử dụng fragments -->
+    <!-- ============================================ -->
+
+    <!-- Get all departments -->
+    <select id="findAll" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        ORDER BY hd.DEPT_LEVEL ASC, hd.ORDERNO ASC
+    </select>
+
+    <!-- Get departments with pagination (Oracle 12c+) -->
+    <select id="getDepartmentsWithPagination" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeDepartmentsFilter"/>
+        ORDER BY hd.DEPT_LEVEL ASC, hd.ORDERNO ASC
+        OFFSET #{offset} ROWS FETCH NEXT #{limit} ROWS ONLY
+    </select>
+
+    <!-- Count total departments -->
+    <select id="countDepartments" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeDepartmentsFilter"/>
+    </select>
+
+    <!-- Get department by DEPTNO -->
+    <select id="findByDeptNo" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE hd.DEPTNO = #{deptNo}
+    </select>
+
+    <!-- Get department by DEPTID -->
+    <select id="findByDeptId" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE hd.DEPTID = #{deptId}
+    </select>
+
+    <!-- Get departments by CPNY_ID -->
+    <select id="findByCpnyId" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        AND hd.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <include refid="activeDepartmentsFilter"/>
+        ORDER BY hd.DEPT_LEVEL ASC, hd.ORDERNO ASC
+    </select>
+
+    <!-- Get departments by PARENT_DEPT_NO -->
+    <select id="findByParentDeptNo" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        AND hd.PARENT_DEPT_NO = #{parentDeptNo}
+        <include refid="activeDepartmentsFilter"/>
+        ORDER BY hd.ORDERNO ASC
+    </select>
+
+    <!-- Get all active departments -->
+    <select id="findAllActive" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeDepartmentsFilter"/>
+        ORDER BY hd.DEPT_LEVEL ASC, hd.ORDERNO ASC
+    </select>
+
+    <!-- Get departments by level -->
+    <select id="findByLevel" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        AND hd.DEPT_LEVEL = #{level}
+        <include refid="activeDepartmentsFilter"/>
+        ORDER BY hd.ORDERNO ASC
+    </select>
+
+    <!-- Search departments by keyword -->
+    <select id="searchDepartments" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="activeDepartmentsFilter"/>
+        AND (
+            UPPER(hd.DEPTNO) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(hd.ORG_NAME_LOCAL) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(hd.ORG_NAME_ENG) LIKE UPPER('%' || #{keyword} || '%')
+            OR UPPER(hd.WORK_AREA) LIKE UPPER('%' || #{keyword} || '%')
+        )
+        ORDER BY hd.DEPT_LEVEL ASC, hd.ORDERNO ASC
+    </select>
+
+    <!-- Search departments with multiple conditions (for export) -->
+    <select id="searchDepartmentsWithConditions" resultMap="HrDepartmentResultMap">
+        SELECT 
+            <include refid="baseColumns"/>
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="directSearchConditions"/>
+        ORDER BY hd.DEPT_LEVEL ASC, hd.ORDERNO ASC
+    </select>
+
+    <select id="getDepartmentTree" resultMap="HrDepartmentResultMap">
+        SELECT 
+            hd.*,
+            occ.CODE_NAME as COST_CENTER_NAME,
+            he.LOCAL_NAME as MANAGER_EMP_NAME
+        FROM hr_department hd
+        LEFT JOIN ORG_COST_CENTER occ ON hd.COST_CENTER = occ.CODE_NO AND occ.ACTIVITY = '14013912'
+        LEFT JOIN HR_EMPLOYEE he ON hd.MANAGER_EMP_ID = he.PERSON_ID
+        WHERE hd.ACTIVITY = '1' AND hd.USE_YN = 'Y'
+        ORDER BY hd.ORDERNO, hd.DEPTNO
+    </select>
+
+    <!-- DataTables server-side processing - Get departments with search and sort -->
+    <select id="getDepartmentsForDataTables" resultMap="HrDepartmentResultMap">
+        SELECT * FROM (
+            SELECT 
+                <include refid="baseColumns"/>,
+                ROW_NUMBER() OVER (ORDER BY <include refid="dynamicOrderBy"/>) as rn
+            <include refid="baseFromClause"/>
+            <include refid="baseWhereClause"/>
+            <include refid="keywordSearchConditions"/>
+            <include refid="advancedSearchConditions"/>
+        )
+        WHERE rn BETWEEN #{offset} + 1 AND #{offset} + #{limit}
+    </select>
+
+    <!-- DataTables server-side processing - Count departments after filtering -->
+    <select id="countDepartmentsForDataTables" resultType="int">
+        SELECT COUNT(*)
+        <include refid="baseFromClause"/>
+        <include refid="baseWhereClause"/>
+        <include refid="keywordSearchConditions"/>
+        <include refid="advancedSearchConditions"/>
+    </select>
+
+    <!-- ============================================ -->
+    <!-- INSERT, UPDATE, DELETE operations -->
+    <!-- ============================================ -->
+
+    <!-- Add new department -->
+    <insert id="insert" parameterType="com.ait.org.orgManage.model.HrDepartment">
+        INSERT INTO hr_department (
+            DEPTID, CPNY_ID, DATE_CREATED, DATE_ENDED, DEPT_LEVEL, MANAGER_EMP_ID,
+            DEPTNO, PARENT_DEPT_NO, WORK_AREA, DEPT_TYPE, ORG_NAME_ENG, ORG_NAME_LOCAL,
+            ORG_LEVEL, COST_CENTER, USE_YN, CREATE_DATE, CREATED_BY, UPDATE_DATE,
+            UPDATED_BY, ORDERNO, ACTIVITY, IS_DEPT, IS_PART_TIME, PRODUCT_TYPE,
+            CREATED_IP, UPDATED_IP, RESUME_NO, REMARK, FEE_STANDARD,
+            DEPT_DISTINGUISH_STANDARD, PREP_MANAGER_EMP_ID, ORDER_NO, ORG_NAME_KO, ORG_NAME_VI
+        ) VALUES (
+            #{deptId}, #{cpnyId, jdbcType=VARCHAR}, #{dateCreated}, #{dateEnded}, #{deptLevel}, #{managerEmpId},
+            #{deptNo}, #{parentDeptNo}, #{workArea}, #{deptType}, #{orgNameEng}, #{orgNameLocal},
+            #{orgLevel}, #{costCenter}, #{useYn}, #{createDate}, #{adminID, jdbcType=VARCHAR}, #{updateDate},
+            #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}, #{isDept}, #{isPartTime}, #{productType},
+            #{createdIp}, #{updatedIp}, #{resumeNo}, #{remark}, #{feeStandard},
+            #{deptDistinguishStandard}, #{prepManagerEmpId}, #{orderNo}, #{orgNameKo}, #{orgNameVi}
+        )
+    </insert>
+
+    <!-- Update department - Dynamic UPDATE (chỉ update field có giá trị) -->
+    <update id="update">
+        UPDATE hr_department 
+        <set>
+            <if test="cpnyId != null">
+                CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            </if>
+            <if test="dateCreated != null">
+                DATE_CREATED = #{dateCreated},
+            </if>
+            <if test="dateEnded != null">
+                DATE_ENDED = #{dateEnded},
+            </if>
+            <if test="deptLevel != null">
+                DEPT_LEVEL = #{deptLevel},
+            </if>
+            <if test="managerEmpId != null">
+                MANAGER_EMP_ID = #{managerEmpId},
+            </if>
+            <if test="parentDeptNo != null">
+                PARENT_DEPT_NO = #{parentDeptNo},
+            </if>
+            <if test="workArea != null">
+                WORK_AREA = #{workArea},
+            </if>
+            <if test="deptType != null">
+                DEPT_TYPE = #{deptType},
+            </if>
+            <if test="orgNameEng != null">
+                ORG_NAME_ENG = #{orgNameEng},
+            </if>
+            <if test="orgNameLocal != null">
+                ORG_NAME_LOCAL = #{orgNameLocal},
+            </if>
+            <if test="orgLevel != null">
+                ORG_LEVEL = #{orgLevel},
+            </if>
+            <if test="costCenter != null">
+                COST_CENTER = #{costCenter},
+            </if>
+            <if test="useYn != null">
+                USE_YN = #{useYn},
+            </if>
+            <if test="isDept != null">
+                IS_DEPT = #{isDept},
+            </if>
+            <if test="isPartTime != null">
+                IS_PART_TIME = #{isPartTime},
+            </if>
+            <if test="productType != null">
+                PRODUCT_TYPE = #{productType},
+            </if>
+            <if test="resumeNo != null">
+                RESUME_NO = #{resumeNo},
+            </if>
+            <if test="remark != null">
+                REMARK = #{remark},
+            </if>
+            <if test="feeStandard != null">
+                FEE_STANDARD = #{feeStandard},
+            </if>
+            <if test="deptDistinguishStandard != null">
+                DEPT_DISTINGUISH_STANDARD = #{deptDistinguishStandard},
+            </if>
+            <if test="prepManagerEmpId != null">
+                PREP_MANAGER_EMP_ID = #{prepManagerEmpId},
+            </if>
+            <if test="orderNo != null">
+                ORDERNO = #{orderNo},
+            </if>
+            <if test="activity != null">
+                ACTIVITY = #{activity},
+            </if>
+            <if test="orgNameKo != null">
+                ORG_NAME_KO = #{orgNameKo},
+            </if>
+            <if test="orgNameVi != null">
+                ORG_NAME_VI = #{orgNameVi},
+            </if>
+            <!-- Audit fields - luôn update -->
+            UPDATE_DATE = #{updateDate},
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{updatedIp}
+        </set>
+        WHERE DEPTNO = #{deptNo}
+    </update>
+
+    <!-- Delete department -->
+    <delete id="deleteByDeptNo">
+        DELETE FROM hr_department 
+        WHERE DEPTNO = #{deptNo}
+    </delete>
+
+    <!-- ============================================ -->
+    <!-- UTILITY QUERIES -->
+    <!-- ============================================ -->
+
+    <!-- Check if department exists and is active by DEPTNO -->
+    <select id="existsAndActiveByDeptNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_department 
+        WHERE DEPTNO = #{deptNo}
+          AND ACTIVITY = 1
+          AND USE_YN = 'Y'
+    </select>
+
+    <!-- Check if department exists by DEPTNO -->
+    <select id="existsByDeptNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_department 
+        WHERE DEPTNO = #{deptNo}
+    </select>
+
+    <!-- Check if department exists by DEPTID -->
+    <select id="existsByDeptId" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM hr_department 
+        WHERE DEPTID = #{deptId}
+    </select>
+
+    <!-- Get distinct department types -->
+    <select id="getDistinctDeptTypes" resultType="String">
+        SELECT DISTINCT DEPT_TYPE 
+        FROM hr_department 
+        WHERE ACTIVITY = 1 AND USE_YN = 'Y' AND DEPT_TYPE IS NOT NULL
+        ORDER BY DEPT_TYPE
+    </select>
+
+    <!-- Get distinct work areas -->
+    <select id="getDistinctWorkAreas" resultType="String">
+        SELECT DISTINCT WORK_AREA 
+        FROM hr_department 
+        WHERE ACTIVITY = 1 AND USE_YN = 'Y' AND WORK_AREA IS NOT NULL
+        ORDER BY WORK_AREA
+    </select>
+
+    <!-- Get department levels -->
+    <select id="getDepartmentLevels" resultType="int">
+        SELECT DISTINCT DEPT_LEVEL 
+        FROM hr_department 
+        WHERE ACTIVITY = 1 AND USE_YN = 'Y' AND DEPT_LEVEL IS NOT NULL
+        ORDER BY DEPT_LEVEL
+    </select>
+
+</mapper>

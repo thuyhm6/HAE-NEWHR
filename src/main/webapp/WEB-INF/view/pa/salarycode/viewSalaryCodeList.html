@@ -1,0 +1,413 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vscl_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="row g-2 align-items-start">
+                        <!-- Ô tìm kiếm: chiếm 8/12 cột -->
+                        <div class="col-8 d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.salaryCode.itemType}">Loại hạng mục</label>
+                            <select class="form-select form-select-sm" id="vscl_itemTypeSearch" style="max-width:220px;">
+                                <option value="" th:text="#{pa.salaryCode.itemType.all}">Tất cả</option>
+                                <option value="1" th:text="#{pa.salaryCode.itemType.std}">Hạng mục tiêu chuẩn</option>
+                                <option value="2" th:text="#{pa.salaryCode.itemType.adj}">Điều chỉnh trả lương</option>
+                                <option value="3" th:text="#{pa.salaryCode.itemType.excPay}">Trả lương ngoại lệ</option>
+                                <option value="4" th:text="#{pa.salaryCode.itemType.adjDed}">Điều chỉnh khoản trừ</option>
+                                <option value="5" th:text="#{pa.salaryCode.itemType.excDed}">Khoản trừ ngoại lệ</option>
+                                <option value="6" th:text="#{pa.salaryCode.itemType.calc}">Hạng mục tính toán</option>
+                            </select>
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{pa.salaryCode.itemName}">Tên hạng mục</label>
+                            <input type="text" class="form-control form-control-sm" id="vscl_itemNameSearch"
+                                style="max-width:200px;"
+                                onkeydown="if(event.key==='Enter') vsclSearch()">
+                        </div>
+                        <!-- Các nút chức năng: chiếm 4/12 cột -->
+                        <div class="col-4 d-flex gap-2 align-items-start justify-content-end flex-wrap">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="vsclSearch()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{pa.salaryCode.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="vsclOpenAddModal()">
+                                <i class="bi bi-plus-circle"></i>
+                                <span th:text="#{pa.salaryCode.addNew}">Thêm mới</span>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="vsclDeleteSelected()">
+                                <i class="bi bi-trash"></i>
+                                <span th:text="#{pa.salaryCode.delete}">Xóa</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table id="vscl_table" class="table table-striped table-bordered table-hover table-sm"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;">
+                                        <input type="checkbox" id="vscl_checkAll">
+                                    </th>
+                                    <th class="text-center" style="width:40px;" th:text="#{pa.salaryCode.no}">STT</th>
+                                    <th th:text="#{pa.salaryCode.itemType}">Loại hạng mục</th>
+                                    <th th:text="#{pa.salaryCode.itemId}">ID hạng mục</th>
+                                    <th th:text="#{pa.salaryCode.itemName}">Tên hạng mục</th>
+                                    <th class="text-center" style="width:100px;" th:text="#{pa.salaryCode.dataType}">Dữ liệu</th>
+                                    <th th:text="#{pa.salaryCode.descr}">Miêu tả</th>
+                                    <th class="text-center" style="width:110px;" th:text="#{pa.salaryCode.companyUsage}">Công ty sử dụng</th>
+                                    <th class="text-center" th:text="#{pa.salaryCode.createdBy}">Người tạo</th>
+                                    <th class="text-center" style="width:145px;" th:text="#{pa.salaryCode.createDate}">Thời gian tạo</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vscl_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- ── Modal thêm mới / chỉnh sửa ─────────────────────────────────────── -->
+    <div class="modal fade" id="vscl_editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vscl_modalTitle" th:text="#{pa.salaryCode.addTitle}">Thêm mới hạng mục lương</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="vscl_itemNo">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:30%;">
+                            <col style="width:70%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.salaryCode.itemType}">Loại hạng mục</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vscl_itemType" style="max-width:240px;">
+                                        <option value="1" th:text="#{pa.salaryCode.itemType.std}">Hạng mục tiêu chuẩn</option>
+                                        <option value="2" th:text="#{pa.salaryCode.itemType.adj}">Điều chỉnh trả lương</option>
+                                        <option value="3" th:text="#{pa.salaryCode.itemType.excPay}">Trả lương ngoại lệ</option>
+                                        <option value="4" th:text="#{pa.salaryCode.itemType.adjDed}">Điều chỉnh khoản trừ</option>
+                                        <option value="5" th:text="#{pa.salaryCode.itemType.excDed}">Khoản trừ ngoại lệ</option>
+                                        <option value="6" th:text="#{pa.salaryCode.itemType.calc}">Hạng mục tính toán</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.salaryCode.itemId}">ID hạng mục</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vscl_itemId"
+                                        style="max-width:300px;" maxlength="50">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.salaryCode.nameEn}">English Name</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vscl_nameEn"
+                                        style="max-width:360px;" maxlength="200">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.salaryCode.nameKo}">Korean Name</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vscl_nameKo"
+                                        style="max-width:360px;" maxlength="200">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.salaryCode.nameVi}">Vietnamese Name</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vscl_nameVi"
+                                        style="max-width:360px;" maxlength="200">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.salaryCode.nameZh}">Chinese Name</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" id="vscl_nameZh"
+                                        style="max-width:360px;" maxlength="200">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3" th:text="#{pa.salaryCode.dataType}">Dữ liệu</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vscl_dataType" style="max-width:200px;">
+                                        <option value="NUMBER(14,4)" th:text="#{pa.salaryCode.dataType.number}">Dạng số</option>
+                                        <option value="VARCHAR(100)" th:text="#{pa.salaryCode.dataType.varchar}">Dạng ký tự</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3" th:text="#{pa.salaryCode.companyUsage}">Công ty sử dụng</th>
+                                <td>
+                                    <div class="d-flex gap-3 align-items-center">
+                                        <div class="form-check mb-0">
+                                            <input type="checkbox" class="form-check-input vscl_cpnyCheck" id="vscl_cpny_HTSV" value="HTSV">
+                                            <label class="form-check-label" for="vscl_cpny_HTSV">HTSV</label>
+                                        </div>
+                                        <div class="form-check mb-0">
+                                            <input type="checkbox" class="form-check-input vscl_cpnyCheck" id="vscl_cpny_HAE" value="HAE">
+                                            <label class="form-check-label" for="vscl_cpny_HAE">HAE</label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3" th:text="#{pa.salaryCode.descr}">Miêu tả</th>
+                                <td>
+                                    <textarea class="form-control form-control-sm" id="vscl_descr"
+                                        rows="3" maxlength="200"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="vsclSave()">
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{pa.salaryCode.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vscl_table = null;
+        var vscl_msgConfirmDelete  = /*[[#{pa.salaryCode.confirmDelete}]]*/ 'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?';
+        var vscl_msgSelectRequired = /*[[#{pa.salaryCode.selectRequired}]]*/ 'Vui lòng chọn ít nhất một bản ghi!';
+        var vscl_msgValidate       = /*[[#{pa.salaryCode.validateRequired}]]*/ 'Vui lòng nhập đầy đủ thông tin bắt buộc!';
+        var vscl_titleAdd          = /*[[#{pa.salaryCode.addTitle}]]*/ 'Thêm mới hạng mục lương';
+        var vscl_titleEdit         = /*[[#{pa.salaryCode.editTitle}]]*/ 'Chỉnh sửa hạng mục lương';
+        var vscl_itemTypeMap = {
+            1: /*[[#{pa.salaryCode.itemType.std}]]*/ 'Hạng mục tiêu chuẩn',
+            2: /*[[#{pa.salaryCode.itemType.adj}]]*/ 'Điều chỉnh trả lương',
+            3: /*[[#{pa.salaryCode.itemType.excPay}]]*/ 'Trả lương ngoại lệ',
+            4: /*[[#{pa.salaryCode.itemType.adjDed}]]*/ 'Điều chỉnh khoản trừ',
+            5: /*[[#{pa.salaryCode.itemType.excDed}]]*/ 'Khoản trừ ngoại lệ',
+            6: /*[[#{pa.salaryCode.itemType.calc}]]*/ 'Hạng mục tính toán'
+        };
+
+        $(document).ready(function () {
+
+            vscl_table = $('#vscl_table').DataTable({
+                destroy: true,
+                scrollY: 'calc(100vh - 330px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 20,
+                lengthMenu: [10, 20, 50, 100],
+                processing: true,
+                serverSide: true,
+                columnDefs: [
+                    { targets: 0, width: '36px', className: 'text-center', orderable: false },
+                    { targets: 1, width: '40px', className: 'text-center', orderable: false },
+                    { targets: [4, 7, 8, 9], className: 'text-center' }
+                ],
+                ajax: {
+                    url: '/pa/salarycode/api/list',
+                    type: 'GET',
+                    data: function (d) {
+                        d.itemNameSearch  = $('#vscl_itemNameSearch').val();
+                        d.itemTypeSearch  = $('#vscl_itemTypeSearch').val();
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            return '<input type="checkbox" class="vscl_rowCheck"'
+                                + ' data-itemno="' + row.itemNo + '"'
+                                + ' data-itemtype="' + row.itemType + '">';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    {
+                        data: 'itemType',
+                        render: function (data) {
+                            return vscl_itemTypeMap[data] || data;
+                        }
+                    },
+                    { data: 'itemId' },
+                    { data: 'itemName' },
+                    { data: 'dataType' },
+                    { data: 'descr' },
+                    { data: 'companyUsageStr', defaultContent: '' },
+                    { data: 'createdBy' },
+                    { data: 'createDate' }
+                ],
+                drawCallback: function () {
+                    // Checkbox chọn tất cả
+                    $('#vscl_checkAll').off('change').on('change', function () {
+                        $('.vscl_rowCheck').prop('checked', $(this).is(':checked'));
+                    });
+                    // Click hàng để mở modal sửa
+                    $('#vscl_table tbody').off('click', 'tr').on('click', 'tr', function (e) {
+                        if ($(e.target).is('input[type=checkbox]')) return;
+                        var rowData = vscl_table.row(this).data();
+                        if (rowData) vsclOpenEditModal(rowData);
+                    });
+                }
+            });
+
+            window.vsclSearch = function () {
+                vscl_table.ajax.reload();
+            };
+
+            window.vsclOpenAddModal = function () {
+                $('#vscl_itemNo').val('');
+                $('#vscl_itemType').val('1');
+                $('#vscl_itemId').val('');
+                $('#vscl_nameEn').val('');
+                $('#vscl_nameKo').val('');
+                $('#vscl_nameVi').val('');
+                $('#vscl_nameZh').val('');
+                $('#vscl_dataType').val('NUMBER(14,4)');
+                $('#vscl_descr').val('');
+                $('.vscl_cpnyCheck').prop('checked', false);
+                $('#vscl_modalTitle').text(vscl_titleAdd);
+                new bootstrap.Modal(document.getElementById('vscl_editModal')).show();
+            };
+
+            window.vsclOpenEditModal = function (rowData) {
+                $.ajax({
+                    url: '/pa/salarycode/api/' + rowData.itemType + '/' + rowData.itemNo,
+                    type: 'GET',
+                    success: function (dto) {
+                        $('#vscl_itemNo').val(dto.itemNo);
+                        $('#vscl_itemType').val(dto.itemType);
+                        $('#vscl_itemId').val(dto.itemId || '');
+                        $('#vscl_nameEn').val(dto.nameEn || '');
+                        $('#vscl_nameKo').val(dto.nameKo || '');
+                        $('#vscl_nameVi').val(dto.nameVi || '');
+                        $('#vscl_nameZh').val(dto.nameZh || '');
+                        $('#vscl_dataType').val(dto.dataType || 'NUMBER(14,4)');
+                        $('#vscl_descr').val(dto.descr || '');
+                        $('.vscl_cpnyCheck').prop('checked', false);
+                        if (dto.companyUsage && dto.companyUsage.length > 0) {
+                            $.each(dto.companyUsage, function (i, cpny) {
+                                $('#vscl_cpny_' + cpny).prop('checked', true);
+                            });
+                        }
+                        $('#vscl_modalTitle').text(vscl_titleEdit);
+                        new bootstrap.Modal(document.getElementById('vscl_editModal')).show();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vsclSave = function () {
+                var itemType = parseInt($('#vscl_itemType').val());
+                var itemId   = $('#vscl_itemId').val().trim();
+                if (!itemType || !itemId) {
+                    toastr ? toastr.warning(vscl_msgValidate) : alert(vscl_msgValidate);
+                    return;
+                }
+                var companyUsage = $('.vscl_cpnyCheck:checked').map(function () {
+                    return $(this).val();
+                }).get();
+                var payload = {
+                    itemNo:        $('#vscl_itemNo').val().trim() || null,
+                    itemType:      itemType,
+                    itemId:        itemId,
+                    nameEn:        $('#vscl_nameEn').val().trim(),
+                    nameKo:        $('#vscl_nameKo').val().trim(),
+                    nameVi:        $('#vscl_nameVi').val().trim(),
+                    nameZh:        $('#vscl_nameZh').val().trim(),
+                    dataType:      $('#vscl_dataType').val(),
+                    descr:         $('#vscl_descr').val().trim(),
+                    companyUsage:  companyUsage
+                };
+                $.ajax({
+                    url: '/pa/salarycode/api/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Lưu thành công') : alert(res.message || 'Lưu thành công');
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('vscl_editModal'));
+                        if (modal) modal.hide();
+                        vscl_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vsclDeleteSelected = function () {
+                var selected = [];
+                $('.vscl_rowCheck:checked').each(function () {
+                    selected.push({
+                        itemNo:   $(this).data('itemno'),
+                        itemType: parseInt($(this).data('itemtype'))
+                    });
+                });
+                if (selected.length === 0) {
+                    toastr ? toastr.warning(vscl_msgSelectRequired) : alert(vscl_msgSelectRequired);
+                    return;
+                }
+                if (!confirm(vscl_msgConfirmDelete)) return;
+                $.ajax({
+                    url: '/pa/salarycode/api/deleteList',
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selected),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Xóa thành công') : alert(res.message || 'Xóa thành công');
+                        vscl_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+        });
+    </script>
+</template>

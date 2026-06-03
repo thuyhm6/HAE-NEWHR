@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.evs.manage.mapper.EvsEvsBySelfSSTAbilityMapper">
+
+    <!-- ── ResultMap: Danh sách hạng mục năng lực ──────────────────────────────── -->
+    <resultMap id="EvsItemAbilityResultMap" type="com.ait.evs.manage.dto.EvsItemAbilityDto">
+        <id     column="ITEM_SEQ"    property="itemSeq"    jdbcType="VARCHAR" />
+        <result column="GROUP_NAME"  property="groupName"  jdbcType="VARCHAR" />
+        <result column="ITEM_CODE"   property="itemCode"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"   property="itemName"   jdbcType="VARCHAR" />
+        <result column="REMARK"      property="remark"     jdbcType="VARCHAR" />
+        <result column="ITEM_SCORE"  property="itemScore"  jdbcType="VARCHAR" />
+        <result column="EVS_SCORE0"  property="evsScore0"  jdbcType="VARCHAR" />
+        <result column="EVS_SCORE1"  property="evsScore1"  jdbcType="VARCHAR" />
+        <result column="EVS_SCORE2"  property="evsScore2"  jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── selectItemList: Lấy danh sách hạng mục năng lực kèm điểm đánh giá ────── -->
+    <select id="selectItemList" parameterType="com.ait.evs.manage.dto.EvsEvsBySelfSSTAbilityDto"
+            resultMap="EvsItemAbilityResultMap">
+        SELECT ITEM.SEQ                                                     AS ITEM_SEQ,
+               GET_CODE_NAME(ITEM.GROUP_NO, #{lang, jdbcType=VARCHAR})      AS GROUP_NAME,
+               ITEM.ITEM_CODE,
+               ITEM.ITEM_NAME,
+               ITEM.REMARK,
+               PARAM.ITEM_SCORE,
+               EVS.EVS_OCC_GROUP_NAME,
+               (SELECT SCORE.EVS_SCORE
+                  FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+                 WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+                   AND SCORE.ITEM_SEQ   = ITEM.SEQ
+                   AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+                   AND AFFIRM.AFFIRM_LEVEL   = 0) AS EVS_SCORE0,
+               (SELECT SCORE.EVS_SCORE
+                  FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+                 WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+                   AND SCORE.ITEM_SEQ   = ITEM.SEQ
+                   AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+                   AND AFFIRM.AFFIRM_LEVEL   = 1) AS EVS_SCORE1,
+               (SELECT SCORE.EVS_SCORE
+                  FROM EVS_ITEM_SCORE SCORE, EVS_AFFIRM AFFIRM
+                 WHERE SCORE.AFFIRM_SEQ = AFFIRM.SEQ
+                   AND SCORE.ITEM_SEQ   = ITEM.SEQ
+                   AND AFFIRM.EVS_OBJECT_SEQ = EVS.SEQ
+                   AND AFFIRM.AFFIRM_LEVEL   = 2) AS EVS_SCORE2
+          FROM EVS_OBJECT EVS, EVS_ITEM ITEM, EVS_ITEM_PARAM PARAM
+         WHERE ITEM.RESUME_SEQ  = PARAM.RESUME_SEQ
+           AND ITEM.ITEM_CODE   = PARAM.ITEM_CODE
+           AND PARAM.RESUME_SEQ = EVS.RESUME_SEQ
+           AND PARAM.EVS_OCC_GROUP = EVS.EVS_OCC_GROUP
+           AND PARAM.EVS_GROUP     = EVS.EVS_GROUP
+           AND EVS.RESUME_SEQ  = #{resumeSeq, jdbcType=VARCHAR}
+           AND PARAM.ACTIVITY  &lt;&gt; 2
+           AND EVS.PERSON_ID   = #{adminID,   jdbcType=VARCHAR}
+         ORDER BY TO_NUMBER(ITEM.SEQ)
+    </select>
+
+    <!-- ── upsertAffirm: Tạo hoặc cập nhật EVS_AFFIRM LEVEL=0, tính EVS_POINT và EVS_GRADE ── -->
+    <!-- Công thức: SUM(EVS_SCORE * ITEM_SCORE) / MAX(EVS_PARAM.EVS_SCORE where PARAM_TYPE='ITEM') -->
+    <!-- Gọi SAU khi upsertItemScore để đảm bảo EVS_ITEM_SCORE đã có điểm mới nhất -->
+    <update id="upsertAffirm" parameterType="com.ait.evs.manage.dto.EvsEvsBySelfSSTAbilityDto">
+        MERGE INTO EVS_AFFIRM A
+        USING (
+            SELECT B1.EVS_OBJECT_SEQ,
+                   B1.AFFIRM_LEVEL,
+                   B1.CALC_POINT,
+                   (SELECT GET_GLOBAL_NAME(g.EVS_GRADE, #{lang, jdbcType=VARCHAR})
+                      FROM EVS_GRADE g, EVS_OBJECT o
+                     WHERE o.SEQ        = B1.EVS_OBJECT_SEQ
+                       AND o.RESUME_SEQ = g.RESUME_SEQ
+                       AND B1.CALC_POINT BETWEEN g.START_SCORE AND g.END_SCORE
+                       AND ROWNUM = 1) AS CALC_GRADE
+              FROM (
+                SELECT #{evsObjectSeq, jdbcType=VARCHAR} AS EVS_OBJECT_SEQ,
+                       0 AS AFFIRM_LEVEL,
+                       ROUND(
+                           NVL((
+                               SELECT SUM(NVL(TO_NUMBER(SCORE.EVS_SCORE), 0) * NVL(TO_NUMBER(PARAM.ITEM_SCORE), 0))
+                                      / NULLIF(MAX(MAX_Q.MAX_SCORE), 0)
+                                 FROM EVS_ITEM_SCORE SCORE,
+                                      EVS_AFFIRM AFFIRM,
+                                      EVS_ITEM ITEM,
+                                      EVS_OBJECT OBJ,
+                                      EVS_ITEM_PARAM PARAM,
+                                      (SELECT MAX(TO_NUMBER(P.EVS_SCORE)) AS MAX_SCORE
+                                         FROM EVS_PARAM P, EVS_OBJECT O2
+                                        WHERE O2.SEQ       = #{evsObjectSeq, jdbcType=VARCHAR}
+                                          AND P.RESUME_SEQ = O2.RESUME_SEQ
+                                          AND P.PARAM_TYPE = 'ITEM') MAX_Q
+                                WHERE SCORE.AFFIRM_SEQ        = AFFIRM.SEQ
+                                  AND SCORE.ITEM_SEQ          = ITEM.SEQ
+                                  AND AFFIRM.EVS_OBJECT_SEQ   = OBJ.SEQ
+                                  AND ITEM.ITEM_CODE          = PARAM.ITEM_CODE
+                                  AND ITEM.RESUME_SEQ         = PARAM.RESUME_SEQ
+                                  AND PARAM.EVS_OCC_GROUP     = OBJ.EVS_OCC_GROUP
+                                  AND PARAM.EVS_GROUP         = OBJ.EVS_GROUP
+                                  AND AFFIRM.EVS_OBJECT_SEQ   = #{evsObjectSeq, jdbcType=VARCHAR}
+                                  AND AFFIRM.AFFIRM_LEVEL     = 0
+                           ), 0),
+                       2) AS CALC_POINT
+                  FROM DUAL
+              ) B1
+        ) B
+        ON (A.EVS_OBJECT_SEQ = B.EVS_OBJECT_SEQ AND A.AFFIRM_LEVEL = B.AFFIRM_LEVEL)
+        WHEN MATCHED THEN
+            UPDATE SET
+                A.AFFIRM_CONTENT = #{affirmContent, jdbcType=VARCHAR},
+                A.EVS_POINT      = B.CALC_POINT,
+                A.EVS_GRADE      = B.CALC_GRADE,
+                A.UPDATED_BY     = #{adminID,       jdbcType=VARCHAR},
+                A.UPDATED_IP     = #{adminIP,       jdbcType=VARCHAR},
+                A.UPDATE_DATE    = SYSDATE
+        WHEN NOT MATCHED THEN
+            INSERT (SEQ, EVS_OBJECT_SEQ, AFFIRM_LEVEL, AFFIRM_CONTENT,
+                    EVS_POINT, EVS_GRADE,
+                    CREATED_BY, CREATED_IP, CREATE_DATE)
+            VALUES (EVS_PARAM_SEQ.NEXTVAL,
+                    #{evsObjectSeq,   jdbcType=VARCHAR},
+                    0,
+                    #{affirmContent,  jdbcType=VARCHAR},
+                    B.CALC_POINT, B.CALC_GRADE,
+                    #{adminID,        jdbcType=VARCHAR},
+                    #{adminIP,        jdbcType=VARCHAR},
+                    SYSDATE)
+    </update>
+
+    <!-- ── upsertItemScore: Thêm mới hoặc cập nhật EVS_ITEM_SCORE ───────────────── -->
+    <update id="upsertItemScore" parameterType="com.ait.evs.manage.dto.EvsItemAbilityDto">
+        MERGE INTO EVS_ITEM_SCORE SCORE
+        USING (
+            SELECT AFFIRM.SEQ AS AFFIRM_SEQ
+              FROM EVS_AFFIRM AFFIRM
+             WHERE AFFIRM.EVS_OBJECT_SEQ = #{evsObjectSeq, jdbcType=VARCHAR}
+               AND AFFIRM.AFFIRM_LEVEL   = 0
+               AND ROWNUM = 1
+        ) A
+        ON (SCORE.AFFIRM_SEQ = A.AFFIRM_SEQ
+        AND SCORE.ITEM_SEQ   = #{itemSeq, jdbcType=VARCHAR})
+        WHEN MATCHED THEN
+            UPDATE SET
+                SCORE.EVS_SCORE   = #{evsScore0,  jdbcType=VARCHAR},
+                SCORE.UPDATED_BY  = #{adminID,    jdbcType=VARCHAR},
+                SCORE.UPDATED_IP  = #{adminIP,    jdbcType=VARCHAR},
+                SCORE.UPDATE_DATE = SYSDATE
+        WHEN NOT MATCHED THEN
+            INSERT (SEQ, RESUME_SEQ, AFFIRM_SEQ, ITEM_SEQ, EVS_SCORE, ACTIVITY,
+                    CREATE_DATE, CREATED_BY, CREATED_IP)
+            VALUES (EVS_PARAM_SEQ.NEXTVAL,
+                    #{resumeSeq,  jdbcType=VARCHAR},
+                    A.AFFIRM_SEQ,
+                    #{itemSeq,    jdbcType=VARCHAR},
+                    #{evsScore0,  jdbcType=VARCHAR},
+                    1,
+                    SYSDATE,
+                    #{adminID,    jdbcType=VARCHAR},
+                    #{adminIP,    jdbcType=VARCHAR})
+    </update>
+
+    <!-- ── callModifyObjectActivity: Gọi stored procedure chuyển trạng thái ──────── -->
+    <update id="callModifyObjectActivity"
+            parameterType="com.ait.evs.manage.dto.EvsEvsBySelfSSTAbilityDto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_MODIFY_OBJECT_ACTIVITY(
+            #{evsObjectSeq, jdbcType=VARCHAR, mode=IN},
+            #{adminID,      jdbcType=VARCHAR, mode=IN},
+            #{adminIP,      jdbcType=VARCHAR, mode=IN},
+            #{flag,         jdbcType=VARCHAR, mode=IN},
+            #{message,      jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+</mapper>

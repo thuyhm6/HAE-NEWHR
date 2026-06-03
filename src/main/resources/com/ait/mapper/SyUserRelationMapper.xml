@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.syRole.mapper.SyUserRelationMapper">
+
+    <!-- Result Map cho SyUserRelation -->
+    <resultMap id="SyUserRelationResultMap" type="com.ait.sy.syRole.model.SyUserRelation">
+        <id column="USER_NO" property="userNo"/>
+        <result column="ROLE_GROUP_NO" property="roleGroupNo"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ORDERNO" property="orderNo"/>
+        <result column="ACTIVITY" property="activity"/>
+    </resultMap>
+
+    <!-- Tìm role groups theo userNo -->
+    <select id="findByUserNo" resultMap="SyUserRelationResultMap">
+        SELECT 
+            USER_NO,
+            ROLE_GROUP_NO,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY
+        FROM sy_user_relation 
+        WHERE USER_NO = #{userNo}
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Tìm users theo roleGroupNo -->
+    <select id="findByRoleGroupNo" resultMap="SyUserRelationResultMap">
+        SELECT 
+            USER_NO,
+            ROLE_GROUP_NO,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY
+        FROM sy_user_relation 
+        WHERE ROLE_GROUP_NO = #{roleGroupNo}
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Kiểm tra user có role group không -->
+    <select id="hasRoleGroup" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM sy_user_relation 
+        WHERE USER_NO = #{userNo}
+          AND ROLE_GROUP_NO = #{roleGroupNo}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Lấy danh sách role groups hoạt động của user -->
+    <select id="findActiveByUserNo" resultMap="SyUserRelationResultMap">
+        SELECT 
+            USER_NO,
+            ROLE_GROUP_NO,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY
+        FROM sy_user_relation 
+        WHERE USER_NO = #{userNo}
+          AND ACTIVITY = 1
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Xóa các quyền của user -->
+    <delete id="deleteByUserNo">
+        DELETE FROM sy_user_relation 
+        WHERE USER_NO = #{userNo}
+    </delete>
+
+    <!-- Xóa các user có quyền khi xóa role group -->
+    <delete id="deleteByRoleGroupNo">
+        DELETE FROM sy_user_relation 
+        WHERE ROLE_GROUP_NO = #{roleGroupNo}
+    </delete>
+
+    <!-- Thêm quyền cho user -->
+    <insert id="insert" parameterType="com.ait.sy.syRole.model.SyUserRelation">
+        INSERT INTO sy_user_relation (
+            USER_NO,
+            ROLE_GROUP_NO,
+            CREATE_DATE,
+            ORDERNO,
+            ACTIVITY
+        ) VALUES (
+            #{userNo},
+            #{roleGroupNo},
+            SYSDATE,
+            #{orderNo, jdbcType=NUMERIC},
+            #{activity, jdbcType=NUMERIC}
+        )
+    </insert>
+
+</mapper>

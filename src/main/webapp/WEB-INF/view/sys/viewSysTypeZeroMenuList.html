@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/master :: master}">
+
+<head>
+    <title th:text="${title}">HR Management System</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="mb-1">HR Management System</h5>
+                                <p class="text-muted mb-0">Danh sách menu thuộc các role có `SYS_TYPE = 0`.</p>
+                            </div>
+                            <span class="badge bg-primary-subtle text-primary"
+                                th:text="${sysTypeZeroMenus != null ? #lists.size(sysTypeZeroMenus) : 0} + ' menu gốc'">0
+                                menu gốc</span>
+                        </div>
+
+                        <div th:if="${sysTypeZeroMenus == null or #lists.isEmpty(sysTypeZeroMenus)}"
+                            class="alert alert-light border mb-0">
+                            Không có menu nào thuộc `SYS_TYPE = 0`.
+                        </div>
+
+                        <div class="row g-3"
+                            th:if="${sysTypeZeroMenus != null and !#lists.isEmpty(sysTypeZeroMenus)}">
+                            <div class="col-xl-4 col-lg-6" th:each="menu : ${sysTypeZeroMenus}">
+                                <div class="border rounded h-100 p-3 bg-light-subtle">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="mb-1" th:text="${menu.menuName}">Menu Name</h6>
+                                            <div class="text-muted small"
+                                                th:text="${menu.menuCode != null ? menu.menuCode : menu.menuNo}">
+                                                MENU_CODE
+                                            </div>
+                                        </div>
+                                        <a th:if="${!menu.hasChildren() and menu.menuUrl != null and !#strings.isEmpty(menu.menuUrl)}"
+                                            class="btn btn-sm btn-primary" th:href="${menu.menuUrl}">
+                                            Mở
+                                        </a>
+                                    </div>
+
+                                    <div th:if="${menu.hasChildren()}">
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item px-0 py-2 bg-transparent border-0"
+                                                th:each="child : ${menu.children}">
+                                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                                    <span class="fw-medium" th:text="${child.menuName}">Child
+                                                        Menu</span>
+                                                    <a th:if="${!child.hasChildren() and child.menuUrl != null and !#strings.isEmpty(child.menuUrl)}"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                        th:href="${child.menuUrl}">
+                                                        Mở
+                                                    </a>
+                                                </div>
+
+                                                <div th:if="${child.hasChildren()}" class="mt-2 ms-3">
+                                                    <div class="d-flex justify-content-between align-items-center py-1"
+                                                        th:each="grandChild : ${child.children}">
+                                                        <a th:if="${grandChild.menuUrl != null and !#strings.isEmpty(grandChild.menuUrl)}"
+                                                            th:href="${grandChild.menuUrl}"
+                                                            class="text-decoration-none"
+                                                            th:text="${grandChild.menuName}">Grand Child Menu</a>
+                                                        <span
+                                                            th:if="${grandChild.menuUrl == null or #strings.isEmpty(grandChild.menuUrl)}"
+                                                            th:text="${grandChild.menuName}">Grand Child Menu</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${!menu.hasChildren() and (menu.menuUrl == null or #strings.isEmpty(menu.menuUrl))}"
+                                        class="text-muted small">
+                                        Menu này chưa cấu hình URL.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

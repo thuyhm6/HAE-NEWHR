@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.infoApplyAttendance.mapper.EssAttendanceExForBatchMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto">
+        <id column="APPLY_NO" property="applyNo" />
+        <result column="AR_DATE_STR" property="arDateStr" />
+        <result column="DATE_STR" property="dateStr" />
+        <result column="PERSON_ID" property="personId" />
+        <result column="FROM_DATE" property="fromDateTime" />
+        <result column="TO_DATE" property="toDateTime" />
+        <result column="WORK_HOUR" property="workHour" />
+        <result column="ITEM_NO" property="itemNo" />
+        <result column="ITEM_NO_NAME" property="itemNoName" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_NAME" property="createdName" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_NAME" property="updatedName" />
+        <result column="INDOOR_TIME" property="inDoorTime" />
+        <result column="OUTDOOR_TIME" property="outDoorTime" />
+        <result column="SHIFT_START_TIME" property="shiftStartTime" />
+        <result column="SHIFT_END_TIME" property="shiftEndTime" />
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPTNO" property="deptNo" />
+        <result column="DEPT_NAME" property="deptName" />
+        <result column="POST_GRADE_NAME" property="postGradeName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="POST_FAMILY_NAME" property="postFamilyName" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="LOCK_YN" property="lockYn" />
+        <result column="SHIFT_NO" property="shiftNo" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <resultMap id="CardApplyDetailResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto">
+        <id property="applyNo" column="APPLY_NO" />
+        <result property="personId" column="PERSON_ID" />
+        <result property="cpnyId" column="CPNY_ID" />
+        <result property="leaveTypeCode" column="LEAVE_TYPE_CODE" />
+        <result property="leaveTypeName" column="LEAVE_TYPE_NAME" />
+        <result property="leaveFromTime" column="LEAVE_FROM_TIME" />
+        <result property="leaveToTime" column="LEAVE_TO_TIME" />
+        <result property="applyLength" column="APPLY_LENGTH" />
+        <result property="dayHours" column="DAY_HOURS" />
+        <result property="leaveReason" column="LEAVE_REASON" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="createDate" column="CREATE_DATE" />
+        <result property="detailType" column="DETAIL_TYPE" />
+        <result property="detailTypeName" column="DETAIL_TYPE_NAME" />
+        <result property="activity" column="ACTIVITY" />
+        <result property="confirmFlag" column="CONFIRM_FLAG" />
+        <result property="empId" column="EMPID" />
+        <result property="localName" column="LOCAL_NAME" />
+        <result property="deptNo" column="DEPT_NO" />
+        <result property="deptName" column="DEPT_NAME" />
+        <result property="postGradeNo" column="POST_GRADE_NO" />
+        <result property="postGradeName" column="POST_GRADE_NAME" />
+    </resultMap>
+
+    <resultMap id="CardApprovalInfoResultMap" type="com.ait.sy.syAffirm.dto.SyAffirmEmailDto">
+        <result property="seq" column="SEQ" />
+        <result property="affirmType" column="AFFIRM_TYPE" />
+        <result property="affirmTypeName" column="AFFIRM_TYPE_NAME" />
+        <result property="applyNo" column="APPLY_NO" />
+        <result property="applyType" column="APPLY_TYPE" />
+        <result property="applyFlag" column="APPLY_FLAG" />
+        <result property="applyPersonId" column="APPLY_PERSON_ID" />
+        <result property="affirmPersonId" column="AFFIRM_PERSON_ID" />
+        <result property="title" column="TITLE" />
+        <result property="affirmLevel" column="AFFIRM_LEVEL" />
+        <result property="affirmFlag" column="AFFIRM_FLAG" />
+        <result property="affirmUrl" column="AFFIRM_URL" />
+        <result property="applyTypeCode" column="APPLY_TYPE_CODE" />
+        <result property="applyPersonInfo" column="APPLY_PERSON_INFO" />
+        <result property="activity" column="ACTIVITY" />
+        <result property="affirmFlagName" column="AFFIRM_FLAG_NAME" />
+        <result property="affirmName" column="AFFIRM_NAME" />
+        <result property="deptName" column="DEPTNAME" />
+        <result property="applyAffirmFlagNo" column="APPLY_AFFIRM_FLAG_NO" />
+        <result property="applyAffirmFlag" column="APPLY_AFFIRM_FLAG" />
+        <result property="updateDate" column="UPDATE_DATE" />
+        <result property="affirmContent" column="AFFIRM_CONTENT" />
+    </resultMap>
+
+    <select id="selectAttendanceExForBatchList"
+            parameterType="com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto"
+            resultMap="DtoResultMap">
+        SELECT
+            EC.AR_DATE_STR AS AR_DATE_STR,
+            EC.AR_DATE_STR  AS DATE_STR,
+            EC.PK_NO AS APPLY_NO,
+            EC.PERSON_ID,
+            TO_CHAR(EC.FROM_TIME,'YYYY/MM/DD HH24:MI') AS FROM_DATE,
+            TO_CHAR(EC.TO_TIME,'YYYY/MM/DD HH24:MI') AS TO_DATE,
+            TO_CHAR(EC.QUANTITY) AS WORK_HOUR,
+            EC.ITEM_NO,
+            GET_GLOBAL_NAME(EC.ITEM_NO,#{lang, jdbcType=VARCHAR}) AS ITEM_NO_NAME,
+            TO_CHAR(EC.CREATE_DATE,'YYYY/MM/DD') AS CREATE_DATE,
+            GET_LOCAL_NAME_BY_PERSONID(EC.CREATED_BY,#{cpnyId, jdbcType=VARCHAR}) AS CREATED_NAME,
+            TO_CHAR(EC.UPDATE_DATE,'YYYY/MM/DD') AS UPDATE_DATE,
+            GET_LOCAL_NAME_BY_PERSONID(EC.UPDATED_BY,#{cpnyId, jdbcType=VARCHAR}) AS UPDATED_NAME,
+            GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'IN') AS INDOOR_TIME,
+            GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'OUT') AS OUTDOOR_TIME,
+            GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}) AS SHIFT_START_TIME,
+            GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId, jdbcType=VARCHAR}) AS SHIFT_END_TIME,
+            HR.EMPID,
+            HR.LOCAL_NAME,
+            HR.DEPTNO,
+            GET_DEPT_NAME(HR.DEPTNO,#{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            GET_GLOBAL_NAME(HR.POST_GRADE_NO,#{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            HR.POST_FAMILY,
+            GET_GLOBAL_NAME(HR.POST_FAMILY,#{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+            EC.SHIFT_NO,
+            GET_GLOBAL_NAME(EC.SHIFT_NO,#{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            EC.REMARK,
+            GET_UPDATED_INFO(EC.CREATED_BY) AS CREATED_BY,
+            GET_UPDATED_INFO(EC.UPDATED_BY) AS UPDATED_BY,
+            EC.LOCK_YN
+        FROM AR_DETAIL_HTSV EC, HR_EMPLOYEE HR
+        WHERE EC.PERSON_ID = HR.PERSON_ID
+          AND HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND HR.PERSON_ID NOT LIKE '111111%'
+          AND EC.AR_DATE_STR NOT IN (
+              SELECT AR_DATE_STR
+              FROM ESS_CARD_APPLY_TB CARD
+              WHERE AFFIRM_FLAG IN ('14014306','14014307','14014308')
+                AND CARD.CONFIRM_FLAG &lt;&gt; '2'
+                AND PERSON_ID = EC.PERSON_ID
+          )
+          AND EC.ITEM_NO IN ('141443','141441','141442','14015448')
+          AND EC.AR_DATE_STR &lt; TO_CHAR(SYSDATE,'YYYY/MM/DD')
+          AND (
+              EXISTS (
+                  SELECT B1.DEPTID
+                  FROM HR_DEPARTMENT B1
+                  WHERE B1.DEPTNO = HR.DEPTNO
+                  START WITH B1.DEPTNO IN (
+                      SELECT HRD.DEPTID
+                      FROM HR_DEPARTMENT HRD
+                      WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+                  )
+                  CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                  UNION
+                  SELECT AR_SUPERVISOR_INFO.DEPTNO
+                  FROM AR_SUPERVISOR_INFO
+                  WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                    AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+              )
+          )
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR UPPER(HR.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND EC.AR_DATE_STR &gt;= #{fromDate, jdbcType=VARCHAR}
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND EC.AR_DATE_STR &lt;= #{toDate, jdbcType=VARCHAR}
+        </if>
+        <if test="postFamily != null and postFamily != ''">
+            AND HR.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+            AND EC.SHIFT_NO = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="itemNo != null and itemNo != ''">
+            AND EC.ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+        </if>
+        ORDER BY EC.AR_DATE_STR DESC
+    </select>
+
+    <select id="selectCheckAttendanceExForBatchList"
+            parameterType="com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto"
+            resultMap="DtoResultMap">
+        SELECT
+            EC.APPLY_NO,
+            EC.AR_DATE_STR AS AR_DATE_STR,
+            EC.AR_DATE_STR AS DATE_STR,
+            EC.PERSON_ID,
+            TO_CHAR(EC.FROM_TIME, 'YYYY/MM/DD HH24:MI') AS FROM_DATE,
+            TO_CHAR(EC.TO_TIME, 'YYYY/MM/DD HH24:MI') AS TO_DATE,
+            TO_CHAR(EC.WORK_HOUR) AS WORK_HOUR,
+            EC.ITEM_NO,
+            GET_GLOBAL_NAME(EC.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NO_NAME,
+            TO_CHAR(EC.CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            GET_LOCAL_NAME_BY_PERSONID(EC.CREATED_BY, #{cpnyId, jdbcType=VARCHAR}) AS CREATED_NAME,
+            TO_CHAR(EC.UPDATE_DATE, 'YYYY/MM/DD') AS UPDATE_DATE,
+            GET_LOCAL_NAME_BY_PERSONID(EC.UPDATED_BY, #{cpnyId, jdbcType=VARCHAR}) AS UPDATED_NAME,
+            HR.EMPID,
+            HR.LOCAL_NAME,
+            HR.DEPTNO,
+            GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            GET_GLOBAL_NAME(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            HR.POST_FAMILY,
+            GET_GLOBAL_NAME(HR.POST_FAMILY, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+            GET_AR_SHIFTNO(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}) AS SHIFT_NO,
+            GET_GLOBAL_NAME(GET_AR_SHIFTNO(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            EC.APPLY_REASON AS REMARK,
+            GET_UPDATED_INFO(EC.CREATED_BY) AS CREATED_BY,
+            GET_UPDATED_INFO(EC.UPDATED_BY) AS UPDATED_BY,
+            EC.CONFIRM_FLAG AS LOCK_YN
+        FROM ESS_CARD_APPLY_TB EC
+        INNER JOIN HR_EMPLOYEE HR ON EC.PERSON_ID = HR.PERSON_ID
+        WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND HR.PERSON_ID NOT LIKE '111111%'
+          AND EC.ITEM_NO IN ('141443', '141442', '141441', '14015448')
+          AND EXISTS (
+              SELECT B1.DEPTID
+              FROM HR_DEPARTMENT B1
+              WHERE B1.DEPTNO = HR.DEPTNO
+              START WITH B1.DEPTNO IN (
+                  SELECT HRD.DEPTID
+                  FROM HR_DEPARTMENT HRD
+                  WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+              )
+              CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+              UNION
+              SELECT AR_SUPERVISOR_INFO.DEPTNO
+              FROM AR_SUPERVISOR_INFO
+              WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO
+                AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          )
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR UPPER(HR.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND EC.AR_DATE_STR &gt;= #{fromDate, jdbcType=VARCHAR}
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND EC.AR_DATE_STR &lt;= #{toDate, jdbcType=VARCHAR}
+        </if>
+        <if test="postFamily != null and postFamily != ''">
+            AND HR.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+            AND GET_AR_SHIFTNO(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}) = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="itemNo != null and itemNo != ''">
+            AND EC.ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+        </if>
+        ORDER BY EC.AR_DATE_STR DESC, EC.CREATE_DATE DESC, EC.APPLY_NO DESC
+    </select>
+
+    <select id="selectCardApplyInfo" resultMap="CardApplyDetailResultMap">
+        SELECT
+            HE.EMPID,
+            HE.LOCAL_NAME,
+            HE.PERSON_ID,
+            HE.DEPTNO AS DEPT_NO,
+            HE.CPNY_ID,
+            HE.POST_GRADE_NO,
+            TO_CHAR(ESS.APPLY_NO) AS APPLY_NO,
+            ESS.ITEM_NO AS LEAVE_TYPE_CODE,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS LEAVE_TYPE_NAME,
+            TO_CHAR(ESS.FROM_TIME, 'DD/MM/YYYY HH24:MI') AS LEAVE_FROM_TIME,
+            TO_CHAR(ESS.TO_TIME, 'DD/MM/YYYY HH24:MI') AS LEAVE_TO_TIME,
+            TO_CHAR(ESS.WORK_HOUR) AS APPLY_LENGTH,
+            '' AS DAY_HOURS,
+            ESS.APPLY_REASON AS LEAVE_REASON,
+            ESS.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(ESS.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            TO_CHAR(ESS.CREATE_DATE, 'YYYY/MM/DD HH24:MI:SS') AS CREATE_DATE,
+            '' AS DETAIL_TYPE,
+            '' AS DETAIL_TYPE_NAME,
+            TO_CHAR(ESS.ACTIVITY) AS ACTIVITY,
+            TO_CHAR(ESS.CONFIRM_FLAG) AS CONFIRM_FLAG
+        FROM ESS_CARD_APPLY_TB ESS
+        INNER JOIN HR_EMPLOYEE HE ON ESS.PERSON_ID = HE.PERSON_ID
+        WHERE TO_CHAR(ESS.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectCardApprovalInfo" resultMap="CardApprovalInfoResultMap">
+        SELECT
+            T.SEQ,
+            T.AFFIRM_TYPE,
+            T.AFFIRM_TYPE_NAME,
+            T.APPLY_NO,
+            T.APPLY_TYPE,
+            T.APPLY_FLAG,
+            T.APPLY_PERSON_ID,
+            T.AFFIRM_PERSON_ID,
+            T.TITLE,
+            T.AFFIRM_LEVEL,
+            T.AFFIRM_FLAG,
+            T.AFFIRM_URL,
+            T.APPLY_TYPE_CODE,
+            T.APPLY_PERSON_INFO,
+            T.ACTIVITY,
+            T.AFFIRM_FLAG_NAME,
+            T.AFFIRM_NAME,
+            T.DEPTNAME,
+            T.APPLY_AFFIRM_FLAG_NO,
+            T.APPLY_AFFIRM_FLAG,
+            T.UPDATE_DATE,
+            T.AFFIRM_CONTENT
+        FROM (
+            SELECT
+                A.SEQ,
+                A.AFFIRM_TYPE,
+                DECODE(A.AFFIRM_TYPE,  '1', 'Approval',  '2', 'Agreement',  '3', 'Announcement',  '4', 'Proposal',  'Approval') AS AFFIRM_TYPE_NAME,
+                A.APPLY_NO,
+                A.APPLY_TYPE,
+                A.APPLY_FLAG,
+                A.APPLY_PERSON_ID,
+                A.AFFIRM_PERSON_ID,
+                A.TITLE,
+                TO_CHAR(A.AFFIRM_LEVEL) AS AFFIRM_LEVEL,
+                A.AFFIRM_FLAG,
+                A.AFFIRM_URL,
+                A.APPLY_TYPE_CODE,
+                A.APPLY_PERSON_INFO,
+                A.ACTIVITY,
+                DECODE(
+                    A.AFFIRM_TYPE,
+                    '3', DECODE(A.AFFIRM_FLAG, '0', 'Not Announced', 'Announced'),
+                    '4', DECODE(A.AFFIRM_FLAG, '2', 'Cancelled', 'Submitted'),
+                    DECODE(A.AFFIRM_FLAG, '0', 'Not Approved', '1', 'Approved', 'Rejected')
+                ) AS AFFIRM_FLAG_NAME,
+                HR.LOCAL_NAME || '/' || GET_CODE_NAME(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS AFFIRM_NAME,
+                GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPTNAME,
+                A.APPLY_AFFIRM_FLAG AS APPLY_AFFIRM_FLAG_NO,
+                GET_CODE_NAME(A.APPLY_AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS APPLY_AFFIRM_FLAG,
+                TO_CHAR(A.AFFIRM_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE,
+                A.AFFIRM_CONTENT
+            FROM SY_AFFIRM_EMAIL A
+            INNER JOIN HR_EMPLOYEE HR ON A.AFFIRM_PERSON_ID = HR.PERSON_ID
+            WHERE TO_CHAR(A.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+            <if test="applyType != null and applyType != ''">
+                AND A.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+            </if>
+              AND A.APPLY_AFFIRM_FLAG &lt;&gt; '14014310'
+            UNION ALL
+            SELECT
+                '' AS SEQ,
+                '' AS AFFIRM_TYPE,
+                '' AS AFFIRM_TYPE_NAME,
+                TO_CHAR(B.APPLY_NO) AS APPLY_NO,
+                '' AS APPLY_TYPE,
+                '' AS APPLY_FLAG,
+                '' AS APPLY_PERSON_ID,
+                '' AS AFFIRM_PERSON_ID,
+                '' AS TITLE,
+                '100' AS AFFIRM_LEVEL,
+                TO_CHAR(B.CONFIRM_FLAG) AS AFFIRM_FLAG,
+                '' AS AFFIRM_URL,
+                '' AS APPLY_TYPE_CODE,
+                '' AS APPLY_PERSON_INFO,
+                '' AS ACTIVITY,
+                '' AS AFFIRM_FLAG_NAME,
+                GET_LOCAL_NAME_BY_PERSONID(B.CONFIRM_BY, #{lang, jdbcType=VARCHAR}) AS AFFIRM_NAME,
+                'HR' AS DEPTNAME,
+                '' AS APPLY_AFFIRM_FLAG_NO,
+                '' AS APPLY_AFFIRM_FLAG,
+                TO_CHAR(B.CONFIRM_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE,
+                B.HR_COMMENT AS AFFIRM_CONTENT
+            FROM ESS_CARD_APPLY_TB B
+            WHERE TO_CHAR(B.APPLY_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) T
+        ORDER BY TO_NUMBER(T.AFFIRM_LEVEL)
+    </select>
+
+    <select id="checkAttExClash" resultType="java.lang.Integer">
+        SELECT AR_GET_ATT_EX_CLASH(#{personId, jdbcType=VARCHAR}, #{arDateStr, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) FROM DUAL
+    </select>
+
+    <select id="getNextCardApplyNo" resultType="java.lang.Long">
+        SELECT AR_MAC_RECORDS_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertCardApply" parameterType="com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto">
+        INSERT INTO ESS_CARD_APPLY_TB (
+            APPLY_NO,
+            PERSON_ID,
+            APPLY_REASON,
+            CURRENT_AFFIRM_ID,
+            ID,
+            AFFIRM_FLAG,
+            ITEM_NO,
+            AR_DATE_STR,
+            FROM_TIME,
+            TO_TIME,
+            CREATE_DATE,
+            CREATED_BY,
+            ACTIVITY,
+            APPLY_TIME,
+            IN_TIME,
+            OUT_TIME,
+            WORK_HOUR,
+            CREATED_IP,
+            SEQ,
+            CONFIRM_FLAG,
+            CPNY_ID
+        ) VALUES (
+            #{applyNo, jdbcType=VARCHAR},
+            #{personId, jdbcType=VARCHAR},
+            #{remark, jdbcType=VARCHAR},
+            NULL,
+            AR_MAC_RECORDS_APPLY_SEQ.NEXTVAL,
+            '14014306',
+            #{itemNo, jdbcType=VARCHAR},
+            #{arDateStr, jdbcType=VARCHAR},
+            TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            1,
+            SYSDATE,
+            TO_DATE(#{fromDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            TO_DATE(#{toDateTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            #{workHour, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            ESS_APPLY_SEQ.NEXTVAL,
+            0,
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+</mapper>

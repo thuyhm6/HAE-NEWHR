@@ -1,0 +1,29 @@
+.dept-tree-container {
+    position: absolute;
+    z-index: 1050;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 250px;
+}
+
+.auth-tree-item {
+    padding: 2px 0;
+}
+
+.auth-tree-item:hover {
+    background-color: #f8f9fa;
+}
+
+.auth-tree-label {
+    cursor: pointer;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+.auth-dept-tree-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px;
+}

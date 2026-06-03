@@ -1,0 +1,214 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vaed_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2 px-3">
+                    <form id="vaed_searchForm" class="row gy-2 align-items-center">
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{vaed.search.title}">Tiêu đề</label>
+                            <input type="text" class="form-control form-control-sm" id="vaed_titleSearch"
+                                style="min-width:200px;">
+                        </div>
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{vaed.search.applyType}">Loại đơn</label>
+                            <select class="form-select form-select-sm" id="vaed_applyTypeSearch"
+                                style="min-width:140px;">
+                                <option value="" th:text="#{vaed.search.applyType.all}">-- Tất cả --</option>
+                                <option value="31" th:text="#{vaed.search.applyType.ot}">Tăng ca</option>
+                                <option value="21" th:text="#{vaed.search.applyType.leave}">Nghỉ phép</option>
+                                <option value="218197" th:text="#{vaed.search.applyType.anomaly}">Nghỉ bất thường</option>
+                            </select>
+                        </div>
+                        <div class="col-auto ms-auto d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="vaedSearch()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{vaed.btn.search}">Tra cứu</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle mb-0"
+                            id="vaed_table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:40px;" th:text="#{vaed.col.no}">NO</th>
+                                    <th th:text="#{vaed.col.title}">Tiêu đề</th>
+                                    <th class="text-center" style="width:20%; white-space:nowrap;"
+                                        th:text="#{vaed.col.applyPerson}">Người xin phép</th>
+                                    <th class="text-center" style="width:10%; white-space:nowrap;"
+                                        th:text="#{vaed.col.updateDate}">Ngày thực hiện</th>
+                                    <th class="text-center" style="width:10%; white-space:nowrap;"
+                                        th:text="#{vaed.col.affirmStatus}">Trạng thái duyệt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vaed_tableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-3"
+                                        th:text="#{vaed.msg.loading}">Đang tải...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vaed_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- Modal chi tiết đơn tăng ca -->
+    <th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtModal}"></th:block>
+    <!-- Modal chi tiết đơn nghỉ phép -->
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveModal}"></th:block>
+    <!-- Modal chi tiết điều chỉnh chấm công -->
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExModal}"></th:block>
+
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{ess/infoApply/viewApprovaledOt :: approvalOtScript}"></th:block>
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveScript}"></th:block>
+    <th:block th:replace="~{ess/infoApply/viewAttendanceEx :: attendanceExScript}"></th:block>
+    <style>
+        #vaed_table th,
+        #vaed_table td {
+            vertical-align: middle;
+        }
+        #vaed_table thead th {
+            white-space: nowrap;
+        }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            var _vaed_tabId = window._currentTabId || 'default-content';
+            var _vaed_data = [];
+
+            var _vaed_i18n = {
+                noData:    /*[[#{vaed.msg.noData}]]*/ 'Không có dữ liệu',
+                loading:   /*[[#{vaed.msg.loading}]]*/ 'Đang tải...',
+                loadError: /*[[#{vaed.msg.loadError}]]*/ 'Lỗi tải dữ liệu'
+            };
+
+            function vaed$(sel) { return $('#' + _vaed_tabId).find(sel); }
+
+            function vaedEsc(s) {
+                if (s == null) return '';
+                return String(s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function vaedStatusBadge(flagName, affirmFlag) {
+                var cls = 'text-bg-secondary';
+                var f = String(affirmFlag || '');
+                if (f === '14014309') cls = 'text-bg-success';
+                else if (f === '14014310') cls = 'text-bg-danger';
+                else if (f === '14014308') cls = 'text-bg-warning';
+                return '<span class="badge ' + cls + '">' + vaedEsc(flagName) + '</span>';
+            }
+
+            function vaedRenderTable(rows) {
+                var $tbody = vaed$('#vaed_tableBody');
+                if (!rows || !rows.length) {
+                    $tbody.html('<tr><td colspan="5" class="text-center text-muted py-3">' + vaedEsc(_vaed_i18n.noData) + '</td></tr>');
+                    return;
+                }
+                var html = '';
+                rows.forEach(function (r, idx) {
+                    var titleHtml = r.affirmUrl
+                        ? '<a href="javascript:void(0)" class="text-primary vaed-detail-link"'
+                          + ' data-apply-no="' + vaedEsc(r.applyNo || '') + '"'
+                          + ' data-apply-type="' + vaedEsc(r.applyType || '') + '"'
+                          + ' data-affirm-url="' + vaedEsc(r.affirmUrl || '') + '"'
+                          + ' data-idx="' + idx + '">'
+                          + vaedEsc(r.title || '') + '</a>'
+                        : vaedEsc(r.title || '');
+                    html += '<tr>'
+                        + '<td class="text-center">' + (idx + 1) + '</td>'
+                        + '<td>' + titleHtml + '</td>'
+                        + '<td class="text-center">' + vaedEsc(r.applyPersonInfo || '') + '</td>'
+                        + '<td class="text-center">' + vaedEsc(r.updateDate || '') + '</td>'
+                        + '<td class="text-center">' + vaedStatusBadge(r.applyAffirmFlag, r.affirmFlag) + '</td>'
+                        + '</tr>';
+                });
+                $tbody.html(html);
+            }
+
+            function vaedOpenDetailModal(applyNo, applyType, affirmUrl) {
+                var url = affirmUrl || '';
+                if (url.indexOf('viewApprovaledOt') !== -1) {
+                    typeof vaotOpenApplyDetail === 'function' && vaotOpenApplyDetail(applyNo, applyType, null);
+                } else if (url.indexOf('viewApprovaledLeave') !== -1) {
+                    typeof valOpenApplyDetail === 'function' && valOpenApplyDetail(applyNo, applyType, null);
+                } else if (url.indexOf('viewAttendanceEx') !== -1) {
+                    typeof atexOpenApplyDetail === 'function' && atexOpenApplyDetail(applyNo, applyType, null);
+                }
+            }
+
+            function vaedLoadList() {
+                vaed$('#vaed_tableBody').html('<tr><td colspan="5" class="text-center text-muted py-3">' + vaedEsc(_vaed_i18n.loading) + '</td></tr>');
+                $.ajax({
+                    url: '/ess/infoApply/api/approvaledEmail/list',
+                    type: 'GET',
+                    success: function (rows) {
+                        _vaed_data = rows || [];
+                        vaedSearch();
+                    },
+                    error: function () {
+                        vaed$('#vaed_tableBody').html('<tr><td colspan="5" class="text-center text-danger py-3">' + vaedEsc(_vaed_i18n.loadError) + '</td></tr>');
+                    }
+                });
+            }
+
+            window.vaedSearch = function () {
+                var typeFilter  = vaed$('#vaed_applyTypeSearch').val() || '';
+                var titleFilter = vaed$('#vaed_titleSearch').val() || '';
+                var rows = _vaed_data.filter(function (r) {
+                    var matchType  = !typeFilter  || r.applyTypeCode === typeFilter;
+                    var matchTitle = !titleFilter || (r.title && r.title.toLowerCase().indexOf(titleFilter.toLowerCase()) !== -1);
+                    return matchType && matchTitle;
+                });
+                vaedRenderTable(rows);
+            };
+
+            $(document).ready(function () {
+                // Auto-filter theo applyTypeCode từ URL khi mở từ thông báo
+                if (window._currentTabUrl) {
+                    try {
+                        var qStr = window._currentTabUrl.split('?')[1] || '';
+                        var urlParams = new URLSearchParams(qStr);
+                        var typeCode = urlParams.get('applyTypeCode');
+                        if (typeCode) {
+                            vaed$('#vaed_applyTypeSearch').val(typeCode);
+                        }
+                    } catch (e) {}
+                }
+
+                // Enter trong ô tìm kiếm tiêu đề → tra cứu
+                vaed$('#vaed_titleSearch').on('keydown', function (e) {
+                    if (e.key === 'Enter') { e.preventDefault(); vaedSearch(); }
+                });
+
+                // Click vào tiêu đề đơn → mở modal chi tiết tương ứng
+                vaed$('#vaed_tableBody').on('click', '.vaed-detail-link', function () {
+                    vaedOpenDetailModal(
+                        $(this).data('apply-no'),
+                        $(this).data('apply-type'),
+                        $(this).data('affirm-url')
+                    );
+                });
+
+                vaedLoadList();
+            });
+        })();
+    </script>
+</template>

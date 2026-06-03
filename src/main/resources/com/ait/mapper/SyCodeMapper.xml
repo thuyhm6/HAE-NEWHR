@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.basicMaintenance.mapper.SyCodeMapper">
+
+    <!-- Result Map -->
+    <resultMap id="SyCodeResultMap" type="com.ait.sy.basicMaintenance.model.SyCode">
+        <id property="codeNo" column="CODE_NO"/>
+        <result property="description" column="DESCRIPTION"/>
+        <result property="depth" column="DEPTH"/>
+        <result property="parentCodeNo" column="PARENT_CODE_NO"/>
+        <result property="operationId" column="OPERATION_ID"/>
+        <result property="createDate" column="CREATE_DATE"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="updateDate" column="UPDATE_DATE"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="orderNo" column="ORDERNO"/>
+        <result property="activity" column="ACTIVITY"/>
+        <result property="remark" column="REMARK"/>
+        <result property="groupCode" column="GROUP_CODE"/>
+        <result property="codeId" column="CODE_ID"/>
+    </resultMap>
+
+    <resultMap id="SyCodeDtoResultMap" type="com.ait.sy.basicMaintenance.dto.SyCodeDto" extends="SyCodeResultMap">
+        <result property="codeName" column="CODE_NAME"/>
+        <result property="nameVi" column="NAME_VI"/>
+        <result property="nameEn" column="NAME_EN"/>
+        <result property="nameZh" column="NAME_ZH"/>
+        <result property="nameKo" column="NAME_KO"/>
+    </resultMap>
+
+    <!-- Lấy tất cả mã code -->
+    <select id="findAll" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE 1 = 1
+        ORDER BY GROUP_CODE, ORDERNO, CODE_NO
+    </select>
+
+    <!-- Lấy mã code theo CODE_NO -->
+    <select id="findByCodeNo" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE CODE_NO = #{codeNo}
+    </select>
+
+    <!-- Lấy mã code theo nhóm -->
+    <select id="findByGroupCode" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE GROUP_CODE = #{groupCode}
+        ORDER BY ORDERNO, CODE_NO
+    </select>
+
+    <!-- Lấy mã code con theo mã code cha -->
+    <select id="findByParentCodeNo" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE PARENT_CODE_NO = #{parentCodeNo}
+        ORDER BY ORDERNO, CODE_NO
+    </select>
+
+    <!-- Lấy mã code gốc (không có cha) -->
+    <select id="findRootCodes" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE (PARENT_CODE_NO IS NULL OR PARENT_CODE_NO = '')
+        ORDER BY GROUP_CODE, ORDERNO, CODE_NO
+    </select>
+
+    <!-- Lấy cây phân cấp mã code -->
+    <select id="findCodeTree" resultMap="SyCodeResultMap">
+        WITH CODE_TREE AS (
+            SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+                   CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+                   ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+            FROM SY_CODE 
+            WHERE CODE_NO = #{rootCodeNo}
+            UNION ALL
+            SELECT c.CODE_NO, c.DESCRIPTION, c.DEPTH, c.PARENT_CODE_NO, c.OPERATION_ID,
+                   c.CREATE_DATE, c.CREATED_BY, c.UPDATE_DATE, c.UPDATED_BY, c.ORDERNO,
+                   c.ACTIVITY, c.REMARK, c.GROUP_CODE, c.CODE_ID
+            FROM SY_CODE c
+            INNER JOIN CODE_TREE ct ON c.PARENT_CODE_NO = ct.CODE_NO
+            WHERE c.ACTIVITY = 1
+        )
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM CODE_TREE 
+        ORDER BY DEPTH, ORDERNO, CODE_NO
+    </select>
+
+    <!-- Lấy mã code theo độ sâu -->
+    <select id="findByDepth" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE DEPTH = #{depth}
+        ORDER BY GROUP_CODE, ORDERNO, CODE_NO
+    </select>
+
+    <!-- Lấy mã code hoạt động -->
+    <select id="findActiveCodes" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE ACTIVITY = 1
+        ORDER BY GROUP_CODE, ORDERNO, CODE_NO
+    </select>
+
+    <!-- Thêm mới mã code -->
+    <insert id="insert" parameterType="com.ait.sy.basicMaintenance.model.SyCode">
+        INSERT INTO SY_CODE (
+            CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+            ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        ) VALUES (
+            #{codeNo}, #{description}, #{depth}, #{parentCodeNo}, #{operationId},
+            sysdate, #{adminID, jdbcType=VARCHAR}, sysdate, #{adminID, jdbcType=VARCHAR}, #{orderNo},
+            #{activity}, #{remark}, #{groupCode}, #{codeId}
+        )
+    </insert>
+
+    <!-- Cập nhật mã code -->
+    <update id="update" parameterType="com.ait.sy.basicMaintenance.model.SyCode">
+        UPDATE SY_CODE SET
+            DESCRIPTION = #{description},
+            DEPTH = #{depth},
+            PARENT_CODE_NO = #{parentCodeNo},
+            OPERATION_ID = #{operationId},
+            UPDATE_DATE = sysdate,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ORDERNO = #{orderNo},
+            ACTIVITY = #{activity},
+            REMARK = #{remark},
+            GROUP_CODE = #{groupCode},
+            CODE_ID = #{codeId}
+        WHERE CODE_NO = #{codeNo}
+    </update>
+
+    <!-- Xóa mã code -->
+    <delete id="deleteByCodeNo">
+        DELETE FROM SY_CODE WHERE CODE_NO = #{codeNo}
+    </delete>
+
+    <!-- Kiểm tra tồn tại mã code -->
+    <select id="existsByCodeNo" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM SY_CODE 
+        WHERE CODE_NO = #{codeNo}
+    </select>
+
+    <!-- Lấy danh sách nhóm code -->
+    <select id="getDistinctGroupCodes" resultType="String">
+        SELECT DISTINCT GROUP_CODE FROM SY_CODE 
+        WHERE ACTIVITY = 1 AND GROUP_CODE IS NOT NULL
+        ORDER BY GROUP_CODE
+    </select>
+
+    <!-- Lấy mã code theo hoạt động và nhóm -->
+    <select id="findByActivityAndGroupCode" resultMap="SyCodeResultMap">
+        SELECT CODE_NO, DESCRIPTION, DEPTH, PARENT_CODE_NO, OPERATION_ID,
+               CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO,
+               ACTIVITY, REMARK, GROUP_CODE, CODE_ID
+        FROM SY_CODE 
+        WHERE ACTIVITY = #{activity} AND GROUP_CODE = #{groupCode} 
+        ORDER BY ORDERNO, CODE_NO
+    </select>
+
+    <!-- Lấy danh sách code kèm theo tên đa ngôn ngữ theo parent hoặc tất cả nếu null -->
+    <select id="findCodeWithParentNo" resultMap="SyCodeDtoResultMap">
+        SELECT c.CODE_NO, c.DESCRIPTION, c.DEPTH, c.PARENT_CODE_NO, c.OPERATION_ID, c.ORDERNO,
+               gv.CONTENT AS CODE_NAME,
+               gvi.CONTENT AS NAME_VI,
+               gve.CONTENT AS NAME_EN,
+               gvz.CONTENT AS NAME_ZH,
+               gvk.CONTENT AS NAME_KO
+        FROM SY_CODE c
+        JOIN SY_CODE_PARAM SCP ON c.CODE_NO = scp.CODE_NO AND scp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME gv ON c.CODE_NO = gv.NO AND gv.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gve ON c.CODE_NO = gve.NO AND gve.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gvz ON c.CODE_NO = gvz.NO AND gvz.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gvk ON c.CODE_NO = gvk.NO AND gvk.LANGUAGE = 'ko'
+        WHERE c.ACTIVITY = 1
+        <if test="parentCodeNo != null and parentCodeNo != '' and parentCodeNo != 'ALL' and parentCodeNo != 'ROOT'">
+             AND c.PARENT_CODE_NO = #{parentCodeNo}
+        </if>
+        <if test="parentCodeNo == 'ROOT'">
+             AND (c.PARENT_CODE_NO IS NULL OR c.PARENT_CODE_NO = '')
+        </if>
+        ORDER BY c.ORDERNO, c.CODE_NO
+    </select>
+
+    <select id="searchCodeWithNames" resultMap="SyCodeDtoResultMap">
+        SELECT c.CODE_NO, c.DESCRIPTION, c.DEPTH, c.PARENT_CODE_NO, c.OPERATION_ID, c.ORDERNO,
+               gv.CONTENT AS CODE_NAME,
+               gvi.CONTENT AS NAME_VI,
+               gve.CONTENT AS NAME_EN,
+               gvz.CONTENT AS NAME_ZH,
+               gvk.CONTENT AS NAME_KO
+        FROM SY_CODE c
+        JOIN SY_CODE_PARAM SCP ON c.CODE_NO = scp.CODE_NO AND scp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME gv ON c.CODE_NO = gv.NO AND gv.LANGUAGE = #{lang, jdbcType=VARCHAR}
+        LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gve ON c.CODE_NO = gve.NO AND gve.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gvz ON c.CODE_NO = gvz.NO AND gvz.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gvk ON c.CODE_NO = gvk.NO AND gvk.LANGUAGE = 'ko'
+        WHERE c.ACTIVITY = 1
+        AND (
+            c.CODE_NO LIKE '%' || #{keyword} || '%' OR
+            gv.CONTENT LIKE '%' || #{keyword} || '%' OR
+            gvi.CONTENT LIKE '%' || #{keyword} || '%' OR
+            gve.CONTENT LIKE '%' || #{keyword} || '%' OR
+            gvz.CONTENT LIKE '%' || #{keyword} || '%' OR
+            gvk.CONTENT LIKE '%' || #{keyword} || '%'
+        )
+        ORDER BY c.ORDERNO, c.CODE_NO
+    </select>
+
+    <select id="getNextGlobalNoSeq" resultType="String">
+        SELECT SY_GLOBAL_NO_SEQ.NEXTVAL FROM DUAL
+    </select>
+</mapper>

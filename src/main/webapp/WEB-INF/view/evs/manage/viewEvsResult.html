@@ -1,0 +1,1049 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="ver_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2 px-3">
+                    <form id="ver_searchForm" class="row gy-2 align-items-center">
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.result.label.evaluationName}">Tên đánh giá</label>
+                            <select class="form-select form-select-sm" id="ver_resumeSeq"
+                                style="max-width:260px;"></select>
+                        </div>
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.result.label.empSearch}">Mã NV / Họ tên</label>
+                            <div class="input-group input-group-sm" style="max-width:260px;">
+                                <input type="hidden" id="ver_personId">
+                                <input type="text" class="form-control" id="ver_empDisplay"
+                                    th:placeholder="#{evs.result.placeholder.selectEmployee}"
+                                    placeholder="Chọn nhân viên..." readonly>
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="verOpenEmployeeSearch()" th:title="#{common.search}">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" type="button" onclick="verClearEmpSearch()"
+                                    th:title="#{common.clear}">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.result.label.dept}">Phòng ban</label>
+                            <div class="input-group input-group-sm" style="max-width:180px;">
+                                <input type="text" class="form-control" id="ver_deptSearch"
+                                    th:placeholder="#{evs.result.placeholder.selectDept}"
+                                    placeholder="Chọn phòng ban" readonly>
+                                <span class="input-group-text"><i class="bi bi-people"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex align-items-center gap-2">
+                            <label class="form-label small text-muted mb-0 text-nowrap"
+                                th:text="#{evs.result.label.group}">Nhóm đánh giá</label>
+                            <div class="input-group input-group-sm" style="max-width:180px;">
+                                <input type="text" class="form-control" id="ver_groupSearch"
+                                    th:placeholder="#{evs.result.placeholder.selectGroup}"
+                                    placeholder="Chọn nhóm">
+                                <span class="input-group-text"><i class="bi bi-people-fill"></i></span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Hai panel thống kê -->
+            <div class="row mb-2 g-2">
+                <!-- Panel trái: Tiêu chuẩn cơ bản -->
+                <div class="col-md-8">
+                    <div class="card h-100">
+                        <div class="card-body p-2">
+                            <div class="fw-semibold small mb-1" th:text="#{evs.result.panel.standard}">Tiêu chuẩn cơ bản</div>
+                            <table class="table table-bordered table-sm mb-0 text-center" id="ver_standardTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th rowspan="2" style="vertical-align:middle;">-</th>
+                                        <th rowspan="2" style="vertical-align:middle;" th:text="#{evs.result.col.total}">Tổng số người</th>
+                                        <th colspan="2" class="text-center">EX</th>
+                                        <th colspan="2" class="text-center">VG</th>
+                                        <th colspan="2" class="text-center">GD</th>
+                                        <th colspan="2" class="text-center">NI</th>
+                                        <th colspan="2" class="text-center">UN</th>
+                                    </tr>
+                                    <tr>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                        <th th:text="#{evs.result.col.count}">Số lượng</th>
+                                        <th th:text="#{evs.result.col.rate}">Tỷ lệ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ver_standardTbody">
+                                    <tr>
+                                        <td th:text="#{evs.result.col.std}">Tỷ lệ tiêu chuẩn</td>
+                                        <td id="ver_std_total">0</td>
+                                        <td id="ver_std_ex_cnt">0</td>
+                                        <td id="ver_std_ex_pct">0</td>
+                                        <td id="ver_std_vg_cnt">0</td>
+                                        <td id="ver_std_vg_pct">0</td>
+                                        <td id="ver_std_gd_cnt">0</td>
+                                        <td id="ver_std_gd_pct">0</td>
+                                        <td id="ver_std_ni_cnt">0</td>
+                                        <td id="ver_std_ni_pct">0</td>
+                                        <td id="ver_std_un_cnt">0</td>
+                                        <td id="ver_std_un_pct">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td th:text="#{evs.result.col.hr}">Nhân sự</td>
+                                        <td id="ver_hr_total">0</td>
+                                        <td id="ver_hr_ex_cnt">0</td>
+                                        <td id="ver_hr_ex_pct">0</td>
+                                        <td id="ver_hr_vg_cnt">0</td>
+                                        <td id="ver_hr_vg_pct">0</td>
+                                        <td id="ver_hr_gd_cnt">0</td>
+                                        <td id="ver_hr_gd_pct">0</td>
+                                        <td id="ver_hr_ni_cnt">0</td>
+                                        <td id="ver_hr_ni_pct">0</td>
+                                        <td id="ver_hr_un_cnt">0</td>
+                                        <td id="ver_hr_un_pct">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td th:text="#{evs.result.col.prog_l2}">Lần 2</td>
+                                        <td id="ver_l2_total">0</td>
+                                        <td id="ver_l2_ex_cnt">0</td>
+                                        <td id="ver_l2_ex_pct">0</td>
+                                        <td id="ver_l2_vg_cnt">0</td>
+                                        <td id="ver_l2_vg_pct">0</td>
+                                        <td id="ver_l2_gd_cnt">0</td>
+                                        <td id="ver_l2_gd_pct">0</td>
+                                        <td id="ver_l2_ni_cnt">0</td>
+                                        <td id="ver_l2_ni_pct">0</td>
+                                        <td id="ver_l2_un_cnt">0</td>
+                                        <td id="ver_l2_un_pct">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td th:text="#{evs.result.col.prog_l1}">Lần 1</td>
+                                        <td id="ver_l1_total">0</td>
+                                        <td id="ver_l1_ex_cnt">0</td>
+                                        <td id="ver_l1_ex_pct">0</td>
+                                        <td id="ver_l1_vg_cnt">0</td>
+                                        <td id="ver_l1_vg_pct">0</td>
+                                        <td id="ver_l1_gd_cnt">0</td>
+                                        <td id="ver_l1_gd_pct">0</td>
+                                        <td id="ver_l1_ni_cnt">0</td>
+                                        <td id="ver_l1_ni_pct">0</td>
+                                        <td id="ver_l1_un_cnt">0</td>
+                                        <td id="ver_l1_un_pct">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel phải: Trạng thái tiến hành -->
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold small" th:text="#{evs.result.panel.statusProgress}">Trạng thái tiến hành</span>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="verEmail()" th:text="#{evs.result.btn.email}">Email</button>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="verEvaluateEnd()" th:text="#{evs.result.btn.evaluateEnd}">Đánh giá kết thúc</button>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                <label class="form-label small text-muted mb-0 text-nowrap"
+                                    th:text="#{evs.result.label.status}">Trạng thái</label>
+                                <select class="form-select form-select-sm" id="ver_statusFilter"
+                                    style="max-width:160px;" data-parent-code="14015351"></select>
+                                <!-- <button type="button" class="btn btn-primary btn-sm"
+                                    onclick="verSearch()" th:text="#{evs.result.btn.searchAndPrint}">Tra cứu và in</button> -->
+                                <button type="button" class="btn btn-warning btn-sm"
+                                    onclick="verChangeStatus()" th:text="#{evs.result.btn.changeStatus}">Thay đổi trạng thái</button>
+                            </div>
+                            <div class="fw-semibold small mb-1" th:text="#{evs.result.panel.progress}">Tình trạng đánh giá giai đoạn</div>
+                            <table class="table table-bordered table-sm text-center mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th th:text="#{evs.result.col.total}">Tổng số người</th>
+                                        <th th:text="#{evs.result.col.prog_self}">Bản thân</th>
+                                        <th th:text="#{evs.result.col.prog_l1}">Lần 1</th>
+                                        <th th:text="#{evs.result.col.prog_l2}">Lần 2</th>
+                                        <th th:text="#{evs.result.col.prog_done}">Hoàn thành</th>
+                                        <th th:text="#{evs.result.col.prog_end}">Kết thúc</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="ver_prog_total">0</td>
+                                        <td id="ver_prog_self">0</td>
+                                        <td id="ver_prog_l1">0</td>
+                                        <td id="ver_prog_l2">0</td>
+                                        <td id="ver_prog_done">0</td>
+                                        <td id="ver_prog_end">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh hành động & lọc nhanh -->
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <span class="small text-muted"><span th:text="#{evs.result.label.total}">Tổng</span>: <strong id="ver_totalCount">0</strong></span>
+                <div class="d-flex align-items-center gap-1">
+                    <label class="form-label small text-muted mb-0" th:text="#{evs.result.quickFilter}">Lọc nhanh</label>
+                    <input type="text" class="form-control form-control-sm" id="ver_quickFilter" style="width:130px;"
+                        th:placeholder="#{evs.result.placeholder.keyword}" placeholder="Từ khóa...">
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" onclick="verSearch()">
+                    <i class="bi bi-search"></i> <span th:text="#{evs.result.btn.search}">Tra cứu</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="verOpenTemplate()">
+                    <i class="bi bi-file-earmark-text"></i> <span th:text="#{evs.result.btn.template}">Bản mẫu</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="verInsertFile()">
+                    <i class="bi bi-paperclip"></i> <span th:text="#{evs.result.btn.insertFile}">Chèn file</span>
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="verCopyGrade()">
+                    <i class="bi bi-copy"></i> <span th:text="#{evs.result.btn.copyGrade}">Sao chép cấp đánh giá</span>
+                </button>
+                <button type="button" class="btn btn-success btn-sm" onclick="verSave()">
+                    <i class="bi bi-save"></i> <span th:text="#{evs.result.btn.save}">Lưu</span>
+                </button>
+                <button type="button" class="btn btn-info btn-sm text-white" onclick="verExportExcel()">
+                    <i class="bi bi-file-earmark-excel"></i> <span th:text="#{evs.result.btn.exportExcel}">Xuất Excel</span>
+                </button>
+            </div>
+
+            <!-- Bảng danh sách kết quả đánh giá (không phân trang) -->
+            <!-- Tổng 24 cột: 8 rowspan + 3(Bản thân) + 5(ĐG1) + 5(ĐG2) + 3 rowspan -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <div id="ver_tableWrapper" class="table-responsive"
+                        style="max-height:calc(100vh - 460px);overflow-y:auto;">
+                        <table id="ver_table" class="table table-striped table-bordered table-hover table-sm"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th rowspan="2" class="text-center align-middle no-sort" style="width:30px;">
+                                        <input type="checkbox" id="ver_checkAll" th:title="#{evs.result.label.selectAll}" title="Chọn tất cả">
+                                    </th>
+                                    <th rowspan="2" class="text-center align-middle no-sort" style="width:35px;" th:text="#{evs.result.col.no}">Nо.</th>
+                                    <th rowspan="2" class="align-middle" th:text="#{evs.result.col.name}">Họ tên</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.empId}">Mã nhân viên</th>
+                                    <th rowspan="2" class="align-middle" th:text="#{evs.result.col.dept}">Phòng ban</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.position}">Chức vụ</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.dateStarted}">Ngày vào làm</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.statusActivity}">Trạng thái</th>
+                                    <th colspan="3" class="text-center" th:text="#{evs.result.col.self}">Bản thân</th>
+                                    <th colspan="5" class="text-center" th:text="#{evs.result.col.appraiser1}">Người đánh giá lần 1</th>
+                                    <th colspan="5" class="text-center" th:text="#{evs.result.col.appraiser2}">Người đánh giá lần 2</th>
+                                    <th rowspan="2" class="text-center align-middle" th:text="#{evs.result.col.hrGrade}">Cấp đánh giá (nhân sự)</th>
+                                    <th rowspan="2" class="align-middle no-sort" th:text="#{evs.result.col.opinion}">Ý kiến</th>
+                                    <th rowspan="2" class="text-center align-middle no-sort" th:text="#{evs.result.col.updatedBy}">Người thay đổi</th>
+                                </tr>
+                                <tr>
+                                    <!-- Bản thân: 3 cột -->
+                                    <th class="text-center" th:text="#{evs.result.col.statusEval}">Trạng thái</th>
+                                    <th class="text-center" th:text="#{evs.result.col.point}">Điểm số</th>
+                                    <th class="text-center" th:text="#{evs.result.col.grade}">Cấp</th>
+                                    <!-- ĐG lần 1: 5 cột -->
+                                    <th th:text="#{evs.result.col.name}">Họ tên</th>
+                                    <th class="text-center" th:text="#{evs.result.col.position}">Chức vụ</th>
+                                    <th class="text-center" th:text="#{evs.result.col.statusEval}">Trạng thái</th>
+                                    <th class="text-center" th:text="#{evs.result.col.point}">Điểm số</th>
+                                    <th class="text-center" th:text="#{evs.result.col.grade}">Cấp</th>
+                                    <!-- ĐG lần 2: 5 cột -->
+                                    <th th:text="#{evs.result.col.name}">Họ tên</th>
+                                    <th class="text-center" th:text="#{evs.result.col.position}">Chức vụ</th>
+                                    <th class="text-center" th:text="#{evs.result.col.statusEval}">Trạng thái</th>
+                                    <th class="text-center" th:text="#{evs.result.col.point}">Điểm số</th>
+                                    <th class="text-center" th:text="#{evs.result.col.grade}">Cấp</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#ver_pageWrapper -->
+    </div><!-- /.row -->
+</div><!-- th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <style>
+        #ver_table th,
+        #ver_table td {
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .ver-grade-sel {
+            min-width: 68px;
+            font-size: 0.75rem;
+            padding: 1px 4px;
+            height: 24px;
+        }
+
+        .ver-content-inp {
+            min-width: 140px;
+            font-size: 0.75rem;
+            padding: 1px 4px;
+            height: 24px;
+        }
+
+        #ver_table thead {
+            position: relative;
+            z-index: 2;
+        }
+
+        #ver_table thead th {
+            font-size: 0.78rem;
+            background-color: #f8f9fa;
+        }
+
+        #ver_table thead th.no-sort {
+            cursor: default;
+            pointer-events: none;
+        }
+
+        #ver_table thead th.no-sort::before,
+        #ver_table thead th.no-sort::after {
+            display: none !important;
+        }
+
+        .ver-grade-badge {
+            display: inline-block;
+            min-width: 36px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.78rem;
+            border-radius: 4px;
+            padding: 1px 6px;
+        }
+
+        .ver-grade-EX {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .ver-grade-VG {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .ver-grade-GD {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .ver-grade-NI {
+            background-color: #fde2e2;
+            color: #721c24;
+        }
+
+        .ver-grade-UN {
+            background-color: #f8d7da;
+            color: #491217;
+        }
+
+        .ver-status-evaluated {
+            color: #28a745;
+            font-size: 0.75rem;
+        }
+
+        .ver-status-not-eval {
+            color: #dc3545;
+            font-size: 0.75rem;
+        }
+
+        .ver-row-chk {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        tr.ver-ticked {
+            background-color: #fff3cd !important;
+        }
+
+        .ver-inline-wrap {
+            display: inline-flex;
+            align-items: center;
+            min-width: 68px;
+            width: 100%;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .ver-inline-wrap:hover {
+            background-color: #f0f4ff;
+            outline: 1px dashed #aaa;
+        }
+
+        .ver-display-val {
+            min-width: 36px;
+            display: inline-block;
+            flex: 1;
+        }
+
+        .ver-placeholder {
+            color: #bbb;
+            font-size: 0.75rem;
+        }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            var _ver_tabId = window._currentTabId || 'default-content';
+
+            window._ver_inst = window._ver_inst || {};
+            if (!window._ver_inst[_ver_tabId]) {
+                window._ver_inst[_ver_tabId] = {
+                    evsType: new URLSearchParams(
+                        (window._currentTabUrl || window.location.href).split('?')[1] || ''
+                    ).get('evsType') || '',
+                    table: null,
+                    selectedDeptCodes: [],
+                    ticked: new Set(),
+                    edited: {},
+                    gradeOptions: []
+                };
+            }
+            var inst = window._ver_inst[_ver_tabId];
+
+            function ver$(sel) { return $('#' + _ver_tabId).find(sel); }
+
+            function verEsc(s) {
+                if (s == null) return '';
+                return String(s)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+
+            function verGradeBadge(grade) {
+                if (!grade) return '';
+                return '<span class="ver-grade-badge ver-grade-' + verEsc(grade) + '">'
+                    + verEsc(grade) + '</span>';
+            }
+
+            function verStatusHtml(statusName) {
+                if (!statusName) return '';
+                if (statusName === 'Evaluated') {
+                    return '<span class="ver-status-evaluated">'
+                        + '<i class="bi bi-check-circle-fill"></i> Evaluated</span>';
+                }
+                return '<span class="ver-status-not-eval">'
+                    + '<i class="bi bi-x-circle"></i> Not_Evaluated</span>';
+            }
+
+            function verFinalGradeBadge(val) {
+                if (!val) return '';
+                var text = val;
+                (inst.gradeOptions || []).forEach(function (o) {
+                    if (o.value === val) text = o.text;
+                });
+                return '<span class="ver-grade-badge ver-grade-' + verEsc(val) + '">' + verEsc(text) + '</span>';
+            }
+
+            function verGradeCell(seq, currentValue) {
+                var badge = currentValue
+                    ? verFinalGradeBadge(currentValue)
+                    : '<span class="ver-placeholder">--</span>';
+                var sel = '<select class="ver-grade-sel ver-edit-ctrl" data-seq="' + verEsc(seq) + '" style="display:none">'
+                    + '<option value=""></option>';
+                (inst.gradeOptions || []).forEach(function (opt) {
+                    var isSelected = opt.value === currentValue ? ' selected' : '';
+                    sel += '<option value="' + verEsc(opt.value) + '"' + isSelected + '>'
+                        + verEsc(opt.text) + '</option>';
+                });
+                sel += '</select>';
+                return '<div class="ver-inline-wrap">'
+                    + '<span class="ver-display-val">' + badge + '</span>'
+                    + sel
+                    + '</div>';
+            }
+
+            function verContentCell(seq, currentValue) {
+                var display = currentValue
+                    ? verEsc(currentValue)
+                    : '<span class="ver-placeholder">--</span>';
+                return '<div class="ver-inline-wrap">'
+                    + '<span class="ver-display-val">' + display + '</span>'
+                    + '<input type="text" class="ver-content-inp ver-edit-ctrl" data-seq="'
+                    + verEsc(seq) + '" value="' + verEsc(currentValue) + '" style="display:none">'
+                    + '</div>';
+            }
+
+            // ── Load resume dropdown ──────────────────────────────────────────
+            function verLoadResumeList() {
+                $.ajax({
+                    url: '/evs/manage/api/resume/evsResumeList',
+                    type: 'GET',
+                    data: { evsType: inst.evsType },
+                    success: function (rows) {
+                        var html = '';
+                        (rows || []).forEach(function (r) {
+                            html += '<option value="' + verEsc(r.seq) + '">'
+                                + verEsc(r.resumeName) + '</option>';
+                        });
+                        ver$('#ver_resumeSeq').html(html);
+                        if (rows && rows.length > 0) {
+                            ver$('#ver_resumeSeq').val(rows[0].seq);
+                            if (inst.table) inst.table.ajax.reload();
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error('[ver] Lỗi load resume list:', xhr.status, xhr.responseText);
+                    }
+                });
+            }
+
+            // ── Tính bảng Tiêu chuẩn cơ bản ────────────────────────────────
+            // Hàng "Tỷ lệ tiêu chuẩn": PCT lấy từ EVS_SCORE (A/B/C/D/E), CNT = round(pct/100 * total)
+            // Hàng hr / l2 / l1: tính từ dữ liệu DataTable
+            function verCalcStandard(api) {
+                var GRADES = ['EX', 'VG', 'GD', 'NI', 'UN'];
+                var allRows = api.rows().data();
+                var total = allRows.length;
+
+                // ── hr / l2 / l1: đếm từ DataTable ──
+                var hr = { total: 0 };
+                var l2 = { total: 0 };
+                var l1 = { total: 0 };
+                GRADES.forEach(function (g) { hr[g] = 0; l2[g] = 0; l1[g] = 0; });
+
+                allRows.each(function (row) {
+                    if (row.finalGrade) {
+                        hr.total++;
+                        if (hr[row.finalGrade] !== undefined) hr[row.finalGrade]++;
+                    }
+                    if (row.evsGrade2) {
+                        l2.total++;
+                        if (l2[row.evsGrade2] !== undefined) l2[row.evsGrade2]++;
+                    }
+                    if (row.evsGrade1) {
+                        l1.total++;
+                        if (l1[row.evsGrade1] !== undefined) l1[row.evsGrade1]++;
+                    }
+                });
+
+                [
+                    { prefix: 'hr', data: hr, denom: hr.total },
+                    { prefix: 'l2', data: l2, denom: l2.total },
+                    { prefix: 'l1', data: l1, denom: l1.total }
+                ].forEach(function (r) {
+                    ver$('#ver_' + r.prefix + '_total').text(r.data.total);
+                    GRADES.forEach(function (g) {
+                        var cnt = r.data[g] || 0;
+                        var pct = r.denom > 0 ? (Math.round(cnt / r.denom * 1000) / 10) : 0;
+                        ver$('#ver_' + r.prefix + '_' + g.toLowerCase() + '_cnt').text(cnt);
+                        ver$('#ver_' + r.prefix + '_' + g.toLowerCase() + '_pct').text(pct + '%');
+                    });
+                });
+
+                // ── std: PCT từ EVS_SCORE, CNT = round(pct/100 * total) ──
+                var resumeSeq = ver$('#ver_resumeSeq').val();
+                if (!resumeSeq) return;
+                $.ajax({
+                    url: '/evs/manage/api/evsResult/stdRate',
+                    type: 'GET',
+                    data: { resumeSeq: resumeSeq },
+                    success: function (std) {
+                        ver$('#ver_std_total').text(total);
+                        GRADES.forEach(function (g) {
+                            var pct = std ? (parseFloat(std[g + '_PCT']) || 0) : 0;
+                            var cnt = total > 0 ? Math.round(pct / 100 * total) : 0;
+                            ver$('#ver_std_' + g.toLowerCase() + '_pct').text(pct + '%');
+                            ver$('#ver_std_' + g.toLowerCase() + '_cnt').text(cnt);
+                        });
+                    },
+                    error: function () {
+                        console.warn('[ver] Không lấy được tỷ lệ tiêu chuẩn từ EVS_SCORE.');
+                    }
+                });
+            }
+
+            // ── Tính tiến độ đánh giá từ dữ liệu đã load trong bảng ──────────
+            function verCalcProgress(api) {
+                var allRows = api.rows().data();   // toàn bộ dữ liệu (không lọc)
+                var total = allRows.length;
+                var selfCount = 0, l1Count = 0, l2Count = 0, doneCount = 0, endCount = 0;
+
+                allRows.each(function (row) {
+                    // Bản thân: đã đánh giá bản thân
+                    if (row.affirmFlagName0 === 'Evaluated') selfCount++;
+
+                    // Lần 1: có điểm số VÀ cấp đánh giá lần 1
+                    var hasL1 = row.evsPoint1 && row.evsGrade1;
+                    if (hasL1) l1Count++;
+
+                    // Lần 2: có điểm số VÀ cấp đánh giá lần 2
+                    var hasL2 = row.evsPoint2 && row.evsGrade2;
+                    if (hasL2) l2Count++;
+
+                    // Hoàn thành: cả lần 1 và lần 2 đều đã có kết quả đánh giá
+                    if (hasL1 && hasL2) doneCount++;
+
+                    // Kết thúc: HR đã xác nhận cấp đánh giá cuối (FINAL_GRADE)
+                    if (row.finalGrade) endCount++;
+                });
+
+                ver$('#ver_prog_total').text(total);
+                ver$('#ver_prog_self').text(selfCount);
+                ver$('#ver_prog_l1').text(l1Count);
+                ver$('#ver_prog_l2').text(l2Count);
+                ver$('#ver_prog_done').text(doneCount);
+                ver$('#ver_prog_end').text(endCount);
+            }
+
+            // ── Search ────────────────────────────────────────────────────────
+            window.verSearch = function () {
+                inst.edited = {};
+                inst.ticked = new Set();
+                if (inst.table) inst.table.ajax.reload();
+            };
+
+            // ── Tìm nhân viên qua popup ───────────────────────────────────────
+            window.verOpenEmployeeSearch = function () {
+                if (typeof EmployeeSearchModal === 'undefined') {
+                    alert('Chức năng tìm kiếm nhân viên chưa được tải!');
+                    return;
+                }
+                EmployeeSearchModal.open(function (emp) {
+                    ver$('#ver_personId').val(emp.personId);
+                    ver$('#ver_empDisplay').val(emp.empId + ' - ' + emp.localName);
+                    verSearch();
+                });
+            };
+
+            window.verClearEmpSearch = function () {
+                ver$('#ver_personId').val('');
+                ver$('#ver_empDisplay').val('');
+                verSearch();
+            };
+
+            // ── Email ─────────────────────────────────────────────────────────
+            window.verEmail = function () {
+                alert('Chức năng Email đang được phát triển.');
+            };
+
+            // ── Đánh giá kết thúc ─────────────────────────────────────────────
+            window.verEvaluateEnd = function () {
+                var resumeSeq = ver$('#ver_resumeSeq').val();
+                if (!resumeSeq) { alert('Vui lòng chọn tên đánh giá trước.'); return; }
+                if (!confirm('Bạn có chắc muốn kết thúc đánh giá cho đợt này không?')) return;
+                $.ajax({
+                    url: '/evs/manage/api/evsResult/evaluateEnd',
+                    type: 'POST', contentType: 'application/json',
+                    data: JSON.stringify({ resumeSeq: resumeSeq }),
+                    success: function (res) {
+                        if (res && res.success) { alert('Kết thúc đánh giá thành công!'); verSearch(); }
+                        else { alert('Lỗi: ' + ((res && res.message) || 'Không thể kết thúc.')); }
+                    },
+                    error: function () { alert('Lỗi khi gọi API. Vui lòng thử lại.'); }
+                });
+            };
+
+            // ── Thay đổi trạng thái ───────────────────────────────────────────
+            window.verChangeStatus = function () {
+                if (inst.ticked.size === 0) { alert('Chưa chọn dòng nào.'); return; }
+                var status = ver$('#ver_statusFilter').val();
+                if (!status) { alert('Vui lòng chọn trạng thái.'); return; }
+                $.ajax({
+                    url: '/evs/manage/api/evsResult/changeStatus',
+                    type: 'POST', contentType: 'application/json',
+                    data: JSON.stringify({ seqList: Array.from(inst.ticked), status: status }),
+                    success: function (res) {
+                        if (res && res.success) { alert('Thay đổi trạng thái thành công!'); verSearch(); }
+                        else { alert('Lỗi: ' + ((res && res.message) || 'Không thể thay đổi.')); }
+                    },
+                    error: function () { alert('Lỗi khi gọi API. Vui lòng thử lại.'); }
+                });
+            };
+
+            // ── Bản mẫu ───────────────────────────────────────────────────────
+            window.verOpenTemplate = function () {
+                alert('Chức năng Bản mẫu đang được phát triển.');
+            };
+
+            // ── Chèn file ─────────────────────────────────────────────────────
+            window.verInsertFile = function () {
+                alert('Chức năng Chèn file đang được phát triển.');
+            };
+
+            // ── Sao chép cấp đánh giá ─────────────────────────────────────────
+            window.verCopyGrade = function () {
+                if (inst.ticked.size === 0) { alert('Chưa chọn dòng nào.'); return; }
+                var resumeSeq = ver$('#ver_resumeSeq').val();
+                if (!confirm('Sao chép cấp đánh giá cho các dòng đã chọn?')) return;
+                $.ajax({
+                    url: '/evs/manage/api/evsResult/copyGrade',
+                    type: 'POST', contentType: 'application/json',
+                    data: JSON.stringify({ resumeSeq: resumeSeq, seqList: Array.from(inst.ticked) }),
+                    success: function (res) {
+                        if (res && res.success) { alert('Sao chép thành công!'); verSearch(); }
+                        else { alert('Lỗi: ' + ((res && res.message) || 'Không thể sao chép.')); }
+                    },
+                    error: function () { alert('Lỗi khi gọi API. Vui lòng thử lại.'); }
+                });
+            };
+
+            // ── Lưu ──────────────────────────────────────────────────────────
+            window.verSave = function () {
+                if (inst.ticked.size === 0) { alert('Chưa chọn dòng nào để lưu.'); return; }
+                var items = [];
+                inst.ticked.forEach(function (seq) {
+                    var cached = inst.edited[seq] || {};
+                    var $row = ver$('.ver-row-chk[data-seq="' + seq + '"]').closest('tr');
+                    var finalGrade = cached.finalGrade !== undefined
+                        ? cached.finalGrade
+                        : ($row.find('.ver-grade-sel').val() || '');
+                    var finalAffirmContent = cached.finalAffirmContent !== undefined
+                        ? cached.finalAffirmContent
+                        : ($row.find('.ver-content-inp').val() || '');
+                    items.push({ seq: seq, finalGrade: finalGrade, finalAffirmContent: finalAffirmContent });
+                });
+                $.ajax({
+                    url: '/evs/manage/api/evsResult/save',
+                    type: 'POST', contentType: 'application/json',
+                    data: JSON.stringify(items),
+                    success: function (res) {
+                        if (res && res.success) {
+                            inst.ticked = new Set();
+                            inst.edited = {};
+                            alert('Lưu thành công!');
+                            if (inst.table) inst.table.ajax.reload();
+                        } else { alert('Lỗi: ' + ((res && res.message) || 'Không thể lưu.')); }
+                    },
+                    error: function () { alert('Lỗi khi lưu dữ liệu. Vui lòng thử lại.'); }
+                });
+            };
+
+            // ── Xuất Excel ────────────────────────────────────────────────────
+            window.verExportExcel = function () {
+                var resumeSeq = ver$('#ver_resumeSeq').val();
+                if (!resumeSeq) { alert('Vui lòng chọn tên đánh giá trước.'); return; }
+                window.location.href = '/evs/manage/api/evsResult/exportExcel'
+                    + '?resumeSeq=' + encodeURIComponent(resumeSeq)
+                    + '&deptNos=' + encodeURIComponent((inst.selectedDeptCodes || []).join(','))
+                    + '&personId=' + encodeURIComponent(ver$('#ver_personId').val() || '')
+                    + '&statusFilter=' + encodeURIComponent(ver$('#ver_statusFilter').val() || '')
+                    + '&evsType=' + encodeURIComponent(inst.evsType);
+            };
+
+            // ── Xem chi tiết ─────────────────────────────────────────────────
+            window.verViewDetail = function (seq) {
+                console.log('[ver] View detail seq:', seq);
+            };
+
+            // ── Khởi tạo DeptTree selector ────────────────────────────────────
+            function verInitDeptSelector() {
+                if (typeof DeptTree === 'undefined') return;
+                DeptTree.init('#' + _ver_tabId + ' #ver_deptSearch', function (codes) {
+                    inst.selectedDeptCodes = codes || [];
+                });
+            }
+
+            // ── Boot ──────────────────────────────────────────────────────────
+            $(document).ready(function () {
+                // Guard: mỗi tab chỉ khởi tạo DataTable một lần
+                if (inst.table) return;
+
+                verInitDeptSelector();
+
+                // Lọc nhanh
+                ver$('#ver_quickFilter').on('keyup', function () {
+                    if (inst.table) inst.table.search($(this).val()).draw();
+                });
+
+                // Checkbox chọn tất cả
+                ver$('#ver_checkAll').on('change', function () {
+                    ver$('.ver-row-chk').prop('checked', $(this).is(':checked')).trigger('change');
+                });
+
+                // Checkbox từng dòng
+                $(document).off('change.ver_chk_' + _ver_tabId)
+                    .on('change.ver_chk_' + _ver_tabId,
+                        '#' + _ver_tabId + ' .ver-row-chk', function () {
+                            var seq = $(this).data('seq');
+                            var $tr = $(this).closest('tr');
+                            if ($(this).is(':checked')) {
+                                inst.ticked.add(String(seq)); $tr.addClass('ver-ticked');
+                            } else {
+                                inst.ticked.delete(String(seq)); $tr.removeClass('ver-ticked');
+                            }
+                        });
+
+                // Click-to-edit: mở edit ctrl khi click vào bất kỳ chỗ nào trong wrap
+                $(document).off('click.ver_inline_' + _ver_tabId)
+                    .on('click.ver_inline_' + _ver_tabId,
+                        '#' + _ver_tabId + ' .ver-inline-wrap', function (e) {
+                            if ($(e.target).hasClass('ver-edit-ctrl') || $(e.target).closest('.ver-edit-ctrl').length) return;
+                            var $wrap = $(this);
+                            $wrap.find('.ver-display-val').hide();
+                            $wrap.find('.ver-edit-ctrl').show().focus();
+                        });
+
+                // finalGrade – lưu và cập nhật display khi đổi select
+                $(document).off('change.ver_grade_' + _ver_tabId)
+                    .on('change.ver_grade_' + _ver_tabId,
+                        '#' + _ver_tabId + ' .ver-grade-sel', function () {
+                            var seq = String($(this).data('seq'));
+                            var val = $(this).val();
+                            if (!inst.edited[seq]) inst.edited[seq] = {};
+                            inst.edited[seq].finalGrade = val;
+                            var badge = val
+                                ? verFinalGradeBadge(val)
+                                : '<span class="ver-placeholder">--</span>';
+                            $(this).siblings('.ver-display-val').html(badge).show();
+                            $(this).hide();
+                            var $chk = $(this).closest('tr').find('.ver-row-chk');
+                            if (!$chk.is(':checked')) $chk.prop('checked', true).trigger('change');
+                        });
+
+                // finalGrade – đóng select khi blur mà không chọn gì
+                $(document).off('blur.ver_grade_' + _ver_tabId)
+                    .on('blur.ver_grade_' + _ver_tabId,
+                        '#' + _ver_tabId + ' .ver-grade-sel', function () {
+                            var val = $(this).val();
+                            var badge = val
+                                ? verFinalGradeBadge(val)
+                                : '<span class="ver-placeholder">--</span>';
+                            $(this).siblings('.ver-display-val').html(badge).show();
+                            $(this).hide();
+                        });
+
+                // finalAffirmContent – auto-tick khi nhập
+                $(document).off('input.ver_content_' + _ver_tabId)
+                    .on('input.ver_content_' + _ver_tabId,
+                        '#' + _ver_tabId + ' .ver-content-inp', function () {
+                            var seq = String($(this).data('seq'));
+                            if (!inst.edited[seq]) inst.edited[seq] = {};
+                            inst.edited[seq].finalAffirmContent = $(this).val();
+                            var $chk = $(this).closest('tr').find('.ver-row-chk');
+                            if (!$chk.is(':checked')) $chk.prop('checked', true).trigger('change');
+                        });
+
+                // finalAffirmContent – cập nhật display khi blur
+                $(document).off('blur.ver_content_' + _ver_tabId)
+                    .on('blur.ver_content_' + _ver_tabId,
+                        '#' + _ver_tabId + ' .ver-content-inp', function () {
+                            var val = $(this).val();
+                            var display = val
+                                ? verEsc(val)
+                                : '<span class="ver-placeholder">--</span>';
+                            $(this).siblings('.ver-display-val').html(display).show();
+                            $(this).hide();
+                        });
+
+                // Reload table khi đổi dropdown
+                ver$('#ver_resumeSeq').on('change', function () {
+                    inst.ticked = new Set();
+                    inst.edited = {};
+                    if (inst.table) inst.table.ajax.reload();
+                });
+
+                // Cột 0-23 khớp đúng 24 <th> trong header (8 rowspan + 3 + 5 + 5 + 3)
+                inst.table = ver$('#ver_table').DataTable({
+                    paging: false,
+                    searching: true,
+                    lengthChange: false,
+                    processing: true,
+                    dom: 'rt',
+                    order: [],
+                    columnDefs: [
+                        { orderable: false, targets: [0, 1, 21, 22, 23] }
+                    ],
+                    ajax: {
+                        url: '/evs/manage/api/evsResult/list',
+                        dataSrc: '',
+                        data: function (d) {
+                            d.resumeSeq = ver$('#ver_resumeSeq').val() || '';
+                            d.deptNos = (inst.selectedDeptCodes || []).join(',');
+                            d.personId = ver$('#ver_personId').val() || '';
+                            d.statusFilter = ver$('#ver_statusFilter').val() || '';
+                            d.evsType = inst.evsType;
+                        }
+                    },
+                    drawCallback: function () {
+                        var api = this.api();
+
+                        // Cập nhật tổng hiển thị (theo filter nếu có)
+                        ver$('#ver_totalCount').text(
+                            api.rows({ search: 'applied' }).count()
+                        );
+
+                        // Tính thống kê từ toàn bộ dữ liệu đã tải
+                        verCalcStandard(api);
+                        verCalcProgress(api);
+
+                        // Khôi phục highlight dòng đã tick sau redraw
+                        ver$('.ver-row-chk').each(function () {
+                            if (inst.ticked.has(String($(this).data('seq')))) {
+                                $(this).prop('checked', true).closest('tr').addClass('ver-ticked');
+                            }
+                        });
+                    },
+                    columns: [
+                        // 0: checkbox
+                        {
+                            data: null, className: 'text-center', orderable: false,
+                            render: function (data, type, row) {
+                                var chk = inst.ticked.has(String(row.seq)) ? 'checked' : '';
+                                return '<input type="checkbox" class="ver-row-chk" data-seq="'
+                                    + verEsc(row.seq) + '" ' + chk + '>';
+                            }
+                        },
+                        // 1: No.
+                        {
+                            data: null, className: 'text-center', orderable: false,
+                            render: function (d, t, r, meta) { return meta.row + 1; }
+                        },
+                        // 2: Họ tên
+                        {
+                            data: 'localName',
+                            render: function (data, type, row) {
+                                return '<a href="javascript:void(0)" onclick="verViewDetail('
+                                    + verEsc(row.seq) + ')">' + verEsc(data) + '</a>';
+                            }
+                        },
+                        // 3: Mã nhân viên
+                        { data: 'empid', className: 'text-center', defaultContent: '' },
+                        // 4: Phòng ban
+                        { data: 'deptname', defaultContent: '' },
+                        // 5: Chức vụ
+                        { data: 'postGradeName', className: 'text-center', defaultContent: '' },
+                        // 6: Ngày vào làm
+                        {
+                            data: 'dateStarted', className: 'text-center', defaultContent: '',
+                            render: function (v) { return v ? String(v).substring(0, 10) : ''; }
+                        },
+                        // 7: Trạng thái (ACTIVITY)
+                        { data: 'activityName', className: 'text-center', defaultContent: '' },
+                        // 8: Bản thân – Trạng thái
+                        {
+                            data: 'affirmFlagName0', className: 'text-center', defaultContent: '',
+                            render: function (v) { return verStatusHtml(v); }
+                        },
+                        // 9: Bản thân – Điểm số
+                        { data: 'evsPoint0', className: 'text-center', defaultContent: '' },
+                        // 10: Bản thân – Cấp
+                        {
+                            data: 'evsGrade0', className: 'text-center', defaultContent: '',
+                            render: function (v) { return verGradeBadge(v); }
+                        },
+                        // 11: ĐG1 – Họ tên
+                        { data: 'localName1', defaultContent: '' },
+                        // 12: ĐG1 – Chức vụ
+                        {
+                            data: 'postGradeName1', className: 'text-center', defaultContent: '',
+                            render: function (v) {
+                                return v ? '<small class="text-muted">' + verEsc(v) + '</small>' : '';
+                            }
+                        },
+                        // 13: ĐG1 – Trạng thái
+                        {
+                            data: 'affirmFlagName1', className: 'text-center', defaultContent: '',
+                            render: function (v) { return verStatusHtml(v); }
+                        },
+                        // 14: ĐG1 – Điểm số
+                        { data: 'evsPoint1', className: 'text-center', defaultContent: '' },
+                        // 15: ĐG1 – Cấp
+                        {
+                            data: 'evsGrade1', className: 'text-center', defaultContent: '',
+                            render: function (v) { return verGradeBadge(v); }
+                        },
+                        // 16: ĐG2 – Họ tên
+                        { data: 'localName2', defaultContent: '' },
+                        // 17: ĐG2 – Chức vụ
+                        {
+                            data: 'postGradeName2', className: 'text-center', defaultContent: '',
+                            render: function (v) {
+                                return v ? '<small class="text-muted">' + verEsc(v) + '</small>' : '';
+                            }
+                        },
+                        // 18: ĐG2 – Trạng thái
+                        {
+                            data: 'affirmFlagName2', className: 'text-center', defaultContent: '',
+                            render: function (v) { return verStatusHtml(v); }
+                        },
+                        // 19: ĐG2 – Điểm số
+                        { data: 'evsPoint2', className: 'text-center', defaultContent: '' },
+                        // 20: ĐG2 – Cấp
+                        {
+                            data: 'evsGrade2', className: 'text-center', defaultContent: '',
+                            render: function (v) { return verGradeBadge(v); }
+                        },
+                        // 21: Cấp đánh giá (nhân sự) – click-to-edit select
+                        {
+                            data: 'finalGrade', className: 'text-center',
+                            defaultContent: '', orderable: false,
+                            render: function (v, type, row) {
+                                if (type !== 'display') return v || '';
+                                var cur = (inst.edited[row.seq] && inst.edited[row.seq].finalGrade !== undefined)
+                                    ? inst.edited[row.seq].finalGrade : (v || '');
+                                return verGradeCell(row.seq, cur);
+                            }
+                        },
+                        // 22: Ý kiến – click-to-edit input
+                        {
+                            data: 'finalAffirmContent', defaultContent: '', orderable: false,
+                            render: function (v, type, row) {
+                                if (type !== 'display') return v || '';
+                                var cur = (inst.edited[row.seq] && inst.edited[row.seq].finalAffirmContent !== undefined)
+                                    ? inst.edited[row.seq].finalAffirmContent : (v || '');
+                                return verContentCell(row.seq, cur);
+                            }
+                        },
+                        // 23: Người thay đổi
+                        {
+                            data: null, className: 'text-center', orderable: false,
+                            defaultContent: '',
+                            render: function (d, t, row) {
+                                return '<small>' + verEsc(row.updatedBy || '')
+                                    + '<br>' + verEsc(row.updateDate || '') + '</small>';
+                            }
+                        }
+                    ],
+                    autoWidth: false
+                });
+
+                // Sticky header: bù trừ scrollTop để thead luôn hiển thị ở đầu
+                ver$('#ver_tableWrapper').on('scroll.ver_sticky', function () {
+                    ver$('#ver_table thead').css('transform', 'translateY(' + this.scrollTop + 'px)');
+                });
+
+                // Load grade options (14015161) rồi mới load dữ liệu lần đầu
+                $.ajax({
+                    url: '/sys/api/code/list?parentCodeNo=14015161',
+                    type: 'GET',
+                    success: function (data) {
+                        inst.gradeOptions = (data || []).map(function (code) {
+                            return {
+                                value: code.codeName,
+                                text: code.description
+                            };
+                        });
+                    },
+                    complete: function () {
+                        verLoadResumeList();
+                    }
+                });
+            });
+        })();
+    </script>
+</template>

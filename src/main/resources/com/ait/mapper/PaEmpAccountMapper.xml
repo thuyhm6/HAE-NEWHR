@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.workManagement.mapper.PaEmpAccountMapper">
+
+    <resultMap id="PaEmpAccountResultMap" type="com.ait.pa.workManagement.dto.PaEmpAccountDto">
+        <result column="PA_EMP_ACCOUNT_NO"  property="paEmpAccountNo"   jdbcType="NUMERIC" />
+        <result column="PERSON_ID"           property="personId"         jdbcType="VARCHAR" />
+        <result column="EMP_ID"              property="empId"            jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"          property="localName"        jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"           property="deptName"         jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME"     property="postGradeName"    jdbcType="VARCHAR" />
+        <result column="DATE_STARTED"        property="dateStarted"      jdbcType="VARCHAR" />
+        <result column="ACCOUNT_TYPE"        property="accountType"      jdbcType="NUMERIC" />
+        <result column="ACCOUNT_TYPE_NAME"   property="accountTypeName"  jdbcType="VARCHAR" />
+        <result column="ACCOUNT_ADDRESS"     property="accountAddress"   jdbcType="VARCHAR" />
+        <result column="ACCOUNT_NO"          property="accountNo"        jdbcType="VARCHAR" />
+        <result column="ACCOUNT_NAME"        property="accountName"      jdbcType="VARCHAR" />
+        <result column="SECURITY_NO"         property="securityNo"       jdbcType="VARCHAR" />
+        <result column="FUND_NO"             property="fundNo"           jdbcType="VARCHAR" />
+        <result column="SECURITY_PAY_DATE"   property="securityPayDate"  jdbcType="VARCHAR" />
+        <result column="FUND_PAY_DATE"       property="fundPayDate"      jdbcType="VARCHAR" />
+        <result column="TAX_NO"              property="taxNo"            jdbcType="VARCHAR" />
+        <result column="ACTIVITY"            property="activity"         jdbcType="NUMERIC" />
+        <result column="CREATE_DATE"         property="createDate"       jdbcType="VARCHAR" />
+        <result column="CREATED_BY"          property="createdBy"        jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"         property="updateDate"       jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"          property="updatedBy"        jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── Điều kiện WHERE dùng chung ─────────────────────────────────────────── -->
+    <sql id="whereCondition">
+        WHERE 1 = 1
+        AND EXISTS (SELECT * FROM PA_SUPERVISOR_INFO
+                         WHERE PA_SUPERVISOR_INFO.DEPTNO = he.DEPTNO
+                           AND PA_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR})
+        <if test="empSearch != null and empSearch != ''">
+            AND (he.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
+              OR CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="deptNoList != null and deptNoList.size() > 0">
+            AND he.DEPTNO IN
+            <foreach collection="deptNoList" item="d" open="(" separator="," close=")">
+                #{d, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="empOfficeSearch != null and empOfficeSearch != ''">
+            AND he.EMP_OFFICE = #{empOfficeSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="bankSearch != null and bankSearch != ''">
+            AND pea.ACCOUNT_TYPE = #{bankSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="fromDateStarted != null and fromDateStarted != ''">
+            AND he.DATE_STARTED &gt;= TO_DATE(#{fromDateStarted, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDateStarted != null and toDateStarted != ''">
+            AND he.DATE_STARTED &lt;= TO_DATE(#{toDateStarted, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+    </sql>
+
+    <!-- ── Đếm tổng bản ghi ───────────────────────────────────────────────────── -->
+    <select id="countList" parameterType="com.ait.pa.workManagement.dto.PaEmpAccountDto" resultType="long">
+        SELECT COUNT(1)
+          FROM PA_EMP_ACCOUNT pea
+          LEFT JOIN HR_EMPLOYEE  he ON pea.PERSON_ID = he.PERSON_ID
+                                   AND he.CPNY_ID    = #{cpnyId, jdbcType=VARCHAR}
+          LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO    = hd.DEPTNO
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- ── Phân trang phía server – Oracle ROWNUM ─────────────────────────────── -->
+    <select id="selectListPage" parameterType="com.ait.pa.workManagement.dto.PaEmpAccountDto"
+            resultMap="PaEmpAccountResultMap">
+        SELECT PA_EMP_ACCOUNT_NO, PERSON_ID, EMP_ID, LOCAL_NAME, DEPT_NAME, POST_GRADE_NAME,
+               DATE_STARTED, ACCOUNT_TYPE, ACCOUNT_TYPE_NAME, ACCOUNT_ADDRESS, ACCOUNT_NO,
+               ACCOUNT_NAME, SECURITY_NO, FUND_NO, SECURITY_PAY_DATE, FUND_PAY_DATE,
+               TAX_NO, ACTIVITY, CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY
+          FROM (
+              SELECT a.*, ROWNUM AS RN
+                FROM (
+                    SELECT pea.PA_EMP_ACCOUNT_NO,
+                           pea.PERSON_ID,
+                           he.EMPID                                                    AS EMP_ID,
+                           he.LOCAL_NAME,
+                           hd.ORG_NAME_LOCAL                                           AS DEPT_NAME,
+                           GET_GLOBAL_NAME(he.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+                           TO_CHAR(he.DATE_STARTED, 'YYYY-MM-DD')                     AS DATE_STARTED,
+                           pea.ACCOUNT_TYPE,
+                           GET_GLOBAL_NAME(pea.ACCOUNT_TYPE, #{lang, jdbcType=VARCHAR})  AS ACCOUNT_TYPE_NAME,
+                           pea.ACCOUNT_ADDRESS,
+                           pea.ACCOUNT_NO,
+                           pea.ACCOUNT_NAME,
+                           pea.SECURITY_NO,
+                           pea.FUND_NO,
+                           pea.SECURITY_PAY_DATE,
+                           pea.FUND_PAY_DATE,
+                           pea.TAX_NO,
+                           pea.ACTIVITY,
+                           TO_CHAR(pea.CREATE_DATE, 'YYYY-MM-DD')                     AS CREATE_DATE,
+                           get_emp_local_name(pea.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})
+                           || ' ' || pea.CREATED_IP                                   AS CREATED_BY,
+                           TO_CHAR(pea.UPDATE_DATE, 'YYYY-MM-DD')                     AS UPDATE_DATE,
+                           get_emp_local_name(pea.UPDATED_BY, #{cpnyId, jdbcType=VARCHAR})
+                           || ' ' || pea.UPDATED_IP                                   AS UPDATED_BY
+                      FROM PA_EMP_ACCOUNT  pea
+                      LEFT JOIN HR_EMPLOYEE   he ON pea.PERSON_ID = he.PERSON_ID
+                                                AND he.CPNY_ID    = #{cpnyId, jdbcType=VARCHAR}
+                      LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO     = hd.DEPTNO
+                    <include refid="whereCondition"/>
+                    ORDER BY pea.CREATE_DATE DESC
+                ) a
+               WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+          )
+         WHERE RN > #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Lấy chi tiết một bản ghi ──────────────────────────────────────────── -->
+    <select id="selectOne" resultMap="PaEmpAccountResultMap">
+        SELECT pea.PA_EMP_ACCOUNT_NO,
+               pea.PERSON_ID,
+               he.EMPID                                                    AS EMP_ID,
+               he.LOCAL_NAME,
+               hd.ORG_NAME_LOCAL                                           AS DEPT_NAME,
+               GET_GLOBAL_NAME(he.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+               TO_CHAR(he.DATE_STARTED, 'YYYY-MM-DD')                     AS DATE_STARTED,
+               pea.ACCOUNT_TYPE,
+               pea.ACCOUNT_ADDRESS,
+               pea.ACCOUNT_NO,
+               pea.ACCOUNT_NAME,
+               pea.SECURITY_NO,
+               pea.FUND_NO,
+               pea.SECURITY_PAY_DATE,
+               pea.FUND_PAY_DATE,
+               pea.TAX_NO,
+               pea.ACTIVITY,
+               TO_CHAR(pea.CREATE_DATE, 'YYYY-MM-DD')                     AS CREATE_DATE,
+               get_emp_local_name(pea.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})
+               || ' ' || pea.CREATED_IP                                   AS CREATED_BY
+          FROM PA_EMP_ACCOUNT pea
+          LEFT JOIN HR_EMPLOYEE   he ON pea.PERSON_ID = he.PERSON_ID
+          LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO     = hd.DEPTNO
+         WHERE pea.PA_EMP_ACCOUNT_NO = #{paEmpAccountNo, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Thêm mới ───────────────────────────────────────────────────────────── -->
+    <insert id="insert" parameterType="com.ait.pa.workManagement.dto.PaEmpAccountDto">
+        INSERT INTO PA_EMP_ACCOUNT (
+            PA_EMP_ACCOUNT_NO, PERSON_ID, ACCOUNT_TYPE, ACCOUNT_ADDRESS,
+            ACCOUNT_NO, ACCOUNT_NAME, SECURITY_NO, FUND_NO,
+            SECURITY_PAY_DATE, FUND_PAY_DATE, TAX_NO, ACTIVITY,
+            CREATE_DATE, CREATED_BY, CREATED_IP
+        ) VALUES (
+            PA_EMP_ACCOUNT_SEQ.NEXTVAL,
+            #{personId, jdbcType=VARCHAR},
+            #{accountType, jdbcType=NUMERIC},
+            #{accountAddress, jdbcType=VARCHAR},
+            #{accountNo, jdbcType=VARCHAR},
+            #{accountName, jdbcType=VARCHAR},
+            #{securityNo, jdbcType=VARCHAR},
+            #{fundNo, jdbcType=VARCHAR},
+            #{securityPayDate, jdbcType=VARCHAR},
+            #{fundPayDate, jdbcType=VARCHAR},
+            #{taxNo, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ── Cập nhật ───────────────────────────────────────────────────────────── -->
+    <update id="update" parameterType="com.ait.pa.workManagement.dto.PaEmpAccountDto">
+        UPDATE PA_EMP_ACCOUNT
+           SET ACCOUNT_TYPE      = #{accountType, jdbcType=NUMERIC},
+               ACCOUNT_ADDRESS   = #{accountAddress, jdbcType=VARCHAR},
+               ACCOUNT_NO        = #{accountNo, jdbcType=VARCHAR},
+               ACCOUNT_NAME      = #{accountName, jdbcType=VARCHAR},
+               SECURITY_NO       = #{securityNo, jdbcType=VARCHAR},
+               FUND_NO           = #{fundNo, jdbcType=VARCHAR},
+               SECURITY_PAY_DATE = #{securityPayDate, jdbcType=VARCHAR},
+               FUND_PAY_DATE     = #{fundPayDate, jdbcType=VARCHAR},
+               TAX_NO            = #{taxNo, jdbcType=VARCHAR},
+               ACTIVITY          = #{activity, jdbcType=NUMERIC},
+               UPDATE_DATE       = SYSDATE,
+               UPDATED_BY        = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP        = #{adminIP, jdbcType=VARCHAR}
+         WHERE PA_EMP_ACCOUNT_NO = #{paEmpAccountNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- ── Xóa ────────────────────────────────────────────────────────────────── -->
+    <delete id="deleteByNo">
+        DELETE FROM PA_EMP_ACCOUNT WHERE PA_EMP_ACCOUNT_NO = #{paEmpAccountNo, jdbcType=NUMERIC}
+    </delete>
+
+</mapper>

@@ -1,0 +1,197 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="impMac_searchForm" class="row g-3 mb-3">
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="form-text fw-bold mb-2">
+                                <span th:text="#{impMac.totalRows}">Tổng số hàng:</span>
+                                <span id="impMac_totalRows">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <div class="form-text fw-bold mb-2">
+                                <span th:text="#{impMac.errorRows}">Số hàng lỗi:</span>
+                                <span id="impMac_errorRows">0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="impMac_errorOnly" class="form-label" th:text="#{impMac.errorFilter}">Lọc theo lỗi</label>
+                            <select id="impMac_errorOnly" class="form-select">
+                                <option value="" th:text="#{impMac.all}">Tất cả</option>
+                                <option value="Y" th:text="#{impMac.onlyError}">Chỉ hiển thị dòng lỗi</option>
+                                <option value="N" th:text="#{impMac.onlyValid}">Chỉ hiển thị dòng hợp lệ</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5 d-flex align-items-end gap-2">
+                            <button type="button" class="btn btn-primary" onclick="impMacSearch()">
+                                <i class="bx bx-search"></i>
+                                <span th:text="#{common.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success" id="impMac_confirmBtn" onclick="impMacConfirm(this)">
+                                <i class="bx bx-check-circle"></i>
+                                <span th:text="#{common.confirm}">Xác nhận</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <table id="impMac_dataTable" class="table table-striped table-bordered table-hover">
+                        <thead class="table-light text-center align-middle">
+                            <tr>
+                                <th th:text="#{common.stt}">STT</th>
+                                <th th:text="#{common.empId}">Mã nhân viên</th>
+                                <th th:text="#{common.empName}">Họ tên</th>
+                                <th th:text="#{attSearch.workDate}">Ngày công</th>
+                                <th th:text="#{acr.col.swipeDate}">Ngày quẹt thẻ</th>
+                                <th th:text="#{acr.col.swipeTime}">Giờ quẹt thẻ</th>
+                                <th th:text="#{acr.col.doorType}">Loại</th>
+                                <th th:text="#{acr.col.remark}">Ghi chú</th>
+                                <th th:text="#{impMac.validationResult}">Kết quả kiểm tra</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _impMac_i18n = {
+            confirmPrompt:   /*[[#{impMac.confirmPrompt}]]*/ 'Bạn có chắc chắn muốn xác nhận và lưu dữ liệu vào hệ thống không?',
+            confirming:      /*[[#{impMac.confirming}]]*/ 'Đang xác nhận...',
+            noData:          /*[[#{impMac.noData}]]*/ 'Không có dữ liệu để xác nhận.'
+        };
+        var _impMac_table = null;
+        var _impMac_pageBooted = false;
+
+        function impMacSafeText(value) {
+            return value == null ? '' : String(value);
+        }
+
+        function impMacUpdateCounter(rows) {
+            var list = rows || [];
+            var errorCount = list.filter(function (item) {
+                return item && item.uploadErrorMsg && String(item.uploadErrorMsg).trim() !== '';
+            }).length;
+            $('#impMac_totalRows').text(list.length);
+            $('#impMac_errorRows').text(errorCount);
+        }
+
+        function impMacInitTable() {
+            _impMac_table = $('#impMac_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                scrollCollapse: true,
+                autoWidth: false,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                order: [],
+                ajax: {
+                    url: '/ar/attendanceMintenance/api/macRecordTemp/list',
+                    dataSrc: function (json) {
+                        var rows = json || [];
+                        impMacUpdateCounter(rows);
+                        return rows;
+                    },
+                    data: function (d) {
+                        d.errorOnly = $('#impMac_errorOnly').val();
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',    className: 'text-center', render: function (d) { return impMacSafeText(d); } },
+                    { data: 'localName', render: function (d) { return impMacSafeText(d); } },
+                    { data: 'arDateStr', className: 'text-center', render: function (d) { return impMacSafeText(d); } },
+                    { data: 'rDate',     className: 'text-center', render: function (d) { return impMacSafeText(d); } },
+                    { data: 'rTime',     className: 'text-center', render: function (d) { return impMacSafeText(d); } },
+                    { data: 'doorType',  className: 'text-center', render: function (d) { return impMacSafeText(d); } },
+                    { data: 'remark',    render: function (d) { return impMacSafeText(d); } },
+                    {
+                        data: 'uploadErrorMsg',
+                        render: function (d) {
+                            if (!d || String(d).trim() === '') {
+                                return '<span class="text-success"><i class="bx bx-check"></i></span>';
+                            }
+                            return '<span class="text-danger">' + impMacSafeText(d) + '</span>';
+                        }
+                    }
+                ]
+            });
+        }
+
+        function impMacBootPage() {
+            if (_impMac_pageBooted) return;
+            if (!document.getElementById('impMac_dataTable')) {
+                setTimeout(impMacBootPage, 30);
+                return;
+            }
+            _impMac_pageBooted = true;
+            impMacInitTable();
+        }
+
+        window.impMacSearch = function () {
+            if (_impMac_table) {
+                _impMac_table.ajax.reload();
+            }
+        };
+
+        window.impMacConfirm = function (btn) {
+            var totalRows = parseInt($('#impMac_totalRows').text(), 10) || 0;
+            if (totalRows === 0) {
+                toastr && toastr.warning(_impMac_i18n.noData);
+                return;
+            }
+            if (!confirm(_impMac_i18n.confirmPrompt)) return;
+
+            var $btn = $(btn || '#impMac_confirmBtn');
+            var originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin"></i> ' + _impMac_i18n.confirming);
+
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/macRecordTemp/confirm',
+                type: 'POST',
+                success: function (res) {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    if (res && res.success) {
+                        toastr && toastr.success(res.message || 'Xác nhận thành công');
+                        // Đóng tab này và quay lại màn hình danh sách
+                        var tableEl = document.getElementById('impMac_dataTable');
+                        var pane = tableEl ? tableEl.closest('.tab-pane') : null;
+                        if (pane && typeof tabSystem !== 'undefined' && typeof tabSystem.closeTab === 'function') {
+                            tabSystem.closeTab(pane.id);
+                        }
+                        return;
+                    }
+                    toastr && toastr.error((res && (res.error || res.message)) || 'Xác nhận thất bại');
+                },
+                error: function () {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    toastr && toastr.error('Lỗi kết nối khi xác nhận dữ liệu');
+                }
+            });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', impMacBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(impMacBootPage);
+        } else {
+            impMacBootPage();
+        }
+    </script>
+</template>

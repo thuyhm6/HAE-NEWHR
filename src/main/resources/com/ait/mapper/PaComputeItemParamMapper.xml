@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.salary.mapper.PaComputeItemParamMapper">
+
+    <resultMap id="PaComputeItemParamResultMap" type="com.ait.pa.salary.dto.PaComputeItemParamDto">
+        <result column="PARAM_NO"        property="paramNo"       jdbcType="VARCHAR" />
+        <result column="ITEM_NO"         property="itemNo"        jdbcType="VARCHAR" />
+        <result column="ITEM_ID"         property="itemId"        jdbcType="VARCHAR" />
+        <result column="ALIAS_NAME"      property="aliasName"     jdbcType="VARCHAR" />
+        <result column="CALCU_ORDER"     property="calcuOrder"    jdbcType="NUMERIC" />
+        <result column="PRICISION"       property="pricision"     jdbcType="NUMERIC" />
+        <result column="CARRY_BIT"       property="carryBit"      jdbcType="NUMERIC" />
+        <result column="CPNY_ID"         property="cpnyId"        jdbcType="VARCHAR" />
+        <result column="CPNY_NAME"       property="cpnyName"      jdbcType="VARCHAR" />
+        <result column="APPLY_TYPE"      property="applyType"     jdbcType="VARCHAR" />
+        <result column="APPLY_TYPE_NAME" property="applyTypeName" jdbcType="VARCHAR" />
+        <result column="SHOW_YN"         property="showYn"        jdbcType="NUMERIC" />
+        <result column="SHOW_ORDER"      property="showOrder"     jdbcType="NUMERIC" />
+        <result column="ITEM_FLAG"       property="itemFlag"      jdbcType="VARCHAR" />
+        <result column="ITEM_NUMBER"     property="itemNumber"    jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"       property="itemName"      jdbcType="VARCHAR" />
+        <result column="DESCR"           property="descr"         jdbcType="VARCHAR" />
+        <result column="DATATYPE"        property="datatype"      jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── SQL cốt lõi cho danh sách ───────────────────────────────────────── -->
+    <sql id="baseSelect">
+        SELECT T.PARAM_NO,
+               T.ITEM_NO,
+               PI.ITEM_ID,
+               SY.CONTENT           AS ALIAS_NAME,
+               T.CALCU_ORDER,
+               T.PRICISION,
+               T.CARRY_BIT,
+               T.CPNY_ID,
+               SY0.CONTENT          AS CPNY_NAME,
+               T.APPLY_TYPE,
+               SY1.CONTENT          AS APPLY_TYPE_NAME,
+               PI.SHOW_YN,
+               PI.SHOW_ORDER,
+               GET_ITEM_GLAG(PI.ITEM_ID, T.CPNY_ID) AS ITEM_FLAG,
+               GET_ITEM_NUMBER(PI.ITEM_ID, T.CPNY_ID) AS ITEM_NUMBER
+          FROM PA_ITEM_PARAM  T,
+               PA_ITEM        PI,
+               SY_GLOBAL_NAME SY,
+               HR_COMPANY     HR,
+               SY_GLOBAL_NAME SY0,
+               SY_GLOBAL_NAME SY1
+         WHERE T.ITEM_NO = PI.ITEM_NO
+           AND T.ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.CPNY_ID = HR.CPNY_ID
+           AND HR.CPNY_NO = SY0.NO(+)
+           AND SY0.LANGUAGE = #{lang, jdbcType=VARCHAR}
+           AND T.APPLY_TYPE = SY1.NO(+)
+           AND SY1.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY = 1
+           AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </sql>
+
+    <!-- ── Điều kiện tìm kiếm bổ sung ──────────────────────────────────────── -->
+    <sql id="whereSearch">
+        <if test="aliasNameSearch != null and aliasNameSearch != ''">
+            AND (PI.ITEM_ID LIKE '%' || #{aliasNameSearch, jdbcType=VARCHAR} || '%'
+              OR SY.CONTENT  LIKE '%' || #{aliasNameSearch, jdbcType=VARCHAR} || '%')
+        </if>
+    </sql>
+
+    <!-- ── Đếm tổng số bản ghi ──────────────────────────────────────────────── -->
+    <select id="countList" parameterType="com.ait.pa.salary.dto.PaComputeItemParamDto" resultType="long">
+        SELECT COUNT(1) FROM (
+            <include refid="baseSelect"/>
+            <include refid="whereSearch"/>
+        )
+    </select>
+
+    <!-- ── Phân trang phía server – Oracle ROWNUM ───────────────────────────── -->
+    <select id="selectListPage" parameterType="com.ait.pa.salary.dto.PaComputeItemParamDto"
+            resultMap="PaComputeItemParamResultMap">
+        SELECT PARAM_NO, ITEM_NO, ITEM_ID, ALIAS_NAME, CALCU_ORDER, PRICISION,
+               CARRY_BIT, CPNY_ID, CPNY_NAME, APPLY_TYPE, APPLY_TYPE_NAME,
+               SHOW_YN, SHOW_ORDER, ITEM_FLAG, ITEM_NUMBER
+        FROM (
+            SELECT a.*, ROWNUM AS RN
+            FROM (
+                <include refid="baseSelect"/>
+                <include refid="whereSearch"/>
+                ORDER BY CALCU_ORDER
+            ) a
+            WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        )
+        WHERE RN &gt; #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Lấy một bản ghi để chỉnh sửa ────────────────────────────────────── -->
+    <select id="selectOne" resultMap="PaComputeItemParamResultMap">
+        SELECT T.PARAM_NO,
+               T.ITEM_NO,
+               PI.ITEM_ID,
+               SY.CONTENT       AS ALIAS_NAME,
+               T.CALCU_ORDER,
+               T.PRICISION,
+               T.CARRY_BIT,
+               T.CPNY_ID,
+               T.APPLY_TYPE,
+               SY1.CONTENT      AS APPLY_TYPE_NAME
+          FROM PA_ITEM_PARAM  T,
+               PA_ITEM        PI,
+               SY_GLOBAL_NAME SY,
+               SY_GLOBAL_NAME SY1
+         WHERE T.ITEM_NO = PI.ITEM_NO
+           AND T.ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.APPLY_TYPE = SY1.NO(+)
+           AND SY1.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.PARAM_NO = #{paramNo, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Thêm mới bản ghi ─────────────────────────────────────────────────── -->
+    <insert id="insertOne" parameterType="com.ait.pa.salary.dto.PaComputeItemParamDto">
+        <selectKey keyProperty="paramNo" resultType="string" order="BEFORE">
+            SELECT SYS_GUID() FROM DUAL
+        </selectKey>
+        INSERT INTO PA_ITEM_PARAM (
+            PARAM_NO,
+            ITEM_NO,
+            CPNY_ID,
+            PRICISION,
+            CARRY_BIT,
+            APPLY_TYPE,
+            CALCU_ORDER,
+            CREATED_BY,
+            CREATE_DATE,
+            UPDATED_BY,
+            UPDATE_DATE
+        ) VALUES (
+            #{paramNo,    jdbcType=VARCHAR},
+            #{itemNo,     jdbcType=VARCHAR},
+            #{cpnyId,     jdbcType=VARCHAR},
+            #{pricision,  jdbcType=NUMERIC},
+            #{carryBit,   jdbcType=NUMERIC},
+            #{applyType,  jdbcType=VARCHAR},
+            (SELECT NVL(MAX(P.CALCU_ORDER), 0) + 1
+               FROM PA_ITEM_PARAM P
+              WHERE P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}),
+            #{adminID,    jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,    jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- ── Cập nhật PRICISION, CARRY_BIT, APPLY_TYPE ────────────────────────── -->
+    <update id="updateOne" parameterType="com.ait.pa.salary.dto.PaComputeItemParamDto">
+        UPDATE PA_ITEM_PARAM
+           SET PRICISION   = #{pricision,  jdbcType=NUMERIC},
+               CARRY_BIT   = #{carryBit,   jdbcType=NUMERIC},
+               APPLY_TYPE  = #{applyType,  jdbcType=VARCHAR},
+               UPDATED_BY   = #{adminID,    jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE PARAM_NO = #{paramNo, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── Xóa bản ghi ───────────────────────────────────────────────────────── -->
+    <delete id="deleteOne">
+        DELETE FROM PA_ITEM_PARAM
+         WHERE PARAM_NO = #{paramNo, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ── Danh sách PA_ITEM chưa có trong PA_ITEM_PARAM (cho dropdown thêm mới) -->
+    <select id="selectItemList" parameterType="com.ait.pa.salary.dto.PaComputeItemParamDto"
+            resultMap="PaComputeItemParamResultMap">
+        SELECT T.ITEM_NO,
+               SY.CONTENT AS ITEM_NAME,
+               T.DESCR,
+               T.DATATYPE,
+               T.ITEM_ID
+          FROM PA_ITEM        T,
+               SY_GLOBAL_NAME SY
+         WHERE T.ITEM_NO = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.ACTIVITY IN (1, 11)
+           AND T.ITEM_NO NOT IN (SELECT P.ITEM_NO
+                                   FROM PA_ITEM_PARAM P
+                                  WHERE P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                                    AND P.ITEM_NO IS NOT NULL)
+         ORDER BY T.ITEM_NO
+    </select>
+
+    <!-- ── Danh sách APPLY_TYPE từ SY_GLOBAL_NAME (cho dropdown) ─────────────── -->
+    <select id="selectApplyTypeList" parameterType="com.ait.pa.salary.dto.PaComputeItemParamDto"
+            resultMap="PaComputeItemParamResultMap">
+        SELECT DISTINCT T.APPLY_TYPE,
+               SY.CONTENT AS APPLY_TYPE_NAME
+          FROM PA_ITEM_PARAM  T,
+               SY_GLOBAL_NAME SY
+         WHERE T.APPLY_TYPE = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND T.APPLY_TYPE IS NOT NULL
+         ORDER BY T.APPLY_TYPE
+    </select>
+
+    <!-- ── Tìm bản ghi kề trên/dưới để hoán đổi CALCU_ORDER ────────────────── -->
+    <select id="findAdjacentByOrder" resultMap="PaComputeItemParamResultMap">
+        SELECT PARAM_NO, CALCU_ORDER
+          FROM PA_ITEM_PARAM
+         WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND CALCU_ORDER = (
+               <choose>
+                   <when test="direction == 'up'">
+                       SELECT MAX(CALCU_ORDER) FROM PA_ITEM_PARAM
+                        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                          AND CALCU_ORDER &lt; #{currentOrder, jdbcType=NUMERIC}
+                   </when>
+                   <otherwise>
+                       SELECT MIN(CALCU_ORDER) FROM PA_ITEM_PARAM
+                        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                          AND CALCU_ORDER &gt; #{currentOrder, jdbcType=NUMERIC}
+                   </otherwise>
+               </choose>
+           )
+    </select>
+
+    <!-- ── Cập nhật CALCU_ORDER cho một bản ghi ─────────────────────────────── -->
+    <update id="updateCalcuOrder">
+        UPDATE PA_ITEM_PARAM
+           SET CALCU_ORDER = #{calcuOrder, jdbcType=NUMERIC},
+               UPDATED_BY   = #{adminID,   jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE
+         WHERE PARAM_NO = #{paramNo, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

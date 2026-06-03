@@ -1,0 +1,383 @@
+<div th:fragment="content">
+    <!-- ── Thanh bộ lọc ──────────────────────────────────────────────────────── -->
+    <div class="card mb-2">
+        <div class="card-body py-2 px-3">
+            <!-- Hàng 1: Hạng mục tích chọn + Phân biệt hạng mục + Buttons -->
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label mb-1 small fw-semibold" th:text="#{pa.result.paySchedule}">Kế hoạch trả lương</label>
+                    <select id="vpr_payScheduleNo" class="form-select form-select-sm select2"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-1 small fw-semibold" th:text="#{pa.result.dept}">Phòng ban</label>
+                    <input type="text" id="vpr_deptSearch" class="form-control form-control-sm" readonly
+                           th:placeholder="#{pa.result.deptPlaceholder}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-1 small fw-semibold" th:text="#{pa.result.isUse}">Hạng mục tích chọn</label>
+                    <select id="vpr_isUse" class="form-select form-select-sm">
+                        <option value="" th:text="#{common.select}">-- Chọn --</option>
+                        <option value="1" th:text="#{pa.result.isUse.1}">Đối chiếu chi tiết</option>
+                        <option value="2" th:text="#{pa.result.isUse.2}">Báo cáo chênh lệch lương</option>
+                        <option value="3" th:text="#{pa.result.isUse.3}">Các khoản trợ cấp - khấu trừ - bảo hiểm</option>
+                        <option value="4" th:text="#{pa.result.isUse.4}">Đối chiếu hạng mục - kết quả - chi trả - bảo hiểm</option>
+                        <option value="5" th:text="#{pa.result.isUse.5}">Lương tháng/năm chi tiết</option>
+                        <option value="6" th:text="#{pa.result.isUse.6}">Phiếu lương</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label mb-1 small fw-semibold" th:text="#{pa.result.itemType}">Phân biệt hạng mục</label>
+                    <select id="vpr_itemType" class="form-select form-select-sm">
+                        <option value="" th:text="#{common.select}">-- Chọn --</option>
+                        <option value="1" th:text="#{pa.result.itemType.1}">Khoản trả (chi tiết chấm công trong phiếu lương)</option>
+                        <option value="2" th:text="#{pa.result.itemType.2}">Khoản trừ (chi tiết tiền lương trong phiếu lương)</option>
+                        <option value="3" th:text="#{pa.result.itemType.3}">BH (chi tiết khoản trừ trong phiếu lương)</option>
+                        <option value="4" th:text="#{pa.result.itemType.4}">Các mục tiêu chuẩn (trong phiếu lương)</option>
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="vprSearch()">
+                        <i class="bi bi-search"></i>
+                        <span th:text="#{pa.result.search}">Tra cứu</span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm ms-1" onclick="vprSave()">
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{pa.result.save}">Lưu</span>
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm ms-1" onclick="vprExportExcel()">
+                        <i class="bx bx-export"></i>
+                        <span th:text="#{pa.result.exportExcel}">Xuất Excel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Thanh chọn nhanh ──────────────────────────────────────────────────── -->
+    <div class="mb-2 d-flex gap-3 align-items-center">
+        <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="vpr_chkAll">
+            <label class="form-check-label small" for="vpr_chkAll" th:text="#{pa.result.selectAll}">Chọn tất cả</label>
+        </div>
+        <div class="form-check mb-0">
+            <input class="form-check-input" type="checkbox" id="vpr_chkInverse">
+            <label class="form-check-label small" for="vpr_chkInverse" th:text="#{pa.result.selectInverse}">Chọn ngược</label>
+        </div>
+    </div>
+
+    <!-- ── Hạng mục nhân sự ──────────────────────────────────────────────────── -->
+    <div class="card mb-2">
+        <div class="card-header py-1 d-flex align-items-center gap-2">
+            <input type="checkbox" id="vpr_chkHrAll" class="form-check-input mt-0">
+            <span class="fw-semibold small" th:text="#{pa.result.hrItems}">Hạng mục nhân sự</span>
+        </div>
+        <div class="card-body py-2 px-3">
+            <div id="vpr_hrItems" class="row g-1">
+                <div class="col-12 text-muted small" th:text="#{common.loading}">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Hạng mục chấm công ─────────────────────────────────────────────────── -->
+    <div class="card mb-2">
+        <div class="card-header py-1 d-flex align-items-center gap-2">
+            <input type="checkbox" id="vpr_chkAttendAll" class="form-check-input mt-0">
+            <span class="fw-semibold small" th:text="#{pa.result.attendanceItems}">Hạng mục chấm công</span>
+        </div>
+        <div class="card-body py-2 px-3">
+            <div id="vpr_attendItems" class="row g-1">
+                <div class="col-12 text-muted small" th:text="#{common.loading}">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Hạng mục nhập ─────────────────────────────────────────────────────── -->
+    <div class="card mb-2">
+        <div class="card-header py-1 d-flex align-items-center gap-2">
+            <input type="checkbox" id="vpr_chkInputAll" class="form-check-input mt-0">
+            <span class="fw-semibold small" th:text="#{pa.result.inputItems}">Hạng mục nhập</span>
+        </div>
+        <div class="card-body py-2 px-3">
+            <div id="vpr_inputItems" class="row g-1">
+                <div class="col-12 text-muted small" th:text="#{common.loading}">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Hạng mục tính ─────────────────────────────────────────────────────── -->
+    <div class="card mb-2">
+        <div class="card-header py-1 d-flex align-items-center gap-2">
+            <input type="checkbox" id="vpr_chkComputeAll" class="form-check-input mt-0">
+            <span class="fw-semibold small" th:text="#{pa.result.computeItems}">Hạng mục tính</span>
+        </div>
+        <div class="card-body py-2 px-3">
+            <div id="vpr_computeItems" class="row g-1">
+                <div class="col-12 text-muted small" th:text="#{common.loading}">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Scripts ─────────────────────────────────────────────────────────────── -->
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vpr_msgSelectIsUse        = /*[[#{pa.result.msgSelectIsUse}]]*/        'Vui lòng chọn Hạng mục tích chọn!';
+        var vpr_msgSelectType         = /*[[#{pa.result.msgSelectType}]]*/         'Vui lòng chọn Phân biệt hạng mục!';
+        var vpr_msgConfirmSave        = /*[[#{pa.result.confirmSave}]]*/           'Bạn có chắc chắn muốn lưu cấu hình này?';
+        var vpr_msgSaveSuccess        = /*[[#{pa.result.saveSuccess}]]*/           'Lưu thành công!';
+        var vpr_msgNoData             = /*[[#{common.noData}]]*/                   'Không có dữ liệu';
+        var vpr_msgSelectPaySchedule  = /*[[#{pa.result.msgSelectPaySchedule}]]*/  'Vui lòng chọn kế hoạch trả lương!';
+        var vpr_msgNoItemSelected     = /*[[#{pa.result.msgNoItemSelected}]]*/     'Vui lòng tích chọn ít nhất một hạng mục!';
+
+        // Map: itemNo → {itemId, itemName}  – dùng để đối chiếu khi load saved
+        var vpr_itemMap = {};
+        var vpr_selectedDeptCodes = [];
+
+        function vprBuildSectionItems(containerId, items) {
+            var $container = $('#' + containerId);
+            if (!items || items.length === 0) {
+                $container.html('<div class="col-12 text-muted small">' + vpr_msgNoData + '</div>');
+                return;
+            }
+            var html = '';
+            $.each(items, function (i, item) {
+                var no   = String(item.itemNo   || '');
+                var id   = String(item.itemId   || '');
+                var name = item.itemName || id || no;
+                vpr_itemMap[no] = { itemId: id, itemName: name };
+                var escapedNo   = $('<span>').text(no).html();
+                var escapedId   = $('<span>').text(id).html();
+                var escapedName = $('<span>').text(name).html();
+                html += '<div class="col-md-2 col-sm-6 d-flex align-items-center border-bottom">'
+                      + '<input type="checkbox" class="vpr_itemCheck form-check-input flex-shrink-0 mt-0 me-1"'
+                      + '  data-itemno="' + escapedNo + '"'
+                      + '  data-itemid="' + escapedId + '"'
+                      + '  data-itemname="' + escapedName + '">'
+                      + '<input type="number" class="vpr_orderInput form-control me-1"'
+                      + '  style="width:52px; min-width:52px;" min="0"'
+                      + '  data-itemno="' + escapedNo + '">'
+                      + '<span class="small text-truncate" title="' + escapedName + '">' + escapedName + '</span>'
+                      + '</div>';
+            });
+            $container.html(html);
+        }
+
+        function vprMarkSaved(savedList) {
+            // Reset all
+            $('.vpr_itemCheck').prop('checked', false);
+            $('.vpr_orderInput').val('');
+
+            $.each(savedList, function (i, saved) {
+                var no = String(saved.itemNo || '');
+                var $chk = $('.vpr_itemCheck[data-itemno="' + no + '"]');
+                $chk.prop('checked', true);
+                $chk.closest('.d-flex').find('.vpr_orderInput').val(saved.orderNo || '');
+            });
+        }
+
+        function vprLoadSections() {
+            vpr_itemMap = {};
+            $.ajax({
+                url: '/pa/salary/result/api/sectionItems',
+                type: 'GET',
+                success: function (data) {
+                    vprBuildSectionItems('vpr_hrItems',      data.hrItems         || []);
+                    vprBuildSectionItems('vpr_attendItems',  data.attendanceItems || []);
+                    vprBuildSectionItems('vpr_inputItems',   data.inputItems      || []);
+                    vprBuildSectionItems('vpr_computeItems', data.computeItems    || []);
+                    vprBindSectionAllCheckboxes();
+                },
+                error: function () {
+                    toastr ? toastr.error('Lỗi khi tải danh sách hạng mục!') : alert('Lỗi khi tải danh sách hạng mục!');
+                }
+            });
+        }
+
+        function vprBindSectionAllCheckboxes() {
+            // Chọn tất cả toàn trang
+            $('#vpr_chkAll').off('change').on('change', function () {
+                $('.vpr_itemCheck').prop('checked', $(this).is(':checked'));
+            });
+
+            // Chọn ngược
+            $('#vpr_chkInverse').off('change').on('change', function () {
+                $('.vpr_itemCheck').each(function () {
+                    $(this).prop('checked', !$(this).prop('checked'));
+                });
+                $('#vpr_chkInverse').prop('checked', false);
+            });
+
+            // Chọn theo từng section
+            $('#vpr_chkHrAll').off('change').on('change', function () {
+                $('#vpr_hrItems .vpr_itemCheck').prop('checked', $(this).is(':checked'));
+            });
+            $('#vpr_chkAttendAll').off('change').on('change', function () {
+                $('#vpr_attendItems .vpr_itemCheck').prop('checked', $(this).is(':checked'));
+            });
+            $('#vpr_chkInputAll').off('change').on('change', function () {
+                $('#vpr_inputItems .vpr_itemCheck').prop('checked', $(this).is(':checked'));
+            });
+            $('#vpr_chkComputeAll').off('change').on('change', function () {
+                $('#vpr_computeItems .vpr_itemCheck').prop('checked', $(this).is(':checked'));
+            });
+        }
+
+        window.vprSearch = function () {
+            var isUse    = $('#vpr_isUse').val();
+            var itemType = $('#vpr_itemType').val();
+            if (!isUse) {
+                toastr ? toastr.warning(vpr_msgSelectIsUse) : alert(vpr_msgSelectIsUse);
+                return;
+            }
+            if (!itemType) {
+                toastr ? toastr.warning(vpr_msgSelectType) : alert(vpr_msgSelectType);
+                return;
+            }
+            $.ajax({
+                url: '/pa/salary/result/api/savedItems',
+                type: 'GET',
+                data: { isUse: isUse, itemType: itemType },
+                success: function (data) {
+                    vprMarkSaved(data || []);
+                },
+                error: function () {
+                    toastr ? toastr.error('Lỗi khi tải dữ liệu!') : alert('Lỗi khi tải dữ liệu!');
+                }
+            });
+        };
+
+        window.vprSave = function () {
+            var isUse    = $('#vpr_isUse').val();
+            var itemType = $('#vpr_itemType').val();
+            if (!isUse) {
+                toastr ? toastr.warning(vpr_msgSelectIsUse) : alert(vpr_msgSelectIsUse);
+                return;
+            }
+            if (!itemType) {
+                toastr ? toastr.warning(vpr_msgSelectType) : alert(vpr_msgSelectType);
+                return;
+            }
+            if (!confirm(vpr_msgConfirmSave)) return;
+
+            var items = [];
+            $('.vpr_itemCheck:checked').each(function () {
+                var no   = $(this).data('itemno')   || '';
+                var id   = $(this).data('itemid')   || '';
+                var name = $(this).data('itemname') || '';
+                var ord  = $(this).closest('.d-flex').find('.vpr_orderInput').val();
+                items.push({
+                    itemNo:   String(no),
+                    itemId:   String(id),
+                    itemName: String(name),
+                    orderNo:  ord !== '' ? parseInt(ord) : null
+                });
+            });
+
+            $.ajax({
+                url: '/pa/salary/result/api/save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ isUse: parseInt(isUse), itemType: parseInt(itemType), items: items }),
+                success: function (res) {
+                    toastr ? toastr.success(res.message || vpr_msgSaveSuccess)
+                           : alert(res.message || vpr_msgSaveSuccess);
+                },
+                error: function (err) {
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : 'Lỗi không xác định';
+                    toastr ? toastr.error(msg) : alert(msg);
+                }
+            });
+        };
+
+        function vprLoadScheduleList() {
+            $.ajax({
+                url: '/pa/workManagement/api/paySchedule',
+                type: 'GET',
+                success: function (list) {
+                    var $sel = $('#vpr_payScheduleNo');
+                    $sel.find('option:not(:first)').remove();
+                    if (list && list.length > 0) {
+                        $.each(list, function (i, item) {
+                            $sel.append($('<option>', {
+                                value: item.payScheduleNo,
+                                text: item.payDate + (item.salaryDistinName ? ' ' + item.salaryDistinName : '')
+                            }));
+                        });
+                        $sel.val(list[0].payScheduleNo);
+                        if ($.fn.select2) $sel.trigger('change.select2');
+                    }
+                },
+                error: function () {
+                    toastr ? toastr.warning('Không thể tải danh sách kế hoạch trả lương!') : null;
+                }
+            });
+        }
+
+        window.vprExportExcel = function () {
+            var payScheduleNo = $('#vpr_payScheduleNo').val();
+            if (!payScheduleNo) {
+                toastr ? toastr.warning(vpr_msgSelectPaySchedule) : alert(vpr_msgSelectPaySchedule);
+                return;
+            }
+            var checkedIds = [];
+            $('.vpr_itemCheck:checked').each(function () {
+                var id = $(this).data('itemid') || '';
+                if (id) checkedIds.push(id);
+            });
+            if (checkedIds.length === 0) {
+                toastr ? toastr.warning(vpr_msgNoItemSelected) : alert(vpr_msgNoItemSelected);
+                return;
+            }
+            var params = {
+                payScheduleNo: payScheduleNo,
+                deptNos: vpr_selectedDeptCodes.join(','),
+                itemIds: checkedIds.join(',')
+            };
+            $.ajax({
+                url: '/pa/salary/result/api/exportExcel',
+                type: 'GET',
+                data: params,
+                xhrFields: { responseType: 'blob' },
+                success: function (data, status, xhr) {
+                    var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    var link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'PaSummary_' + payScheduleNo + '.xlsx';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                },
+                error: function (xhr) {
+                    if (xhr.responseType === 'blob') {
+                        var reader = new FileReader();
+                        reader.onload = function () {
+                            try {
+                                var json = JSON.parse(reader.result);
+                                toastr ? toastr.error(json.error || 'Lỗi khi xuất Excel!') : alert(json.error || 'Lỗi khi xuất Excel!');
+                            } catch (e) {
+                                toastr ? toastr.error('Lỗi khi xuất Excel!') : alert('Lỗi khi xuất Excel!');
+                            }
+                        };
+                        reader.readAsText(xhr.responseText || new Blob([xhr.response]));
+                    } else {
+                        toastr ? toastr.error('Lỗi khi xuất Excel!') : alert('Lỗi khi xuất Excel!');
+                    }
+                }
+            });
+        };
+
+        $(document).ready(function () {
+            if ($.fn.select2) {
+                $('#vpr_payScheduleNo').select2({ width: '100%', allowClear: true });
+            }
+            vprLoadScheduleList();
+            if (typeof DeptTree !== 'undefined') {
+                DeptTree.init('#vpr_deptSearch', function (selectedCodes) {
+                    vpr_selectedDeptCodes = selectedCodes || [];
+                }, { api: '/pa/wagebase/api/supervisor/authorized-departments' });
+            }
+            vprLoadSections();
+        });
+    </script>
+</template>

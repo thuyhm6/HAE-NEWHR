@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.sy.excel.mapper.ExcelMapper">
+
+    <select id="getDeptList" parameterType="map" resultType="map">
+        SELECT DEPTNO AS "deptno", ORG_NAME_LOCAL AS "orgNameLocal"
+        FROM HR_DEPARTMENT
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND ACTIVITY = 1
+        ORDER BY DEPTNO ASC
+    </select>
+
+    <select id="getPersonIdByEmpId" resultType="String">
+        SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #{empId, jdbcType=VARCHAR} AND ROWNUM = 1
+    </select>
+
+    <insert id="insertScheduleHtsv" parameterType="map">
+        INSERT INTO AR_SCHEDULE_HTSV (
+            PK_NO,
+            PERSON_ID,
+            SHIFT_NO,
+            AR_DATE_STR,
+            LOCK_YN,
+            CREATE_DATE,
+            CREATED_BY,
+            ACTIVITY,
+            ADD_FLAG,
+            CREATED_IP,
+            TYPEID,
+            REMARK
+        ) VALUES (
+            AR_SCHEDULE_SEQ.NEXTVAL,
+            #{personId, jdbcType=VARCHAR},
+            #{shiftNo, jdbcType=VARCHAR},
+            #{arDateStr, jdbcType=VARCHAR},
+            'N',
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            1,
+            'N',
+            #{adminIP, jdbcType=VARCHAR},
+            #{typeid, jdbcType=NUMERIC},
+            #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteAttendanceApplyTempByUploader" parameterType="map">
+        DELETE FROM ESS_LEAVE_APPLY_TB_EXCEL_TEMP
+        WHERE UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <insert id="insertAttendanceApplyTemp" parameterType="map">
+        INSERT INTO ESS_LEAVE_APPLY_TB_EXCEL_TEMP (
+            DEPTNO,
+            EMPID,
+            APPLY_NAME,
+            LEAVE_TYPE_CODE,
+            LEAVE_FROM_DATE,
+            LEAVE_FROM_TIME,
+            LEAVE_TO_DATE,
+            LEAVE_TO_TIME,
+            APPLY_LENGTH,
+            LEAVE_REASON,
+            AFFIRM_FLAG,
+            UPLOAD_BY,
+            UPLOAD_DATE,
+            CPNY_ID,
+            LINE_ID,
+            UPLOAD_ERROR_MSG,
+            RESULT_FLAG
+        ) VALUES (
+            (
+                SELECT HE.DEPTNO
+                FROM HR_EMPLOYEE HE
+                WHERE HE.EMPID = #{empId, jdbcType=VARCHAR}
+                  AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND ROWNUM = 1
+            ),
+            #{empId, jdbcType=VARCHAR},
+            #{applyName, jdbcType=VARCHAR},
+            #{leaveTypeCode, jdbcType=VARCHAR},
+            #{leaveFromDate, jdbcType=VARCHAR},
+            #{leaveFromTime, jdbcType=VARCHAR},
+            #{leaveToDate, jdbcType=VARCHAR},
+            #{leaveToTime, jdbcType=VARCHAR},
+            #{applyLength, jdbcType=VARCHAR},
+            #{leaveReason, jdbcType=VARCHAR},
+            #{affirmFlag, jdbcType=VARCHAR},
+            #{adminID, jdbcType=VARCHAR},
+            SYSDATE,
+            #{cpnyId, jdbcType=VARCHAR},
+            #{lineId, jdbcType=VARCHAR},
+            #{uploadErrorMsg, jdbcType=VARCHAR},
+            NVL(#{resultFlag, jdbcType=VARCHAR}, 'N')
+        )
+    </insert>
+
+    <update id="callValidateAttendanceApplyTemp" parameterType="map" statementType="CALLABLE">
+        {CALL PKG_ESS_LEAVE_EXCEL_IMP.PR_VALID_ESS_LEAVE_DATA(
+            #{adminID, jdbcType=VARCHAR, mode=IN},
+            #{cpnyId, jdbcType=VARCHAR, mode=IN},
+            #{message, jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <delete id="deleteOvertimeApplyTempByUploader" parameterType="map">
+        DELETE FROM ESS_OT_APPLY_TB_EXCEL_TEMP
+        WHERE UPLOAD_BY = #{adminID, jdbcType=VARCHAR}
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <insert id="insertOvertimeApplyTemp" parameterType="map">
+        INSERT INTO ESS_OT_APPLY_TB_EXCEL_TEMP (
+            DEPTNO,
+            EMPID,
+            APPLY_NAME,
+            APPLY_OT_DATE,
+            OT_FROM_DATE,
+            OT_FROM_TIME,
+            OT_TO_DATE,
+            OT_TO_TIME,
+            OT_APPLY_HOUR,
+            APPLY_OT_REMARK,
+            AFFIRM_FLAG,
+            UPLOAD_BY,
+            UPLOAD_DATE,
+            CPNY_ID,
+            LINE_ID,
+            UPLOAD_ERROR_MSG,
+            RESULT_FLAG,
+            OT_TYPE_CODE,
+            ADJUST_YN,
+            SPECIAL_YN,
+            OFFSET_YN,
+            DEDUCT_YN
+        ) VALUES (
+            (
+                SELECT HE.DEPTNO
+                FROM HR_EMPLOYEE HE
+                WHERE HE.EMPID = #{empId, jdbcType=VARCHAR}
+                  AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND ROWNUM = 1
+            ),
+            #{empId, jdbcType=VARCHAR},
+            #{applyName, jdbcType=VARCHAR},
+            #{applyOtDate, jdbcType=VARCHAR},
+            #{otFromDate, jdbcType=VARCHAR},
+            #{otFromTime, jdbcType=VARCHAR},
+            #{otToDate, jdbcType=VARCHAR},
+            #{otToTime, jdbcType=VARCHAR},
+            #{otApplyHour, jdbcType=VARCHAR},
+            #{applyOtRemark, jdbcType=VARCHAR},
+            #{affirmFlag, jdbcType=VARCHAR},
+            #{adminID, jdbcType=VARCHAR},
+            SYSDATE,
+            #{cpnyId, jdbcType=VARCHAR},
+            #{lineId, jdbcType=VARCHAR},
+            #{uploadErrorMsg, jdbcType=VARCHAR},
+            NVL(#{resultFlag, jdbcType=VARCHAR}, 'N'),
+            #{otTypeCode, jdbcType=VARCHAR},
+            NVL(#{adjustYn, jdbcType=VARCHAR}, '0'),
+            NVL(#{specialYn, jdbcType=VARCHAR}, '0'),
+            NVL(#{offsetYn, jdbcType=VARCHAR}, '0'),
+            NVL(#{deductYn, jdbcType=VARCHAR}, '0')
+        )
+    </insert>
+
+    <update id="callValidateOvertimeApplyTemp" parameterType="map" statementType="CALLABLE">
+        {CALL PKG_ESS_OT_EXCEL_IMP.PR_VALID_ESS_OT_DATA(
+            #{adminID, jdbcType=VARCHAR, mode=IN},
+            #{cpnyId, jdbcType=VARCHAR, mode=IN},
+            #{message, jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+</mapper>

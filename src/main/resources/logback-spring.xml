@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Custom converter: chỉ hiển thị frame com.ait.* và root cause -->
+    <conversionRule conversionWord="cex" class="com.ait.config.CompactExceptionConverter"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%logger{30}] %msg%n%cex</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/hr-application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/hr-application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%logger{30}] %msg%n%cex</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Dev profile: DEBUG cho com.ait -->
+    <springProfile name="dev">
+        <logger name="com.ait" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+    </springProfile>
+
+    <!-- Mặc định (prod/không có profile): WARN -->
+    <springProfile name="!dev">
+        <logger name="com.ait" level="WARN" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+    </springProfile>
+
+    <!-- Framework loggers: giảm noise -->
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.mybatis" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="oracle.jdbc" level="WARN"/>
+
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

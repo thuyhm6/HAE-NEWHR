@@ -1,0 +1,553 @@
+<div th:fragment="content">
+    <style>
+        #voapl_dataTable { table-layout: fixed; }
+        #voapl_dataTable th.voapl-sticky,
+        #voapl_dataTable td.voapl-sticky {
+            position: sticky;
+            z-index: 2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #voapl_dataTable thead th.voapl-sticky {
+            background-color: #cfe2ff;
+            z-index: 3;
+        }
+        #voapl_dataTable tbody td.voapl-sticky {
+            background-color: #ffffff;
+        }
+        /* màu solid tương đương rgba(0,0,0,.05) trên nền trắng */
+        #voapl_dataTable tbody tr:nth-child(odd) td.voapl-sticky {
+            background-color: #f2f2f2;
+        }
+        /* màu solid tương đương rgba(0,0,0,.075) trên nền trắng */
+        #voapl_dataTable tbody tr:hover td.voapl-sticky {
+            background-color: #e9ecef;
+        }
+        /* shadow lan rộng để tạo hiệu ứng "che mờ" khi cuộn vào */
+        #voapl_dataTable th.voapl-sticky:nth-child(4),
+        #voapl_dataTable td.voapl-sticky:nth-child(4) {
+            box-shadow: 6px 0 10px -2px rgba(0,0,0,.25);
+        }
+        /* cột số: giới hạn 50px, cho phép tiêu đề xuống dòng */
+        #voapl_dataTable th.voapl-num {
+            width: 50px;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        #voapl_dataTable td.voapl-num {
+            width: 50px;
+            overflow: hidden;
+        }
+    </style>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+
+                    <!-- Điều kiện tìm kiếm -->
+                    <form id="voapl_searchForm" class="d-flex align-items-end gap-3 mb-3 flex-wrap">
+                        <div>
+                            <label for="voapl_deptNo" class="form-label mb-1" th:text="#{vapl.label.dept}">Phòng ban</label>
+                            <input type="text" class="form-control" id="voapl_deptNo"
+                                th:placeholder="#{ex.placeholder.dept}" placeholder="Chọn phòng ban"
+                                readonly style="width:180px;">
+                        </div>
+                        <div>
+                            <label for="voapl_keyword" class="form-label mb-1" th:text="#{vapl.label.keyword}">Mã NV / Họ tên</label>
+                            <input type="text" class="form-control" id="voapl_keyword"
+                                th:placeholder="#{ex.placeholder.empIdOrName}" placeholder="Nhập mã hoặc họ tên"
+                                style="width:180px;">
+                        </div>
+                        <div>
+                            <label for="voapl_empTypeCode" class="form-label mb-1" th:text="#{common.empType}">Loại nhân viên</label>
+                            <select class="form-select" id="voapl_empTypeCode" data-parent-code="13864"
+                                th:attr="data-default-text=#{ex.opt.all}" data-default-text="-- Tất cả --"
+                                style="width:160px;"></select>
+                        </div>
+                        <div>
+                            <label for="voapl_startDate" class="form-label mb-1" th:text="#{vapl.label.startDate}">Ngày bắt đầu</label>
+                            <input type="text" class="form-control js-daterangepicker" id="voapl_startDate"
+                                data-drp-format="YYYY/MM/DD" autocomplete="off"
+                                placeholder="YYYY/MM/DD" style="width:145px;">
+                        </div>
+                        <div>
+                            <label for="voapl_endDate" class="form-label mb-1" th:text="#{vapl.label.endDate}">Ngày kết thúc</label>
+                            <input type="text" class="form-control js-daterangepicker" id="voapl_endDate"
+                                data-drp-format="YYYY/MM/DD" autocomplete="off"
+                                placeholder="YYYY/MM/DD" style="width:145px;">
+                        </div>
+                        <div class="d-flex gap-2 pb-1">
+                            <button type="button" class="btn btn-primary" onclick="voapl_search()">
+                                <i class="bx bx-search"></i> <span th:text="#{ex.btn.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="voapl_exportExcel()">
+                                <i class="bx bx-export"></i> <span th:text="#{ex.btn.export}">Xuất Excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Thanh điều khiển trang -->
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="small" th:text="#{vapl.show}">Hiển thị</span>
+                        <select class="form-select form-select-sm" id="voapl_pageSizeSelect"
+                            style="width:70px;" onchange="voapl_changePageSize(this.value)">
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span class="small" th:text="#{vapl.entries}">mục</span>
+                    </div>
+
+                    <!-- Bảng: mỗi hàng = 1 nhân viên, cột tăng ca dynamic từ AR_ITEM (itemGroup=1433) -->
+                    <div style="overflow-x:auto;">
+                        <table id="voapl_dataTable"
+                            class="table table-striped table-bordered table-hover table-sm align-middle mb-0"
+                            style="min-width:100%;">
+                            <thead id="voapl_thead" class="table-primary text-center align-middle"></thead>
+                            <tbody id="voapl_tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer: info + pagination -->
+                    <div class="d-flex align-items-center justify-content-between mt-2 flex-wrap gap-2">
+                        <div id="voapl_info" class="small text-muted"></div>
+                        <ul id="voapl_pagination" class="pagination pagination-sm mb-0"></ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chi tiết tăng ca -->
+<div class="modal fade" id="voapl_detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="voapl_detailModalLabel" th:text="#{otsl.modal.detailTitle}">Chi tiết tăng ca</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:50px;"      th:text="#{common.stt}">STT</th>
+                                <th style="width:110px;"     th:text="#{common.empId}">Mã nhân viên</th>
+                                <th style="min-width:140px;" th:text="#{common.empName}">Họ tên</th>
+                                <th style="min-width:120px;" th:text="#{otsl.col.shift}">Ca</th>
+                                <th style="width:110px;"     th:text="#{otsl.col.date}">Ngày</th>
+                                <th style="min-width:150px;" th:text="#{otsl.col.otType}">Loại tăng ca</th>
+                                <th style="width:120px;"     th:text="#{otsl.col.startTime}">Thời gian bắt đầu</th>
+                                <th style="width:120px;"     th:text="#{otsl.col.endTime}">Thời gian kết thúc</th>
+                                <th style="width:90px;"      th:text="#{otsl.col.duration}">Thời lượng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="voapl_detailBody">
+                            <tr>
+                                <td colspan="9" class="text-center text-muted" th:text="#{otsl.msg.selectHint}">
+                                    Chọn vào từng con số để xem chi tiết.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm"
+                    data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _voapl_msg = {
+            stt              : /*[[#{vapl.msg.stt}]]*/ 'STT',
+            empId            : /*[[#{vapl.msg.empId}]]*/ 'Mã NV',
+            empName          : /*[[#{vapl.msg.empName}]]*/ 'Họ tên',
+            deptName         : /*[[#{vapl.msg.deptName}]]*/ 'Phòng ban',
+            position         : /*[[#{vapl.msg.position}]]*/ 'Chức vụ',
+            normalWork       : /*[[#{vapl.msg.normalWork}]]*/ 'Tổng giờ công',
+            lateEarlyGoTotal : /*[[#{vapl.msg.lateEarlyGoTotal}]]*/ 'Tổng (muộn/sớm/ra ngoài)',
+            noData           : /*[[#{vapl.msg.noData}]]*/ 'Không có dữ liệu',
+            loadFailed       : /*[[#{otsl.msg.loadOtFailed}]]*/ 'Không tải được dữ liệu tình hình tăng ca.',
+            noDataExport     : /*[[#{vapl.msg.noDataExport}]]*/ 'Không có dữ liệu để xuất.',
+            loading          : /*[[#{vapl.msg.loading}]]*/ 'Đang tải...',
+            noDataDetail     : /*[[#{otsl.msg.noDataDetail}]]*/ 'Không có dữ liệu.',
+            loadDetailFailed : /*[[#{otsl.msg.loadDetailFailed}]]*/ 'Tải dữ liệu thất bại.',
+            modalTitle       : /*[[#{otsl.msg.modalTitle}]]*/ 'Chi tiết tăng ca'
+        };
+
+        /*
+         * _voapl_items : danh sách {itemId, itemName} lấy từ AR_ITEM (itemGroup=1433 - nhóm tăng ca)
+         *                → dùng để render header cột và đọc giá trị từ mỗi row
+         * _voapl_data  : mảng flat rows, mỗi phần tử = 1 nhân viên (LinkedHashMap từ backend)
+         *                Keys: PERSON_ID, EMPID, LOCAL_NAME, DEPT_NAME, POSITION_NAME,
+         *                      EMP_TYPE_CODE, NORMAL_WORK, LATE_EARLY_GO_TOTAL,
+         *                      + tất cả ITEM_ID active thuộc nhóm 1433
+         */
+        var _voapl_items             = [];
+        var _voapl_data              = [];
+        var _voapl_currentPage       = 1;
+        var _voapl_pageSize          = 25;
+        var _voapl_pageBooted        = false;
+        var _voapl_selectedDeptCodes = [];
+        var _voapl_detailModal       = null;
+
+        /* ── helpers ── */
+        function voapl_esc(v) {
+            if (v === null || v === undefined) return '';
+            return String(v)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function voapl_fmtQty(v) {
+            var n = parseFloat(v);
+            if (isNaN(n) || n === 0) return '0';
+            return n % 1 === 0 ? String(n) : n.toFixed(2).replace(/\.?0+$/, '');
+        }
+
+        /* ── render header ── */
+        /* sticky: [width, left] cho 4 cột đầu (STT, Mã NV, Họ tên, Phòng ban) */
+        var _voapl_sticky = [
+            ['40px',  '0px'],
+            ['90px',  '40px'],
+            ['160px', '130px'],
+            ['150px', '290px']
+        ];
+
+        function voapl_renderHeader() {
+            function sth(i, content, extra) {
+                return '<th class="voapl-sticky' + (extra ? ' ' + extra : '') + '"'
+                    + ' style="width:' + _voapl_sticky[i][0] + ';left:' + _voapl_sticky[i][1] + ';">'
+                    + content + '</th>';
+            }
+            function nth(content) {
+                return '<th class="voapl-num">' + content + '</th>';
+            }
+            var html = '<tr>'
+                + sth(0, voapl_esc(_voapl_msg.stt),      'text-center')
+                + sth(1, voapl_esc(_voapl_msg.empId),     'text-center')
+                + sth(2, voapl_esc(_voapl_msg.empName))
+                + sth(3, voapl_esc(_voapl_msg.deptName))
+                + '<th style="width:120px;white-space:nowrap;">' + voapl_esc(_voapl_msg.position) + '</th>'
+            _voapl_items.forEach(function (itm) {
+                html += nth(voapl_esc(itm.itemName));
+            });
+            html += '</tr>';
+            $('#voapl_thead').html(html);
+        }
+
+        /* ── render rows trang hiện tại ── */
+        function voapl_renderRows() {
+            var fixedCols = 7;
+            var cols      = fixedCols + _voapl_items.length;
+            var total     = _voapl_data.length;
+
+            if (!total) {
+                $('#voapl_tbody').html(
+                    '<tr><td colspan="' + cols + '" class="text-center text-muted">'
+                    + voapl_esc(_voapl_msg.noData) + '</td></tr>'
+                );
+                voapl_renderFooter(0, 0, 0);
+                return;
+            }
+
+            var start    = (_voapl_currentPage - 1) * _voapl_pageSize;
+            var end      = Math.min(start + _voapl_pageSize, total);
+            var pageData = _voapl_data.slice(start, end);
+            var html     = '';
+
+            pageData.forEach(function (row, idx) {
+                html += '<tr>'
+                    + '<td class="voapl-sticky text-center" style="width:' + _voapl_sticky[0][0] + ';left:' + _voapl_sticky[0][1] + ';">' + (start + idx + 1) + '</td>'
+                    + '<td class="voapl-sticky text-center" style="width:' + _voapl_sticky[1][0] + ';left:' + _voapl_sticky[1][1] + ';">' + voapl_esc(row['EMPID'] || '') + '</td>'
+                    + '<td class="voapl-sticky"             style="width:' + _voapl_sticky[2][0] + ';left:' + _voapl_sticky[2][1] + ';">' + voapl_esc(row['LOCAL_NAME'] || '') + '</td>'
+                    + '<td class="voapl-sticky"             style="width:' + _voapl_sticky[3][0] + ';left:' + _voapl_sticky[3][1] + ';">' + voapl_esc(row['DEPT_NAME'] || '') + '</td>'
+                    + '<td style="white-space:nowrap;">' + voapl_esc(row['POSITION_NAME'] || '') + '</td>'
+
+                _voapl_items.forEach(function (itm) {
+                    var qty = parseFloat(row[itm.itemId]) || 0;
+                    if (qty > 0) {
+                        html += '<td class="voapl-num text-center">'
+                            + '<a href="javascript:void(0)" class="voapl-detail-link fw-bold text-primary"'
+                            + ' data-person-id="' + voapl_esc(row['PERSON_ID'] || '') + '"'
+                            + ' data-item-id="'   + voapl_esc(itm.itemId)             + '"'
+                            + ' data-item-name="' + voapl_esc(itm.itemName)           + '">'
+                            + voapl_fmtQty(qty) + '</a></td>';
+                    } else {
+                        html += '<td class="voapl-num text-center text-muted">0</td>';
+                    }
+                });
+                html += '</tr>';
+            });
+
+            $('#voapl_tbody').html(html);
+            voapl_renderFooter(start + 1, end, total);
+        }
+
+        /* ── footer: info + pagination ── */
+        function voapl_renderFooter(from, to, total) {
+            $('#voapl_info').text(
+                total === 0
+                    ? 'Showing 0 to 0 of 0 entries'
+                    : 'Showing ' + from + ' to ' + to + ' of ' + total + ' entries'
+            );
+            var totalPages = Math.ceil(total / _voapl_pageSize);
+            var pg = '';
+            pg += '<li class="page-item' + (_voapl_currentPage <= 1 ? ' disabled' : '') + '">'
+                + '<a class="page-link" href="javascript:void(0)" onclick="voapl_goPage(' + (_voapl_currentPage - 1) + ')">Previous</a></li>';
+            var s = Math.max(1, _voapl_currentPage - 2);
+            var e = Math.min(totalPages, _voapl_currentPage + 2);
+            for (var i = s; i <= e; i++) {
+                pg += '<li class="page-item' + (i === _voapl_currentPage ? ' active' : '') + '">'
+                    + '<a class="page-link" href="javascript:void(0)" onclick="voapl_goPage(' + i + ')">' + i + '</a></li>';
+            }
+            pg += '<li class="page-item' + (_voapl_currentPage >= totalPages ? ' disabled' : '') + '">'
+                + '<a class="page-link" href="javascript:void(0)" onclick="voapl_goPage(' + (_voapl_currentPage + 1) + ')">Next</a></li>';
+            $('#voapl_pagination').html(pg);
+        }
+
+        /* ── render bảng ── */
+        function voapl_renderTable(data) {
+            _voapl_data        = data || [];
+            _voapl_currentPage = 1;
+            voapl_renderHeader();
+            voapl_renderRows();
+
+            $('#voapl_tbody').off('click', '.voapl-detail-link')
+                .on('click', '.voapl-detail-link', function (e) {
+                    e.preventDefault();
+                    voapl_openDetail(
+                        $(this).data('person-id'),
+                        $(this).data('item-id'),
+                        $(this).data('item-name')
+                    );
+                });
+        }
+
+        /* ── modal chi tiết ── */
+        function voapl_fmtDate(s) {
+            if (!s) return '';
+            var p = s.split('/');
+            return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : s;
+        }
+
+        function voapl_openDetail(personId, itemId, itemName) {
+            $('#voapl_detailModalLabel').text(itemName || _voapl_msg.modalTitle);
+            $('#voapl_detailBody').html(
+                '<tr><td colspan="9" class="text-center text-muted">' + voapl_esc(_voapl_msg.loading) + '</td></tr>'
+            );
+            if (_voapl_detailModal) { _voapl_detailModal.show(); }
+
+            $.ajax({
+                url : '/ess/viewDept/api/arPersonalList/detail',
+                type: 'GET',
+                data: {
+                    personId : personId,
+                    itemId   : itemId,
+                    startDate: $('#voapl_startDate').val(),
+                    endDate  : $('#voapl_endDate').val()
+                },
+                success: function (data) {
+                    if (!data || !data.length) {
+                        $('#voapl_detailBody').html(
+                            '<tr><td colspan="9" class="text-center text-muted">'
+                            + voapl_esc(_voapl_msg.noDataDetail) + '</td></tr>'
+                        );
+                        return;
+                    }
+                    var html = '';
+                    data.forEach(function (row, idx) {
+                        html += '<tr>'
+                            + '<td class="text-center">' + (idx + 1) + '</td>'
+                            + '<td class="text-center">' + voapl_esc(row.empId     || '') + '</td>'
+                            + '<td>'                     + voapl_esc(row.localName || '') + '</td>'
+                            + '<td class="text-center">' + voapl_esc(row.shiftName || row.shiftNo || '') + '</td>'
+                            + '<td class="text-center">' + voapl_fmtDate(row.arDateStr) + '</td>'
+                            + '<td>'                     + voapl_esc(row.itemName  || '') + '</td>'
+                            + '<td class="text-center">' + voapl_esc(row.fromTimeStr || '') + '</td>'
+                            + '<td class="text-center">' + voapl_esc(row.toTimeStr   || '') + '</td>'
+                            + '<td class="text-center">' + voapl_fmtQty(row.quantity) + '</td>'
+                            + '</tr>';
+                    });
+                    $('#voapl_detailBody').html(html);
+                },
+                error: function () {
+                    $('#voapl_detailBody').html(
+                        '<tr><td colspan="9" class="text-center text-danger">'
+                        + voapl_esc(_voapl_msg.loadDetailFailed) + '</td></tr>'
+                    );
+                }
+            });
+        }
+
+        window.voapl_goPage = function (n) {
+            var totalPages = Math.ceil(_voapl_data.length / _voapl_pageSize);
+            if (n < 1 || n > totalPages) return;
+            _voapl_currentPage = n;
+            voapl_renderRows();
+        };
+
+        window.voapl_changePageSize = function (val) {
+            _voapl_pageSize    = parseInt(val, 10) || 25;
+            _voapl_currentPage = 1;
+            voapl_renderRows();
+        };
+
+        /* ── tra cứu ── */
+        window.voapl_search = function () {
+            $.ajax({
+                url : '/ess/viewDept/api/arPersonalList/summary',
+                type: 'GET',
+                data: {
+                    keyword     : $('#voapl_keyword').val(),
+                    deptNos     : (_voapl_selectedDeptCodes || []).join(','),
+                    empTypeCode : $('#voapl_empTypeCode').val(),
+                    startDate   : $('#voapl_startDate').val(),
+                    endDate     : $('#voapl_endDate').val(),
+                    itemGroup   : '1433'  /* chỉ load AR_ITEM thuộc nhóm tăng ca 1433 */
+                },
+                success: function (data) {
+                    voapl_renderTable(data);
+                },
+                error: function () {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error(_voapl_msg.loadFailed);
+                    }
+                }
+            });
+        };
+
+        /* ── xuất Excel ── */
+        window.voapl_exportExcel = function () {
+            if (!_voapl_data.length) {
+                if (typeof toastr !== 'undefined') toastr.warning(_voapl_msg.noDataExport);
+                return;
+            }
+            var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office"'
+                + ' xmlns:x="urn:schemas-microsoft-com:office:excel">'
+                + '<head><meta charset="UTF-8"></head><body><table border="1">';
+
+            html += '<tr>'
+                + '<th>' + _voapl_msg.stt              + '</th>'
+                + '<th>' + _voapl_msg.empId            + '</th>'
+                + '<th>' + _voapl_msg.empName          + '</th>'
+                + '<th>' + _voapl_msg.deptName         + '</th>'
+                + '<th>' + _voapl_msg.position         + '</th>'
+                + '<th>' + _voapl_msg.normalWork       + '</th>'
+                + '<th>' + _voapl_msg.lateEarlyGoTotal + '</th>';
+            _voapl_items.forEach(function (itm) { html += '<th>' + itm.itemName + '</th>'; });
+            html += '</tr>';
+
+            _voapl_data.forEach(function (row, idx) {
+                html += '<tr>'
+                    + '<td>' + (idx + 1)                                   + '</td>'
+                    + '<td>' + (row['EMPID']         || '')                 + '</td>'
+                    + '<td>' + (row['LOCAL_NAME']    || '')                 + '</td>'
+                    + '<td>' + (row['DEPT_NAME']     || '')                 + '</td>'
+                    + '<td>' + (row['POSITION_NAME'] || '')                 + '</td>'
+                    + '<td>' + voapl_fmtQty(row['NORMAL_WORK'])            + '</td>'
+                    + '<td>' + voapl_fmtQty(row['LATE_EARLY_GO_TOTAL'])    + '</td>';
+                _voapl_items.forEach(function (itm) {
+                    html += '<td>' + voapl_fmtQty(parseFloat(row[itm.itemId]) || 0) + '</td>';
+                });
+                html += '</tr>';
+            });
+            html += '</table></body></html>';
+
+            var blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel' });
+            var url  = URL.createObjectURL(blob);
+            var a    = document.createElement('a');
+            a.href     = url;
+            a.download = 'tinh_hinh_tang_ca_nhan_vien.xls';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        /* ── mặc định: ngày 25 tháng trước đến ngày 24 tháng này ── */
+        function voapl_defaultDateRange() {
+            var now  = new Date();
+            var y    = now.getFullYear();
+            var m    = now.getMonth();        // 0-based
+            var pad  = function (n) { return n < 10 ? '0' + n : '' + n; };
+
+            var prevY = m === 0 ? y - 1 : y;
+            var prevM = m === 0 ? 12    : m;  // tháng trước (1-based)
+
+            var startVal = prevY + '/' + pad(prevM) + '/25';
+            var endVal   = y    + '/' + pad(m + 1)  + '/24';
+
+            $('#voapl_startDate').val(startVal);
+            $('#voapl_endDate').val(endVal);
+
+            if ($('#voapl_startDate').data('daterangepicker')) {
+                $('#voapl_startDate').data('daterangepicker').setStartDate(startVal);
+            }
+            if ($('#voapl_endDate').data('daterangepicker')) {
+                $('#voapl_endDate').data('daterangepicker').setStartDate(endVal);
+            }
+        }
+
+        /* ── load items (header cột), sau đó search ── */
+        function voapl_loadItems(callback) {
+            $.ajax({
+                url    : '/ess/viewDept/api/arPersonalList/items',
+                type   : 'GET',
+                data: {
+                    itemGroup   : '1433'  /* để backend lọc AR_ITEM theo nhóm nghỉ phép này, tránh phải load tất cả AR_ITEM (ACTIVITY=1) */
+                },
+                success: function (data) {
+                    _voapl_items = data || [];
+                    if (typeof callback === 'function') callback();
+                },
+                error  : function () {
+                    _voapl_items = [];
+                    if (typeof callback === 'function') callback();
+                }
+            });
+        }
+
+        /* ── boot ── */
+        function voapl_bootPage() {
+            if (_voapl_pageBooted) return;
+            if (!document.getElementById('voapl_dataTable')) {
+                setTimeout(voapl_bootPage, 30);
+                return;
+            }
+            _voapl_pageBooted = true;
+
+            if (window.bootstrap && document.getElementById('voapl_detailModal')) {
+                _voapl_detailModal = new bootstrap.Modal(document.getElementById('voapl_detailModal'));
+            }
+            if (typeof DeptTree !== 'undefined') {
+                DeptTree.init('#voapl_deptNo', function (selectedCodes) {
+                    _voapl_selectedDeptCodes = selectedCodes || [];
+                });
+            }
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#voapl_searchForm');
+            }
+            voapl_defaultDateRange();
+            /* Load items trước để có header cột, rồi mới search */
+            voapl_loadItems(function () { voapl_search(); });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', voapl_bootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(voapl_bootPage);
+        } else {
+            voapl_bootPage();
+        }
+    </script>
+</template>

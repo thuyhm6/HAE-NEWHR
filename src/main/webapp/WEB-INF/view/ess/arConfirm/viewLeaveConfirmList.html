@@ -1,0 +1,373 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <form id="lc_searchForm" class="row g-3 mb-3">
+                        <div class="col-md-2">
+                            <label for="lc_searchEmpId" class="form-label" th:text="#{common.search.empIdOrName}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="lc_searchEmpId"
+                                th:placeholder="#{common.placeholder.empId}" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="lc_searchFromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
+                            <input type="date" class="form-control" id="lc_searchFromDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="lc_searchToDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
+                            <input type="date" class="form-control" id="lc_searchToDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="lc_searchLeaveTypeCode" class="form-label" th:text="#{applyAtt.leaveTypeFull}">Loại nghỉ phép</label>
+                            <select class="form-select" id="lc_searchLeaveTypeCode" data-parent-code="21"
+                                data-default-text="-- Tất cả --">
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="lc_searchConfirmFlag" class="form-label" th:text="#{applyAtt.search.confirmFlag}">Trạng thái xác nhận</label>
+                            <select class="form-select" id="lc_searchConfirmFlag">
+                                <option value="" th:text="#{common.selectAll}">-- Tất cả --</option>
+                                <option value="0" th:text="#{applyAtt.confirmFlag.notConfirmed}">Chưa xác nhận</option>
+                                <option value="1" th:text="#{applyAtt.confirmFlag.confirmed}">Đã xác nhận</option>
+                                <option value="2" th:text="#{applyAtt.confirmFlag.rejected}">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end flex-wrap gap-1">
+                            <button type="button" class="btn btn-primary" onclick="lcSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tìm kiếm</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="lcClearSearch()">
+                                <i class="bx bx-x"></i> <span th:text="#{common.clearFilter}">Xóa lọc</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="lcBatchAction('1')">
+                                <i class="bx bx-check-circle"></i> <span th:text="#{lc.btn.batchApprove}">Duyệt hàng loạt</span>
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="lcBatchAction('2')">
+                                <i class="bx bx-x-circle"></i> <span th:text="#{lc.btn.batchReject}">Từ chối hàng loạt</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Data Table -->
+                    <div class="table-responsive">
+                        <table id="lc_dataTable" class="table table-striped table-bordered table-hover"
+                            style="min-width:1800px">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th><input type="checkbox" id="lc_chkAll" title="Chọn tất cả"></th>
+                                    <th th:text="#{common.no.serial}">NO.</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{applyAtt.applicant}">Người xin phép</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{common.position}">Chức vụ</th>
+                                    <th th:text="#{lc.col.applyDate}">Ngày xin phép</th>
+                                    <th th:text="#{applyAtt.leaveTypeFull}">Loại nghỉ phép</th>
+                                    <th th:text="#{lc.col.leaveTime}">Thời gian</th>
+                                    <th th:text="#{ess.viewApply.title.length}">Thời lượng</th>
+                                    <th th:text="#{common.reason}">Lý do</th>
+                                    <th th:text="#{lc.col.representative}">Người đại diện</th>
+                                    <th th:text="#{lc.col.affirmStatus}">Trạng thái duyệt</th>
+                                    <th th:text="#{lc.col.hrComment}">Ý kiến nhân sự</th>
+                                    <th th:text="#{lc.col.hrConfirm}">Nhân sự xác nhận</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xem thông tin phê duyệt nghỉ phép -->
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveModal}"></th:block>
+
+    <!-- Modal nhập ý kiến khi từ chối hàng loạt -->
+    <div class="modal fade" id="lc_rejectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{lc.btn.batchReject}">Từ chối hàng loạt</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="lc_rejectComment" class="form-label" th:text="#{lc.dialog.hrComment}">Nhập ý kiến</label>
+                    <textarea class="form-control" id="lc_rejectComment" rows="3" placeholder="Nhập ý kiến từ chối..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.no}">Không</button>
+                    <button type="button" class="btn btn-danger" id="lc_btnConfirmReject" th:text="#{lc.btn.reject}">Từ chối</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{ess/infoApply/viewApprovaledLeave :: approvalLeaveScript}"></th:block>
+    <script th:inline="javascript">
+        var _lc_table;
+        var _lc_typeList = [];
+        var _lc_pageBooted = false;
+        var _lc_batchFlag = null;
+
+        function lcBootPage() {
+            if (_lc_pageBooted) return;
+            if (!document.getElementById('lc_dataTable')) {
+                setTimeout(lcBootPage, 30);
+                return;
+            }
+            _lc_pageBooted = true;
+
+            $('#lc_searchFromDate').val('');
+            $('#lc_searchToDate').val('');
+            $('#lc_searchConfirmFlag').val('0');
+
+            lcInitTable();
+        }
+
+        function lcInitTable() {
+            var hasFixedColumns = !!($.fn.dataTable && $.fn.dataTable.FixedColumns);
+            _lc_table = $('#lc_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                autoWidth: false,
+                scrollY: 'calc(100vh - 300px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                serverSide: true,
+                columnDefs: [
+                    { targets: 0,  width: '30px',  orderable: false },
+                    { targets: 1,  width: '40px',  orderable: false },
+                    { targets: 2,  width: '100px', orderable: false },
+                    { targets: 3,  width: '160px', orderable: false },
+                    { targets: 4,  width: '150px', orderable: false },
+                    { targets: 5,  width: '120px', orderable: false },
+                    { targets: 6,  width: '100px', orderable: false },
+                    { targets: 7,  width: '160px', orderable: false },
+                    { targets: 8,  width: '220px', orderable: false },
+                    { targets: 9,  width: '80px',  orderable: false },
+                    { targets: 10, width: '200px', orderable: false },
+                    { targets: 11, width: '130px', orderable: false },
+                    { targets: 12, width: '110px', orderable: false },
+                    { targets: 13, width: '200px', orderable: false },
+                    { targets: 14, width: '160px', orderable: false, className: 'text-center' }
+                ],
+                fixedColumns: hasFixedColumns ? { leftColumns: 4 } : false,
+                ajax: {
+                    url: '/ess/arConfirm/api/leaveConfirm/list',
+                    data: function (d) {
+                        d.searchEmpId        = $('#lc_searchEmpId').val();
+                        d.fromDate           = $('#lc_searchFromDate').val();
+                        d.toDate             = $('#lc_searchToDate').val();
+                        d.searchLeaveTypeCode = $('#lc_searchLeaveTypeCode').val();
+                        d.confirmFlag        = $('#lc_searchConfirmFlag').val();
+                        d.draw               = d.draw || 1;
+                        d.start              = d.start || 0;
+                        d.length             = d.length || 25;
+                    },
+                    error: function () {
+                        toastr && toastr.error('Lỗi tải danh sách xác nhận nghỉ phép');
+                    }
+                },
+                columns: [
+                    {
+                        data: null, className: 'text-center align-middle',
+                        render: function () {
+                            return '<input type="checkbox" class="lc-chk-row">';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId', render: function (d) { return d || ''; } },
+                    {
+                        data: 'localName',
+                        render: function (data, type, row) {
+                            var name = data || '';
+                            if (!name) return '';
+                            var applyNo   = String(row.applyNo   || '').replace(/'/g, "\\'");
+                            var applyType = String(row.applyType || '').replace(/'/g, "\\'");
+                            var escaped   = name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            return '<a href="javascript:void(0)" onclick="valOpenApplyDetail(\'' + applyNo + '\',\'' + applyType + '\')">' + escaped + '</a>';
+                        }
+                    },
+                    { data: 'deptName', render: function (d) { return d || ''; } },
+                    { data: 'postGradeName', render: function (d) { return d || ''; } },
+                    { data: 'applyTime', render: function (d) { return d || ''; } },
+                    { data: 'leaveTypeCodeName', render: function (d) { return d || ''; } },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            return (row.leaveFromTime || '') + ' ~ ' + (row.leaveToTime || '');
+                        }
+                    },
+                    {
+                        data: null, className: 'text-center align-middle',
+                        render: function (data, type, row) {
+                            return lcFormatDuration(row.applyLength, row.dayHours);
+                        }
+                    },
+                    { data: 'leaveReason', render: function (d) { return d || ''; } },
+                    { data: 'createdName', render: function (d) { return d || ''; } },
+                    {
+                        data: null, className: 'text-center align-middle',
+                        render: function () {
+                            return '<span class="badge bg-success">Đã duyệt</span>';
+                        }
+                    },
+                    {
+                        data: 'hrComment',
+                        render: function (data, type, row) {
+                            var val = (data || '').replace(/"/g, '&quot;');
+                            var applyNo = String(row.applyNo || '').replace(/'/g, "\\'");
+                            return '<input type="text" class="form-control form-control-sm lc-in-comment" '
+                                + 'data-apply-no="' + applyNo + '" value="' + val + '" '
+                                + 'placeholder="Nhập ý kiến...">';
+                        }
+                    },
+                    {
+                        data: null, className: 'text-center align-middle',
+                        render: function (data, type, row) {
+                            var applyNo = String(row.applyNo || '').replace(/'/g, "\\'");
+                            return '<button class="btn btn-sm btn-success me-1" '
+                                + 'onclick="lcConfirmLine(\'' + applyNo + '\',\'1\')" title="Duyệt">'
+                                + '<i class="bx bx-check"></i> Duyệt</button>'
+                                + '<button class="btn btn-sm btn-danger" '
+                                + 'onclick="lcConfirmLine(\'' + applyNo + '\',\'2\')" title="Từ chối">'
+                                + '<i class="bx bx-x"></i> Từ chối</button>';
+                        }
+                    }
+                ]
+            });
+        }
+
+        function lcFormatDuration(applyLength, dayHours) {
+            var len = parseFloat(applyLength);
+            var dh  = parseFloat(dayHours);
+            if (isNaN(len) || isNaN(dh) || dh === 0) return String(applyLength || '');
+            var days  = Math.floor(len / dh);
+            var hours = len - days * dh;
+            var text  = '';
+            if (days  > 0) text += days  + ' Ngày';
+            if (hours > 0) text += (text ? ' ' : '') + hours + ' Giờ';
+            return text || String(len);
+        }
+
+        window.lcSearchData = function () {
+            if (_lc_table) _lc_table.ajax.reload();
+        };
+
+        window.lcClearSearch = function () {
+            $('#lc_searchForm')[0].reset();
+            if (_lc_table) _lc_table.ajax.reload();
+        };
+
+        window.lcConfirmLine = function (applyNo, flag) {
+            var $row = $('#lc_dataTable').find('[data-apply-no="' + applyNo + '"]').closest('tr');
+            var hrComment = $row.find('.lc-in-comment[data-apply-no="' + applyNo + '"]').val() || '';
+
+            if (flag === '2' && !hrComment.trim()) {
+                toastr && toastr.warning('Vui lòng nhập ý kiến khi từ chối!');
+                return;
+            }
+
+            var action = flag === '1' ? 'duyệt' : 'từ chối';
+            if (!confirm('Bạn có chắc chắn muốn ' + action + ' đơn này?')) return;
+
+            $.ajax({
+                url: '/ess/arConfirm/api/leaveConfirm/confirm',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ applyNo: applyNo, flag: flag, hrComment: hrComment }),
+                success: function (res) {
+                    if (res && res.success) {
+                        toastr && toastr.success(flag === '1' ? 'Duyệt thành công!' : 'Từ chối thành công!');
+                        _lc_table.ajax.reload(null, false);
+                    } else {
+                        toastr && toastr.error((res && res.error) || 'Có lỗi xảy ra!');
+                    }
+                },
+                error: function () {
+                    toastr && toastr.error('Lỗi kết nối máy chủ!');
+                }
+            });
+        };
+
+        window.lcBatchAction = function (flag) {
+            var applyNos = [];
+            _lc_table.rows().every(function () {
+                var $tr = $(this.node());
+                if ($tr.find('.lc-chk-row').is(':checked')) {
+                    applyNos.push(String(this.data().applyNo));
+                }
+            });
+
+            if (!applyNos.length) {
+                toastr && toastr.warning('Vui lòng chọn đơn cần xử lý!');
+                return;
+            }
+
+            if (flag === '1') {
+                if (!confirm('Bạn có chắc chắn muốn duyệt ' + applyNos.length + ' đơn đã chọn?')) return;
+                lcSendBatch(applyNos, '1', '');
+            } else {
+                _lc_batchFlag = flag;
+                $('#lc_rejectComment').val('');
+                $('#lc_rejectModal').modal('show');
+                $('#lc_btnConfirmReject').off('click').on('click', function () {
+                    var comment = $('#lc_rejectComment').val().trim();
+                    if (!comment) {
+                        toastr && toastr.warning('Vui lòng nhập ý kiến khi từ chối!');
+                        return;
+                    }
+                    $('#lc_rejectModal').modal('hide');
+                    lcSendBatch(applyNos, '2', comment);
+                });
+            }
+        };
+
+        function lcSendBatch(applyNos, flag, hrComment) {
+            $.ajax({
+                url: '/ess/arConfirm/api/leaveConfirm/confirmBatch',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ applyNos: applyNos, flag: flag, hrComment: hrComment }),
+                success: function (res) {
+                    if (res && res.success) {
+                        toastr && toastr.success(flag === '1' ? 'Duyệt hàng loạt thành công!' : 'Từ chối hàng loạt thành công!');
+                    } else {
+                        toastr && toastr.error((res && res.error) || 'Có lỗi xảy ra!');
+                    }
+                    $('#lc_chkAll').prop('checked', false);
+                    _lc_table.ajax.reload(null, false);
+                },
+                error: function () {
+                    toastr && toastr.error('Lỗi kết nối máy chủ!');
+                }
+            });
+        }
+
+        $(document).on('change', '#lc_chkAll', function () {
+            var checked = $(this).is(':checked');
+            $('#lc_dataTable tbody').find('.lc-chk-row').prop('checked', checked);
+        });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', lcBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(lcBootPage);
+        } else {
+            lcBootPage();
+        }
+    </script>
+</template>

@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArCalenderMapper">
+
+    <!-- ===================== AR_CALENDER ===================== -->
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArCalender">
+        <id column="DDATE" property="ddate" />
+        <result column="IYEAR" property="iyear" />
+        <result column="IMONTH" property="imonth" />
+        <result column="IDAY" property="iday" />
+        <result column="IWEEK" property="iweek" />
+        <result column="WORKDAYFLAG" property="workdayflag" />
+        <result column="DDATE_STR" property="ddateStr" />
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="SHIFT_NO" property="shiftNo" />
+        <result column="TYPEID" property="typeid" />
+        <result column="OVERTYPEID" property="overtypeid" />
+        <result column="TYPEID_DEFAULT" property="typeidDefault" />
+        <result column="OPERATION_ID" property="operationId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="UPDATED_IP" property="updatedIp" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="STATUTORY_FLAG" property="statutoryFlag" />
+        <result column="REMARK" property="remark" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArCalenderDto" extends="BaseResultMap">
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="DDATE_FORMATTED" property="ddateFormatted" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="TYPEID_NAME" property="typeidName" />
+        <result column="OVERTYPEID_NAME" property="overtypeidName" />
+        <result column="TYPEID_DEFAULT_NAME" property="typeidDefaultName" />
+        <result column="GROUP_ID_NAME" property="groupIdName" />
+    </resultMap>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT a.*,
+               c.CPNY_LOCATION AS COMPANY_NAME,
+               TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME
+        FROM AR_CALENDER a
+        LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
+        WHERE (a.TYPEID = '1442' OR a.STATUTORY_FLAG = 1)
+        <if test="cpnyId != null and cpnyId != ''">
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+        <if test="iyear != null and iyear != ''">
+            AND a.IYEAR = #{iyear}
+        </if>
+        <if test="imonth != null and imonth != ''">
+            AND a.IMONTH = #{imonth}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (a.DDATE_STR LIKE '%' || #{keyword} || '%' OR a.REMARK LIKE '%' || #{keyword} || '%')
+        </if>
+        ORDER BY a.IYEAR DESC, a.IMONTH, a.IDAY
+    </select>
+
+    <select id="findByMonth" resultMap="DtoResultMap">
+        SELECT a.*,
+               c.CPNY_LOCATION AS COMPANY_NAME,
+               TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME
+        FROM AR_CALENDER a
+        LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
+        WHERE a.IYEAR = #{iyear} AND a.IMONTH = #{imonth}
+        <if test="cpnyId != null and cpnyId != ''">
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+        ORDER BY a.IDAY
+    </select>
+
+    <select id="selectByPk" resultMap="BaseResultMap">
+        SELECT * FROM AR_CALENDER
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
+    </select>
+
+    <select id="countByPk" resultType="int">
+        SELECT COUNT(*) FROM AR_CALENDER
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArCalender">
+        INSERT INTO AR_CALENDER (
+            DDATE, IYEAR, IMONTH, IDAY, IWEEK, WORKDAYFLAG, DDATE_STR,
+            CPNY_ID, SHIFT_NO, TYPEID, OVERTYPEID, TYPEID_DEFAULT, OPERATION_ID,
+            CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY,
+            ACTIVITY, ORDERNO, STATUTORY_FLAG, REMARK
+        ) VALUES (
+            TO_DATE(#{ddateStr}, 'YYYY/MM/DD'),
+            #{iyear}, #{imonth}, #{iday}, #{iweek},
+            #{workdayflag, jdbcType=NUMERIC},
+            #{ddateStr},
+            #{cpnyId, jdbcType=VARCHAR}, #{shiftNo, jdbcType=VARCHAR},
+            #{typeid, jdbcType=VARCHAR}, #{overtypeid, jdbcType=VARCHAR},
+            #{typeidDefault, jdbcType=VARCHAR}, #{operationId, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
+            #{statutoryFlag, jdbcType=NUMERIC}, #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArCalender">
+        UPDATE AR_CALENDER
+        <set>
+            <if test="workdayflag != null">WORKDAYFLAG = #{workdayflag},</if>
+            <if test="shiftNo != null">SHIFT_NO = #{shiftNo},</if>
+            <if test="typeid != null">TYPEID = #{typeid},</if>
+            <if test="overtypeid != null">OVERTYPEID = #{overtypeid},</if>
+            <if test="typeidDefault != null">TYPEID_DEFAULT = #{typeidDefault},</if>
+            <if test="operationId != null">OPERATION_ID = #{operationId},</if>
+            <if test="activity != null">ACTIVITY = #{activity},</if>
+            <if test="orderno != null">ORDERNO = #{orderno},</if>
+            <if test="statutoryFlag != null">STATUTORY_FLAG = #{statutoryFlag},</if>
+            <if test="remark != null">REMARK = #{remark},</if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        </set>
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM AR_CALENDER WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND DDATE_STR = #{ddateStr}
+    </delete>
+
+    <!-- ===================== AR_CALENDER_GROUP ===================== -->
+    <resultMap id="GroupResultMap" type="com.ait.ar.attendanceSettings.model.ArCalenderGroup">
+        <result column="DDATE" property="ddate" />
+        <result column="IYEAR" property="iyear" />
+        <result column="IMONTH" property="imonth" />
+        <result column="IDAY" property="iday" />
+        <result column="IWEEK" property="iweek" />
+        <result column="WORKDAYFLAG" property="workdayflag" />
+        <result column="TYPEID" property="typeid" />
+        <result column="OVERTYPEID" property="overtypeid" />
+        <result column="TYPEID_DEFAULT" property="typeidDefault" />
+        <result column="GROUP_ID" property="groupId" />
+        <result column="SHIFT_NO" property="shiftNo" />
+        <result column="AR_DATE_STR" property="arDateStr" />
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="OPERATION_ID" property="operationId" />
+        <result column="UPDATED_IP" property="updatedIp" />
+        <result column="CREATED_IP" property="createdIp" />
+    </resultMap>
+
+    <select id="findGroupByDate" resultMap="GroupResultMap">
+        SELECT * FROM AR_CALENDER_GROUP
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}  AND GROUP_ID = #{groupId}
+    </select>
+
+    <select id="countGroup" resultType="int">
+        SELECT COUNT(*) FROM AR_CALENDER_GROUP
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND GROUP_ID = #{groupId}
+    </select>
+
+    <insert id="insertGroup" parameterType="com.ait.ar.attendanceSettings.model.ArCalenderGroup">
+        INSERT INTO AR_CALENDER_GROUP (
+            DDATE, IYEAR, IMONTH, IDAY, IWEEK, WORKDAYFLAG,
+            TYPEID, OVERTYPEID, TYPEID_DEFAULT, GROUP_ID, SHIFT_NO,
+            AR_DATE_STR, CPNY_ID, CREATE_DATE, CREATED_BY,
+            UPDATE_DATE, UPDATED_BY, ACTIVITY, ORDERNO, OPERATION_ID
+        ) VALUES (
+            TO_DATE(#{arDateStr}, 'YYYY/MM/DD'),
+            #{iyear}, #{imonth}, #{iday}, #{iweek}, #{workdayflag, jdbcType=NUMERIC},
+            #{typeid, jdbcType=NUMERIC}, #{overtypeid, jdbcType=NUMERIC},
+            #{typeidDefault, jdbcType=NUMERIC}, #{groupId, jdbcType=VARCHAR},
+            #{shiftNo, jdbcType=NUMERIC}, #{arDateStr}, #{cpnyId, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
+            #{operationId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateGroup" parameterType="com.ait.ar.attendanceSettings.model.ArCalenderGroup">
+        UPDATE AR_CALENDER_GROUP
+        <set>
+            <if test="workdayflag != null">WORKDAYFLAG = #{workdayflag},</if>
+            <if test="typeid != null">TYPEID = #{typeid},</if>
+            <if test="overtypeid != null">OVERTYPEID = #{overtypeid},</if>
+            <if test="typeidDefault != null">TYPEID_DEFAULT = #{typeidDefault},</if>
+            <if test="shiftNo != null">SHIFT_NO = #{shiftNo},</if>
+            <if test="activity != null">ACTIVITY = #{activity},</if>
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        </set>
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} AND GROUP_ID = #{groupId}
+    </update>
+
+    <!-- ===================== AR_CALENDER_GROUP_HISTORY ===================== -->
+    <delete id="deleteHistory">
+        DELETE FROM AR_CALENDER_GROUP_HISTORY
+        WHERE AR_DATE_STR = #{arDateStr} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <insert id="insertHistory" parameterType="com.ait.ar.attendanceSettings.model.ArCalenderGroupHistory">
+        INSERT INTO AR_CALENDER_GROUP_HISTORY (
+            DDATE, IYEAR, IMONTH, IDAY, IWEEK, WORKDAYFLAG,
+            TYPEID, OVERTYPEID, TYPEID_DEFAULT, GROUP_ID, SHIFT_NO,
+            AR_DATE_STR, CPNY_ID, CREATE_DATE, CREATED_BY,
+            UPDATE_DATE, UPDATED_BY, ACTIVITY, ORDERNO, OPERATION_ID
+        ) VALUES (
+            TO_DATE(#{arDateStr}, 'YYYY/MM/DD'),
+            #{iyear}, #{imonth}, #{iday}, #{iweek}, #{workdayflag, jdbcType=NUMERIC},
+            #{typeid, jdbcType=NUMERIC}, #{overtypeid, jdbcType=NUMERIC},
+            #{typeidDefault, jdbcType=NUMERIC}, #{groupId, jdbcType=VARCHAR},
+            #{shiftNo, jdbcType=NUMERIC}, #{arDateStr}, #{cpnyId, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
+            #{operationId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ===================== CLASS CALENDAR EXTENSIONS ===================== -->
+    <resultMap id="GroupDtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArCalenderGroupDto" extends="GroupResultMap">
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="DDATE_FORMATTED" property="ddateFormatted" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="TYPEID_NAME" property="typeidName" />
+        <result column="OVERTYPEID_NAME" property="overtypeidName" />
+        <result column="TYPEID_DEFAULT_NAME" property="typeidDefaultName" />
+        <result column="GROUP_NAME" property="groupName" />
+    </resultMap>
+
+    <select id="selectGroupCalendarMonth" resultMap="GroupDtoResultMap">
+        SELECT a.*,
+               c.CPNY_LOCATION AS COMPANY_NAME,
+               TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME,
+               GET_GLOBAL_NAME(a.GROUP_ID, #{lang, jdbcType=VARCHAR}) AS GROUP_NAME
+        FROM AR_CALENDER_GROUP a
+        LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
+        WHERE a.IYEAR = #{iyear} AND a.IMONTH = #{imonth}
+        <if test="cpnyId != null and cpnyId != ''">
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+        <if test="groupId != null and groupId != ''">
+            AND a.GROUP_ID = #{groupId}
+        </if>
+        ORDER BY a.IDAY, a.GROUP_ID
+    </select>
+
+    <select id="selectGroupCalendarDetail" resultMap="GroupDtoResultMap">
+        SELECT a.*,
+               c.CPNY_LOCATION AS COMPANY_NAME,
+               TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED,
+               GET_GLOBAL_NAME(a.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+               GET_GLOBAL_NAME(a.TYPEID, #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR}) AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR}) AS TYPEID_DEFAULT_NAME,
+               GET_GLOBAL_NAME(a.GROUP_ID, #{lang, jdbcType=VARCHAR}) AS GROUP_NAME
+        FROM AR_CALENDER_GROUP a
+        LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
+        WHERE a.AR_DATE_STR = #{arDateStr} 
+          AND a.GROUP_ID = #{groupId}
+        <if test="cpnyId != null and cpnyId != ''">
+            AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <insert id="callAddCalenderDateBanciP" statementType="CALLABLE">
+        { call AR_ADD_CALENDER_DATE_BANCI_P(
+            TO_DATE(#{startDate}, 'DD-MM-YYYY'),
+            TO_DATE(#{endDate}, 'DD-MM-YYYY'),
+            #{workShift}, #{restShift}, #{cpnyId, jdbcType=VARCHAR}, #{groupId}, #{adminIP, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}
+        ) }
+    </insert>
+
+    <delete id="deleteHistoryByGroup">
+        DELETE FROM AR_CALENDER_GROUP_HISTORY
+        WHERE AR_DATE_STR = #{arDateStr} 
+          AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR} 
+          AND GROUP_ID = #{groupId}
+    </delete>
+
+    <!-- ===================== EMP CALENDAR EXTENSIONS ===================== -->
+    <resultMap id="EmpCalenderDtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArEmpCalenderDto">
+        <result column="DDATE_STR"           property="ddateStr" />
+        <result column="DDATE_FORMATTED"     property="ddateFormatted" />
+        <result column="IYEAR"               property="iyear" />
+        <result column="IMONTH"              property="imonth" />
+        <result column="IDAY"                property="iday" />
+        <result column="IWEEK"               property="iweek" />
+        <result column="WORKDAYFLAG"         property="workdayflag" />
+        <result column="STATUTORY_FLAG"      property="statutoryFlag" />
+        <result column="CPNY_ID"             property="cpnyId" />
+        <result column="OVERTYPEID"          property="overtypeid" />
+        <result column="TYPEID_DEFAULT"      property="typeidDefault" />
+        <result column="REMARK"              property="remark" />
+        <result column="SHIFT_NO"            property="shiftNo" />
+        <result column="TYPEID"              property="typeid" />
+        <result column="SHIFT_NAME"          property="shiftName" />
+        <result column="TYPEID_NAME"         property="typeidName" />
+        <result column="OVERTYPEID_NAME"     property="overtypeidName" />
+        <result column="TYPEID_DEFAULT_NAME" property="typeidDefaultName" />
+    </resultMap>
+
+    <select id="selectEmpCalendarMonth" resultMap="EmpCalenderDtoResultMap">
+        SELECT a.DDATE,
+               a.IYEAR, a.IMONTH, a.IDAY, a.IWEEK,
+               a.WORKDAYFLAG, a.DDATE_STR, a.CPNY_ID,
+               GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID)        AS SHIFT_NO,
+               GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID) AS TYPEID,
+               a.OVERTYPEID, a.TYPEID_DEFAULT, a.STATUTORY_FLAG, a.REMARK,
+               TO_CHAR(a.DDATE, 'YYYY-MM-DD')                              AS DDATE_FORMATTED,
+               GET_GLOBAL_NAME(GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang, jdbcType=VARCHAR})         AS SHIFT_NAME,
+               GET_GLOBAL_NAME(GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang, jdbcType=VARCHAR}) AS TYPEID_NAME,
+               GET_GLOBAL_NAME(a.OVERTYPEID, #{lang, jdbcType=VARCHAR})                     AS OVERTYPEID_NAME,
+               GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang, jdbcType=VARCHAR})                 AS TYPEID_DEFAULT_NAME
+        FROM AR_CALENDER a
+        WHERE a.DDATE BETWEEN GET_AR_START_DATE(#{iyear} || #{imonth}, a.CPNY_ID, '')
+                          AND GET_AR_END_DATE(#{iyear} || #{imonth}, a.CPNY_ID, '')
+          AND a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        ORDER BY a.DDATE
+    </select>
+
+    <select id="countScheduleHtsv" resultType="int">
+        SELECT COUNT(1) FROM AR_SCHEDULE_HTSV
+        WHERE PERSON_ID = #{personId}
+          AND AR_DATE_STR = #{arDateStr}
+    </select>
+
+    <!-- Lấy thông tin lịch cá nhân 1 ngày: ưu tiên AR_SCHEDULE_HTSV, kết hợp AR_CALENDER -->
+    <select id="selectEmpScheduleDetail" resultMap="EmpCalenderDtoResultMap">
+        SELECT
+            c.DDATE_STR,
+            c.IYEAR, c.IMONTH, c.IDAY, c.IWEEK,
+            c.WORKDAYFLAG, c.CPNY_ID,
+            c.OVERTYPEID, c.TYPEID_DEFAULT, c.STATUTORY_FLAG,
+            TO_CHAR(c.DDATE, 'YYYY-MM-DD')    AS DDATE_FORMATTED,
+            GET_AR_SHIFTNO(#{personId}, c.DDATE_STR, c.CPNY_ID) as SHIFT_NO,
+            GET_AR_DATETYPE_DETAIL(#{personId}, c.DDATE_STR, c.CPNY_ID) as TYPEID,
+            s.REMARK
+        FROM AR_CALENDER c
+        LEFT JOIN AR_SCHEDULE_HTSV s
+               ON s.PERSON_ID   = #{personId}
+              AND s.AR_DATE_STR = #{arDateStr}
+        WHERE c.DDATE_STR = #{arDateStr}
+          AND c.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+        AND ROWNUM = 1
+    </select>
+
+    <insert id="insertScheduleHtsv">
+        INSERT INTO AR_SCHEDULE_HTSV (
+            PK_NO, PERSON_ID, SHIFT_NO, AR_DATE_STR, LOCK_YN,
+            CREATE_DATE, CREATED_BY, CREATED_IP,
+            ACTIVITY, ORDERNO, ADD_FLAG, TYPEID, REMARK
+        ) VALUES (
+            AR_SCHEDULE_SEQ.NEXTVAL,
+            #{personId}, #{shiftNo, jdbcType=VARCHAR}, #{arDateStr}, 'N',
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
+            #{addFlag, jdbcType=VARCHAR}, #{typeid, jdbcType=NUMERIC}, #{remark, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateScheduleHtsv">
+        UPDATE AR_SCHEDULE_HTSV SET
+            SHIFT_NO     = #{shiftNo, jdbcType=VARCHAR},
+            TYPEID       = #{typeid, jdbcType=NUMERIC},
+            REMARK       = #{remark, jdbcType=VARCHAR},
+            UPDATE_DATE  = SYSDATE,
+            UPDATED_BY   = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP   = #{adminIP, jdbcType=VARCHAR},
+            ACTIVITY     = #{activity, jdbcType=NUMERIC}
+        WHERE PERSON_ID    = #{personId}
+          AND AR_DATE_STR  = #{arDateStr}
+    </update>
+
+</mapper>
+

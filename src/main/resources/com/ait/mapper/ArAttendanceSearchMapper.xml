@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArAttendanceSearchMapper">
+
+    <resultMap id="AttendanceSearchResultMap" type="com.ait.ar.attendanceMintenance.dto.ArAttendanceSearchDto">
+        <id column="PK_NO" property="pkNo" />
+        <result column="PERSON_ID" property="personId" />
+        <result column="EMPID" property="empId" />
+        <result column="LOCAL_NAME" property="localName" />
+        <result column="DEPT_NO" property="deptNo" />
+        <result column="DEPT_NAME" property="deptName" />
+        <result column="POST_GRADE_NO" property="postGradeNo" />
+        <result column="POST_GRADE_NAME" property="postGradeName" />
+        <result column="POST_FAMILY" property="postFamily" />
+        <result column="POST_FAMILY_NAME" property="postFamilyName" />
+        <result column="AR_DATE_STR" property="arDateStr" />
+        <result column="AR_MONTH_STR" property="arMonthStr" />
+        <result column="FROM_TIME" property="fromTime" />
+        <result column="TO_TIME" property="toTime" />
+        <result column="QUANTITY" property="quantity" />
+        <result column="UNIT" property="unit" />
+        <result column="DATE_TYPE" property="dateType" />
+        <result column="ITEM_NO" property="itemNo" />
+        <result column="ITEM_NAME" property="itemName" />
+        <result column="SHIFT_NO" property="shiftNo" />
+        <result column="SHIFT_NAME" property="shiftName" />
+        <result column="STATUS_CODE" property="statusCode" />
+        <result column="STATUS_NAME" property="statusName" />
+        <result column="REMARK" property="remark" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderNo" />
+    </resultMap>
+
+    <select id="selectAttendanceSearchList"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArAttendanceSearchDto"
+            resultMap="AttendanceSearchResultMap">
+        SELECT
+            D.PK_NO,
+            D.PERSON_ID,
+            HE.EMPID,
+            HE.LOCAL_NAME,
+            HE.DEPTNO AS DEPT_NO,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            HE.POST_GRADE_NO,
+            GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            NVL(D.POST_FAMILY, HE.POST_FAMILY) AS POST_FAMILY,
+            GET_GLOBAL_NAME(NVL(D.POST_FAMILY, HE.POST_FAMILY), #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+            D.AR_DATE_STR,
+            D.AR_MONTH_STR,
+            TO_CHAR(D.FROM_TIME, 'YYYY-MM-DD HH24:MI') AS FROM_TIME,
+            TO_CHAR(D.TO_TIME, 'YYYY-MM-DD HH24:MI') AS TO_TIME,
+            TO_CHAR(D.QUANTITY) AS QUANTITY,
+            D.UNIT,
+            TO_CHAR(D.DATE_TYPE) AS DATE_TYPE,
+            D.ITEM_NO,
+            GET_GLOBAL_NAME(D.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+            D.SHIFT_NO,
+            GET_GLOBAL_NAME(D.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            D.STATUS_CODE,
+            D.STATUS_NAME,
+            D.REMARK,
+            TO_CHAR(D.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+            D.CREATED_BY,
+            TO_CHAR(D.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
+            D.UPDATED_BY,
+            TO_CHAR(D.ACTIVITY) AS ACTIVITY,
+            TO_CHAR(D.ORDERNO) AS ORDERNO
+        FROM AR_DETAIL_HTSV D
+        INNER JOIN HR_EMPLOYEE HE
+            ON D.PERSON_ID = HE.PERSON_ID
+        WHERE 1 = 1
+          AND D.ITEM_NO NOT IN (
+                '90000295',
+                '90000296',
+                '90000297',
+                '90000298',
+                '90000299',
+                '90000300',
+                '90000301'
+          )
+          AND EXISTS (
+                SELECT 1
+                FROM AR_SUPERVISOR_INFO SI
+                WHERE SI.DEPTNO = HE.DEPTNO
+                  AND SI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          )
+          AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR UPPER(HE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND TO_DATE(REPLACE(D.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND TO_DATE(REPLACE(D.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="postFamily != null and postFamily != ''">
+            AND NVL(D.POST_FAMILY, HE.POST_FAMILY) = #{postFamily, jdbcType=VARCHAR}
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+            AND D.SHIFT_NO = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="itemNo != null and itemNo != ''">
+            AND D.ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_DATE(REPLACE(D.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') DESC, HE.EMPID
+    </select>
+
+    <select id="selectAttendanceOtSearchList"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArAttendanceSearchDto"
+            resultMap="AttendanceSearchResultMap">
+        SELECT
+            D.PK_NO,
+            D.PERSON_ID,
+            HE.EMPID,
+            HE.LOCAL_NAME,
+            HE.DEPTNO AS DEPT_NO,
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            HE.POST_GRADE_NO,
+            GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            NVL(D.POST_FAMILY, HE.POST_FAMILY) AS POST_FAMILY,
+            GET_GLOBAL_NAME(NVL(D.POST_FAMILY, HE.POST_FAMILY), #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+            D.AR_DATE_STR,
+            D.AR_MONTH_STR,
+            TO_CHAR(D.FROM_TIME, 'YYYY-MM-DD HH24:MI') AS FROM_TIME,
+            TO_CHAR(D.TO_TIME, 'YYYY-MM-DD HH24:MI') AS TO_TIME,
+            TO_CHAR(D.QUANTITY) AS QUANTITY,
+            D.UNIT,
+            TO_CHAR(D.DATE_TYPE) AS DATE_TYPE,
+            D.ITEM_NO,
+            GET_GLOBAL_NAME(D.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME,
+            D.SHIFT_NO,
+            GET_GLOBAL_NAME(D.SHIFT_NO, #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            D.STATUS_CODE,
+            D.STATUS_NAME,
+            D.REMARK,
+            TO_CHAR(D.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+            D.CREATED_BY,
+            TO_CHAR(D.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
+            D.UPDATED_BY,
+            TO_CHAR(D.ACTIVITY) AS ACTIVITY,
+            TO_CHAR(D.ORDERNO) AS ORDERNO
+        FROM AR_DETAIL_HTSV D
+        INNER JOIN HR_EMPLOYEE HE
+            ON D.PERSON_ID = HE.PERSON_ID
+        WHERE 1 = 1
+          AND D.ITEM_NO IN (
+                '90000295',
+                '90000296',
+                '90000297',
+                '90000298',
+                '90000299',
+                '90000300',
+                '90000301'
+          )
+          AND EXISTS (
+                SELECT 1
+                FROM AR_SUPERVISOR_INFO SI
+                WHERE SI.DEPTNO = HE.DEPTNO
+                  AND SI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          )
+          AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR UPPER(HE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND TO_DATE(REPLACE(D.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND TO_DATE(REPLACE(D.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="postFamily != null and postFamily != ''">
+            AND NVL(D.POST_FAMILY, HE.POST_FAMILY) = #{postFamily, jdbcType=VARCHAR}
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+            AND D.SHIFT_NO = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+        <if test="itemNo != null and itemNo != ''">
+            AND D.ITEM_NO = #{itemNo, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_DATE(REPLACE(D.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') DESC, HE.EMPID
+    </select>
+
+    <delete id="deleteArDetail">
+        DELETE FROM AR_DETAIL_HTSV WHERE PK_NO = #{pkNo, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

@@ -1,0 +1,325 @@
+<div th:fragment="content">
+    <div class="row h-100">
+        <!-- Left Pane: Code Tree -->
+        <div class="col-md-3 border-end p-3">
+            <h5 class="mb-3">Danh sách Code</h5>
+            <div class="mb-2">
+                <input type="text" class="form-control" id="codeSearchTreeInput" placeholder="Tìm kiếm...">
+            </div>
+            <div class="tree-container" style="max-height: 700px; overflow-y: auto;">
+                <div id="code_tree"></div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Child Code List -->
+        <div class="col-md-9 p-3">
+            <div class="card h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <span class="fw-bold" id="selectedParentLabel">Danh sách mã con</span>
+                    <div>
+                        <button class="btn btn-sm btn-primary" id="codeBtnAdd"><i class="bx bx-plus"></i> Thêm
+                            mới</button>
+                        <button class="btn btn-sm btn-success" id="codeBtnExport"><i class="bx bx-download"></i> Xuất
+                            Excel</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="code_table" class="table table-striped table-hover w-100">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã Code</th>
+                                    <th>Tên TV</th>
+                                    <th>Tên TA</th>
+                                    <th>Tên TT</th>
+                                    <th>Tên TH</th>
+                                    <th>Thứ tự</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add/Edit -->
+    <div class="modal fade" id="codeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="codeModalTitle">Thông tin Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="codeForm">
+                        <input type="hidden" id="isNewMode">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Mã Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="code_codeNo" name="codeNo"
+                                    placeholder="Tự động sinh" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Mã Cha</label>
+                                <input type="text" class="form-control" id="code_parentCodeNo" name="parentCodeNo"
+                                    readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tên Tiếng Việt <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="codeNameVi" name="nameVi" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tên Tiếng Anh</label>
+                                <input type="text" class="form-control" id="codeNameEn" name="nameEn">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tên Tiếng Trung</label>
+                                <input type="text" class="form-control" id="codeNameZh" name="nameZh">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tên Tiếng Hàn</label>
+                                <input type="text" class="form-control" id="codeNameKo" name="nameKo">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Thứ tự sắp xếp</label>
+                                <input type="number" class="form-control" id="codeOrderNo" name="orderNo" value="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Mô tả</label>
+                                <input type="text" class="form-control" id="codeDescription" name="description">
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="codeActivity" name="activity"
+                                        checked>
+                                    <label class="form-check-label" for="codeActivity">Hoạt động</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="codeBtnSave">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <template id="fragmentScripts">
+        <link rel="stylesheet" href="/assets/plugins/jstree/style.min.css" />
+        <script src="/assets/plugins/jstree/jstree.min.js"></script>
+
+        <script th:inline="none">
+            $(document).ready(function () {
+                var codeTable;
+                var currentParentCode = '';
+
+                // --- 1. Initialize Tree ---
+                function loadTree() {
+                    $.ajax({
+                        url: '/sys/api/code/tree',
+                        success: function (data) {
+                            if (!data || data.length === 0) {
+                                $('#code_tree').html('<div class="text-muted p-2">Không có dữ liệu</div>');
+                                return;
+                            }
+
+                            // Collect valid IDs
+                            var idSet = new Set();
+                            data.forEach(function (item) { idSet.add(item.codeNo); });
+
+                            var treeData = data.map(function (item) {
+                                var parentId = item.parentCodeNo;
+                                // If parent is null/empty, or 'ROOT', or refers to a non-existent node -> treat as root (#)
+                                if (!parentId || parentId === '' || parentId === 'ROOT' || !idSet.has(parentId)) {
+                                    parentId = '#';
+                                }
+
+                                return {
+                                    id: item.codeNo,
+                                    parent: parentId,
+                                    text: (item.nameVi ? item.nameVi : item.codeNo), // Fallback to codeNo if Name VI is empty
+                                    data: item,
+                                    icon: 'bx bxs-folder',
+                                    state: { opened: false }
+                                };
+                            });
+
+                            $('#code_tree').jstree("destroy").jstree({
+                                'core': {
+                                    'data': treeData,
+                                    'themes': { 'name': 'default', 'responsive': true, 'dots': false },
+                                    'check_callback': true
+                                },
+                                'plugins': ['search', 'types']
+                            });
+                        },
+                        error: function (xhr) {
+                            $('#code_tree').html('<div class="text-danger p-2">Lỗi tải dữ liệu</div>');
+                            console.error(xhr);
+                        }
+                    });
+                }
+
+                loadTree();
+
+                var to = false;
+                $('#codeSearchTreeInput').keyup(function () {
+                    if (to) { clearTimeout(to); }
+                    to = setTimeout(function () {
+                        var v = $('#codeSearchTreeInput').val();
+                        $('#code_tree').jstree(true).search(v);
+                    }, 250);
+                });
+
+                $('#code_tree').on("changed.jstree", function (e, data) {
+                    if (data.selected.length) {
+                        currentParentCode = data.selected[0];
+                        $('#selectedParentLabel').text('Danh sách mã con của: ' + data.instance.get_node(data.selected[0]).text);
+                        loadTable(currentParentCode);
+                    } else {
+                        currentParentCode = '';
+                        $('#selectedParentLabel').text('Danh sách mã con');
+                        loadTable('');
+                    }
+                });
+
+                // --- 2. Initialize DataTable ---
+                codeTable = $('#code_table').DataTable({
+                    destroy: true,
+                    columns: [
+                        { data: null, render: function (d, t, r, m) { return m.row + 1; } },
+                        { data: 'codeNo' },
+                        { data: 'nameVi' },
+                        { data: 'nameEn' },
+                        { data: 'nameZh' },
+                        { data: 'nameKo' },
+                        { data: 'orderNo' },
+                        {
+                            data: null,
+                            render: function (data) {
+                                return '<button class="btn btn-sm btn-warning btn-edit me-1"><i class="bx bx-edit"></i></button>' +
+                                    '<button class="btn btn-sm btn-danger btn-delete"><i class="bx bx-trash"></i></button>';
+                            }
+                        }
+                    ],
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    pageLength: 10
+                });
+
+                function loadTable(parentCode) {
+                    $.ajax({
+                        url: '/sys/api/code/list',
+                        data: { parentCodeNo: parentCode },
+                        success: function (data) {
+                            codeTable.clear().rows.add(data).draw();
+                        }
+                    });
+                }
+
+                // Initial load
+                loadTable('');
+
+                // --- 3. CRUD ---
+                $('#codeBtnAdd').click(function () {
+                    $('#codeForm')[0].reset();
+                    $('#isNewMode').val('true');
+                    $('#code_codeNo').prop('readonly', true);
+                    $('#code_parentCodeNo').val(currentParentCode);
+                    $('#codeModalTitle').text('Thêm mới Code');
+                    $('#codeModal').modal('show');
+                });
+
+                $('#code_table tbody').on('click', '.btn-edit', function () {
+                    var data = codeTable.row($(this).parents('tr')).data();
+                    $('#isNewMode').val('false');
+
+                    $('#code_codeNo').val(data.codeNo).prop('readonly', true);
+                    $('#code_parentCodeNo').val(data.parentCodeNo);
+                    $('#codeNameVi').val(data.nameVi);
+                    $('#codeNameEn').val(data.nameEn);
+                    $('#codeNameZh').val(data.nameZh);
+                    $('#codeNameKo').val(data.nameKo);
+                    $('#codeOrderNo').val(data.orderNo);
+                    $('#codeDescription').val(data.description);
+                    $('#codeActivity').prop('checked', data.activity === '1');
+
+                    $('#codeModalTitle').text('Cập nhật Code');
+                    $('#codeModal').modal('show');
+                });
+
+                $('#codeBtnSave').click(function () {
+                    if (!$('#codeForm')[0].checkValidity()) {
+                        $('#codeForm')[0].reportValidity();
+                        return;
+                    }
+
+                    var data = {
+                        codeNo: $('#code_codeNo').val(),
+                        parentCodeNo: $('#code_parentCodeNo').val(),
+                        nameVi: $('#codeNameVi').val(),
+                        nameEn: $('#codeNameEn').val(),
+                        nameZh: $('#codeNameZh').val(),
+                        nameKo: $('#codeNameKo').val(),
+                        orderNo: $('#codeOrderNo').val(),
+                        description: $('#codeDescription').val(),
+                        activity: $('#codeActivity').is(':checked') ? '1' : '0'
+                    };
+
+                    $.ajax({
+                        url: '/sys/api/code/save',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function (res) {
+                            if (res.success) {
+                                toastr.success(res.message);
+                                $('#codeModal').modal('hide');
+                                loadTable(currentParentCode);
+                                loadTree(); // Refresh tree as structure might change
+                            } else {
+                                toastr.error(res.message);
+                            }
+                        },
+                        error: function (xhr) {
+                            toastr.error('Lỗi hệ thống');
+                        }
+                    });
+                });
+
+                $('#code_table tbody').on('click', '.btn-delete', function () {
+                    var data = codeTable.row($(this).parents('tr')).data();
+                    if (!confirm('Bạn có chắc muốn xóa code: ' + data.codeNo + '?')) return;
+
+                    $.ajax({
+                        url: '/sys/api/code/delete',
+                        type: 'POST',
+                        data: { codeNo: data.codeNo },
+                        success: function (res) {
+                            if (res.success) {
+                                toastr.success(res.message);
+                                loadTable(currentParentCode);
+                                loadTree();
+                            } else {
+                                toastr.error(res.message);
+                            }
+                        }
+                    });
+                });
+
+                $('#codeBtnExport').click(function () {
+                    window.location.href = '/sys/api/code/export';
+                });
+            });
+        </script>
+    </template>
+</div>

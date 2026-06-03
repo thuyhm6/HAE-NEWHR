@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.viewDept.mapper.EssEntryInfoListMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ess.viewDept.dto.EssEntryInfoListDto">
+        <result property="localName"          column="LOCAL_NAME"/>
+        <result property="empId"              column="EMPID"/>
+        <result property="deptName"           column="DEPTNAME"/>
+        <result property="deptTeam"           column="DEPT_TEAM"/>
+        <result property="postGradeNoName"    column="POST_GRADE_NO_NAME"/>
+        <result property="empTypeCode"        column="EMP_TYPE_CODE"/>
+        <result property="empTypeName"        column="EMP_TYPE_NAME"/>
+        <result property="remax"              column="REMAX"/>
+        <result property="shiftNo"            column="SHIFT_NO"/>
+        <result property="shiftName"          column="SHIFT_NAME"/>
+        <result property="shiftTime"          column="SHIFT_TIME"/>
+        <result property="changeShiftPerson"  column="CHANGE_SHIFT_PERSON"/>
+        <result property="eatTimes"           column="EAT_TIMES"/>
+        <result property="leaveContent"       column="LEAVE_CONTENT"/>
+        <result property="arDateStr"          column="AR_DATE_STR"/>
+        <result property="ddateStr"           column="DDATE_STR"/>
+        <result property="inDay"              column="IN_DAY"/>
+        <result property="inTime"             column="IN_TIME"/>
+        <result property="outDay"             column="OUT_DAY"/>
+        <result property="outTime"            column="OUT_TIME"/>
+    </resultMap>
+
+    <sql id="outerFilter">
+        <if test="shiftNoFilter != null and shiftNoFilter != ''">
+            AND D.SHIFT_NO = #{shiftNoFilter, jdbcType=VARCHAR}
+        </if>
+        <if test="missingCard != null and missingCard == '1'">
+            AND (D.IN_TIME IS NULL OR D.OUT_TIME IS NULL)
+        </if>
+        <if test="missingCard != null and missingCard == '2'">
+            AND D.IN_TIME IS NOT NULL AND D.OUT_TIME IS NOT NULL
+        </if>
+    </sql>
+
+    <sql id="innerQuery">
+        SELECT HR.LOCAL_NAME,
+               HR.EMPID,
+               HR.PERSON_ID,
+               HR.CPNY_ID,
+               HR.EMP_TYPE_CODE,
+               HR.DEPTNO,
+               TO_CHAR(HR.DATE_LEFT, 'YYYY/MM/DD')                                              AS DATE_LEFT,
+               GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR})                              AS DEPTNAME,
+               GET_DEPT_NAME(GET_DEPT_NO_BY_LEVEL(HR.DEPTNO, HR.CPNY_ID, '2'),
+                             #{lang, jdbcType=VARCHAR})                                         AS DEPT_TEAM,
+               GET_GLOBAL_NAME(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})                    AS POST_GRADE_NO_NAME,
+               AR.DDATE_STR                                                                     AS AR_DATE_STR,
+               AR.DDATE_STR                                                                     AS DDATE_STR,
+               GET_AR_SHIFTNO(HR.PERSON_ID, AR.DDATE_STR, HR.CPNY_ID)                         AS SHIFT_NO,
+               MS.IN_TIME,
+               MS.OUT_TIME
+          FROM HR_EMPLOYEE HR
+          JOIN SUPERVISED_DEPT SD ON SD.DEPTNO = HR.DEPTNO
+          JOIN AR_CALENDER AR ON AR.CPNY_ID = HR.CPNY_ID
+          LEFT JOIN MAC_SUMMARY MS ON MS.PERSON_ID = HR.PERSON_ID
+                                  AND MS.AR_DATE_STR = AR.DDATE_STR
+         WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND HR.EMPID NOT LIKE '111111%'
+           AND HR.EMP_TYPE_CODE &lt;&gt; '10418'
+           AND AR.DDATE_STR &gt;= TO_CHAR(TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'), 'YYYY/MM/DD')
+           AND AR.DDATE_STR &lt;= TO_CHAR(TO_DATE(#{toDate,   jdbcType=VARCHAR}, 'YYYY-MM-DD'), 'YYYY/MM/DD')
+        <if test="keyword != null and keyword != ''">
+           AND (UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+           AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || TO_CHAR(HR.DEPTNO) || ',') &gt; 0
+        </if>
+    </sql>
+
+    <select id="countList" resultType="int"
+            parameterType="com.ait.ess.viewDept.dto.EssEntryInfoListDto">
+        WITH MAC_SUMMARY AS (
+            SELECT PERSON_ID,
+                   AR_DATE_STR,
+                   MIN(CASE WHEN DOOR_TYPE = 'IN' THEN R_TIME END)                              AS IN_TIME,
+                   MAX(CASE WHEN DOOR_TYPE IS NULL OR DOOR_TYPE != 'IN' THEN R_TIME END)        AS OUT_TIME
+              FROM AR_MAC_RECORDS_HTSV
+             WHERE R_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+               AND R_TIME &lt;= TO_DATE(#{toDate,   jdbcType=VARCHAR}, 'YYYY-MM-DD') + 2
+             GROUP BY PERSON_ID, AR_DATE_STR
+        ),
+        SUPERVISED_DEPT AS (
+            SELECT DISTINCT DEPTNO
+              FROM AR_SUPERVISOR_INFO
+             WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        )
+        SELECT COUNT(*)
+          FROM (<include refid="innerQuery"/>) D
+         WHERE (D.DATE_LEFT IS NULL OR D.DATE_LEFT &gt;= D.DDATE_STR)
+        <include refid="outerFilter"/>
+    </select>
+
+    <select id="selectListPage" resultMap="DtoResultMap"
+            parameterType="com.ait.ess.viewDept.dto.EssEntryInfoListDto">
+        WITH MAC_SUMMARY AS (
+            SELECT PERSON_ID,
+                   AR_DATE_STR,
+                   MIN(CASE WHEN DOOR_TYPE = 'IN' THEN R_TIME END)                              AS IN_TIME,
+                   MAX(CASE WHEN DOOR_TYPE IS NULL OR DOOR_TYPE != 'IN' THEN R_TIME END)        AS OUT_TIME
+              FROM AR_MAC_RECORDS_HTSV
+             WHERE R_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+               AND R_TIME &lt;= TO_DATE(#{toDate,   jdbcType=VARCHAR}, 'YYYY-MM-DD') + 2
+             GROUP BY PERSON_ID, AR_DATE_STR
+        ),
+        SUPERVISED_DEPT AS (
+            SELECT DISTINCT DEPTNO
+              FROM AR_SUPERVISOR_INFO
+             WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        )
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                SELECT D.LOCAL_NAME,
+                       D.EMPID,
+                       D.DEPTNAME,
+                       D.DEPT_TEAM,
+                       D.POST_GRADE_NO_NAME,
+                       D.EMP_TYPE_CODE,
+                       GET_GLOBAL_NAME(D.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR})             AS EMP_TYPE_NAME,
+                       DECODE(D.EMP_TYPE_CODE, '10418',
+                              GET_GLOBAL_NAME(D.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}))     AS REMAX,
+                       D.SHIFT_NO,
+                       GET_GLOBAL_NAME(D.SHIFT_NO, #{lang, jdbcType=VARCHAR})                  AS SHIFT_NAME,
+                       GET_AR_SHIFTNO_WORKTIME(D.SHIFT_NO)                                    AS SHIFT_TIME,
+                       GET_AR_EATDEDUCT_TIMES(D.AR_DATE_STR, D.AR_DATE_STR, D.PERSON_ID, 'EAT_TIME') AS EAT_TIMES,
+                       (SELECT GET_GLOBAL_NAME(E.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) || ' (' ||
+                               TO_CHAR(E.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') || ' - ' ||
+                               TO_CHAR(E.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI') || ')'
+                          FROM ESS_LEAVE_APPLY_TB E
+                         WHERE E.CPNY_ID   = D.CPNY_ID
+                           AND E.ACTIVITY  = '1'
+                           AND E.BATCH_YN  &lt;&gt; '2'
+                           AND E.CONFIRM_FLAG &lt;&gt; '2'
+                           AND E.AFFIRM_FLAG NOT IN ('14014310', '14014309')
+                           AND E.PERSON_ID = D.PERSON_ID
+                           AND D.DDATE_STR BETWEEN TO_CHAR(E.LEAVE_FROM_TIME, 'YYYY/MM/DD')
+                                               AND TO_CHAR(E.LEAVE_TO_TIME - 8 / 24, 'YYYY/MM/DD')
+                           AND ROWNUM = 1)                                                     AS LEAVE_CONTENT,
+                       (SELECT GET_EMP_LOCAL_NAME(ARS.CREATED_BY, #{cpnyId, jdbcType=VARCHAR}) || ' ' ||
+                               TO_CHAR(ARS.CREATE_DATE, 'DD/MM/YYYY HH24:MI')
+                          FROM AR_SCHEDULE_HTSV ARS
+                         WHERE ARS.PERSON_ID  = D.PERSON_ID
+                           AND ARS.AR_DATE_STR = D.AR_DATE_STR)                               AS CHANGE_SHIFT_PERSON,
+                       TO_CHAR(TO_DATE(D.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY')           AS AR_DATE_STR,
+                       D.DDATE_STR,
+                       TO_CHAR(D.IN_TIME,  'DD/MM/YYYY')                                     AS IN_DAY,
+                       TO_CHAR(D.IN_TIME,  'HH24:MI')                                        AS IN_TIME,
+                       TO_CHAR(D.OUT_TIME, 'DD/MM/YYYY')                                     AS OUT_DAY,
+                       TO_CHAR(D.OUT_TIME, 'HH24:MI')                                        AS OUT_TIME
+                  FROM (<include refid="innerQuery"/>) D
+                 WHERE (D.DATE_LEFT IS NULL OR D.DATE_LEFT &gt;= D.DDATE_STR)
+                <include refid="outerFilter"/>
+                ORDER BY D.DDATE_STR DESC, D.IN_TIME
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+</mapper>

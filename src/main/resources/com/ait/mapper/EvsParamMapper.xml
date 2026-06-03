@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.evs.manage.mapper.EvsParamMapper">
+
+    <resultMap id="EvsParamResultMap" type="com.ait.evs.manage.dto.EvsParamDto">
+        <id     column="SEQ"        property="seq"        jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ" property="resumeSeq"  jdbcType="VARCHAR" />
+        <result column="PARAM_TYPE" property="paramType"  jdbcType="VARCHAR" />
+        <result column="CODE_NO"    property="codeNo"     jdbcType="VARCHAR" />
+        <result column="CODE_NAME"  property="codeName"   jdbcType="VARCHAR" />
+        <result column="FORMULA"    property="formula"    jdbcType="VARCHAR" />
+        <result column="FORMULA_NAME" property="formulaName" jdbcType="VARCHAR" />
+        <result column="REMARK"     property="remark"     jdbcType="VARCHAR" />
+        <result column="ACTIVITY"   property="activity"   jdbcType="VARCHAR" />
+        <result column="ORDER_NO"   property="orderNo"    jdbcType="VARCHAR" />
+        <result column="START_STEP" property="startStep"  jdbcType="VARCHAR" />
+        <result column="START_STEP_NAME" property="startStepName" jdbcType="VARCHAR" />
+        <result column="LIST_TYPE"  property="listType"   jdbcType="VARCHAR" />
+        <result column="EVS_SCORE"  property="evsScore"   jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR" />
+        <result column="CREATED_BY"  property="createdBy"  jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"  property="updatedBy"  jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectList" parameterType="com.ait.evs.manage.dto.EvsParamDto"
+            resultMap="EvsParamResultMap">
+        SELECT ep.SEQ,
+               ep.RESUME_SEQ,
+               ep.PARAM_TYPE,
+               ep.CODE_NO,
+               ep.CODE_NAME,
+               ep.FORMULA,
+               (SELECT CODE_NAME FROM EVS_FORMULA WHERE SEQ = ep.FORMULA) FORMULA_NAME,
+               ep.REMARK,
+               ep.ACTIVITY,
+               TO_CHAR(ep.ORDERNO)                               AS ORDER_NO,
+               ep.START_STEP,
+               GET_CODE_NAME(ep.START_STEP,#{lang, jdbcType=VARCHAR}) START_STEP_NAME,
+               ep.LIST_TYPE,
+               TO_CHAR(ep.EVS_SCORE)                             AS EVS_SCORE,
+               TO_CHAR(ep.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+               GET_UPDATED_INFO(ep.CREATED_BY) || ' ' || ep.CREATED_IP AS CREATED_BY,
+               TO_CHAR(ep.UPDATE_DATE, 'YYYY-MM-DD HH24:MI')    AS UPDATE_DATE,
+               GET_UPDATED_INFO(ep.UPDATED_BY) || ' ' || ep.UPDATED_IP AS UPDATED_BY
+        FROM EVS_PARAM ep
+        WHERE ACTIVITY != 2
+        <if test="resumeSeq != null and resumeSeq != ''">
+            AND ep.RESUME_SEQ = #{resumeSeq, jdbcType=VARCHAR}
+        </if>
+        <if test="paramType != null and paramType != ''">
+            AND ep.PARAM_TYPE = #{paramType, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_NUMBER(ep.SEQ)
+    </select>
+
+    <select id="selectGroupOptions" parameterType="com.ait.evs.manage.dto.EvsParamDto"
+            resultMap="EvsParamResultMap">
+        SELECT ep.SEQ      AS CODE_NO,
+               ep.CODE_NAME
+        FROM EVS_PARAM ep
+        WHERE ep.RESUME_SEQ  = #{resumeSeq,  jdbcType=VARCHAR}
+          AND ep.ACTIVITY    = '1'
+          AND ep.PARAM_TYPE  = 'GROUP'
+        ORDER BY TO_NUMBER(ep.SEQ)
+    </select>
+
+    <select id="getNextSeq" resultType="string">
+        SELECT TO_CHAR(EVS_PARAM_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert" parameterType="com.ait.evs.manage.dto.EvsParamDto">
+        INSERT INTO EVS_PARAM (
+            SEQ, RESUME_SEQ, PARAM_TYPE, CODE_NO, CODE_NAME,
+            FORMULA, REMARK, ACTIVITY, ORDERNO,
+            START_STEP, LIST_TYPE, EVS_SCORE,
+            CREATED_BY, CREATED_IP, CREATE_DATE
+        ) VALUES (
+            #{seq,        jdbcType=VARCHAR},
+            #{resumeSeq,  jdbcType=VARCHAR},
+            #{paramType,  jdbcType=VARCHAR},
+            #{codeNo,     jdbcType=VARCHAR},
+            #{codeName,   jdbcType=VARCHAR},
+            #{formula,    jdbcType=VARCHAR},
+            #{remark,     jdbcType=VARCHAR},
+            1,
+            <choose><when test="orderNo != null and orderNo != ''">#{orderNo, jdbcType=VARCHAR},</when><otherwise>200,</otherwise></choose>
+            #{startStep,  jdbcType=VARCHAR},
+            NVL(#{listType,   jdbcType=VARCHAR},0),
+            <choose><when test="evsScore != null and evsScore != ''">#{evsScore, jdbcType=VARCHAR},</when><otherwise>NULL,</otherwise></choose>
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.evs.manage.dto.EvsParamDto">
+        UPDATE EVS_PARAM
+        SET CODE_NO     = #{codeNo,    jdbcType=VARCHAR},
+            CODE_NAME   = #{codeName,  jdbcType=VARCHAR},
+            FORMULA     = #{formula,   jdbcType=VARCHAR},
+            REMARK      = #{remark,    jdbcType=VARCHAR},
+            ACTIVITY    = 1,
+            START_STEP  = #{startStep, jdbcType=VARCHAR},
+            LIST_TYPE   = NVL(#{listType,   jdbcType=VARCHAR},0),
+            EVS_SCORE   = <choose><when test="evsScore != null and evsScore != ''">#{evsScore, jdbcType=VARCHAR}</when><otherwise>NULL</otherwise></choose>,
+            UPDATED_BY  = #{adminID,   jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,   jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteBySeq">
+        UPDATE EVS_PARAM
+        SET UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            ACTIVITY = 2,
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE SEQ     = #{seq,    jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

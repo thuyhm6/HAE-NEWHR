@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.evs.manage.mapper.EvsConfirmTarget1Mapper">
+
+    <!-- ── ResultMap: EVS_OBJECT (danh sách nhân viên cần xác nhận) ───────────── -->
+    <resultMap id="EvsConfirmTarget1ResultMap" type="com.ait.evs.manage.dto.EvsConfirmTarget1Dto">
+        <id     column="SEQ"               property="seq"               jdbcType="VARCHAR" />
+        <result column="RESUME_SEQ"        property="resumeSeq"         jdbcType="VARCHAR" />
+        <result column="PERSON_ID"         property="personId"          jdbcType="VARCHAR" />
+        <result column="EMPID"             property="empid"             jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"        property="localName"         jdbcType="VARCHAR" />
+        <result column="DEPTNO"            property="deptno"            jdbcType="VARCHAR" />
+        <result column="DEPTNAME"          property="deptname"          jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO"     property="postGradeNo"       jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NAME"   property="postGradeName"     jdbcType="VARCHAR" />
+        <result column="MAIN_BUSINESS"     property="mainBusiness"      jdbcType="VARCHAR" />
+        <result column="MAIN_BUSINESS_NAME" property="mainBusinessName" jdbcType="VARCHAR" />
+        <result column="OBJECT_TYPE"       property="objectType"        jdbcType="VARCHAR" />
+        <result column="OBJECT_TYPE_NAME"  property="objectTypeName"    jdbcType="VARCHAR" />
+        <result column="DATE_STARTED"      property="dateStarted"       jdbcType="VARCHAR" />
+        <result column="ACTIVITY"          property="activity"          jdbcType="VARCHAR" />
+        <result column="ACTIVITY_NAME"     property="activityName"      jdbcType="VARCHAR" />
+        <result column="ORDERNO"           property="orderno"           jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── SQL Fragment: base query ─────────────────────────────────────────── -->
+    <sql id="baseQuery">
+        SELECT A.SEQ,
+               A.RESUME_SEQ,
+               A.PERSON_ID,
+               A.EMPID,
+               A.LOCAL_NAME,
+               A.DEPTNO,
+               GET_DEPT_NAME(A.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+               A.POST_GRADE_NO,
+               A.POST_GRADE_NAME,
+               A.MAIN_BUSINESS,
+               GET_GLOBAL_NAME(A.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+               A.OBJECT_TYPE,
+               A.OBJECT_TYPE_NAME,
+               TO_CHAR(A.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+               A.ACTIVITY,
+               GET_CODE_NAME(A.ACTIVITY, #{lang, jdbcType=VARCHAR}) ACTIVITY_NAME,
+               A.ORDERNO
+          FROM EVS_OBJECT A
+         WHERE A.SEQ IN (SELECT AFF.EVS_OBJECT_SEQ
+                           FROM EVS_AFFIRM AFF
+                          WHERE AFF.RESUME_SEQ  = #{resumeSeq,   jdbcType=VARCHAR}
+                            AND AFF.AFFIRMOR_ID = #{adminID,     jdbcType=VARCHAR}
+                            AND AFF.AFFIRM_LEVEL = #{affirmLevel, jdbcType=VARCHAR})
+    </sql>
+
+    <!-- ── countList: đếm tổng số bản ghi ──────────────────────────────────── -->
+    <select id="countList" parameterType="com.ait.evs.manage.dto.EvsConfirmTarget1Dto"
+            resultType="int">
+        SELECT COUNT(*)
+          FROM EVS_OBJECT A
+         WHERE A.SEQ IN (SELECT AFF.EVS_OBJECT_SEQ
+                           FROM EVS_AFFIRM AFF
+                          WHERE AFF.RESUME_SEQ   = #{resumeSeq,   jdbcType=VARCHAR}
+                            AND AFF.AFFIRMOR_ID  = #{adminID,     jdbcType=VARCHAR}
+                            AND AFF.AFFIRM_LEVEL = #{affirmLevel, jdbcType=VARCHAR})
+    </select>
+
+    <!-- ── selectListPage: lấy danh sách phân trang ─────────────────────────── -->
+    <select id="selectListPage" parameterType="com.ait.evs.manage.dto.EvsConfirmTarget1Dto"
+            resultMap="EvsConfirmTarget1ResultMap">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY A.ORDERNO_DEPT, A.ORDERNO, A.DATE_STARTED
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <!-- ── selectObjectInfoBySeq: thông tin cá nhân theo EVS_OBJECT.SEQ ──────── -->
+    <select id="selectObjectInfoBySeq" parameterType="com.ait.evs.manage.dto.EvsPersonalTargetDto"
+            resultMap="com.ait.evs.manage.mapper.EvsPersonalTargetMapper.EvsPersonalTargetResultMap">
+        SELECT OBJECT.SEQ,
+               RESUME.EVS_YEAR,
+               OBJECT.RESUME_SEQ,
+               OBJECT.LOCAL_NAME,
+               OBJECT.POST_GRADE_NAME,
+               OBJECT.MAIN_BUSINESS,
+               GET_GLOBAL_NAME(OBJECT.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
+               OBJECT.OBJECT_TYPE,
+               OBJECT.OBJECT_TYPE_NAME,
+               GET_DEPT_NAME(OBJECT.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+               TO_CHAR(OBJECT.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+               OBJECT.ACTIVITY,
+               TO_CHAR(TO_DATE(RESUME.EVS_START_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') EVS_START_DATE,
+               TO_CHAR(TO_DATE(RESUME.EVS_END_DATE,   'DD/MM/YYYY'), 'DD/MM/YYYY') EVS_END_DATE,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'LOCAL_NAME') LOCAL_NAME0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'LOCAL_NAME') LOCAL_NAME1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'LOCAL_NAME') LOCAL_NAME2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'SEQ') SEQ0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'SEQ') SEQ1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'SEQ') SEQ2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'EVS_POINT') EVS_POINT0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'EVS_POINT') EVS_POINT1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'EVS_POINT') EVS_POINT2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 0, 'EVS_GRADE') EVS_GRADE0,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'EVS_GRADE') EVS_GRADE1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'EVS_GRADE') EVS_GRADE2,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 1, 'AFFIRM_COMMENT') AFFIRM_COMMENT1,
+               PKG_EVS_PROCESS.GET_EVS_AFFIRM_INFO(OBJECT.SEQ, 2, 'AFFIRM_COMMENT') AFFIRM_COMMENT2
+          FROM EVS_RESUME_INFO RESUME, EVS_OBJECT OBJECT
+         WHERE RESUME.SEQ = OBJECT.RESUME_SEQ
+           AND OBJECT.SEQ = #{seq, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── callModifyObjectActivity: gọi stored procedure xác nhận/từ chối ──── -->
+    <update id="callModifyObjectActivity" parameterType="com.ait.evs.manage.dto.EvsConfirmTarget1Dto"
+            statementType="CALLABLE">
+        {CALL PKG_EVS_PROCESS.PR_MODIFY_OBJECT_ACTIVITY(
+            #{evsObjectSeq, jdbcType=VARCHAR, mode=IN},
+            #{adminID,      jdbcType=VARCHAR, mode=IN},
+            #{adminIP,      jdbcType=VARCHAR, mode=IN},
+            #{flag,         jdbcType=VARCHAR, mode=IN},
+            #{message,      jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+    <!-- ── updateAffirmComment: cập nhật ý kiến người đánh giá ─────────────── -->
+    <update id="updateAffirmComment" parameterType="com.ait.evs.manage.dto.EvsConfirmTarget1Dto">
+        UPDATE EVS_AFFIRM
+           SET AFFIRM_COMMENT = #{affirmComment, jdbcType=VARCHAR},
+               UPDATED_BY     = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP     = #{adminIP, jdbcType=VARCHAR},
+               UPDATE_DATE    = SYSDATE
+         WHERE AFFIRM_LEVEL   = #{affirmLevel, jdbcType=VARCHAR}
+           AND EVS_OBJECT_SEQ = #{evsObjectSeq, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

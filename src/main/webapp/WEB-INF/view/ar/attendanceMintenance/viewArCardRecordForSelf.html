@@ -1,0 +1,279 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form id="acrcfs_searchForm" class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label for="acrcfs_keyword" class="form-label" th:text="#{common.search.empIdOrName}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="acrcfs_keyword"
+                                   th:placeholder="#{common.placeholder.enterEmpId}" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="acrcfs_fromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="acrcfs_fromDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="acrcfs_toDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="acrcfs_toDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="acrcfs_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="acrcfs_deptNo"
+                                   th:placeholder="#{common.select}" placeholder="Chọn phòng ban" readonly>
+                        </div>
+                        <div class="col-12 d-flex gap-2 flex-wrap justify-content-end">
+                            <button type="button" class="btn btn-warning text-dark" onclick="acrcfsOpenImportModal()">
+                                <i class="bx bx-card"></i> <span th:text="#{acr.btn.importFromDevice}">Đọc dữ liệu quẹt thẻ</span>
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="acrcfsSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="acrcfsExportExcel()">
+                                <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất Excel</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table id="acrcfs_dataTable" class="table table-striped table-bordered table-hover" style="min-width: 100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th th:text="#{common.stt}">STT</th>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.empName}">Họ tên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{acr.col.swipeDate}">Ngày quẹt thẻ</th>
+                                    <th th:text="#{acr.col.swipeTime}">Thời gian quẹt thẻ</th>
+                                    <th th:text="#{acr.col.doorType}">Loại</th>
+                                    <th th:text="#{acr.col.dataSource}">Nguồn dữ liệu</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Đọc dữ liệu quẹt thẻ từ máy chủ (SST) -->
+    <div class="modal fade" id="acrcfs_imp_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{acr.imp.title}">Đọc dữ liệu quẹt thẻ từ máy chủ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="acrcfs_imp_fromDate" class="form-label" th:text="#{common.fromDate}">Từ ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="acrcfs_imp_fromDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="acrcfs_imp_toDate" class="form-label" th:text="#{common.toDate}">Đến ngày</label>
+                            <input type="text" class="form-control js-daterangepicker" id="acrcfs_imp_toDate"
+                                   data-drp-format="YYYY-MM-DD" autocomplete="off">
+                        </div>
+                    </div>
+                    <div id="acrcfs_imp_spinner" class="text-center mt-3" style="display:none;">
+                        <div class="spinner-border text-warning" role="status"></div>
+                        <div class="mt-2 text-muted" th:text="#{acr.imp.processing}">Đang kết nối và đọc dữ liệu...</div>
+                    </div>
+                    <div id="acrcfs_imp_result" class="mt-3" style="display:none;">
+                        <hr>
+                        <div id="acrcfs_imp_result_content"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-warning text-dark" id="acrcfs_imp_btnRun" onclick="acrcfsRunImport()">
+                        <i class="bx bx-cloud-download"></i>
+                        <span th:text="#{acr.imp.btnRun}">Thực hiện</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _acrcfs_table = null;
+        var _acrcfs_pageBooted = false;
+        var _acrcfs_selectedDeptCodes = [];
+
+        function acrcfsFormatDate(dateObj) {
+            var y = dateObj.getFullYear();
+            var m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            var d = String(dateObj.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        function acrcfsInitDefaultDateRange() {
+            var today = new Date();
+            var todayStr = acrcfsFormatDate(today);
+            $('#acrcfs_fromDate').val(todayStr);
+            $('#acrcfs_toDate').val(todayStr);
+            if ($('#acrcfs_fromDate').data('daterangepicker')) {
+                $('#acrcfs_fromDate').data('daterangepicker').setStartDate(todayStr);
+            }
+            if ($('#acrcfs_toDate').data('daterangepicker')) {
+                $('#acrcfs_toDate').data('daterangepicker').setStartDate(todayStr);
+            }
+        }
+
+        function acrcfsInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') return;
+            DeptTree.init('#acrcfs_deptNo', function (selectedCodes) {
+                _acrcfs_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        function acrcfsInitTable() {
+            _acrcfs_table = $('#acrcfs_dataTable').DataTable({
+                destroy: true,
+                scrollX: true,
+                scrollY: 'calc(100vh - 290px)',
+                scrollCollapse: true,
+                paging: true,
+                searching: false,
+                lengthChange: true,
+                pageLength: 25,
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '/ar/attendanceMintenance/api/cardRecordForSelf/list',
+                    type: 'GET',
+                    data: function (d) {
+                        d.keyword  = $('#acrcfs_keyword').val();
+                        d.deptNos  = (_acrcfs_selectedDeptCodes || []).join(',');
+                        d.fromDate = $('#acrcfs_fromDate').val();
+                        d.toDate   = $('#acrcfs_toDate').val();
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'text-center',
+                        orderable: false,
+                        render: function (data, type, row, meta) {
+                            var pageInfo = _acrcfs_table ? _acrcfs_table.page.info() : { start: 0 };
+                            return pageInfo.start + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',          className: 'text-center' },
+                    { data: 'localName' },
+                    { data: 'deptName' },
+                    { data: 'swipeDate',      className: 'text-center' },
+                    { data: 'swipeTime',      className: 'text-center' },
+                    { data: 'doorType',       className: 'text-center' },
+                    { data: 'dataSourceName', className: 'text-center' }
+                ]
+            });
+        }
+
+        function acrcfsBootPage() {
+            if (_acrcfs_pageBooted) return;
+            if (!document.getElementById('acrcfs_dataTable')) {
+                setTimeout(acrcfsBootPage, 30);
+                return;
+            }
+            _acrcfs_pageBooted = true;
+            acrcfsInitDefaultDateRange();
+            acrcfsInitDeptSelector();
+            acrcfsInitTable();
+            if (_acrcfs_table) _acrcfs_table.ajax.reload();
+        }
+
+        window.acrcfsSearchData = function () {
+            if (_acrcfs_table) _acrcfs_table.ajax.reload();
+        };
+
+        window.acrcfsExportExcel = function () {
+            var params = new URLSearchParams({
+                keyword:  $('#acrcfs_keyword').val() || '',
+                deptNos:  (_acrcfs_selectedDeptCodes || []).join(','),
+                fromDate: $('#acrcfs_fromDate').val() || '',
+                toDate:   $('#acrcfs_toDate').val()   || ''
+            });
+            window.location.href = '/ar/attendanceMintenance/api/cardRecordForSelf/exportExcel?' + params.toString();
+        };
+
+        function acrcfsOpenImportModal() {
+            var fromDate = $('#acrcfs_fromDate').val();
+            var toDate   = $('#acrcfs_toDate').val();
+            $('#acrcfs_imp_fromDate').val(fromDate);
+            $('#acrcfs_imp_toDate').val(toDate);
+            if ($('#acrcfs_imp_fromDate').data('daterangepicker') && fromDate) {
+                $('#acrcfs_imp_fromDate').data('daterangepicker').setStartDate(fromDate);
+            }
+            if ($('#acrcfs_imp_toDate').data('daterangepicker') && toDate) {
+                $('#acrcfs_imp_toDate').data('daterangepicker').setStartDate(toDate);
+            }
+            $('#acrcfs_imp_spinner').hide();
+            $('#acrcfs_imp_result').hide();
+            $('#acrcfs_imp_result_content').html('');
+            $('#acrcfs_imp_btnRun').prop('disabled', false);
+            new bootstrap.Modal(document.getElementById('acrcfs_imp_modal')).show();
+        }
+
+        function acrcfsRunImport() {
+            var fromDate = $('#acrcfs_imp_fromDate').val().trim();
+            var toDate   = $('#acrcfs_imp_toDate').val().trim();
+            if (!fromDate || !toDate) {
+                alert(/*[[#{acr.imp.msg.selectDate}]]*/ 'Vui lòng chọn khoảng thời gian cần đọc dữ liệu');
+                return;
+            }
+            $('#acrcfs_imp_btnRun').prop('disabled', true);
+            $('#acrcfs_imp_spinner').show();
+            $('#acrcfs_imp_result').hide();
+            $('#acrcfs_imp_result_content').html('');
+
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/cardRecordForSelf/importFromDevice',
+                type: 'POST',
+                data: { fromDate: fromDate, toDate: toDate },
+                success: function (res) {
+                    $('#acrcfs_imp_spinner').hide();
+                    $('#acrcfs_imp_btnRun').prop('disabled', false);
+                    var html = '';
+                    if (res.success) {
+                        html = '<div class="alert alert-success">'
+                             + '<i class="bx bx-check-circle me-1"></i><strong>' + (res.message || '') + '</strong><br>'
+                             + '<ul class="mb-0 mt-2">'
+                             + '<li>Tổng bản ghi từ máy chủ: <strong>' + (res.total || 0) + '</strong></li>'
+                             + '<li>Đã lưu mới: <strong class="text-success">' + (res.imported || 0) + '</strong></li>'
+                             + '<li>Bỏ qua (trùng): <strong class="text-secondary">' + (res.skipped || 0) + '</strong></li>'
+                             + '<li>Không tìm thấy nhân viên: <strong class="text-warning">' + (res.notFound || 0) + '</strong></li>'
+                             + '</ul></div>';
+                        if (_acrcfs_table) _acrcfs_table.ajax.reload(null, false);
+                    } else {
+                        html = '<div class="alert alert-danger"><i class="bx bx-error-circle me-1"></i>' + (res.message || 'Lỗi không xác định') + '</div>';
+                    }
+                    $('#acrcfs_imp_result_content').html(html);
+                    $('#acrcfs_imp_result').show();
+                },
+                error: function () {
+                    $('#acrcfs_imp_spinner').hide();
+                    $('#acrcfs_imp_btnRun').prop('disabled', false);
+                    $('#acrcfs_imp_result_content').html('<div class="alert alert-danger"><i class="bx bx-error-circle me-1"></i>Lỗi kết nối máy chủ, vui lòng thử lại.</div>');
+                    $('#acrcfs_imp_result').show();
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', acrcfsBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(acrcfsBootPage);
+        } else {
+            acrcfsBootPage();
+        }
+    </script>
+</template>

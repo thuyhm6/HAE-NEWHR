@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.wagebase.mapper.PaSupervisorMapper">
+
+    <resultMap id="PaSupervisorResultMap" type="com.ait.pa.wagebase.dto.PaSupervisorDto">
+        <result column="PERSON_ID"   property="personId"   jdbcType="VARCHAR" />
+        <result column="EMP_ID"      property="empId"      jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"  property="localName"  jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"   property="deptName"   jdbcType="VARCHAR" />
+        <result column="EMP_OFFICE"  property="empOffice"  jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR" />
+        <result column="CREATED_BY"  property="createdBy"  jdbcType="VARCHAR" />
+        <result column="ACTIVITY"    property="activity"   jdbcType="NUMERIC" />
+        <result column="ORDERNO"     property="orderNo"    jdbcType="NUMERIC" />
+    </resultMap>
+
+    <!-- ── Điều kiện WHERE dùng chung ─────────────────────────────────────────── -->
+    <sql id="whereCondition">
+        WHERE 1 = 1
+        <if test="empSearch != null and empSearch != ''">
+            AND (he.EMPID LIKE '%' || #{empSearch, jdbcType=VARCHAR} || '%'
+              OR CONVERTTOUNSIGN(UPPER(he.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empSearch, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="deptNoList != null and deptNoList.size() > 0">
+            AND he.DEPTNO IN
+            <foreach collection="deptNoList" item="d" open="(" separator="," close=")">
+                #{d, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="empOfficeSearch != null and empOfficeSearch != ''">
+            AND he.EMP_OFFICE = #{empOfficeSearch, jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <!-- ── Đếm tổng bản ghi ───────────────────────────────────────────────────── -->
+    <select id="countList" parameterType="com.ait.pa.wagebase.dto.PaSupervisorDto" resultType="long">
+        SELECT COUNT(1)
+          FROM PA_SUPERVISOR ps
+          LEFT JOIN HR_EMPLOYEE  he ON ps.PERSON_ID = he.PERSON_ID
+                                   AND he.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+          LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO   = hd.DEPTNO
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- ── Phân trang phía server – Oracle ROWNUM ─────────────────────────────── -->
+    <select id="selectListPage" parameterType="com.ait.pa.wagebase.dto.PaSupervisorDto"
+            resultMap="PaSupervisorResultMap">
+        SELECT PERSON_ID, EMP_ID, LOCAL_NAME, DEPT_NAME, EMP_OFFICE,
+               CREATE_DATE, CREATED_BY, ACTIVITY, ORDERNO
+          FROM (
+              SELECT a.*, ROWNUM AS RN
+                FROM (
+                    SELECT ps.PERSON_ID,
+                           he.EMPID                                                  AS EMP_ID,
+                           he.LOCAL_NAME,
+                           hd.ORG_NAME_LOCAL                                         AS DEPT_NAME,
+                           he.EMP_OFFICE,
+                           TO_CHAR(ps.CREATE_DATE, 'YYYY-MM-DD')                     AS CREATE_DATE,
+                           get_emp_local_name(ps.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})  AS CREATED_BY,
+                           ps.ACTIVITY,
+                           ps.ORDERNO
+                      FROM PA_SUPERVISOR  ps
+                      LEFT JOIN HR_EMPLOYEE   he ON ps.PERSON_ID = he.PERSON_ID
+                                                AND he.CPNY_ID   = #{cpnyId, jdbcType=VARCHAR}
+                      LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO    = hd.DEPTNO
+                    <include refid="whereCondition"/>
+                    ORDER BY ps.ORDERNO ASC, ps.CREATE_DATE DESC
+                ) a
+               WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+          )
+         WHERE RN > #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Lấy chi tiết một bản ghi ──────────────────────────────────────────── -->
+    <select id="selectOne" resultMap="PaSupervisorResultMap">
+        SELECT ps.PERSON_ID,
+               he.EMPID                                      AS EMP_ID,
+               he.LOCAL_NAME,
+               hd.ORG_NAME_LOCAL                            AS DEPT_NAME,
+               he.EMP_OFFICE,
+               TO_CHAR(ps.CREATE_DATE, 'YYYY-MM-DD')        AS CREATE_DATE,
+               get_emp_local_name(ps.CREATED_BY, #{cpnyId, jdbcType=VARCHAR})  AS CREATED_BY,
+               ps.ACTIVITY,
+               ps.ORDERNO
+          FROM PA_SUPERVISOR  ps
+          LEFT JOIN HR_EMPLOYEE   he ON ps.PERSON_ID = he.PERSON_ID
+          LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO    = hd.DEPTNO
+         WHERE ps.PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Kiểm tra tồn tại ────────────────────────────────────────────────────── -->
+    <select id="existsByPersonId" resultType="int">
+        SELECT COUNT(1) FROM PA_SUPERVISOR WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Thêm mới ───────────────────────────────────────────────────────────── -->
+    <insert id="insert" parameterType="com.ait.pa.wagebase.dto.PaSupervisorDto">
+        INSERT INTO PA_SUPERVISOR (
+            PERSON_ID, ACTIVITY, ORDERNO,
+            CREATE_DATE, CREATED_BY
+        ) VALUES (
+            #{personId, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC},
+            #{orderNo, jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ── Cập nhật ───────────────────────────────────────────────────────────── -->
+    <update id="update" parameterType="com.ait.pa.wagebase.dto.PaSupervisorDto">
+        UPDATE PA_SUPERVISOR
+           SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+               ORDERNO     = #{orderNo, jdbcType=NUMERIC},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR}
+         WHERE PERSON_ID   = #{personId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ── Xóa ────────────────────────────────────────────────────────────────── -->
+    <delete id="deleteByPersonId">
+        DELETE FROM PA_SUPERVISOR WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ── Danh sách tất cả supervisor đang hoạt động (left pane) ─────────── -->
+    <select id="getAllSupervisorList" resultMap="PaSupervisorResultMap">
+        SELECT ps.PERSON_ID,
+               he.EMPID        AS EMP_ID,
+               he.LOCAL_NAME,
+               hd.ORG_NAME_LOCAL AS DEPT_NAME,
+               ps.ACTIVITY,
+               ps.ORDERNO
+          FROM PA_SUPERVISOR ps
+          LEFT JOIN HR_EMPLOYEE   he ON ps.PERSON_ID = he.PERSON_ID
+          LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO    = hd.DEPTNO
+         WHERE ps.ACTIVITY = 1
+         ORDER BY ps.ORDERNO ASC, ps.CREATE_DATE DESC
+    </select>
+
+    <!-- ── Cây phòng ban từ HR_DEPARTMENT ────────────────────────────────── -->
+    <select id="getDepartmentTree" resultType="java.util.Map">
+        SELECT DEPTNO          AS "id",
+               PARENT_DEPT_NO AS "parent",
+               ORG_NAME_LOCAL AS "text"
+          FROM HR_DEPARTMENT
+         WHERE ACTIVITY = 1
+         ORDER BY ORDERNO ASC
+    </select>
+
+    <!-- ── Phòng ban được phân quyền cho user hiện tại (dùng cho DeptTree) ── -->
+    <select id="getAuthorizedDepartments" resultType="java.util.Map">
+        SELECT d.DEPTNO          AS "id",
+               d.ORG_NAME_LOCAL  AS "text",
+               d.PARENT_DEPT_NO  AS "parent"
+          FROM HR_DEPARTMENT d
+         INNER JOIN PA_SUPERVISOR_INFO si ON d.DEPTNO = si.DEPTNO
+         WHERE d.CPNY_ID  = #{cpnyId,   jdbcType=VARCHAR}
+           AND si.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           AND d.ACTIVITY  = 1
+         ORDER BY d.DEPT_LEVEL ASC, d.DEPTNO ASC
+    </select>
+
+    <!-- ── Danh sách DEPTNO đã phân quyền cho PERSON_ID ─────────────────── -->
+    <select id="getDeptNoListByPersonId" resultType="java.lang.String">
+        SELECT DEPTNO
+          FROM PA_SUPERVISOR_INFO
+         WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </select>
+
+    <!-- ── Sequence cho PA_SUPERVISOR_INFO ───────────────────────────────── -->
+    <select id="getNextSeq" resultType="long">
+        SELECT PA_SUPERVISOR_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <!-- ── Thêm mới PA_SUPERVISOR_INFO ──────────────────────────────────── -->
+    <insert id="insertSupervisorInfo" parameterType="com.ait.pa.wagebase.dto.PaSupervisorInfoDto">
+        INSERT INTO PA_SUPERVISOR_INFO (
+            PA_SUPERVISOR_NO, PERSON_ID, DEPTNO,
+            CREATE_DATE, CREATED_BY,
+            ACTIVITY, ORDERNO
+        ) VALUES (
+            #{paSupervisorNo, jdbcType=NUMERIC},
+            #{personId,       jdbcType=VARCHAR},
+            #{deptNo,         jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,        jdbcType=VARCHAR},
+            #{activity,       jdbcType=NUMERIC},
+            #{orderNo,        jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <!-- ── Xóa tất cả PA_SUPERVISOR_INFO theo PERSON_ID ─────────────────── -->
+    <delete id="deleteInfoByPersonId">
+        DELETE FROM PA_SUPERVISOR_INFO WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

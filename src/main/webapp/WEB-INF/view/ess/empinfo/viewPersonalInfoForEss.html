@@ -1,0 +1,854 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- ===== Thông tin cơ bản ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white py-2">
+                    <strong><i class="bx bx-user me-1"></i><span th:text="#{epi.section.basicInfo}">Thông tin cơ bản</span></strong>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.fullName}">Họ tên</th>
+                                <td id="epi_localName"></td>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.empId}">Mã nhân viên</th>
+                                <td id="epi_empId"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{epi.field.department}">Phòng ban</th>
+                                <td id="epi_deptName"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.position}">Chức vụ</th>
+                                <td id="epi_dutyName"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Cá nhân ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bx bx-id-card me-1"></i><span th:text="#{epi.section.personal}">Cá nhân</span></strong>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openPersonalModal()">
+                        <i class="bx bx-edit me-1"></i><span th:text="#{epi.btn.edit}">Chỉnh sửa</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.dob}">Ngày sinh</th>
+                                <td id="epi_dob"></td>
+                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.gender}">Giới tính</th>
+                                <td id="epi_sexName"></td>
+                                <th class="table-light text-center" style="width:170px;" th:text="#{epi.field.maritalStatus}">Tình trạng hôn nhân</th>
+                                <td id="epi_maritalStatusName"></td>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{epi.field.ethnicity}">Dân tộc</th>
+                                <td id="epi_nationName"></td>
+                                <th class="table-light text-center" style="width:80px;" th:text="#{epi.field.houseTp}">Ra-giải</th>
+                                <td id="epi_houseTp"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{epi.field.homePhone}">ĐT gia đình</th>
+                                <td id="epi_homePhone"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.companyPhone}">ĐT công ty</th>
+                                <td id="epi_companyPhone"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.phone}">Điện thoại</th>
+                                <td id="epi_cellphone"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.residence}">Chỗ ở</th>
+                                <td id="epi_residentialDistinction"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.existSingle}">Ở công bố mẹ</th>
+                                <td id="epi_existSingle"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{epi.field.email}">Email</th>
+                                <td id="epi_email"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.companyEmail}">Email công ty</th>
+                                <td id="epi_emailSecond"></td>
+                                <th class="table-light text-center" th:text="#{epi.field.nationality}">Quốc tịch</th>
+                                <td id="epi_nationalityName"></td>
+                                <th class="table-light text-center">EagleM ID</th>
+                                <td id="epi_singId"></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Loại địa chỉ ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bx bx-map me-1"></i><span th:text="#{epi.section.address}">Loại địa chỉ</span></strong>
+                    <button type="button" class="btn btn-sm btn-success" onclick="openAddressModal(null)">
+                        <i class="bx bx-plus me-1"></i><span th:text="#{epi.btn.addNew}">Thêm mới</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table id="epi_addressTable"
+                        class="table table-bordered table-hover table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{epi.field.addressType}">Loại địa chỉ</th>
+                                <th th:text="#{epi.field.effectiveDate}">Ngày hiệu lực</th>
+                                <th th:text="#{epi.field.address}">Địa chỉ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="epi_addressBody">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Thông tin gia đình ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bx bx-group me-1"></i><span th:text="#{epi.section.family}">Thông tin gia đình</span></strong>
+                    <button type="button" class="btn btn-sm btn-success" onclick="openFamilyModal(null)">
+                        <i class="bx bx-plus me-1"></i><span th:text="#{epi.btn.addNew}">Thêm mới</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table id="epi_familyTable"
+                        class="table table-bordered table-hover table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{epi.field.relationship}">Quan hệ</th>
+                                <th th:text="#{epi.field.fullName}">Họ tên</th>
+                                <th th:text="#{epi.field.gender}">Giới tính</th>
+                                <th th:text="#{epi.field.dob}">Ngày sinh</th>
+                                <th th:text="#{epi.field.familyPhone}">Điện thoại gia đình</th>
+                            </tr>
+                        </thead>
+                        <tbody id="epi_familyBody">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== Người liên hệ khẩn cấp ===== -->
+            <div class="card mb-3">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <strong><i class="bx bx-phone-call me-1"></i><span th:text="#{epi.section.emergency}">Người liên hệ khẩn cấp</span></strong>
+                    <button type="button" class="btn btn-sm btn-success" onclick="openEmergencyModal(null)">
+                        <i class="bx bx-plus me-1"></i><span th:text="#{epi.btn.addNew}">Thêm mới</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table id="epi_emergencyTable"
+                        class="table table-bordered table-hover table-sm align-middle mb-0 w-100">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{epi.field.fullName}">Họ tên</th>
+                                <th th:text="#{epi.field.relationship}">Quan hệ</th>
+                                <th th:text="#{epi.field.phone}">Điện thoại</th>
+                                <th th:text="#{epi.field.email}">Email</th>
+                                <th th:text="#{epi.field.address}">Địa chỉ</th>
+                                <th class="text-center" style="width:90px;" th:text="#{epi.field.primaryContact}">Liên hệ chính</th>
+                            </tr>
+                        </thead>
+                        <tbody id="epi_emergencyBody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== Modal: Chỉnh sửa Cá nhân ===== -->
+    <div class="modal fade" id="modalPersonal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bx bx-id-card me-1"></i><span th:text="#{epi.modal.editPersonal}">Chỉnh sửa thông tin cá nhân</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.dob}">Ngày sinh</label>
+                            <input type="date" class="form-control form-control-sm" id="mp_dob">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.gender}">Giới tính</label>
+                            <select class="form-select form-select-sm" id="mp_sexCode" data-parent-code="1324"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.maritalStatus}">Tình trạng hôn nhân</label>
+                            <select class="form-select form-select-sm" id="mp_maritalStatusCode" data-parent-code="1709"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.ethnicity}">Dân tộc</label>
+                            <select class="form-select form-select-sm" id="mp_nationCode" data-parent-code="210942"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.nationality}">Quốc tịch</label>
+                            <select class="form-select form-select-sm" id="mp_nationalityCode" data-parent-code="870"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.houseTp}">Ra-giải</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_houseTp">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.homePhone}">ĐT gia đình</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_homePhone">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.companyPhone}">ĐT công ty</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_companyPhone">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.phone}">Điện thoại</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_cellphone">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.email}">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="mp_email">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.companyEmail}">Email công ty</label>
+                            <input type="email" class="form-control form-control-sm" id="mp_emailSecond">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.residence}">Chỗ ở</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_residentialDistinction">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.existSingle}">Ở công bố mẹ</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_existSingle">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">EagleM ID</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_singId">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="savePersonal()">
+                        <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Modal: Thêm/Sửa Địa chỉ ===== -->
+    <div class="modal fade" id="modalAddress" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAddressTitle"><i class="bx bx-map me-1"></i><span th:text="#{epi.modal.address}">Địa chỉ</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="addr_addressNo">
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold"><span th:text="#{epi.field.addressType}">Loại địa chỉ</span> <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-sm" id="addr_addressType" data-parent-code="14013840"
+                            th:attr="data-default-text=#{epi.select.chooseAddressType}">
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold" th:text="#{epi.field.effectiveDate}">Ngày hiệu lực</label>
+                        <input type="date" class="form-control form-control-sm" id="addr_effectiveStartDate">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold" th:text="#{epi.field.address}">Địa chỉ</label>
+                        <textarea class="form-control form-control-sm" id="addr_addressContent" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm me-1"
+                        data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveAddress()">
+                        <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Modal: Thêm/Sửa Gia đình ===== -->
+    <div class="modal fade" id="modalFamily" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalFamilyTitle"><i class="bx bx-group me-1"></i><span th:text="#{epi.section.family}">Thông tin gia đình</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="fam_familyNo">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold"><span th:text="#{epi.field.relationship}">Quan hệ</span> <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" id="fam_famTypeCode" data-parent-code="950"
+                                th:attr="data-default-text=#{epi.select.chooseRelationship}">
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold"><span th:text="#{epi.field.fullName}">Họ tên</span> <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="fam_famName">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.gender}">Giới tính</label>
+                            <select class="form-select form-select-sm" id="fam_gender" data-parent-code="1324"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.dob}">Ngày sinh</label>
+                            <input type="date" class="form-control form-control-sm" id="fam_famBorndate">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.phone}">Điện thoại</label>
+                            <input type="text" class="form-control form-control-sm" id="fam_famPhone">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm me-1"
+                        data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveFamily()">
+                        <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Modal: Thêm/Sửa Liên hệ khẩn cấp ===== -->
+    <div class="modal fade" id="modalEmergency" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEmergencyTitle"><i class="bx bx-phone-call me-1"></i><span th:text="#{epi.section.emergency}">Người liên hệ khẩn cấp</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="emer_emergencyNo">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold"><span th:text="#{epi.field.fullName}">Họ tên</span> <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" id="emer_emerName">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.relationship}">Quan hệ</label>
+                            <select class="form-select form-select-sm" id="emer_emerTypeCode" data-parent-code="1693"
+                                th:attr="data-default-text=#{epi.select.chooseRelationship}">
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.phone}">Điện thoại</label>
+                            <input type="text" class="form-control form-control-sm" id="emer_emerPhone">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.email}">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="emer_emerEmail">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.address}">Địa chỉ</label>
+                            <input type="text" class="form-control form-control-sm" id="emer_emerAddress">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check mt-1">
+                                <input type="checkbox" class="form-check-input" id="emer_isEmergencyAddress">
+                                <label class="form-check-label" for="emer_isEmergencyAddress" th:text="#{epi.field.isPrimaryContact}">Là liên hệ chính</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm me-1"
+                        data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveEmergency()">
+                        <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        (function () {
+            var I18N = {
+                noData:           /*[[#{epi.msg.noData}]]*/ 'Không có dữ liệu',
+                loading:          /*[[#{common.loading}]]*/ 'Đang tải...',
+                saveSuccess:      /*[[#{epi.msg.saveSuccess}]]*/ 'Cập nhật thành công!',
+                addSuccess:       /*[[#{epi.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+                errPersonal:      /*[[#{epi.msg.saveError.personal}]]*/ 'Lỗi khi lưu thông tin cá nhân!',
+                errAddress:       /*[[#{epi.msg.saveError.address}]]*/ 'Lỗi khi lưu địa chỉ!',
+                errFamily:        /*[[#{epi.msg.saveError.family}]]*/ 'Lỗi khi lưu thông tin gia đình!',
+                errEmergency:     /*[[#{epi.msg.saveError.emergency}]]*/ 'Lỗi khi lưu thông tin khẩn cấp!',
+                loadErrAddress:   /*[[#{epi.msg.loadError.address}]]*/ 'Lỗi tải dữ liệu địa chỉ',
+                loadErrFamily:    /*[[#{epi.msg.loadError.family}]]*/ 'Lỗi tải dữ liệu gia đình',
+                loadErrEmergency: /*[[#{epi.msg.loadError.emergency}]]*/ 'Lỗi tải dữ liệu khẩn cấp',
+                valAddressType:   /*[[#{epi.msg.validate.addressType}]]*/ 'Vui lòng chọn Loại địa chỉ!',
+                valFamilyReq:     /*[[#{epi.msg.validate.familyRequired}]]*/ 'Vui lòng chọn Quan hệ và nhập Họ tên!',
+                valEmerName:      /*[[#{epi.msg.validate.emergencyName}]]*/ 'Vui lòng nhập Họ tên!',
+                addAddress:       /*[[#{epi.modal.addAddress}]]*/ 'Thêm mới địa chỉ',
+                editAddress:      /*[[#{epi.modal.editAddress}]]*/ 'Cập nhật địa chỉ',
+                addFamily:        /*[[#{epi.modal.addFamily}]]*/ 'Thêm mới thành viên gia đình',
+                editFamily:       /*[[#{epi.modal.editFamily}]]*/ 'Cập nhật thành viên gia đình',
+                addEmergency:     /*[[#{epi.modal.addEmergency}]]*/ 'Thêm mới liên hệ khẩn cấp',
+                editEmergency:    /*[[#{epi.modal.editEmergency}]]*/ 'Cập nhật liên hệ khẩn cấp',
+                iconMap:          '<i class="bx bx-map me-1"></i>',
+                iconGroup:        '<i class="bx bx-group me-1"></i>',
+                iconPhone:        '<i class="bx bx-phone-call me-1"></i>'
+            };
+
+            var currentPersonalInfo = {};
+            var currentAddressList = [];
+            var currentFamilyList = [];
+            var currentEmergencyList = [];
+
+            function setText(id, val) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = val || '';
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                try {
+                    var d = new Date(dateStr);
+                    if (isNaN(d.getTime())) return dateStr;
+                    var day = String(d.getDate()).padStart(2, '0');
+                    var month = String(d.getMonth() + 1).padStart(2, '0');
+                    var year = d.getFullYear();
+                    return day + '/' + month + '/' + year;
+                } catch (e) { return dateStr; }
+            }
+
+            function toInputDate(dateStr) {
+                if (!dateStr) return '';
+                if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return dateStr.substring(0, 10);
+                try {
+                    var d = new Date(dateStr);
+                    if (!isNaN(d.getTime())) {
+                        return d.getFullYear() + '-' +
+                            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                            String(d.getDate()).padStart(2, '0');
+                    }
+                } catch (e) { }
+                return '';
+            }
+
+            function showToast(msg, type) {
+                var container = document.getElementById('epi_toast_container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'epi_toast_container';
+                    container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;min-width:250px;';
+                    document.body.appendChild(container);
+                }
+                var toast = document.createElement('div');
+                toast.className = 'alert alert-' + (type || 'info') + ' alert-dismissible fade show shadow-sm py-2';
+                toast.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                container.appendChild(toast);
+                setTimeout(function () { if (toast.parentNode) toast.remove(); }, 3500);
+            }
+
+            // ===== Load thông tin cơ bản + cá nhân =====
+            function loadBasicInfo() {
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/myInfo',
+                    type: 'GET',
+                    success: function (data) {
+                        if (!data) return;
+                        currentPersonalInfo = data;
+                        setText('epi_localName', data.localName);
+                        setText('epi_empId', data.empId);
+                        setText('epi_deptName', data.deptName);
+                        setText('epi_dutyName', data.dutyName);
+                        setText('epi_dob', formatDate(data.dob));
+                        setText('epi_sexName', data.sexName);
+                        setText('epi_maritalStatusName', data.maritalStatusName);
+                        setText('epi_nationName', data.nationName);
+                        setText('epi_houseTp', data.houseTp);
+                        setText('epi_homePhone', data.homePhone);
+                        setText('epi_companyPhone', data.companyPhone);
+                        setText('epi_cellphone', data.cellphone);
+                        setText('epi_residentialDistinction', data.residentialDistinction);
+                        setText('epi_existSingle', data.existSingle);
+                        setText('epi_email', data.email);
+                        setText('epi_emailSecond', data.emailSecond);
+                        setText('epi_nationalityName', data.nationalityName);
+                        setText('epi_singId', data.singId);
+                    },
+                    error: function () {
+                        console.error('Không tải được thông tin cá nhân');
+                    }
+                });
+            }
+
+            // ===== Load Loại địa chỉ =====
+            function loadAddress() {
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/myAddress',
+                    type: 'GET',
+                    success: function (list) {
+                        currentAddressList = list || [];
+                        var tbody = document.getElementById('epi_addressBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">' + I18N.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item, i) {
+                            html += '<tr style="cursor:pointer;" onclick="openAddressModal(' + i + ')">' +
+                                '<td>' + (item.addressTypeName || item.addressType || '') + '</td>' +
+                                '<td>' + formatDate(item.effectiveStartDate) + '</td>' +
+                                '<td>' + (item.addressContent || '') + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('epi_addressBody').innerHTML =
+                            '<tr><td colspan="3" class="text-center text-danger">' + I18N.loadErrAddress + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Load Gia đình =====
+            function loadFamily() {
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/myFamily',
+                    type: 'GET',
+                    success: function (list) {
+                        currentFamilyList = list || [];
+                        var tbody = document.getElementById('epi_familyBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">' + I18N.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item, i) {
+                            html += '<tr style="cursor:pointer;" onclick="openFamilyModal(' + i + ')">' +
+                                '<td>' + (item.famTypeName || item.famTypeCode || '') + '</td>' +
+                                '<td>' + (item.famName || '') + '</td>' +
+                                '<td>' + (item.genderName || '') + '</td>' +
+                                '<td>' + formatDate(item.famBorndate) + '</td>' +
+                                '<td>' + (item.famPhone || '') + '</td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('epi_familyBody').innerHTML =
+                            '<tr><td colspan="5" class="text-center text-danger">' + I18N.loadErrFamily + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Load Liên hệ khẩn cấp =====
+            function loadEmergency() {
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/myEmergency',
+                    type: 'GET',
+                    success: function (list) {
+                        currentEmergencyList = list || [];
+                        var tbody = document.getElementById('epi_emergencyBody');
+                        if (!list || list.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">' + I18N.noData + '</td></tr>';
+                            return;
+                        }
+                        var html = '';
+                        list.forEach(function (item, i) {
+                            var checked = (item.isEmergencyAddress === '1' || item.isEmergencyAddress === 'Y')
+                                ? 'checked' : '';
+                            html += '<tr style="cursor:pointer;" onclick="openEmergencyModal(' + i + ')">' +
+                                '<td>' + (item.emerName || '') + '</td>' +
+                                '<td>' + (item.emerTypeName || '') + '</td>' +
+                                '<td>' + (item.emerPhone || '') + '</td>' +
+                                '<td>' + (item.emerEmail || '') + '</td>' +
+                                '<td>' + (item.emerAddress || '') + '</td>' +
+                                '<td class="text-center"><input type="checkbox" ' + checked + ' disabled></td>' +
+                                '</tr>';
+                        });
+                        tbody.innerHTML = html;
+                    },
+                    error: function () {
+                        document.getElementById('epi_emergencyBody').innerHTML =
+                            '<tr><td colspan="6" class="text-center text-danger">' + I18N.loadErrEmergency + '</td></tr>';
+                    }
+                });
+            }
+
+            // ===== Modal: Cá nhân =====
+            window.openPersonalModal = function () {
+                var d = currentPersonalInfo;
+                document.getElementById('mp_dob').value = toInputDate(d.dob);
+                document.getElementById('mp_sexCode').value = d.sexCode || '';
+                document.getElementById('mp_houseTp').value = d.houseTp || '';
+                document.getElementById('mp_homePhone').value = d.homePhone || '';
+                document.getElementById('mp_companyPhone').value = d.companyPhone || '';
+                document.getElementById('mp_cellphone').value = d.cellphone || '';
+                document.getElementById('mp_email').value = d.email || '';
+                document.getElementById('mp_emailSecond').value = d.emailSecond || '';
+                document.getElementById('mp_residentialDistinction').value = d.residentialDistinction || '';
+                document.getElementById('mp_existSingle').value = d.existSingle || '';
+                document.getElementById('mp_singId').value = d.singId || '';
+
+                $.when(
+                    initCodeSelects('#mp_maritalStatusCode'),
+                    initCodeSelects('#mp_nationCode'),
+                    initCodeSelects('#mp_nationalityCode'),
+                    initCodeSelects('#mp_sexCode')
+                ).done(function () {
+                    $('#mp_maritalStatusCode').val(d.maritalStatusCode || '');
+                    $('#mp_nationCode').val(d.nationCode || '');
+                    $('#mp_nationalityCode').val(d.nationalityCode || '');
+                    $('#mp_sexCode').val(d.sexCode || '');
+                });
+
+                new bootstrap.Modal(document.getElementById('modalPersonal')).show();
+            };
+
+            window.savePersonal = function () {
+                var payload = {
+                    personId: currentPersonalInfo.personId,
+                    dob: document.getElementById('mp_dob').value || null,
+                    sexCode: document.getElementById('mp_sexCode').value || null,
+                    maritalStatusCode: document.getElementById('mp_maritalStatusCode').value || null,
+                    nationCode: document.getElementById('mp_nationCode').value || null,
+                    nationalityCode: document.getElementById('mp_nationalityCode').value || null,
+                    houseTp: document.getElementById('mp_houseTp').value || null,
+                    homePhone: document.getElementById('mp_homePhone').value || null,
+                    companyPhone: document.getElementById('mp_companyPhone').value || null,
+                    cellphone: document.getElementById('mp_cellphone').value || null,
+                    email: document.getElementById('mp_email').value || null,
+                    emailSecond: document.getElementById('mp_emailSecond').value || null,
+                    residentialDistinction: document.getElementById('mp_residentialDistinction').value || null,
+                    existSingle: document.getElementById('mp_existSingle').value || null,
+                    singId: document.getElementById('mp_singId').value || null
+                };
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/savePersonal',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        bootstrap.Modal.getInstance(document.getElementById('modalPersonal')).hide();
+                        showToast(I18N.saveSuccess, 'success');
+                        loadBasicInfo();
+                    },
+                    error: function () {
+                        showToast(I18N.errPersonal, 'danger');
+                    }
+                });
+            };
+
+            // ===== Modal: Địa chỉ =====
+            window.openAddressModal = function (indexOrNull) {
+                var isNew = indexOrNull === null;
+                document.getElementById('modalAddressTitle').innerHTML =
+                    I18N.iconMap + (isNew ? I18N.addAddress : I18N.editAddress);
+                var addressType = '';
+                if (isNew) {
+                    document.getElementById('addr_addressNo').value = '';
+                    document.getElementById('addr_effectiveStartDate').value = '';
+                    document.getElementById('addr_addressContent').value = '';
+                } else {
+                    var item = currentAddressList[indexOrNull];
+                    addressType = item.addressType || '';
+                    document.getElementById('addr_addressNo').value = item.addressNo || '';
+                    document.getElementById('addr_effectiveStartDate').value = toInputDate(item.effectiveStartDate);
+                    document.getElementById('addr_addressContent').value = item.addressContent || '';
+                }
+
+                $.when(initCodeSelects('#addr_addressType')).done(function () {
+                    $('#addr_addressType').val(addressType);
+                });
+
+                new bootstrap.Modal(document.getElementById('modalAddress')).show();
+            };
+
+            window.saveAddress = function () {
+                var addressNo = document.getElementById('addr_addressNo').value;
+                var payload = {
+                    addressNo: addressNo ? parseInt(addressNo) : null,
+                    addressType: document.getElementById('addr_addressType').value || null,
+                    effectiveStartDate: document.getElementById('addr_effectiveStartDate').value || null,
+                    addressContent: document.getElementById('addr_addressContent').value || null
+                };
+                if (!payload.addressType) {
+                    showToast(I18N.valAddressType, 'danger');
+                    return;
+                }
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/saveAddress',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        bootstrap.Modal.getInstance(document.getElementById('modalAddress')).hide();
+                        showToast(addressNo ? I18N.saveSuccess : I18N.addSuccess, 'success');
+                        loadAddress();
+                    },
+                    error: function () {
+                        showToast(I18N.errAddress, 'danger');
+                    }
+                });
+            };
+
+            // ===== Modal: Gia đình =====
+            window.openFamilyModal = function (indexOrNull) {
+                var isNew = indexOrNull === null;
+                document.getElementById('modalFamilyTitle').innerHTML =
+                    I18N.iconGroup + (isNew ? I18N.addFamily : I18N.editFamily);
+                var famTypeCode = '', gender = '';
+                if (isNew) {
+                    document.getElementById('fam_familyNo').value = '';
+                    document.getElementById('fam_famName').value = '';
+                    document.getElementById('fam_famBorndate').value = '';
+                    document.getElementById('fam_famPhone').value = '';
+                } else {
+                    var item = currentFamilyList[indexOrNull];
+                    famTypeCode = item.famTypeCode || '';
+                    gender = item.gender || '';
+                    document.getElementById('fam_familyNo').value = item.familyNo || '';
+                    document.getElementById('fam_famName').value = item.famName || '';
+                    document.getElementById('fam_famBorndate').value = toInputDate(item.famBorndate);
+                    document.getElementById('fam_famPhone').value = item.famPhone || '';
+                }
+
+                $.when(
+                    initCodeSelects('#fam_famTypeCode'),
+                    initCodeSelects('#fam_gender')
+                ).done(function () {
+                    $('#fam_famTypeCode').val(famTypeCode);
+                    $('#fam_gender').val(gender);
+                });
+
+                new bootstrap.Modal(document.getElementById('modalFamily')).show();
+            };
+
+            window.saveFamily = function () {
+                var familyNo = document.getElementById('fam_familyNo').value;
+                var famTypeCode = document.getElementById('fam_famTypeCode').value;
+                var famName = document.getElementById('fam_famName').value;
+                if (!famTypeCode || !famName) {
+                    showToast(I18N.valFamilyReq, 'danger');
+                    return;
+                }
+                var payload = {
+                    familyNo: familyNo ? parseInt(familyNo) : null,
+                    famTypeCode: famTypeCode || null,
+                    famName: famName || null,
+                    gender: document.getElementById('fam_gender').value || null,
+                    famBorndate: document.getElementById('fam_famBorndate').value || null,
+                    famPhone: document.getElementById('fam_famPhone').value || null
+                };
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/saveFamily',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        bootstrap.Modal.getInstance(document.getElementById('modalFamily')).hide();
+                        showToast(familyNo ? I18N.saveSuccess : I18N.addSuccess, 'success');
+                        loadFamily();
+                    },
+                    error: function () {
+                        showToast(I18N.errFamily, 'danger');
+                    }
+                });
+            };
+
+            // ===== Modal: Khẩn cấp =====
+            window.openEmergencyModal = function (indexOrNull) {
+                var isNew = indexOrNull === null;
+                document.getElementById('modalEmergencyTitle').innerHTML =
+                    I18N.iconPhone + (isNew ? I18N.addEmergency : I18N.editEmergency);
+                var emerTypeCode = '';
+                if (isNew) {
+                    document.getElementById('emer_emergencyNo').value = '';
+                    document.getElementById('emer_emerName').value = '';
+                    document.getElementById('emer_emerPhone').value = '';
+                    document.getElementById('emer_emerEmail').value = '';
+                    document.getElementById('emer_emerAddress').value = '';
+                    document.getElementById('emer_isEmergencyAddress').checked = false;
+                } else {
+                    var item = currentEmergencyList[indexOrNull];
+                    emerTypeCode = item.emerTypeCode || '';
+                    document.getElementById('emer_emergencyNo').value = item.emergencyNo || '';
+                    document.getElementById('emer_emerName').value = item.emerName || '';
+                    document.getElementById('emer_emerPhone').value = item.emerPhone || '';
+                    document.getElementById('emer_emerEmail').value = item.emerEmail || '';
+                    document.getElementById('emer_emerAddress').value = item.emerAddress || '';
+                    document.getElementById('emer_isEmergencyAddress').checked =
+                        item.isEmergencyAddress === '1' || item.isEmergencyAddress === 'Y';
+                }
+
+                $.when(initCodeSelects('#emer_emerTypeCode')).done(function () {
+                    $('#emer_emerTypeCode').val(emerTypeCode);
+                });
+
+                new bootstrap.Modal(document.getElementById('modalEmergency')).show();
+            };
+
+            window.saveEmergency = function () {
+                var emergencyNo = document.getElementById('emer_emergencyNo').value;
+                var emerName = document.getElementById('emer_emerName').value;
+                if (!emerName) {
+                    showToast(I18N.valEmerName, 'danger');
+                    return;
+                }
+                var payload = {
+                    emergencyNo: emergencyNo ? parseInt(emergencyNo) : null,
+                    emerName: emerName || null,
+                    emerTypeCode: document.getElementById('emer_emerTypeCode').value || null,
+                    emerPhone: document.getElementById('emer_emerPhone').value || null,
+                    emerEmail: document.getElementById('emer_emerEmail').value || null,
+                    emerAddress: document.getElementById('emer_emerAddress').value || null,
+                    isEmergencyAddress: document.getElementById('emer_isEmergencyAddress').checked ? '1' : '0'
+                };
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/saveEmergency',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function () {
+                        bootstrap.Modal.getInstance(document.getElementById('modalEmergency')).hide();
+                        showToast(emergencyNo ? I18N.saveSuccess : I18N.addSuccess, 'success');
+                        loadEmergency();
+                    },
+                    error: function () {
+                        showToast(I18N.errEmergency, 'danger');
+                    }
+                });
+            };
+
+            $(document).ready(function () {
+                loadBasicInfo();
+                loadAddress();
+                loadFamily();
+                loadEmergency();
+            });
+        })();
+    </script>
+</template>

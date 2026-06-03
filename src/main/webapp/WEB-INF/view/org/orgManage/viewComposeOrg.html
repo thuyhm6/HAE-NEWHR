@@ -1,0 +1,737 @@
+<div th:fragment="content">
+    <div class="row h-100">
+        <!-- LEft Pane: Organization Tree -->
+        <div class="col-md-3 border-end">
+            <div class="p-3">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Phiên bản thay đổi</label>
+                    <select id="compose_resumeSelect" class="form-select select2">
+                        <!-- Ajax load -->
+                    </select>
+                </div>
+
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Tìm kiếm phòng ban..."
+                        id="compose_searchTreeInput">
+                    <button class="btn btn-outline-secondary" type="button" id="compose_btnSearchTree">Tra cứu</button>
+                </div>
+
+                <div class="mb-2">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="treeViewOption" id="compose_expandAll"
+                            value="expand">
+                        <label class="form-check-label" for="compose_expandAll">Mở tất cả</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="treeViewOption" id="compose_collapseAll"
+                            value="collapse">
+                        <label class="form-check-label" for="compose_collapseAll">Đóng tất cả</label>
+                    </div>
+                </div>
+
+                <div class="tree-container" style="max-height: 600px; overflow-y: auto;">
+                    <div id="compose_orgTree"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Details & Employees -->
+        <div class="col-md-9">
+            <div class="p-3">
+
+                <!-- Org Detail Form -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Thông tin tổ chức</span>
+                        <div>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-primary" id="compose_btnNew"><i
+                                        class="bx bx-plus"></i>
+                                    Thêm mới</button>
+                                <button type="button" class="btn btn-sm btn-warning" id="compose_btnEdit" disabled><i
+                                        class="bx bx-edit"></i> Sửa</button>
+                                <button type="button" class="btn btn-sm btn-success d-none" id="compose_btnSave"><i
+                                        class="bx bx-save"></i> Lưu</button>
+                                <button type="button" class="btn btn-sm btn-danger" id="compose_btnDelete" disabled><i
+                                        class="bx bx-trash"></i> Xóa</button>
+                                <button type="button" class="btn btn-sm btn-secondary d-none" id="compose_btnCancel"><i
+                                        class="bx bx-x"></i> Hủy</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="compose_detailForm">
+                                <input type="hidden" id="compose_resumeNoHidden">
+                                <input type="hidden" id="compose_isNewMode" value="false">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Phòng ban <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="compose_deptNo" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Phòng ban trên</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="compose_parentDeptNo" readonly>
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                id="compose_btnSelectParent"><i class="bx bxs-folder-open"></i></button>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tên tiếng Anh</label>
+                                        <input type="text" class="form-control" id="compose_orgNameEng" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tên địa phương</label>
+                                        <input type="text" class="form-control" id="compose_orgNameLocal" readonly>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Loại tổ chức <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="compose_deptType" disabled>
+                                            <option value="TEAM">TEAM</option>
+                                            <option value="DEPT">DEPT</option>
+                                            <option value="DIV">DIV</option>
+                                            <option value="PART">PART</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Cấp</label>
+                                        <input type="number" class="form-control" id="compose_deptLevel" readonly>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Trưởng phòng</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="compose_managerEmpId" readonly>
+                                            <button class="btn btn-outline-secondary" type="button" disabled><i
+                                                    class="bx bx-search"></i></button>
+                                            <input type="text" class="form-control" id="compose_managerName" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Ngày tạo <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="compose_dateCreated" readonly>
+                                    </div>
+
+                                    <div class="col-md-6 d-flex align-items-center mt-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="compose_isPartTime"
+                                                disabled>
+                                            <label class="form-check-label" for="compose_isPartTime">Kiêm nhiệm</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Mã chi phí</label>
+                                        <select class="form-select" id="compose_costCenter" disabled>
+                                            <option value="">-- Chọn --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Employee List (unchanged, just placeholder for context) -->
+                    <!-- ... -->
+
+
+                    <!-- Employee List -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold me-2">Danh sách nhân viên</span>
+                                <span class="badge bg-primary" id="compose_totalEmployees">Total: 0</span>
+                            </div>
+                            <button class="btn btn-sm btn-info" id="compose_btnTransfer"><i class="bx bx-transfer"></i>
+                                Điều
+                                chuyển</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="compose_employeeTable" class="table table-striped table-hover w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>No.</th>
+                                            <th><input type="checkbox" id="compose_checkAllEmps"></th>
+                                            <th>Họ tên</th>
+                                            <th>Mã nhân viên</th>
+                                            <th>Chức vụ</th>
+                                            <th>Chức danh</th>
+                                            <th>Nhóm nhân viên</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Ajax loaded -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Parent Dept Selection -->
+        <div class="modal fade" id="compose_parentDeptModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chọn Phòng Ban Trực Thuộc</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" class="form-control mb-2" id="compose_searchParentTree"
+                            placeholder="Tìm kiếm...">
+                        <div id="compose_parentOrgTree"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary" id="compose_btnConfirmParent">Chọn</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for Target Dept Selection (Transfer) -->
+        <div class="modal fade" id="compose_targetDeptModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chọn Phòng Ban Điều Chuyển Đến</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" class="form-control mb-2" id="compose_searchTargetTree"
+                            placeholder="Tìm kiếm...">
+                        <div id="compose_targetOrgTree"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary" id="compose_btnConfirmTarget">Xác nhận
+                            chuyển</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <template id="fragmentScripts">
+            <!-- Include JSTree CSS/JS first -->
+            <link rel="stylesheet" href="/assets/plugins/jstree/style.min.css" />
+            <script src="/assets/plugins/jstree/jstree.min.js"></script>
+
+            <script th:inline="none">
+                $(document).ready(function () {
+                    console.log("viewComposeOrg script started");
+
+                    var employeeTable;
+                    var cachedOrgData = null; // Cache for parent selection
+
+                    // 2. Load Resume Versions (Do this first aka Critical Path)
+                    // Use a try-catch block for safety around ajax setup if needed, but ajax usually safe
+                    $.ajax({
+                        url: '/org/api/resume/dropdown',
+                        type: 'GET',
+                        success: function (data) {
+                            console.log("Resumes loaded:", data ? data.length : 0);
+                            var select = $('#compose_resumeSelect');
+                            select.empty();
+                            if (data && data.length > 0) {
+                                data.forEach(function (item) {
+                                    var text = (item.no ? item.no + ' ' : '') + (item.resumeName || '');
+                                    select.append(new Option(text, item.no));
+                                });
+                                // Select first and trigger load
+                                select.val(data[0].no).trigger('change');
+                            }
+                        },
+                        error: function (xhr) {
+                            console.error("Error loading resumes:", xhr);
+                        }
+                    });
+
+                    // 1. Initialize Components (Safe mode)
+                    // We do this after kicking off the AJAX or in parallel.
+                    if ($.fn.select2) {
+                        $('.select2').select2({ width: '100%' });
+                    } else {
+                        console.warn("Select2 not found");
+                    }
+
+                    if ($.fn.DataTable) {
+                        employeeTable = $('#compose_employeeTable').DataTable({
+                            destroy: true,
+                            columns: [
+                                { data: null, render: function (d, t, r, m) { return m.row + 1; } },
+                                { data: null, render: function () { return '<input type="checkbox" class="emp-check">'; } },
+                                { data: 'localName' },
+                                { data: 'empId' },
+                                { data: 'dutyNo' },
+                                { data: 'postNo' },
+                                { data: 'empTypeCode' },
+                                { data: 'statusCode' }
+                            ],
+                            searching: true,
+                            paging: true,
+                            info: true,
+                            lengthChange: true,
+                            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                            pageLength: 10
+                        });
+
+                        // Handle Check All
+                        $('#compose_checkAllEmps').on('change', function () {
+                            var isChecked = $(this).is(':checked');
+                            // Use API to toggle valid checkboxes across pages (if rendered) or current page
+                            // For client-side, $() accesses all rows. 
+                            // Note: If redraw occurs, checked state might be lost unless handled in rowCallback. 
+                            // For now, toggle all available inputs.
+                            if (employeeTable) {
+                                var inputs = employeeTable.$('.emp-check');
+                                inputs.prop('checked', isChecked);
+                            }
+                        });
+                    } else {
+                        console.warn("DataTable not found");
+                    }
+
+                    // 3. Handle Resume Change -> Load Tree
+                    $('#compose_resumeSelect').on('change', function () {
+                        var resumeNo = $(this).val();
+                        if (!resumeNo) return;
+
+                        console.log("Resume selected:", resumeNo);
+                        loadOrgTree(resumeNo);
+
+                        // Clear form and table
+                        $('#compose_detailForm')[0].reset();
+                        if (employeeTable) {
+                            employeeTable.clear().draw();
+                        }
+                        $('#compose_totalEmployees').text('Total: 0');
+                    });
+
+                    function loadOrgTree(resumeNo) {
+                        if (!$.fn.jstree) {
+                            console.warn("JSTree chưa được tải");
+                            return;
+                        }
+                        var $tree = $('#compose_orgTree');
+                        $tree.html('Đang tải dữ liệu...'); // User feedback directly in div
+
+                        $.ajax({
+                            url: '/org/api/compose/structure',
+                            data: { resumeNo: resumeNo },
+                            success: function (data) {
+                                cachedOrgData = data; // Cache data
+                                buildTree(data);
+                            },
+                            error: function (xhr) {
+                                $tree.html('<div class="text-danger">Lỗi tải dữ liệu: ' + xhr.status + '</div>');
+                            }
+                        });
+                    }
+
+                    function buildTree(data) {
+                        var $tree = $('#compose_orgTree');
+                        try { $tree.jstree("destroy"); } catch (e) { }
+
+                        if (!data || data.length === 0) {
+                            $tree.html('<div class="text-muted fst-italic p-2">Không có dữ liệu tổ chức</div>');
+                            return;
+                        }
+
+                        // 1. Collect Valid IDs to prevent orphans
+                        var idSet = new Set();
+                        data.forEach(function (item) { if (item.deptNo) idSet.add(item.deptNo); });
+
+                        // 2. Map Data
+                        var treeData = data.map(function (item) {
+                            // Resolve Parent: If parent doesn't exist in data, set to Root (#)
+                            var parentId = item.parentDeptNo;
+                            if (!parentId || parentId === 'ROOT' || !idSet.has(parentId)) {
+                                parentId = '#';
+                            }
+
+                            // Resolve Name
+                            var label = item.orgNameLocal || item.orgNameEng || item.deptNo || "N/A";
+
+                            return {
+                                id: item.deptNo,
+                                parent: parentId,
+                                text: label,
+                                data: item, // Store full object
+                                icon: 'bx bxs-folder', // Folder icon
+                                state: { opened: true } // Auto expand
+                            };
+                        });
+
+                        // 3. Initialize JSTree
+                        $tree.jstree({
+                            'core': {
+                                'data': treeData,
+                                'themes': {
+                                    'name': 'default', // Must match the CSS loaded
+                                    'responsive': true,
+                                    'variant': 'large'
+                                }
+                            },
+                            'plugins': ['search', 'types']
+                        });
+
+                        // 4. Bind Events
+                        $tree.off("changed.jstree").on("changed.jstree", function (e, data) {
+                            if (data.selected.length) {
+                                var node = data.instance.get_node(data.selected[0]);
+                                if (node && node.data) {
+                                    loadOrgDetails(node.data);
+                                }
+                            }
+                        });
+                    }
+
+
+                    function loadOrgDetails(orgInfo) {
+                        setMode('VIEW'); // Reset to View mode when loading detail
+
+                        // Fill Form
+                        $('#compose_deptNo').val(orgInfo.deptNo);
+                        $('#compose_parentDeptNo').val(orgInfo.parentDeptNo);
+                        $('#compose_orgNameEng').val(orgInfo.orgNameEng);
+                        $('#compose_orgNameLocal').val(orgInfo.orgNameLocal);
+                        $('#compose_deptType').val(orgInfo.deptType);
+                        $('#compose_deptLevel').val(orgInfo.deptLevel);
+                        $('#compose_managerEmpId').val(orgInfo.managerEmpId);
+
+                        if (orgInfo.dateCreated) {
+                            var d = new Date(orgInfo.dateCreated);
+                            var day = ("0" + d.getDate()).slice(-2);
+                            var month = ("0" + (d.getMonth() + 1)).slice(-2);
+                            $('#compose_dateCreated').val(d.getFullYear() + "-" + month + "-" + day);
+                        } else {
+                            $('#compose_dateCreated').val('');
+                        }
+
+                        $('#compose_costCenter').val(orgInfo.costCenter);
+                        $('#compose_isPartTime').prop('checked', orgInfo.isPartTime === 'Y');
+
+                        // Load Employees
+                        var resumeNo = $('#compose_resumeSelect').val();
+                        if (employeeTable) {
+                            $.ajax({
+                                url: '/org/api/compose/employees',
+                                data: { resumeNo: resumeNo, deptNo: orgInfo.deptNo },
+                                success: function (emps) {
+                                    employeeTable.clear();
+                                    employeeTable.rows.add(emps);
+                                    employeeTable.draw();
+                                    $('#compose_totalEmployees').text('Total: ' + (emps ? emps.length : 0));
+                                }
+                            });
+                        }
+
+                        // Enable buttons
+                        $('#compose_btnEdit, #compose_btnDelete').prop('disabled', false);
+                    }
+
+                    // Toggle Tree
+                    $('input[name="treeViewOption"]').on('change', function () {
+                        if (!$.fn.jstree) return;
+                        if ($(this).val() === 'expand') {
+                            $('#compose_orgTree').jstree('open_all');
+                        } else {
+                            $('#compose_orgTree').jstree('close_all');
+                        }
+                    });
+
+                    // --- CRUD HANDLERS ---
+
+                    function setMode(mode) {
+                        // modes: VIEW, NEW, EDIT
+                        var isView = mode === 'VIEW';
+                        var isNew = mode === 'NEW';
+
+                        $('#compose_isNewMode').val(isNew);
+
+                        // Buttons
+                        $('#compose_btnNew, #compose_btnEdit, #compose_btnDelete').toggleClass('d-none', !isView);
+                        $('#compose_btnSave, #compose_btnCancel').toggleClass('d-none', isView);
+
+                        // Inputs
+                        // Generally unlock all inputs in Edit/New mode, except PK in Edit mode
+                        var disabled = isView;
+                        $('#compose_detailForm input:not(#compose_deptNo), #compose_detailForm select').prop('disabled', disabled);
+                        $('#compose_detailForm input#compose_deptNo').prop('readonly', !isNew); // DeptNo only editable if New, assuming PK
+
+                        // Specific fields
+                        if (isNew) {
+                            $('#compose_detailForm')[0].reset();
+                            // Pre-fill parent if node selected?
+                            var selectedNodes = $('#compose_orgTree').jstree('get_selected', true);
+                            if (selectedNodes.length > 0) {
+                                $('#compose_parentDeptNo').val(selectedNodes[0].id);
+                            }
+                        }
+                    }
+
+                    $('#compose_btnNew').click(function () {
+                        setMode('NEW');
+                    });
+
+                    $('#compose_btnEdit').click(function () {
+                        setMode('EDIT');
+                    });
+
+                    $('#compose_btnCancel').click(function () {
+                        // Revert to view mode. ideally reload selected node
+                        var selectedNodes = $('#compose_orgTree').jstree('get_selected', true);
+                        if (selectedNodes.length > 0) {
+                            loadOrgDetails(selectedNodes[0].data);
+                        } else {
+                            setMode('VIEW');
+                            $('#compose_detailForm')[0].reset();
+                        }
+                    });
+
+                    $('#compose_btnDelete').click(function () {
+                        if (!confirm('Bạn có chắc chắn muốn xóa phòng ban này?')) return;
+
+                        var resumeNo = $('#compose_resumeSelect').val();
+                        var deptNo = $('#compose_deptNo').val();
+
+                        $.ajax({
+                            url: '/org/api/compose/delete',
+                            type: 'POST',
+                            data: { resumeNo: resumeNo, deptNo: deptNo },
+                            success: function (res) {
+                                toastr.success(res.message);
+                                loadOrgTree(resumeNo); // Refresh tree
+                                $('#compose_detailForm')[0].reset();
+                            },
+                            error: function (xhr) {
+                                toastr.error('Lỗi: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
+                            }
+                        });
+                    });
+
+                    $('#compose_btnSave').click(function () {
+                        var isNew = $('#compose_isNewMode').val() === 'true';
+                        var resumeNo = $('#compose_resumeSelect').val();
+                        var deptNo = $('#compose_deptNo').val();
+
+                        if (!deptNo) { toastr.warning('Vui lòng nhập Mã phòng ban'); return; }
+
+                        var data = {
+                            resumeNo: resumeNo,
+                            deptNo: deptNo,
+                            parentDeptNo: $('#compose_parentDeptNo').val(),
+                            orgNameEng: $('#compose_orgNameEng').val(),
+                            orgNameLocal: $('#compose_orgNameLocal').val(),
+                            deptType: $('#compose_deptType').val(),
+                            deptLevel: $('#compose_deptLevel').val(),
+                            managerEmpId: $('#compose_managerEmpId').val(),
+                            dateCreated: $('#compose_dateCreated').val(), // Format YYYY-MM-DD handled by backend?
+                            isPartTime: $('#compose_isPartTime').is(':checked') ? 'Y' : 'N',
+                            costCenter: $('#compose_costCenter').val()
+                        };
+
+                        $.ajax({
+                            url: '/org/api/compose/save?isNew=' + isNew,
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(data),
+                            success: function (res) {
+                                toastr.success(res.message);
+                                loadOrgTree(resumeNo); // Refresh tree
+                                // Optionally select the node again or switch to view mode
+                            },
+                            error: function (xhr) {
+                                toastr.error('Lỗi: ' + (xhr.responseJSON ? xhr.responseJSON.error : xhr.statusText));
+                            }
+                        });
+                    });
+
+                    // --- PARENT DEPT MODAL HANDLERS ---
+                    var parentTreeInitialized = false;
+
+                    $('#compose_btnSelectParent').click(function () {
+                        $('#compose_parentDeptModal').modal('show');
+                    });
+
+                    $('#compose_parentDeptModal').on('shown.bs.modal', function () {
+                        if (!parentTreeInitialized && cachedOrgData) {
+                            buildParentTree(cachedOrgData);
+                            parentTreeInitialized = true;
+                        } else {
+                            // Clear selection
+                            $('#compose_parentOrgTree').jstree('deselect_all');
+                        }
+                    });
+
+                    function buildParentTree(data) {
+                        var $tree = $('#compose_parentOrgTree');
+                        if (!data || data.length === 0) {
+                            $tree.html('No data'); return;
+                        }
+                        var idSet = new Set();
+                        data.forEach(function (item) { if (item.deptNo) idSet.add(item.deptNo); });
+
+                        var treeData = data.map(function (item) {
+                            var parentId = item.parentDeptNo;
+                            if (!parentId || parentId === 'ROOT' || !idSet.has(parentId)) parentId = '#';
+
+                            var label = item.orgNameLocal || item.orgNameEng || item.deptNo;
+
+                            return {
+                                id: item.deptNo, parent: parentId, text: label,
+                                icon: 'bx bxs-folder', state: { opened: true }
+                            };
+                        });
+
+                        $tree.jstree({
+                            'core': { 'data': treeData, 'themes': { 'name': 'default', 'responsive': true } },
+                            'plugins': ['search', 'types']
+                        });
+
+                        // Handle selection
+                        $tree.off("changed.jstree").on("changed.jstree", function (e, data) {
+                            if (data.selected.length) {
+                                $('#compose_parentDeptNo').val(data.selected[0]);
+                                $('#compose_parentDeptModal').modal('hide');
+                            }
+                        });
+
+                        // Search
+                        var to = false;
+                        $('#compose_searchParentTree').keyup(function () {
+                            if (to) { clearTimeout(to); }
+                            to = setTimeout(function () {
+                                var v = $('#compose_searchParentTree').val();
+                                $('#compose_parentOrgTree').jstree(true).search(v);
+                            }, 250);
+                        });
+                    }
+
+                    $('#compose_btnConfirmParent').click(function () {
+                        var selected = $('#compose_parentOrgTree').jstree('get_selected');
+                        if (selected.length > 0) {
+                            $('#compose_parentDeptNo').val(selected[0]);
+                            $('#compose_parentDeptModal').modal('hide');
+                        } else {
+                            toastr.warning('Vui lòng chọn phòng ban');
+                        }
+                    });
+
+                    // --- EMPLOYEE TRANSFER HANDLERS ---
+                    var targetTreeInitialized = false;
+
+                    $('#compose_btnTransfer').click(function () {
+                        var hasChecked = false;
+                        $('.emp-check:checked').each(function () { hasChecked = true; });
+
+                        if (!hasChecked) {
+                            toastr.warning('Vui lòng chọn nhân viên cần điều chuyển');
+                            return;
+                        }
+                        $('#compose_targetDeptModal').modal('show');
+                    });
+
+                    $('#compose_targetDeptModal').on('shown.bs.modal', function () {
+                        if (!targetTreeInitialized && cachedOrgData) {
+                            buildTargetTree(cachedOrgData);
+                            targetTreeInitialized = true;
+                        } else {
+                            $('#compose_targetOrgTree').jstree('deselect_all');
+                        }
+                    });
+
+                    function buildTargetTree(data) {
+                        var $tree = $('#compose_targetOrgTree');
+                        if (!data || data.length === 0) { $tree.html('No data'); return; }
+
+                        var idSet = new Set();
+                        data.forEach(function (item) { if (item.deptNo) idSet.add(item.deptNo); });
+
+                        var treeData = data.map(function (item) {
+                            var parentId = item.parentDeptNo;
+                            if (!parentId || parentId === 'ROOT' || !idSet.has(parentId)) parentId = '#';
+                            // Disable selection of current dept? Ideally yes, but backend handles update nicely (no-op)
+                            return {
+                                id: item.deptNo, parent: parentId, text: item.orgNameLocal || item.deptNo,
+                                icon: 'bx bxs-folder', state: { opened: true }
+                            };
+                        });
+
+                        $tree.jstree({
+                            'core': { 'data': treeData, 'themes': { 'name': 'default', 'responsive': true } },
+                            'plugins': ['search', 'types']
+                        });
+
+                        // Search
+                        var to = false;
+                        $('#compose_searchTargetTree').keyup(function () {
+                            if (to) { clearTimeout(to); }
+                            to = setTimeout(function () {
+                                var v = $('#compose_searchTargetTree').val();
+                                $('#compose_targetOrgTree').jstree(true).search(v);
+                            }, 250);
+                        });
+                    }
+
+                    $('#compose_btnConfirmTarget').click(function () {
+                        var selected = $('#compose_targetOrgTree').jstree('get_selected');
+                        if (selected.length === 0) { toastr.warning('Vui lòng chọn phòng ban đến'); return; }
+                        var targetDeptNo = selected[0];
+
+                        var selectedEmps = [];
+                        $('.emp-check:checked').each(function () {
+                            var row = $(this).closest('tr');
+                            var d = employeeTable.row(row).data();
+                            if (d && d.empId) selectedEmps.push(d.empId);
+                        });
+
+                        if (selectedEmps.length === 0) return;
+
+                        var resumeNo = $('#compose_resumeSelect').val();
+
+                        $.ajax({
+                            url: '/org/api/compose/transfer',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({
+                                resumeNo: resumeNo,
+                                targetDeptNo: targetDeptNo,
+                                empIds: selectedEmps
+                            }),
+                            success: function (res) {
+                                toastr.success(res.message);
+                                $('#compose_targetDeptModal').modal('hide');
+
+                                // Refresh Employee List
+                                var currentDept = $('#compose_deptNo').val();
+                                if (currentDept) {
+                                    $.ajax({
+                                        url: '/org/api/compose/employees',
+                                        data: { resumeNo: resumeNo, deptNo: currentDept },
+                                        success: function (emps) {
+                                            employeeTable.clear();
+                                            employeeTable.rows.add(emps);
+                                            employeeTable.draw();
+                                            $('#compose_totalEmployees').text('Total: ' + (emps ? emps.length : 0));
+                                        }
+                                    });
+                                }
+                            },
+                            error: function (e) {
+                                toastr.error('Lỗi: ' + (e.responseJSON ? e.responseJSON.error : e.responseText));
+                            }
+                        });
+                    });
+                });
+            </script>
+        </template>
+    </div>

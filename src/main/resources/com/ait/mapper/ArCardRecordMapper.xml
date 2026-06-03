@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArCardRecordMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        <result property="recordNo"       column="RECORD_NO"/>
+        <result property="cardNo"         column="CARD_NO"/>
+        <result property="personId"       column="PERSON_ID"/>
+        <result property="doorType"       column="DOOR_TYPE"/>
+        <result property="insertBy"       column="INSERT_BY"/>
+        <result property="dataSourceName" column="DATA_SOURCE_NAME"/>
+        <result property="remark"         column="REMARK"/>
+        <result property="arDateStr"      column="AR_DATE_STR"/>
+        <result property="swipeDate"      column="SWIPE_DATE"/>
+        <result property="swipeTime"      column="SWIPE_TIME"/>
+        <result property="activity"       column="ACTIVITY"/>
+        <result property="empId"          column="EMPID"/>
+        <result property="localName"      column="LOCAL_NAME"/>
+        <result property="deptNo"         column="DEPTNO"/>
+        <result property="deptName"       column="DEPT_NAME"/>
+        <result property="postGradeNo"    column="POST_GRADE_NO"/>
+        <result property="postGradeName"  column="POST_GRADE_NAME"/>
+        <result property="shiftNo"        column="SHIFT_NO"/>
+        <result property="shiftName"      column="SHIFT_NAME"/>
+    </resultMap>
+
+    <sql id="baseQuery">
+        SELECT AR.RECORD_NO,
+               AR.CARD_NO,
+               AR.PERSON_ID,
+               AR.DOOR_TYPE,
+               AR.INSERT_BY,
+               CASE AR.INSERT_BY
+                   WHEN 'M' THEN 'Tự động'
+                   WHEN 'A' THEN 'Xin phép'
+                   ELSE 'Thủ công'
+               END AS DATA_SOURCE_NAME,
+               AR.REMARK,
+               AR.AR_DATE_STR,
+               TO_CHAR(AR.R_TIME, 'YYYY/MM/DD')       AS SWIPE_DATE,
+               TO_CHAR(AR.R_TIME, 'YYYY/MM/DD HH24:MI') AS SWIPE_TIME,
+               AR.ACTIVITY,
+               HE.EMPID,
+               HE.LOCAL_NAME,
+               HE.DEPTNO,
+               GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR})           AS DEPT_NAME,
+               HE.POST_GRADE_NO,
+               GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
+               SH.SHIFT_NO,
+               GET_GLOBAL_NAME(SH.SHIFT_NO, #{lang, jdbcType=VARCHAR})       AS SHIFT_NAME
+          FROM AR_MAC_RECORDS_HTSV AR
+         INNER JOIN HR_EMPLOYEE HE ON AR.PERSON_ID = HE.PERSON_ID
+          LEFT JOIN AR_SCHEDULE_HTSV SH
+                 ON SH.PERSON_ID   = AR.PERSON_ID
+                AND SH.AR_DATE_STR = AR.AR_DATE_STR
+         WHERE AR.ACTIVITY = 1
+        <if test="keyword != null and keyword != ''">
+           AND (
+               UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+               OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+           )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+           AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HE.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+           AND TO_DATE(REPLACE(AR.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+           AND TO_DATE(REPLACE(AR.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="shiftNo != null and shiftNo != ''">
+           AND SH.SHIFT_NO = #{shiftNo, jdbcType=VARCHAR}
+        </if>
+           AND EXISTS (
+               SELECT B1.DEPTID
+                 FROM HR_DEPARTMENT B1
+                WHERE B1.DEPTNO = HE.DEPTNO
+                START WITH B1.DEPTNO IN (
+                    SELECT HRD.DEPTID
+                      FROM HR_DEPARTMENT HRD
+                     WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+                )
+               CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+               UNION
+               SELECT AR_SUPERVISOR_INFO.DEPTNO
+                 FROM AR_SUPERVISOR_INFO
+                WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
+                  AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+           )
+    </sql>
+
+    <select id="countList" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        SELECT COUNT(*) FROM (
+            <include refid="baseQuery"/>
+        )
+    </select>
+
+    <select id="selectListPage" resultMap="DtoResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY TO_DATE(REPLACE(AR.AR_DATE_STR, '/', '-'), 'YYYY-MM-DD') DESC,
+                         AR.R_TIME DESC,
+                         HE.DEPTNO,
+                         HE.EMPID
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <resultMap id="DetailResultMap" type="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        <result property="recordNo"      column="RECORD_NO"/>
+        <result property="cardNo"        column="CARD_NO"/>
+        <result property="personId"      column="PERSON_ID"/>
+        <result property="doorType"      column="DOOR_TYPE"/>
+        <result property="insertBy"      column="INSERT_BY"/>
+        <result property="remark"        column="REMARK"/>
+        <result property="arDateStr"     column="AR_DATE_STR"/>
+        <result property="swipeDatetime" column="SWIPE_DATETIME"/>
+        <result property="empId"         column="EMPID"/>
+        <result property="localName"     column="LOCAL_NAME"/>
+    </resultMap>
+
+    <select id="getByRecordNo" resultMap="DetailResultMap">
+        SELECT AR.RECORD_NO,
+               AR.CARD_NO,
+               AR.PERSON_ID,
+               AR.DOOR_TYPE,
+               AR.INSERT_BY,
+               AR.REMARK,
+               AR.AR_DATE_STR,
+               TO_CHAR(AR.R_TIME, 'YYYY/MM/DD HH24:MI') AS SWIPE_DATETIME,
+               HE.EMPID,
+               HE.LOCAL_NAME
+          FROM AR_MAC_RECORDS_HTSV AR
+         INNER JOIN HR_EMPLOYEE HE ON AR.PERSON_ID = HE.PERSON_ID
+         WHERE AR.RECORD_NO = #{recordNo, jdbcType=NUMERIC}
+           AND AR.ACTIVITY  = 1
+    </select>
+
+    <insert id="insertRecord" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        INSERT INTO AR_MAC_RECORDS_HTSV (
+            RECORD_NO,
+            CARD_NO,
+            PERSON_ID,
+            DOOR_TYPE,
+            INSERT_BY,
+            REMARK,
+            AR_DATE_STR,
+            R_TIME,
+            ACTIVITY
+        ) VALUES (
+            AR_RECORDS_SEQ.NEXTVAL,
+            #{cardNo,        jdbcType=VARCHAR},
+            #{personId,      jdbcType=VARCHAR},
+            #{doorType,      jdbcType=VARCHAR},
+            'H',
+            #{remark,        jdbcType=VARCHAR},
+            #{arDateStr,     jdbcType=VARCHAR},
+            TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            1
+        )
+    </insert>
+
+    <update id="updateRecord" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        UPDATE AR_MAC_RECORDS_HTSV
+           SET CARD_NO    = #{cardNo,        jdbcType=VARCHAR},
+               PERSON_ID  = #{personId,      jdbcType=VARCHAR},
+               DOOR_TYPE  = #{doorType,      jdbcType=VARCHAR},
+               INSERT_BY  = 'H',
+               REMARK     = #{remark,        jdbcType=VARCHAR},
+               AR_DATE_STR= #{arDateStr,     jdbcType=VARCHAR},
+               R_TIME     = TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
+         WHERE RECORD_NO  = #{recordNo,      jdbcType=NUMERIC}
+           AND ACTIVITY   = 1
+    </update>
+
+    <update id="deleteByRecordNo">
+        UPDATE AR_MAC_RECORDS_HTSV
+           SET ACTIVITY = 0
+         WHERE RECORD_NO = #{recordNo, jdbcType=NUMERIC}
+    </update>
+
+    <select id="findPersonIdByEmpId" resultType="String">
+        SELECT PERSON_ID
+          FROM HR_EMPLOYEE
+         WHERE EMPID = #{empId, jdbcType=VARCHAR}
+           AND ROWNUM = 1
+    </select>
+
+    <select id="countDuplicate" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        SELECT COUNT(*)
+          FROM AR_MAC_RECORDS_HTSV
+         WHERE CARD_NO   = #{cardNo,        jdbcType=VARCHAR}
+           AND R_TIME    = TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
+           AND DOOR_TYPE = #{doorType,      jdbcType=VARCHAR}
+           AND ACTIVITY  = 1
+    </select>
+
+    <insert id="insertFromDevice" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
+        INSERT INTO AR_MAC_RECORDS_HTSV (
+            RECORD_NO,
+            CARD_NO,
+            PERSON_ID,
+            DOOR_TYPE,
+            INSERT_BY,
+            AR_DATE_STR,
+            R_TIME,
+            ACTIVITY
+        ) VALUES (
+            AR_RECORDS_SEQ.NEXTVAL,
+            #{cardNo,        jdbcType=VARCHAR},
+            #{personId,      jdbcType=VARCHAR},
+            #{doorType,      jdbcType=VARCHAR},
+            'M',
+            #{arDateStr,     jdbcType=VARCHAR},
+            TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI'),
+            1
+        )
+    </insert>
+
+</mapper>

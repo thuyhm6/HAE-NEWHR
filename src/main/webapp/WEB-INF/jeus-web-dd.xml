@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    JEUS Web Deployment Descriptor for HR-11
+    Spring Boot 3.5.5 + JDK 21
+    Target: JEUS 8.5 — server 10.42.200.141
+
+    Lưu ý:
+    - Security, Login: do Spring Security xử lý (@Configuration)
+    - DataSource: do Spring Boot HikariCP xử lý (application.properties)
+    - Session: do Spring Boot xử lý
+    - Chỉ cần cấu hình JEUS-specific tại đây
+-->
+<jeus-web-dd xmlns="http://www.tmaxsoft.com/xml/ns/jeus"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.tmaxsoft.com/xml/ns/jeus
+             http://www.tmaxsoft.com/xml/ns/jeus/jeus-web-dd.xsd"
+             version="8.5">
+
+    <!-- Context Root -->
+    <context-root>/HR-11</context-root>
+
+    <!-- Class Loader: isolation để tránh conflict với JEUS built-in libs -->
+    <class-loader>
+        <load-on-startup>true</load-on-startup>
+    </class-loader>
+
+    <!-- Session Configuration -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <name>JSESSIONID_HR11</name>
+            <path>/HR-11</path>
+            <http-only>true</http-only>
+            <secure>false</secure>
+        </cookie-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+
+    <!-- MIME Type Mappings -->
+    <mime-mapping>
+        <extension>json</extension>
+        <mime-type>application/json;charset=UTF-8</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css;charset=UTF-8</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>js</extension>
+        <mime-type>application/javascript;charset=UTF-8</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>woff2</extension>
+        <mime-type>font/woff2</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>svg</extension>
+        <mime-type>image/svg+xml</mime-type>
+    </mime-mapping>
+
+    <!-- Error Pages -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error/404</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error/500</location>
+    </error-page>
+
+</jeus-web-dd>

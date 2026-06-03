@@ -1,0 +1,409 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="vppo_pageWrapper">
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2">
+                    <div class="row g-2 align-items-start">
+                        <!-- Các ô tìm kiếm: chiếm 8/12 cột -->
+                        <div class="col-8 d-flex flex-column gap-2">
+                            <!-- Hàng 1: Mã nhân viên / Họ tên -->
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="form-label small text-muted mb-0 text-nowrap"
+                                    th:text="#{pa.payObj.empSearch}">Mã NV/Họ tên</label>
+                                <input type="text" class="form-control form-control-sm" id="vppo_empSearch"
+                                    onkeydown="if(event.key==='Enter') vppoSearch()">
+                            </div>
+                            <!-- Hàng 2: Kế hoạch trả lương, Phân biệt, Trạng thái -->
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="form-label small text-muted mb-0 text-nowrap"
+                                    th:text="#{pa.payObj.payScheduleNo}">Kế hoạch trả lương</label>
+                                <select class="form-select form-select-sm" id="vppo_payScheduleSearch">
+                                </select>
+                                <label class="form-label small text-muted mb-0 text-nowrap"
+                                    th:text="#{pa.payObj.includeType}">Phân biệt</label>
+                                <select class="form-select form-select-sm" id="vppo_includeTypeSearch">
+                                    <option value="" th:text="#{pa.payObj.includeType.all}">Tất cả</option>
+                                    <option value="1" th:text="#{pa.payObj.includeType.join}">Tham gia</option>
+                                    <option value="0" th:text="#{pa.payObj.includeType.notJoin}">Không tham gia</option>
+                                </select>
+                                <label class="form-label small text-muted mb-0 text-nowrap"
+                                    th:text="#{pa.payObj.empOffice}">Trạng thái</label>
+                                <select class="form-select form-select-sm" id="vppo_empOfficeSearch"
+                                    data-parent-code="15118" data-default-text="-- Tất cả --"></select>
+                            </div>
+                        </div>
+                        <!-- Các nút chức năng: chiếm 4/12 cột -->
+                        <div class="col-4 d-flex gap-2 align-items-start justify-content-end flex-wrap">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="vppoSearch()">
+                                <i class="bi bi-search"></i>
+                                <span th:text="#{pa.payObj.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="vppoOpenAddModal()">
+                                <i class="bi bi-plus-circle"></i>
+                                <span th:text="#{pa.payObj.addNew}">Thêm mới</span>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="vppoDeleteSelected()">
+                                <i class="bi bi-trash"></i>
+                                <span th:text="#{pa.payObj.delete}">Xóa</span>
+                            </button>
+                            <button type="button" class="btn btn-warning btn-sm" onclick="vppoSaveDirty()">
+                                <i class="bi bi-save"></i>
+                                <span th:text="#{pa.payObj.save}">Lưu</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="vppoExportExcel()">
+                                <i class="bi bi-file-earmark-excel"></i>
+                                <span th:text="#{pa.payObj.exportExcel}">Xuất Excel</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-2">
+                    <div class="table-responsive">
+                        <table id="vppo_table" class="table table-striped table-bordered table-hover table-sm"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;">
+                                        <input type="checkbox" id="vppo_checkAll">
+                                    </th>
+                                    <th class="text-center" style="width:40px;" th:text="#{pa.payObj.no}">No.</th>
+                                    <th th:text="#{pa.payObj.empName}">Họ tên</th>
+                                    <th class="text-center" th:text="#{pa.payObj.empId}">Mã nhân viên</th>
+                                    <th th:text="#{pa.payObj.deptName}">Phòng ban</th>
+                                    <th class="text-center" style="width:165px;" th:text="#{pa.payObj.includeType}">Phân
+                                        biệt</th>
+                                    <th class="text-center" th:text="#{pa.payObj.createdBy}">Người tạo</th>
+                                    <th class="text-center" th:text="#{pa.payObj.createDate}">Thời gian tạo</th>
+                                    <th class="text-center" th:text="#{pa.payObj.updatedBy}">Người thay đổi</th>
+                                    <th class="text-center" th:text="#{pa.payObj.updateDate}">Thời gian thay đổi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#vppo_pageWrapper -->
+    </div><!-- /.row -->
+
+    <!-- ── Modal thêm mới ─────────────────────────────────────────── -->
+    <div class="modal fade" id="vppo_addModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="#{pa.payObj.addTitle}">Thêm mới đối tượng nhận lương</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:30%;">
+                            <col style="width:70%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.payObj.payScheduleNo}">Kế hoạch trả lương</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vppo_payScheduleNo"
+                                        style="max-width:300px;">
+                                        <option value="">-- Chọn --</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3">
+                                    <span th:text="#{pa.payObj.empId}">Mã nhân viên</span>
+                                    <span class="text-danger">*</span>
+                                </th>
+                                <td>
+                                    <div class="input-group input-group-sm" style="max-width:360px;">
+                                        <input type="hidden" id="vppo_empId">
+                                        <input type="text" class="form-control form-control-sm" id="vppo_empName"
+                                            th:placeholder="#{pa.payObj.empSearch.placeholder}"
+                                            onkeydown="if(event.key==='Enter'){event.preventDefault();vppoOpenEmpSearch();}">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="vppoOpenEmpSearch()">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-end pe-3" th:text="#{pa.payObj.includeType}">Phân biệt</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="vppo_includeType"
+                                        style="max-width:200px;">
+                                        <option value="1" th:text="#{pa.payObj.includeType.join}">Tham gia</option>
+                                        <option value="0" th:text="#{pa.payObj.includeType.notJoin}">Không tham gia
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"
+                        th:text="#{common.close}">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="vppoSaveNew()">
+                        <i class="bi bi-save"></i>
+                        <span th:text="#{common.save}">Lưu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /th:fragment="content" -->
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var vppo_table = null;
+        var vppo_dirtyRows = {};
+        var vppo_msgConfirmDelete = /*[[#{pa.payObj.confirmDelete}]]*/ 'Bạn có chắc chắn muốn xóa các bản ghi đã chọn?';
+        var vppo_msgSelectRequired = /*[[#{pa.payObj.selectRequired}]]*/ 'Vui lòng chọn ít nhất một bản ghi!';
+        var vppo_msgValidate = /*[[#{pa.payObj.validateRequired}]]*/ 'Vui lòng nhập đầy đủ thông tin bắt buộc!';
+        var vppo_msgJoin = /*[[#{pa.payObj.includeType.join}]]*/ 'Tham gia';
+        var vppo_msgNotJoin = /*[[#{pa.payObj.includeType.notJoin}]]*/ 'Không tham gia';
+
+        $(document).ready(function () {
+
+            // Load modal select trước (không cần callback)
+            vppoLoadPaySchedule('#vppo_payScheduleNo', false, null);
+            // Load search select, sau khi có dữ liệu mới khởi tạo DataTable
+            // để option đầu tiên được chọn sẵn làm điều kiện tìm kiếm mặc định
+            vppoLoadPaySchedule('#vppo_payScheduleSearch', true, function () {
+                vppoInitTable();
+            });
+
+            function vppoInitTable() {
+                vppo_table = $('#vppo_table').DataTable({
+                    destroy: true,
+                    scrollY: 'calc(100vh - 360px)',
+                    scrollCollapse: true,
+                    paging: true,
+                    searching: false,
+                    lengthChange: true,
+                    pageLength: 20,
+                    lengthMenu: [10, 20, 50, 100],
+                    processing: true,
+                    serverSide: true,
+                    columnDefs: [
+                        { targets: 0, width: '36px', className: 'text-center', orderable: false },
+                        { targets: 1, width: '40px', className: 'text-center', orderable: false },
+                        { targets: [3, 5, 6, 7, 8, 9], className: 'text-center' }
+                    ],
+                    ajax: {
+                        url: '/pa/workManagement/api/payObj',
+                        type: 'GET',
+                        data: function (d) {
+                            d.empSearch = $('#vppo_empSearch').val();
+                            d.payScheduleNo = $('#vppo_payScheduleSearch').val();
+                            d.includeType = $('#vppo_includeTypeSearch').val();
+                            d.empOffice = $('#vppo_empOfficeSearch').val();
+                        }
+                    },
+                    columns: [
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                var key = row.payScheduleNo + '_' + row.empId;
+                                return '<input type="checkbox" class="vppo_rowCheck"'
+                                    + ' data-key="' + key + '"'
+                                    + ' data-pay="' + row.payScheduleNo + '"'
+                                    + ' data-emp="' + row.empId + '">';
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row, meta) {
+                                return meta.settings._iDisplayStart + meta.row + 1;
+                            }
+                        },
+                        { data: 'empName' },
+                        { data: 'empId' },
+                        { data: 'deptName' },
+                        {
+                            data: 'includeType',
+                            render: function (data, type, row) {
+                                var key = row.payScheduleNo + '_' + row.empId;
+                                var sel1 = (data == 1) ? ' selected' : '';
+                                var sel0 = (data == 0) ? ' selected' : '';
+                                return '<select class="form-select form-select-sm vppo_includeTypeSelect"'
+                                    + ' data-key="' + key + '"'
+                                    + ' data-pay="' + row.payScheduleNo + '"'
+                                    + ' data-emp="' + row.empId + '">'
+                                    + '<option value="1"' + sel1 + '>' + vppo_msgJoin + '</option>'
+                                    + '<option value="0"' + sel0 + '>' + vppo_msgNotJoin + '</option>'
+                                    + '</select>';
+                            }
+                        },
+                        { data: 'createdBy' },
+                        { data: 'createDate' },
+                        { data: 'updatedBy' },
+                        { data: 'updateDate' }
+                    ],
+                    drawCallback: function () {
+                        $('#vppo_table').off('change', '.vppo_includeTypeSelect')
+                            .on('change', '.vppo_includeTypeSelect', function () {
+                                var key = $(this).data('key');
+                                var pay = $(this).data('pay');
+                                var emp = $(this).data('emp');
+                                vppo_dirtyRows[key] = {
+                                    payScheduleNo: pay,
+                                    empId: emp,
+                                    includeType: parseInt($(this).val())
+                                };
+                                $(this).closest('tr').addClass('table-warning');
+                            });
+                        $('#vppo_checkAll').off('change').on('change', function () {
+                            $('.vppo_rowCheck').prop('checked', $(this).is(':checked'));
+                        });
+                    }
+                });
+            } // end vppoInitTable
+
+            window.vppoSearch = function () {
+                vppo_dirtyRows = {};
+                vppo_table.ajax.reload();
+            };
+
+            window.vppoOpenAddModal = function () {
+                $('#vppo_empId').val('');
+                $('#vppo_empName').val('');
+                $('#vppo_includeType').val('1');
+                new bootstrap.Modal(document.getElementById('vppo_addModal')).show();
+            };
+
+            window.vppoOpenEmpSearch = function () {
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    var keyword = $('#vppo_empName').val().trim();
+                    EmployeeSearchModal.open(function (employee) {
+                        $('#vppo_empId').val(employee.empId);
+                        $('#vppo_empName').val(employee.empId + ' - ' + employee.localName);
+                    }, keyword);
+                } else {
+                    alert('Component tìm kiếm nhân viên chưa được tải!');
+                }
+            };
+
+            window.vppoSaveNew = function () {
+                var payScheduleNo = $('#vppo_payScheduleNo').val();
+                var empId = $('#vppo_empId').val().trim();
+                if (!payScheduleNo || !empId) {
+                    toastr ? toastr.warning(vppo_msgValidate) : alert(vppo_msgValidate);
+                    return;
+                }
+                $.ajax({
+                    url: '/pa/workManagement/api/payObj/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        payScheduleNo: payScheduleNo,
+                        empId: empId,
+                        includeType: parseInt($('#vppo_includeType').val())
+                    }),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Lưu thành công') : alert(res.message || 'Lưu thành công');
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('vppo_addModal'));
+                        if (modal) modal.hide();
+                        vppo_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vppoSaveDirty = function () {
+                var rows = Object.values(vppo_dirtyRows);
+                if (rows.length === 0) {
+                    toastr ? toastr.info('Không có dữ liệu thay đổi') : alert('Không có dữ liệu thay đổi');
+                    return;
+                }
+                $.ajax({
+                    url: '/pa/workManagement/api/payObj/saveList',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(rows),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Lưu thành công') : alert(res.message || 'Lưu thành công');
+                        vppo_dirtyRows = {};
+                        vppo_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vppoDeleteSelected = function () {
+                var selected = [];
+                $('.vppo_rowCheck:checked').each(function () {
+                    selected.push({
+                        payScheduleNo: $(this).data('pay'),
+                        empId: $(this).data('emp')
+                    });
+                });
+                if (selected.length === 0) {
+                    toastr ? toastr.warning(vppo_msgSelectRequired) : alert(vppo_msgSelectRequired);
+                    return;
+                }
+                if (!confirm(vppo_msgConfirmDelete)) return;
+                $.ajax({
+                    url: '/pa/workManagement/api/payObj/deleteList',
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify(selected),
+                    success: function (res) {
+                        toastr ? toastr.success(res.message || 'Xóa thành công') : alert(res.message || 'Xóa thành công');
+                        vppo_dirtyRows = {};
+                        vppo_table.ajax.reload();
+                    },
+                    error: function (err) {
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : (err.responseText || 'Lỗi không xác định');
+                        toastr ? toastr.error(msg) : alert(msg);
+                    }
+                });
+            };
+
+            window.vppoExportExcel = function () {
+                var params = new URLSearchParams({
+                    empSearch: $('#vppo_empSearch').val(),
+                    payScheduleNo: $('#vppo_payScheduleSearch').val(),
+                    includeType: $('#vppo_includeTypeSearch').val(),
+                    empOffice: $('#vppo_empOfficeSearch').val()
+                });
+                window.location.href = '/pa/workManagement/api/payObj/export?' + params.toString();
+            };
+
+            function vppoLoadPaySchedule(selector, addAll, callback) {
+                $.ajax({
+                    url: '/pa/workManagement/api/paySchedule',
+                    type: 'GET',
+                    success: function (res) {
+                        var $sel = $(selector);
+                        $sel.empty();
+                        $.each(res, function (i, item) {
+                            $sel.append('<option value="' + item.payScheduleNo + '">'
+                                + item.payDate + ' - ' + (item.salaryDistinName || '') + '</option>');
+                        });
+                        if (callback) callback();
+                    }
+                });
+            }
+        });
+    </script>
+</template>

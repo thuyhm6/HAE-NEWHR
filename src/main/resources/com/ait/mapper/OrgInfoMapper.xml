@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.org.orgManage.mapper.OrgInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.org.orgManage.model.OrgInfo">
+        <result column="RESUME_NO" property="resumeNo" jdbcType="VARCHAR" />
+        <result column="DEPTID" property="deptId" jdbcType="VARCHAR" />
+        <result column="CPNY_ID" property="cpnyId" jdbcType="VARCHAR" />
+        <result column="DATE_CREATED" property="dateCreated" jdbcType="DATE" />
+        <result column="DATE_ENDED" property="dateEnded" jdbcType="DATE" />
+        <result column="DEPT_LEVEL" property="deptLevel" jdbcType="DECIMAL" />
+        <result column="MANAGER_EMP_ID" property="managerEmpId" jdbcType="VARCHAR" />
+        <result column="DEPTNO" property="deptNo" jdbcType="VARCHAR" />
+        <result column="PARENT_DEPT_NO" property="parentDeptNo" jdbcType="VARCHAR" />
+        <result column="WORK_AREA" property="workArea" jdbcType="VARCHAR" />
+        <result column="DEPT_TYPE" property="deptType" jdbcType="VARCHAR" />
+        <result column="ORG_NAME_ENG" property="orgNameEng" jdbcType="VARCHAR" />
+        <result column="ORG_NAME_LOCAL" property="orgNameLocal" jdbcType="VARCHAR" />
+        <result column="ORG_LEVEL" property="orgLevel" jdbcType="DECIMAL" />
+        <result column="COST_CENTER" property="costCenter" jdbcType="VARCHAR" />
+        <result column="IS_DEPT" property="isDept" jdbcType="CHAR" />
+        <result column="IS_PART_TIME" property="isPartTime" jdbcType="CHAR" />
+        <result column="PRODUCT_TYPE" property="productType" jdbcType="VARCHAR" />
+        <result column="USE_YN" property="useYn" jdbcType="VARCHAR" />
+        <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="CREATED_BY" property="createdBy" jdbcType="VARCHAR" />
+        <result column="CREATED_IP" property="createdIp" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR" />
+        <result column="UPDATED_IP" property="updatedIp" jdbcType="VARCHAR" />
+        <result column="ORDERNO" property="orderNo" jdbcType="DECIMAL" />
+        <result column="ACTIVITY" property="activity" jdbcType="DECIMAL" />
+        <result column="CHANGE_TYPE" property="changeType" jdbcType="VARCHAR" />
+        <result column="FEE_STANDARD" property="feeStandard" jdbcType="VARCHAR" />
+        <result column="DEPT_DISTINGUISH_STANDARD" property="deptDistinguishStandard" jdbcType="VARCHAR" />
+        <result column="ORG_NAME_KO" property="orgNameKo" jdbcType="VARCHAR" />
+        <result column="ORG_NAME_VI" property="orgNameVi" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        RESUME_NO, DEPTID, CPNY_ID, DATE_CREATED, DATE_ENDED, DEPT_LEVEL, MANAGER_EMP_ID, 
+        DEPTNO, PARENT_DEPT_NO, WORK_AREA, DEPT_TYPE, ORG_NAME_ENG, ORG_NAME_LOCAL, 
+        ORG_LEVEL, COST_CENTER, IS_DEPT, IS_PART_TIME, PRODUCT_TYPE, USE_YN, CREATE_DATE, 
+        CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP, ORDERNO, ACTIVITY, 
+        CHANGE_TYPE, FEE_STANDARD, DEPT_DISTINGUISH_STANDARD, ORG_NAME_KO, ORG_NAME_VI
+    </sql>
+
+    <select id="getOrgList" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM ORG_INFO
+        WHERE RESUME_NO = #{resumeNo}
+        ORDER BY ORDERNO, DEPTNO
+    </select>
+    
+    <select id="getOrgDetail" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List" />
+        FROM ORG_INFO
+        WHERE RESUME_NO = #{resumeNo} AND DEPTNO = #{deptNo}
+    </select>
+
+    <insert id="insertOrgInfo" parameterType="com.ait.org.orgManage.model.OrgInfo">
+        INSERT INTO ORG_INFO (
+            RESUME_NO, DEPTNO, PARENT_DEPT_NO, ORG_NAME_ENG, ORG_NAME_LOCAL,
+            DEPT_TYPE, DEPT_LEVEL, MANAGER_EMP_ID, DATE_CREATED, IS_PART_TIME,
+            COST_CENTER, CREATE_DATE, CREATED_BY
+        ) VALUES (
+            #{resumeNo}, #{deptNo}, #{parentDeptNo}, #{orgNameEng}, #{orgNameLocal},
+            #{deptType}, #{deptLevel}, #{managerEmpId}, #{dateCreated, jdbcType=DATE}, #{isPartTime},
+            #{costCenter}, SYSDATE, #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateOrgInfo" parameterType="com.ait.org.orgManage.model.OrgInfo">
+        UPDATE ORG_INFO
+        SET 
+            PARENT_DEPT_NO = #{parentDeptNo},
+            ORG_NAME_ENG = #{orgNameEng},
+            ORG_NAME_LOCAL = #{orgNameLocal},
+            DEPT_TYPE = #{deptType},
+            DEPT_LEVEL = #{deptLevel},
+            MANAGER_EMP_ID = #{managerEmpId},
+            DATE_CREATED = #{dateCreated, jdbcType=DATE},
+            IS_PART_TIME = #{isPartTime},
+            COST_CENTER = #{costCenter},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        WHERE RESUME_NO = #{resumeNo} AND DEPTNO = #{deptNo}
+    </update>
+
+    <delete id="deleteOrgInfo">
+        DELETE FROM ORG_INFO
+        WHERE RESUME_NO = #{resumeNo} AND DEPTNO = #{deptNo}
+    </delete>
+
+    <select id="getDeptManagerCheckList" resultType="map">
+        SELECT 
+            T1.DEPTNO, T1.ORG_NAME_LOCAL, T1.MANAGER_EMP_ID, T1.IS_PART_TIME, T1.DEPT_LEVEL,
+            T2.POSITION_NO, GET_GLOBAL_NAME(T2.POSITION_NO, #{lang, jdbcType=VARCHAR}) as POSITION_NAME,
+            T2.POST_GRADE_NO, GET_GLOBAL_NAME(T2.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) as POST_GRADE_NAME,
+            T2.LOCAL_NAME as MANAGER_NAME,
+            CASE WHEN T1.MANAGER_EMP_ID IS NULL THEN 1 ELSE 0 END as VACANCY
+        FROM ORG_INFO T1
+        LEFT JOIN ORG_EMPLOYEE T2 
+            ON T1.RESUME_NO = T2.RESUME_NO 
+            AND T1.MANAGER_EMP_ID = T2.PERSON_ID
+        WHERE T1.RESUME_NO = #{resumeNo}
+        ORDER BY T1.ORDERNO, T1.DEPTNO
+    </select>
+
+    <update id="updateOrgManager">
+        UPDATE ORG_INFO
+        SET 
+            MANAGER_EMP_ID = #{managerEmpId, jdbcType=VARCHAR},
+            IS_PART_TIME = #{isPartTime, jdbcType=CHAR},
+            UPDATED_BY = #{updatedBy, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE
+        WHERE RESUME_NO = #{resumeNo} AND DEPTNO = #{deptNo}
+    </update>
+
+</mapper>

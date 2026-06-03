@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArItemParamMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArItemParam">
+        <id column="AR_PARAM_NO" property="arParamNo" />
+        <result column="GROUP_NO" property="groupNo" />
+        <result column="UNIT_VALUE" property="unitValue" />
+        <result column="MIN_VALUE" property="minValue" />
+        <result column="MAX_VALUE" property="maxValue" />
+        <result column="DEPEND_ITEM" property="dependItem" />
+        <result column="REPLACE_ITEM" property="replaceItem" />
+        <result column="CARD_FLAG" property="cardFlag" />
+        <result column="CARD_FROM_FLAG" property="cardFromFlag" />
+        <result column="CARD_FROM_OFFSET" property="cardFromOffset" />
+        <result column="CARD_FROM_RELATION" property="cardFromRelation" />
+        <result column="CARD_TO_FLAG" property="cardToFlag" />
+        <result column="CARD_TO_OFFSET" property="cardToOffset" />
+        <result column="CARD_TO_RELATION" property="cardToRelation" />
+        <result column="APPLY_FLAG" property="applyFlag" />
+        <result column="APPLY_TYPE" property="applyType" />
+        <result column="APPLY_FULLDAY_VALUE" property="applyFulldayValue" />
+        <result column="APPLY_CARD_PRIORITY" property="applyCardPriority" />
+        <result column="DATE_TYPE" property="dateType" />
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="ITEM_NO" property="itemNo" />
+        <result column="UNIT" property="unit" />
+        <result column="DETAIL_CONTENT" property="detailContent" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="ACTIVITY" property="activity" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArItemParamDto" extends="BaseResultMap">
+        <result column="COMPANY_NAME" property="companyName" />
+        <result column="ITEM_NAME_VI" property="itemNameVi" />
+        <result column="ITEM_NAME_EN" property="itemNameEn" />
+        <result column="ITEM_NAME_ZH" property="itemNameZh" />
+        <result column="ITEM_NAME_KO" property="itemNameKo" />
+        <result column="ITEM_NAME" property="itemName" />
+    </resultMap>
+
+    <select id="getNextParamNoSeq" resultType="String">
+        SELECT AR_ITEM_PARAM_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT a.*,
+               c.CPNY_LOCATION AS COMPANY_NAME,
+               gvi.CONTENT AS ITEM_NAME_VI,
+               gen.CONTENT AS ITEM_NAME_EN,
+               gzh.CONTENT AS ITEM_NAME_ZH,
+               gko.CONTENT AS ITEM_NAME_KO
+        FROM AR_ITEM_PARAM a
+        LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
+        LEFT JOIN AR_ITEM ai ON a.ITEM_NO = ai.ITEM_NO
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            <if test="itemNo != null and itemNo != ''">
+                AND a.ITEM_NO = #{itemNo}
+            </if>
+        ORDER BY a.ORDERNO, a.AR_PARAM_NO
+    </select>
+
+    <select id="selectArItemOptions" resultMap="DtoResultMap">
+        SELECT DISTINCT
+            P.ITEM_NO,
+            GET_GLOBAL_NAME(P.ITEM_NO, #{lang, jdbcType=VARCHAR}) AS ITEM_NAME
+        FROM AR_ITEM_PARAM P
+        INNER JOIN AR_ITEM I ON P.ITEM_NO = I.ITEM_NO
+        WHERE P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <choose>
+            <when test="type != null and type == 'overtime'">
+                AND I.ITEM_GROUP_CODE = '1433'
+            </when>
+            <otherwise>
+                AND I.ITEM_GROUP_CODE &lt;&gt; '1433'
+            </otherwise>
+        </choose>
+        ORDER BY P.ITEM_NO
+    </select>
+
+    <select id="selectByParamNo" resultMap="BaseResultMap">
+        SELECT *
+        FROM AR_ITEM_PARAM
+        WHERE AR_PARAM_NO = #{arParamNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArItemParam">
+        INSERT INTO AR_ITEM_PARAM (
+            AR_PARAM_NO, 
+            GROUP_NO, 
+            UNIT_VALUE, 
+            MIN_VALUE, 
+            MAX_VALUE, 
+            DEPEND_ITEM, 
+            REPLACE_ITEM,
+            CARD_FLAG, 
+            CARD_FROM_FLAG, 
+            CARD_FROM_OFFSET, 
+            CARD_FROM_RELATION,
+            CARD_TO_FLAG, 
+            CARD_TO_OFFSET, 
+            CARD_TO_RELATION,
+            APPLY_FLAG, 
+            APPLY_TYPE, 
+            APPLY_FULLDAY_VALUE, 
+            APPLY_CARD_PRIORITY, 
+            DATE_TYPE,
+            CPNY_ID, 
+            ITEM_NO, 
+            UNIT, 
+            DETAIL_CONTENT,
+            CREATE_DATE, 
+            CREATED_BY, 
+            UPDATE_DATE, 
+            UPDATED_BY, 
+            ORDERNO, 
+            ACTIVITY
+        ) VALUES (
+            #{arParamNo},
+            #{groupNo, jdbcType=VARCHAR},
+            #{unitValue, jdbcType=NUMERIC},
+            #{minValue, jdbcType=NUMERIC},
+            #{maxValue, jdbcType=NUMERIC},
+            #{dependItem, jdbcType=VARCHAR},
+            #{replaceItem, jdbcType=VARCHAR},
+            #{cardFlag, jdbcType=NUMERIC},
+            #{cardFromFlag, jdbcType=NUMERIC},
+            #{cardFromOffset, jdbcType=NUMERIC},
+            #{cardFromRelation, jdbcType=VARCHAR},
+            #{cardToFlag, jdbcType=NUMERIC},
+            #{cardToOffset, jdbcType=NUMERIC},
+            #{cardToRelation, jdbcType=VARCHAR},
+            #{applyFlag, jdbcType=NUMERIC},
+            #{applyType, jdbcType=VARCHAR},
+            #{applyFulldayValue, jdbcType=NUMERIC},
+            #{applyCardPriority, jdbcType=NUMERIC},
+            #{dateType, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            #{itemNo, jdbcType=VARCHAR},
+            #{unit, jdbcType=VARCHAR},
+            #{detailContent, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{orderno, jdbcType=NUMERIC},
+            #{activity, jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArItemParam">
+        UPDATE AR_ITEM_PARAM
+        <set>
+            <if test="groupNo != null">GROUP_NO = #{groupNo, jdbcType=VARCHAR},</if>
+            <if test="unitValue != null">UNIT_VALUE = #{unitValue, jdbcType=NUMERIC},</if>
+            <if test="minValue != null">MIN_VALUE = #{minValue, jdbcType=NUMERIC},</if>
+            <if test="maxValue != null">MAX_VALUE = #{maxValue, jdbcType=NUMERIC},</if>
+            <if test="dependItem != null">DEPEND_ITEM = #{dependItem, jdbcType=VARCHAR},</if>
+            <if test="replaceItem != null">REPLACE_ITEM = #{replaceItem, jdbcType=VARCHAR},</if>
+            <if test="cardFlag != null">CARD_FLAG = #{cardFlag, jdbcType=NUMERIC},</if>
+            <if test="cardFromFlag != null">CARD_FROM_FLAG = #{cardFromFlag, jdbcType=NUMERIC},</if>
+            <if test="cardFromOffset != null">CARD_FROM_OFFSET = #{cardFromOffset, jdbcType=NUMERIC},</if>
+            <if test="cardFromRelation != null">CARD_FROM_RELATION = #{cardFromRelation, jdbcType=VARCHAR},</if>
+            <if test="cardToFlag != null">CARD_TO_FLAG = #{cardToFlag, jdbcType=NUMERIC},</if>
+            <if test="cardToOffset != null">CARD_TO_OFFSET = #{cardToOffset, jdbcType=NUMERIC},</if>
+            <if test="cardToRelation != null">CARD_TO_RELATION = #{cardToRelation, jdbcType=VARCHAR},</if>
+            <if test="applyFlag != null">APPLY_FLAG = #{applyFlag, jdbcType=NUMERIC},</if>
+            <if test="applyType != null">APPLY_TYPE = #{applyType, jdbcType=VARCHAR},</if>
+            <if test="applyFulldayValue != null">APPLY_FULLDAY_VALUE = #{applyFulldayValue, jdbcType=NUMERIC},</if>
+            <if test="applyCardPriority != null">APPLY_CARD_PRIORITY = #{applyCardPriority, jdbcType=NUMERIC},</if>
+            <if test="dateType != null">DATE_TYPE = #{dateType, jdbcType=VARCHAR},</if>
+            <if test="cpnyId != null">CPNY_ID = #{cpnyId, jdbcType=VARCHAR},</if>
+            <if test="itemNo != null">ITEM_NO = #{itemNo, jdbcType=VARCHAR},</if>
+            <if test="unit != null">UNIT = #{unit, jdbcType=VARCHAR},</if>
+            <if test="detailContent != null">DETAIL_CONTENT = #{detailContent, jdbcType=VARCHAR},</if>
+            <if test="activity != null">ACTIVITY = #{activity, jdbcType=NUMERIC},</if>
+            <if test="orderno != null">ORDERNO = #{orderno, jdbcType=NUMERIC},</if>
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+        </set>
+        WHERE AR_PARAM_NO = #{arParamNo}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM AR_ITEM_PARAM WHERE AR_PARAM_NO = #{arParamNo}
+    </delete>
+
+</mapper>

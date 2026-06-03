@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArSupervisorMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArSupervisor">
+        <id column="PERSON_ID" property="personId" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="MODIFY_YN" property="modifyYn" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="UPDATED_IP" property="updatedIp" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArSupervisorDto" extends="BaseResultMap">
+        <result column="EMP_NAME" property="empName" />
+        <result column="EMP_ID" property="empId" />
+        <result column="DEPT_NAME" property="deptName" />
+    </resultMap>
+
+    <!-- 1. CÁC HÀM CHO BẢNG AR_SUPERVISOR -->
+    <select id="getAllSupervisors" resultMap="DtoResultMap">
+        SELECT a.PERSON_ID, a.CREATE_DATE, a.ACTIVITY, a.ORDERNO, a.MODIFY_YN,
+               he.EMPID as EMP_ID,
+               he.LOCAL_NAME as EMP_NAME,
+               hd.ORG_NAME_LOCAL as DEPT_NAME
+        FROM AR_SUPERVISOR a
+        LEFT JOIN HR_EMPLOYEE he ON a.PERSON_ID = he.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT hd ON he.DEPTNO = hd.DEPTNO
+        WHERE a.ACTIVITY = 1
+        ORDER BY a.ORDERNO DESC, a.CREATE_DATE DESC
+    </select>
+
+    <select id="selectSupervisorByPersonId" resultMap="BaseResultMap">
+        SELECT * FROM AR_SUPERVISOR WHERE PERSON_ID = #{personId}
+    </select>
+
+    <insert id="insertSupervisor" parameterType="com.ait.ar.attendanceSettings.model.ArSupervisor">
+        INSERT INTO AR_SUPERVISOR (
+            PERSON_ID, ACTIVITY, ORDERNO, MODIFY_YN,
+            CREATE_DATE, CREATED_BY, CREATED_IP
+        ) VALUES (
+            #{personId}, #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC}, #{modifyYn, jdbcType=NUMERIC},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateSupervisor" parameterType="com.ait.ar.attendanceSettings.model.ArSupervisor">
+        UPDATE AR_SUPERVISOR
+        SET ACTIVITY = #{activity, jdbcType=NUMERIC},
+            ORDERNO = #{orderno, jdbcType=NUMERIC},
+            MODIFY_YN = #{modifyYn, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE PERSON_ID = #{personId}
+    </update>
+
+    <delete id="deleteSupervisor" parameterType="java.lang.String">
+        DELETE FROM AR_SUPERVISOR WHERE PERSON_ID = #{personId}
+    </delete>
+
+    <!-- 2. HÀM LAYOUT CHO CÂY PHÒNG BAN BÊN PHẢI -->
+    <select id="getDepartmentTree" resultType="java.util.Map">
+        SELECT DEPTNO as "id", 
+               PARENT_DEPT_NO as "parent", 
+               ORG_NAME_LOCAL as "text"
+        FROM HR_DEPARTMENT
+        WHERE ACTIVITY = 1
+        ORDER BY ORDERNO ASC
+    </select>
+
+    <!-- 3. CÁC HÀM CHO BẢNG AR_SUPERVISOR_INFO -->
+    <select id="getDeptListByPersonId" resultType="java.lang.String">
+        SELECT DEPTNO 
+        FROM AR_SUPERVISOR_INFO 
+        WHERE PERSON_ID = #{personId} AND ACTIVITY = 1
+    </select>
+
+    <select id="getNextSupervisorNoSeq" resultType="Long">
+        SELECT AR_SUPERVISOR_NO_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertSupervisorInfo" parameterType="com.ait.ar.attendanceSettings.model.ArSupervisorInfo">
+        INSERT INTO AR_SUPERVISOR_INFO (
+            AR_SUPERVISOR_NO, PERSON_ID, DEPTNO, ACTIVITY, ORDERNO,
+            CREATE_DATE, CREATED_BY, CREATED_IP
+        ) VALUES (
+            #{arSupervisorNo, jdbcType=NUMERIC}, #{personId}, #{deptno}, #{activity, jdbcType=NUMERIC}, #{orderno, jdbcType=NUMERIC},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteSupervisorInfoByPersonId" parameterType="java.lang.String">
+        DELETE FROM AR_SUPERVISOR_INFO WHERE PERSON_ID = #{personId}
+    </delete>
+
+    <select id="getAuthorizedDepartments" resultType="map">
+        SELECT 
+            d.DEPTNO as "id",
+            d.ORG_NAME_LOCAL as "text",
+            d.PARENT_DEPT_NO as "parent"
+        FROM HR_DEPARTMENT d
+        INNER JOIN AR_SUPERVISOR_INFO si ON d.DEPTNO = si.DEPTNO
+        WHERE d.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND si.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND d.ACTIVITY = 1
+        ORDER BY d.DEPT_LEVEL ASC, d.DEPTNO ASC
+    </select>
+</mapper>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArDepartmentManageMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArDepartmentManageDto">
+        <result column="MANAGE_NO" property="manageNo" jdbcType="NUMERIC" />
+        <result column="CPNY_ID" property="cpnyId" jdbcType="VARCHAR" />
+        <result column="DEPTNO" property="deptNo" jdbcType="VARCHAR" />
+        <result column="DISP_DEPT_NAME" property="dispDeptName" jdbcType="VARCHAR" />
+        <result column="PARENT_DEPT_NO" property="parentDeptNo" jdbcType="VARCHAR" />
+        <result column="LOCK_DATE" property="lockDate" jdbcType="VARCHAR" />
+        <result column="DEPT_LEVEL" property="deptLevel" jdbcType="NUMERIC" />
+        <result column="LOCK_ATTEN_FLAG" property="lockAttenFlag" jdbcType="VARCHAR" />
+        <result column="LOCK_ATTEN_NIGHT_FLAG" property="lockAttenNightFlag" jdbcType="VARCHAR" />
+        <result column="LOCK_OT_FLAG" property="lockOtFlag" jdbcType="VARCHAR" />
+        <result column="LOCK_OT_NIGHT_FLAG" property="lockOtNightFlag" jdbcType="VARCHAR" />
+        <result column="LOCK_ATTEN_EX_FLAG" property="lockAttenExFlag" jdbcType="VARCHAR" />
+        <result column="LOCK_ATTEN_EX_NIGHT_FLAG" property="lockAttenExNightFlag" jdbcType="VARCHAR" />
+        <result column="LOCK_ATTEN_ANNUAL_FLAG" property="lockAttenAnnualFlag" jdbcType="VARCHAR" />
+        <result column="LOCK_ATTEN_ANNUAL_NIGHT_FLAG" property="lockAttenAnnualNightFlag" jdbcType="VARCHAR" />
+        <result column="UPDATED_BY" property="updatedBy" jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE" property="updateDate" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <select id="getDepartmentManageList" resultMap="DtoResultMap">
+        SELECT
+            d.DEPTNO,
+            d.ORG_NAME_LOCAL AS DISP_DEPT_NAME,
+            d.PARENT_DEPT_NO,
+            d.DEPT_LEVEL,
+            m.MANAGE_NO,
+            #{lockDate} AS LOCK_DATE,
+            NVL(m.LOCK_ATTEN_FLAG, '0') AS LOCK_ATTEN_FLAG,
+            NVL(m.LOCK_ATTEN_NIGHT_FLAG, '0') AS LOCK_ATTEN_NIGHT_FLAG,
+            NVL(m.LOCK_OT_FLAG, '0') AS LOCK_OT_FLAG,
+            NVL(m.LOCK_OT_NIGHT_FLAG, '0') AS LOCK_OT_NIGHT_FLAG,
+            NVL(m.LOCK_ATTEN_EX_FLAG, '0') AS LOCK_ATTEN_EX_FLAG,
+            NVL(m.LOCK_ATTEN_EX_NIGHT_FLAG, '0') AS LOCK_ATTEN_EX_NIGHT_FLAG,
+            NVL(m.LOCK_ATTEN_ANNUAL_FLAG, '0') AS LOCK_ATTEN_ANNUAL_FLAG,
+            NVL(m.LOCK_ATTEN_ANNUAL_NIGHT_FLAG, '0') AS LOCK_ATTEN_ANNUAL_NIGHT_FLAG,
+            m.UPDATED_BY,
+            m.UPDATE_DATE
+        FROM HR_DEPARTMENT d
+        LEFT JOIN AR_DEPARTMENT_MANAGE m
+            ON d.DEPTNO = m.DEPT_NO
+           AND m.LOCK_DATE = #{lockDate}
+           AND m.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        WHERE d.ACTIVITY = 1 
+          AND d.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="deptNos != null and deptNos.size() > 0">
+            AND d.DEPTNO IN 
+            <foreach collection="deptNos" item="deptId" open="(" separator="," close=")">
+                #{deptId}
+            </foreach>
+        </if>
+        ORDER BY d.DEPT_LEVEL ASC, d.DEPTNO ASC
+    </select>
+
+    <select id="checkExists" resultType="int">
+        SELECT COUNT(1)
+        FROM AR_DEPARTMENT_MANAGE
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND DEPT_NO = #{deptNo}
+          AND LOCK_DATE = #{lockDate}
+    </select>
+
+    <insert id="insertDeptManage" parameterType="com.ait.ar.attendanceSettings.model.ArDepartmentManage">
+        INSERT INTO AR_DEPARTMENT_MANAGE (
+            MANAGE_NO,
+            CPNY_ID,
+            DEPT_NO,
+            LOCK_DATE,
+            LOCK_ATTEN_FLAG,
+            LOCK_ATTEN_NIGHT_FLAG,
+            LOCK_OT_FLAG,
+            LOCK_OT_NIGHT_FLAG,
+            LOCK_ATTEN_EX_FLAG,
+            LOCK_ATTEN_EX_NIGHT_FLAG,
+            LOCK_ATTEN_ANNUAL_FLAG,
+            LOCK_ATTEN_ANNUAL_NIGHT_FLAG,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            ACTIVITY,
+            ORDERNO,
+            AFFIRM_FLAG
+        ) VALUES (
+            AR_DEPARTMENT_MANAGE_SEQ.NEXTVAL,
+            #{cpnyId, jdbcType=VARCHAR},
+            #{deptNo},
+            #{lockDate},
+            #{lockAttenFlag, jdbcType=VARCHAR},
+            #{lockAttenNightFlag, jdbcType=VARCHAR},
+            #{lockOtFlag, jdbcType=VARCHAR},
+            #{lockOtNightFlag, jdbcType=VARCHAR},
+            #{lockAttenExFlag, jdbcType=VARCHAR},
+            #{lockAttenExNightFlag, jdbcType=VARCHAR},
+            #{lockAttenAnnualFlag, jdbcType=VARCHAR},
+            #{lockAttenAnnualNightFlag, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            1,
+            0,
+            '0'
+        )
+    </insert>
+
+    <update id="updateDeptManage" parameterType="com.ait.ar.attendanceSettings.model.ArDepartmentManage">
+        UPDATE AR_DEPARTMENT_MANAGE
+        SET
+            LOCK_ATTEN_FLAG = #{lockAttenFlag, jdbcType=VARCHAR},
+            LOCK_ATTEN_NIGHT_FLAG = #{lockAttenNightFlag, jdbcType=VARCHAR},
+            LOCK_OT_FLAG = #{lockOtFlag, jdbcType=VARCHAR},
+            LOCK_OT_NIGHT_FLAG = #{lockOtNightFlag, jdbcType=VARCHAR},
+            LOCK_ATTEN_EX_FLAG = #{lockAttenExFlag, jdbcType=VARCHAR},
+            LOCK_ATTEN_EX_NIGHT_FLAG = #{lockAttenExNightFlag, jdbcType=VARCHAR},
+            LOCK_ATTEN_ANNUAL_FLAG = #{lockAttenAnnualFlag, jdbcType=VARCHAR},
+            LOCK_ATTEN_ANNUAL_NIGHT_FLAG = #{lockAttenAnnualNightFlag, jdbcType=VARCHAR},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND DEPT_NO = #{deptNo}
+          AND LOCK_DATE = #{lockDate}
+    </update>
+
+</mapper>

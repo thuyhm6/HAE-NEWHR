@@ -1,0 +1,551 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/master :: master}">
+
+<head>
+    <title th:text="${title}">Dashboard</title>
+</head>
+
+<body>
+    <div th:fragment="content">
+        <!-- Demo Tab System -->
+
+
+        <!-- Start here.... -->
+        <div class="row">
+            <div class="col-xxl-4">
+                <div class="d-flex justify-content-end align-items-center mb-2 mt-2 gap-2">
+                    <input type="text" id="db_fromDate"
+                           class="form-control form-control-sm js-daterangepicker"
+                           data-drp-format="DD/MM/YYYY"
+                           data-drp-trigger-change="true"
+                           autocomplete="off"
+                           style="width:120px;">
+                    <label for="db_toDate"class="col-form-label col-form-label-sm text-muted mb-0"> ~ </label>
+                    <input type="text" id="db_toDate"
+                           class="form-control form-control-sm js-daterangepicker"
+                           data-drp-format="DD/MM/YYYY"
+                           data-drp-trigger-change="true"
+                           autocomplete="off"
+                           style="width:120px;">
+                </div>
+                <table class="table table-hover table-nowrap table-centered m-0">
+                    <thead class="bg-light bg-opacity-50">
+                        <tr>
+                            <th class="text-muted ps-3" style="width: 60%" th:text="#{common.name}">Tên</th>
+                            <th class="text-muted" style="width: 20%" th:text="#{dashboard.col.quantity}">Số lượng</th>
+                            <th class="text-muted" style="width: 20%" th:text="#{common.status}">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="ps-3">
+                                <a href="/ess/infoApplyAttendance/viewApplyAttendanceInfoList" class="text-muted"
+                                    data-tab="/ess/infoApplyAttendance/viewApplyAttendanceInfoList"
+                                    th:attr="data-title=#{dashboard.leave.title}"
+                                    th:text="#{dashboard.leave.detail}">Đơn nghỉ phép tháng này</a>
+                            </td>
+                            <td id="db_leaveCount">-</td>
+                            <td id="db_leaveStatus"></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">
+                                <a href="/ess/infoApply/viewPOtApplyInfoList" class="text-muted"
+                                    data-tab="/ess/infoApply/viewPOtApplyInfoList"
+                                    th:attr="data-title=#{dashboard.ot.title}"
+                                    th:text="#{dashboard.ot.detail}">Đơn tăng ca tháng này</a>
+                            </td>
+                            <td id="db_otCount">-</td>
+                            <td id="db_otStatus"></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-3">
+                                <a href="/ess/infoApply/viewShowCwaAbnormalApply" class="text-muted"
+                                    data-tab="/ess/infoApply/viewShowCwaAbnormalApply"
+                                    th:attr="data-title=#{dashboard.abnormal.title}"
+                                    th:text="#{dashboard.abnormal.detail}">Nghỉ bất thường tháng này</a>
+                            </td>
+                            <td id="db_abnormalCount">-</td>
+                            <td id="db_abnormalStatus"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!-- end col -->
+
+            <div class="col-xxl-8">
+                <div class="card h-100 mb-0">
+                    <div class="card-header py-2 d-flex align-items-center gap-2">
+                        <h6 class="card-title flex-grow-1 mb-0" th:text="#{dashboard.chart.title}">Biểu đồ chấm công &amp; Tăng ca</h6>
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="db_attendanceOtChart"></div>
+                    </div>
+                </div>
+            </div> <!-- end col -->
+        </div> <!-- end row -->
+
+        <!-- Banner image -->
+        <div class="row mt-3">
+            <div class="col-12 text-center">
+                <img src="/assets/images/Cameras_BannerPC.png" alt="Banner"
+                     class="img-fluid rounded"
+                     style="max-width: 80%; box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);">
+            </div>
+        </div>
+
+        <!-- Modal bắt buộc đổi mật khẩu -->
+        <div th:if="${session.requirePasswordChange}" class="modal fade" id="forceChangePasswordModal"
+            data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">
+                            <i class="bx bx-lock-alt me-2"></i><span th:text="#{fcp.title}">Yêu cầu đổi mật khẩu</span>
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning mb-3">
+                            <i class="bx bx-info-circle me-1"></i>
+                            <span th:utext="#{fcp.alert.message}">Tài khoản của bạn đang sử dụng mật khẩu <strong>chưa được mã hóa</strong> từ hệ thống cũ. Vì lý do bảo mật, bạn <strong>bắt buộc phải đổi mật khẩu</strong> trước khi tiếp tục sử dụng hệ thống.</span>
+                        </div>
+                        <div class="fcp_alertBox" style="display:none;"></div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold"><span th:text="#{pwd.newPassword}">Mật khẩu mới</span> <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control fcp_newPassword"
+                                    th:placeholder="#{fcp.newPassword.placeholder}" placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="fcpToggle(this, 'fcp_newPassword')">
+                                    <i class="bx bx-hide"></i>
+                                </button>
+                            </div>
+                            <div class="form-text" th:text="#{fcp.requirements}">Ít nhất 8 ký tự, gồm: chữ hoa, chữ thường, số và ký tự đặc biệt.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold"><span th:text="#{pwd.confirmPassword}">Xác nhận mật khẩu mới</span> <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="password" class="form-control fcp_confirmPassword"
+                                    th:placeholder="#{pwd.placeholder.confirmPassword}" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="fcpToggle(this, 'fcp_confirmPassword')">
+                                    <i class="bx bx-hide"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <a href="/logout" class="btn btn-outline-secondary">
+                            <i class="bx bx-log-out me-1"></i><span th:text="#{home.nav.logout}">Đăng xuất</span>
+                        </a>
+                        <button type="button" class="btn btn-primary" onclick="fcpSubmit(this)">
+                            <i class="bx bx-save me-1"></i><span th:text="#{fcp.submit}">Đổi mật khẩu</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline Script: Thực thi ngay khi parse để tránh innerTab.js clone HTML -->
+        <script th:if="${session.requirePasswordChange}" th:inline="javascript">
+            var _fcp_i18n = {
+                emptyFields : /*[[#{fcp.js.emptyFields}]]*/ 'Vui lòng nhập đủ mật khẩu mới và xác nhận.',
+                minLength   : /*[[#{fcp.js.minLength}]]*/ 'Mật khẩu phải có ít nhất 8 ký tự.',
+                noUppercase : /*[[#{fcp.js.noUppercase}]]*/ 'Mật khẩu phải chứa ít nhất 1 chữ hoa (A-Z).',
+                noLowercase : /*[[#{fcp.js.noLowercase}]]*/ 'Mật khẩu phải chứa ít nhất 1 chữ thường (a-z).',
+                noDigit     : /*[[#{fcp.js.noDigit}]]*/ 'Mật khẩu phải chứa ít nhất 1 chữ số (0-9).',
+                noSpecial   : /*[[#{fcp.js.noSpecial}]]*/ 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%...).',
+                notMatch    : /*[[#{fcp.js.notMatch}]]*/ 'Mật khẩu xác nhận không khớp. Vui lòng nhập lại.',
+                processing  : /*[[#{common.processing}]]*/ 'Đang thực hiện...',
+                submit      : /*[[#{fcp.submit}]]*/ 'Đổi mật khẩu',
+                success     : /*[[#{fcp.js.success}]]*/ 'Đổi mật khẩu thành công! Trang sẽ tự động tải lại...',
+                error       : /*[[#{fcp.js.error}]]*/ 'Có lỗi xảy ra.',
+                systemError : /*[[#{common.systemError}]]*/ 'Lỗi hệ thống.'
+            };
+
+            (function() {
+                var modal = document.getElementById('forceChangePasswordModal');
+                if (modal) {
+                    document.body.appendChild(modal);
+                }
+            })();
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var modalEl = document.getElementById('forceChangePasswordModal');
+                if (modalEl) {
+                    var modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+                    modal.show();
+                }
+            });
+
+            window.fcpToggle = function(btn, targetClass) {
+                var container = btn.closest('.input-group');
+                var input = container.querySelector('.' + targetClass);
+                var icon = btn.querySelector('i');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'bx bx-show';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'bx bx-hide';
+                }
+            };
+
+            window.fcpSubmit = function(btn) {
+                var modalContent = btn.closest('.modal-content');
+                var newPwdInput = modalContent.querySelector('.fcp_newPassword');
+                var confirmPwdInput = modalContent.querySelector('.fcp_confirmPassword');
+                var alertBox = modalContent.querySelector('.fcp_alertBox');
+                var newPwd = newPwdInput.value.trim();
+                var confirmPwd = confirmPwdInput.value.trim();
+
+                function showAlert(msg, type) {
+                    alertBox.className = 'alert alert-' + (type || 'danger') + ' fcp_alertBox';
+                    alertBox.textContent = msg;
+                    alertBox.style.display = 'block';
+                }
+
+                if (!newPwd || !confirmPwd) { showAlert(_fcp_i18n.emptyFields, 'danger'); return; }
+                if (newPwd.length < 8)      { showAlert(_fcp_i18n.minLength,   'danger'); return; }
+                if (!/[A-Z]/.test(newPwd))  { showAlert(_fcp_i18n.noUppercase, 'danger'); return; }
+                if (!/[a-z]/.test(newPwd))  { showAlert(_fcp_i18n.noLowercase, 'danger'); return; }
+                if (!/[0-9]/.test(newPwd))  { showAlert(_fcp_i18n.noDigit,     'danger'); return; }
+                if (!/[^A-Za-z0-9]/.test(newPwd)) { showAlert(_fcp_i18n.noSpecial, 'danger'); return; }
+                if (newPwd !== confirmPwd)   { showAlert(_fcp_i18n.notMatch,    'danger'); return; }
+
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>' + _fcp_i18n.processing;
+
+                $.ajax({
+                    url: '/api/change-first-password',
+                    type: 'POST',
+                    data: { newPassword: newPwd, confirmPassword: confirmPwd },
+                    success: function (data) {
+                        if (data.success) {
+                            showAlert(_fcp_i18n.success, 'success');
+                            setTimeout(function () { window.location.reload(); }, 1500);
+                        } else {
+                            showAlert(data.message || _fcp_i18n.error, 'danger');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bx bx-save me-1"></i>' + _fcp_i18n.submit;
+                        }
+                    },
+                    error: function (xhr) {
+                        var msg = _fcp_i18n.systemError;
+                        try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) {}
+                        showAlert(msg, 'danger');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bx bx-save me-1"></i>' + _fcp_i18n.submit;
+                    }
+                });
+            };
+        </script>
+
+    <script th:inline="javascript">
+        (function() {
+            var _db_i18n = {
+                registered      : /*[[#{dashboard.status.registered}]]*/ 'Đã đăng ký',
+                stable          : /*[[#{dashboard.status.stable}]]*/ 'Ổn định',
+                attention       : /*[[#{dashboard.status.needAction}]]*/ 'Cần xử lý',
+                chartTitle      : /*[[#{dashboard.chart.title}]]*/ 'Biểu đồ chấm công & Tăng ca',
+                attendance      : /*[[#{dashboard.chart.attendance}]]*/ 'Chấm công (giờ)',
+                attendanceTrend : /*[[#{dashboard.chart.attendanceTrend}]]*/ 'Xu hướng chấm công',
+                ot              : /*[[#{dashboard.chart.ot}]]*/ 'Tăng ca (giờ)',
+                otTrend         : /*[[#{dashboard.chart.otTrend}]]*/ 'Xu hướng tăng ca',
+                noData          : /*[[#{dashboard.chart.noData}]]*/ 'Không có dữ liệu',
+                hours           : /*[[#{dashboard.chart.hours}]]*/ 'giờ'
+            };
+
+            var now = new Date();
+            var year = now.getFullYear();
+            var mon  = now.getMonth() + 1;
+
+            // Bảng thống kê: từ ngày 25 tháng trước đến 24 tháng này
+            var toMM       = String(mon).padStart(2, '0');
+            var initToDMY  = '24/' + toMM + '/' + year;
+            var fromYear   = (mon === 1) ? year - 1 : year;
+            var fromMon    = (mon === 1) ? 12 : mon - 1;
+            var fromMM     = String(fromMon).padStart(2, '0');
+            var initFromDMY = '25/' + fromMM + '/' + fromYear;
+
+            // ── Helpers ────────────────────────────────────────────────
+            function dbDmyToYmd(dmy) {
+                var p = dmy.split('/');
+                return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : '';
+            }
+
+            function dbcDmyToDate(dmy) {
+                var p = dmy.split('/');
+                return new Date(+p[2], +p[1] - 1, +p[0]);
+            }
+
+            function dbcDateToDmy(d) {
+                return String(d.getDate()).padStart(2,'0') + '/' +
+                       String(d.getMonth() + 1).padStart(2,'0') + '/' + d.getFullYear();
+            }
+
+            // ── Bảng thống kê ─────────────────────────────────────────
+            function dbSetCount(countId, statusId, count, isWarning) {
+                var el   = document.getElementById(countId);
+                var stEl = document.getElementById(statusId);
+                if (!el || !stEl) return;
+                el.textContent = count;
+                if (count > 0) {
+                    var cls = isWarning ? 'badge-soft-warning' : 'badge-soft-info';
+                    var txt = isWarning ? _db_i18n.attention : _db_i18n.registered;
+                    stEl.innerHTML = '<span class="badge ' + cls + '">' + txt + '</span>';
+                } else {
+                    stEl.innerHTML = '<span class="badge badge-soft-success">' + _db_i18n.stable + '</span>';
+                }
+            }
+
+            function dbLoadStats() {
+                var fDMY = $('#db_fromDate').val();
+                var tDMY = $('#db_toDate').val();
+                if (!fDMY || !tDMY) return;
+                var fYMD = dbDmyToYmd(fDMY);
+                var tYMD = dbDmyToYmd(tDMY);
+                $.ajax({
+                    url: '/ess/infoApplyAttendance/api/myLeaveApply/list', type: 'GET',
+                    data: { fromDate: fYMD, toDate: tYMD },
+                    success: function(r) { dbSetCount('db_leaveCount',    'db_leaveStatus',    (r||[]).length, false); },
+                    error:   function()  { var e = document.getElementById('db_leaveCount');    if (e) e.textContent = '?'; }
+                });
+                $.ajax({
+                    url: '/ess/infoApply/api/myOtApply/list', type: 'GET',
+                    data: { fromDate: fYMD, toDate: tYMD },
+                    success: function(r) { dbSetCount('db_otCount',       'db_otStatus',       (r||[]).length, false); },
+                    error:   function()  { var e = document.getElementById('db_otCount');       if (e) e.textContent = '?'; }
+                });
+                $.ajax({
+                    url: '/ess/infoApply/api/myCwaAbnormal/list', type: 'GET',
+                    data: { startDate: fDMY, endDate: tDMY },
+                    success: function(r) { dbSetCount('db_abnormalCount', 'db_abnormalStatus', (r||[]).length, true); },
+                    error:   function()  { var e = document.getElementById('db_abnormalCount'); if (e) e.textContent = '?'; }
+                });
+            }
+
+            // ── Biểu đồ chấm công & tăng ca ───────────────────────────
+            var _dbChart = null;
+
+            function dbcBuildLabels(fromDMY, toDMY) {
+                var from   = dbcDmyToDate(fromDMY);
+                var to     = dbcDmyToDate(toDMY);
+                var labels = [];
+                for (var d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+                    labels.push(d.getFullYear() + '/' +
+                                String(d.getMonth() + 1).padStart(2,'0') + '/' +
+                                String(d.getDate()).padStart(2,'0'));
+                }
+                return labels;
+            }
+
+            var _DBC_ABSENT_ITEMS = ['141443', '14015448'];
+            var _attDetailMap = {};
+            var _otDetailMap  = {};
+
+            // Chấm công: nếu ngày có ITEM_NO thuộc danh sách vắng thì giờ = 0
+            // Đồng thời xây dựng _attDetailMap để tooltip hiển thị ITEM_NAME + giờ
+            function dbcGroupAttendanceHours(rows, labels) {
+                var hoursMap  = {};
+                var absentMap = {};
+                _attDetailMap = {};
+                (rows || []).forEach(function(r) {
+                    var key = (r.arDateStr || '').replace(/-/g, '/');
+                    if (_DBC_ABSENT_ITEMS.indexOf(r.itemNo) !== -1) {
+                        absentMap[key] = true;
+                        if (!_attDetailMap[key]) _attDetailMap[key] = [];
+                        _attDetailMap[key].push({ name: r.itemName || r.itemNo, hours: parseFloat(r.workHour) || 0, absent: true });
+                    } else {
+                        hoursMap[key] = (hoursMap[key] || 0) + (parseFloat(r.workHour) || 0);
+                        if (!_attDetailMap[key]) _attDetailMap[key] = [];
+                        _attDetailMap[key].push({ name: r.itemName || r.itemNo, hours: parseFloat(r.workHour) || 0, absent: false });
+                    }
+                });
+                return labels.map(function(l) {
+                    if (absentMap[l]) return 0;
+                    return parseFloat((hoursMap[l] || 0).toFixed(2));
+                });
+            }
+
+            // Tăng ca: cộng toàn bộ giờ, xây dựng _otDetailMap để tooltip
+            function dbcGroupHours(rows, labels) {
+                var map = {};
+                _otDetailMap = {};
+                (rows || []).forEach(function(r) {
+                    var key = (r.arDateStr || '').replace(/-/g, '/');
+                    map[key] = (map[key] || 0) + (parseFloat(r.workHour) || 0);
+                    if (!_otDetailMap[key]) _otDetailMap[key] = [];
+                    _otDetailMap[key].push({ name: r.itemName || r.itemNo, hours: parseFloat(r.workHour) || 0 });
+                });
+                return labels.map(function(l) {
+                    return parseFloat((map[l] || 0).toFixed(2));
+                });
+            }
+
+            function dbcRenderChart(labels, attData, otData) {
+                var chartEl = document.getElementById('db_attendanceOtChart');
+                if (!chartEl) return;
+
+                var displayLabels = labels.map(function(l) {
+                    var p = l.split('/');
+                    return p[2] + '/' + p[1]; // DD/MM
+                });
+
+                var options = {
+                    // 4 series: cột + đường cho từng chỉ số
+                    series: [
+                        { name: _db_i18n.attendance,     data: attData, type: 'bar'  },
+                        { name: _db_i18n.attendanceTrend, data: attData, type: 'line' },
+                        { name: _db_i18n.ot,             data: otData,  type: 'bar'  },
+                        { name: _db_i18n.otTrend,        data: otData,  type: 'line' }
+                    ],
+                    chart: {
+                        type   : 'line',
+                        height : 255,
+                        toolbar: { show: false },
+                        animations: { enabled: false }
+                    },
+                    plotOptions: {
+                        bar: { horizontal: false, columnWidth: '55%', borderRadius: 2 }
+                    },
+                    // bar: stroke.width = 0; line: stroke.width = 2
+                    stroke: {
+                        width : [0, 2, 0, 2],
+                        curve : 'smooth'
+                    },
+                    fill: {
+                        opacity: [0.65, 1, 0.65, 1]
+                    },
+                    markers: {
+                        size: [0, 3, 0, 3]
+                    },
+                    dataLabels: { enabled: false },
+                    xaxis: {
+                        categories: displayLabels,
+                        labels: {
+                            rotate      : -45,
+                            rotateAlways: true,
+                            style       : { fontSize: '10px' }
+                        },
+                        tickPlacement: 'on'
+                    },
+                    yaxis: {
+                        title      : { text: _db_i18n.hours, style: { fontSize: '11px' } },
+                        min        : 0,
+                        tickAmount : 4,
+                        labels     : { formatter: function(v) { return v % 1 === 0 ? v : v.toFixed(1); } }
+                    },
+                    // bar và line cùng màu theo từng chỉ số (blue = chấm công, orange = tăng ca)
+                    colors : ['#4e73df', '#1a3fa0', '#f6a623', '#b87200'],
+                    legend : { position: 'top', horizontalAlign: 'right', fontSize: '12px' },
+                    tooltip: {
+                        custom: function(opts) {
+                            var idx      = opts.dataPointIndex;
+                            var dateKey  = labels[idx];
+                            var dispDate = displayLabels[idx];
+                            var attList  = _attDetailMap[dateKey] || [];
+                            var otList   = _otDetailMap[dateKey]  || [];
+
+                            var h = '<div style="padding:8px 12px;min-width:160px;font-size:12px;">';
+                            h += '<div style="font-weight:600;margin-bottom:6px;">' + dispDate + '</div>';
+
+                            h += '<div style="color:#4e73df;font-weight:500;margin-bottom:2px;">' + _db_i18n.attendance + '</div>';
+                            if (attList.length) {
+                                attList.forEach(function(it) {
+                                    var style = it.absent ? 'color:#e74a3b;' : '';
+                                    h += '<div style="' + style + 'padding-left:8px;">' + it.name + ': <b>' + it.hours + '</b> ' + _db_i18n.hours + '</div>';
+                                });
+                            } else {
+                                h += '<div style="padding-left:8px;color:#aaa;">0 ' + _db_i18n.hours + '</div>';
+                            }
+
+                            h += '<div style="color:#f6a623;font-weight:500;margin-top:6px;margin-bottom:2px;">' + _db_i18n.ot + '</div>';
+                            if (otList.length) {
+                                otList.forEach(function(it) {
+                                    h += '<div style="padding-left:8px;">' + it.name + ': <b>' + it.hours + '</b> ' + _db_i18n.hours + '</div>';
+                                });
+                            } else {
+                                h += '<div style="padding-left:8px;color:#aaa;">0 ' + _db_i18n.hours + '</div>';
+                            }
+
+                            h += '</div>';
+                            return h;
+                        }
+                    },
+                    noData : {
+                        text          : _db_i18n.noData,
+                        align         : 'center',
+                        verticalAlign : 'middle',
+                        style         : { fontSize: '13px', color: '#aaa' }
+                    },
+                    grid: { borderColor: '#f1f1f1' }
+                };
+
+                if (_dbChart) {
+                    _dbChart.updateOptions(options, true, false);
+                } else {
+                    _dbChart = new ApexCharts(chartEl, options);
+                    _dbChart.render();
+                }
+            }
+
+            function dbcLoadChart() {
+                var fromDMY = $('#db_fromDate').val();
+                var toDMY   = $('#db_toDate').val();
+                if (!fromDMY || !toDMY) return;
+                var labels = dbcBuildLabels(fromDMY, toDMY);
+
+                var attRows = null, otRows = null;
+
+                function tryRender() {
+                    if (attRows === null || otRows === null) return;
+                    dbcRenderChart(labels, dbcGroupAttendanceHours(attRows, labels), dbcGroupHours(otRows, labels));
+                }
+
+                $.ajax({
+                    url : '/ess/infoApplyAttendance/api/attendancePersonal/list', type: 'GET',
+                    data: { startDate: fromDMY, endDate: toDMY },
+                    success: function(r) { attRows = r || []; tryRender(); },
+                    error  : function()  { attRows = [];      tryRender(); }
+                });
+                $.ajax({
+                    url : '/ess/infoApply/api/personOt/list', type: 'GET',
+                    data: { startDate: fromDMY, endDate: toDMY },
+                    success: function(r) { otRows = r || []; tryRender(); },
+                    error  : function()  { otRows = [];      tryRender(); }
+                });
+            }
+
+            // ── Khởi tạo ──────────────────────────────────────────────
+            $(document).ready(function() {
+                $('#db_fromDate').val(initFromDMY);
+                $('#db_toDate').val(initToDMY);
+                initDateRangePickers();
+                $('#db_fromDate, #db_toDate').on('change', function() {
+                    dbLoadStats();
+                    dbcLoadChart();
+                });
+
+                dbLoadStats();
+                dbcLoadChart();
+            });
+        })();
+    </script>
+        <script th:inline="javascript">
+            function changeLanguage(language) {
+                var _langError = /*[[#{fcp.js.langError}]]*/ 'C\u00f3 l\u1ed7i x\u1ea3y ra khi thay \u0111\u1ed5i ng\u00f4n ng\u1eef';
+                fetch('/api/multilingual/set-language', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ language: language })
+                }).then(function () {
+                    var url = new URL(window.location);
+                    url.searchParams.set('lang', language);
+                    window.location.href = url.toString();
+                }).catch(function (error) {
+                    console.error('Error changing language:', error);
+                    alert(_langError);
+                });
+            }
+        </script>
+    </div> <!-- end content fragment -->
+</body>
+
+</html>

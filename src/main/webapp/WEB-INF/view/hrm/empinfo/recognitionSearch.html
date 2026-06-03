@@ -1,0 +1,347 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="searchEmpId" placeholder="Nhập mã nhân viên">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="searchLocalName" placeholder="Nhập họ tên">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Loại hình khen thưởng</label>
+                            <input type="text" class="form-control" id="searchRewardType" placeholder="Nhập loại hình">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary me-2" onclick="searchData()">
+                                <i class="bx bx-search-alt"></i> Tìm kiếm
+                            </button>
+                            <button type="button" class="btn btn-success me-2" onclick="openModal()">
+                                <i class="bx bx-plus"></i> Thêm mới
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="exportData()">
+                                <i class="bx bx-export"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div class="table-responsive">
+                        <table id="rewardTable" class="table table-striped table-bordered table-hover"
+                            style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã NV</th>
+                                    <th>Họ tên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Loại hình</th>
+                                    <th>Ngày KT</th>
+                                    <th>Cơ quan KT</th>
+                                    <th>Phần thưởng</th>
+                                    <th>Ghi chú</th>
+                                    <th style="width: 100px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data loaded via Ajax -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm/Sửa -->
+    <div class="modal fade" id="rewardModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rewardModalLabel">Thêm mới khen thưởng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rewardForm">
+                        <input type="hidden" id="rewardNo" name="rewardNo">
+
+                        <!-- Nhân viên -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Nhân viên <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="hidden" id="personId" name="personId">
+                                    <input type="text" class="form-control" id="empId" placeholder="Mã NV" readonly>
+                                    <input type="text" class="form-control w-50" id="localName" placeholder="Họ tên"
+                                        readonly>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                        onclick="openEmployeeSearchPopup()">
+                                        <i class="bx bx-search"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text" id="deptName"></div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Loại hình khen thưởng</label>
+                                <input type="text" class="form-control" id="rewardType" name="rewardType">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày khen thưởng</label>
+                                <input type="date" class="form-control" id="rewardDate" name="rewardDate">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Cơ quan khen thưởng</label>
+                                <input type="text" class="form-control" id="rewardCnpy" name="rewardCnpy">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phần thưởng/Hiện vật</label>
+                                <input type="text" class="form-control" id="reward" name="reward">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Mã loại thưởng</label>
+                                <input type="text" class="form-control" id="rewardTypeCode" name="rewardTypeCode">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày chi trả</label>
+                                <input type="date" class="form-control" id="rewardPayDate" name="rewardPayDate">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Hiển thị thẻ nhân sự</label>
+                                <select class="form-select" id="personnelCardInquiry" name="personnelCardInquiry">
+                                    <option value="N">Không</option>
+                                    <option value="Y">Có</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phản ánh lương</label>
+                                <select class="form-select" id="payAppearIsnot" name="payAppearIsnot">
+                                    <option value="N">Không</option>
+                                    <option value="Y">Có</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">LINE ID</label>
+                                <input type="text" class="form-control" id="lineId" name="lineId">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Loại khác</label>
+                                <input type="text" class="form-control" id="otherType" name="otherType">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="saveData()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            var table = $('#rewardTable').DataTable({
+                "destroy": true,
+                "processing": true,
+                "serverSide": false,
+                "ajax": {
+                    "url": "/hrm/empinfo/api/reward",
+                    "data": function (d) {
+                        d.empId = $('#searchEmpId').val();
+                        d.localName = $('#searchLocalName').val();
+                        d.rewardType = $('#searchRewardType').val();
+                    },
+                    "dataSrc": ""
+                },
+                "columns": [
+                    {
+                        "data": null,
+                        "render": function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    },
+                    { "data": "empId" },
+                    { "data": "localName" },
+                    {
+                        "data": "deptName",
+                        "defaultContent": ""
+                    },
+                    { "data": "rewardType" },
+                    {
+                        "data": "rewardDate",
+                        "render": function (data) {
+                            return data ? new Date(data).toLocaleDateString('vi-VN') : '';
+                        }
+                    },
+                    { "data": "rewardCnpy" },
+                    { "data": "reward" },
+                    { "data": "remarks" },
+                    {
+                        "data": "rewardNo",
+                        "width": "100px",
+                        "className": "text-center",
+                        "render": function (data, type, row) {
+                            return `
+                                <button class="btn btn-sm btn-primary" onclick="editRaw(${data})"><i class="bx bx-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRaw(${data})"><i class="bx bx-trash"></i></button>
+                            `;
+                        }
+                    }
+                ],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Vietnamese.json"
+                }
+            });
+
+            window.searchData = function () {
+                table.ajax.reload();
+            };
+
+            window.openModal = function () {
+                $('#rewardForm')[0].reset();
+                $('#rewardNo').val('');
+                $('#personId').val('');
+                $('#deptName').text('');
+                $('#rewardModalLabel').text('Thêm mới khen thưởng');
+                var modal = new bootstrap.Modal(document.getElementById('rewardModal'));
+                modal.show();
+            };
+
+            window.openEmployeeSearchPopup = function () {
+                if (typeof EmployeeSearchModal !== 'undefined') {
+                    EmployeeSearchModal.open(function (employee) {
+                        $('#personId').val(employee.personId);
+                        $('#empId').val(employee.empId);
+                        $('#localName').val(employee.localName);
+                        $('#deptName').text(employee.deptName);
+                    });
+                } else {
+                    alert('Chức năng tìm kiếm nhân viên chưa được tải!');
+                }
+            };
+
+            window.saveData = function () {
+                if (!$('#personId').val()) {
+                    if (typeof toastr !== 'undefined') toastr.error('Vui lòng chọn nhân viên');
+                    else alert('Vui lòng chọn nhân viên');
+                    return;
+                }
+
+                var formData = {
+                    rewardNo: $('#rewardNo').val() || null,
+                    personId: $('#personId').val(),
+                    rewardType: $('#rewardType').val(),
+                    rewardDate: $('#rewardDate').val() || null,
+                    rewardCnpy: $('#rewardCnpy').val(),
+                    reward: $('#reward').val(),
+                    rewardTypeCode: $('#rewardTypeCode').val(),
+                    rewardPayDate: $('#rewardPayDate').val() || null,
+                    personnelCardInquiry: $('#personnelCardInquiry').val(),
+                    payAppearIsnot: $('#payAppearIsnot').val(),
+                    lineId: $('#lineId').val(),
+                    otherType: $('#otherType').val(),
+                    remarks: $('#remarks').val()
+                };
+
+                $.ajax({
+                    url: '/hrm/empinfo/api/reward/save',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (typeof toastr !== 'undefined') toastr.success(response.message);
+                        else alert(response.message);
+
+                        var modalEl = document.getElementById('rewardModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+                        else $(modalEl).modal('hide');
+
+                        table.ajax.reload();
+                    },
+                    error: function (xhr) {
+                        var msg = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : xhr.statusText;
+                        if (typeof toastr !== 'undefined') toastr.error('Lỗi: ' + msg);
+                        else alert('Lỗi: ' + msg);
+                    }
+                });
+            };
+
+            window.editRaw = function (id) {
+                $.get('/hrm/empinfo/api/reward/' + id, function (data) {
+                    $('#rewardNo').val(data.rewardNo);
+                    $('#personId').val(data.personId);
+                    $('#empId').val(data.empId);
+                    $('#localName').val(data.localName);
+                    $('#deptName').text(data.deptName);
+
+                    $('#rewardType').val(data.rewardType);
+                    $('#rewardDate').val(data.rewardDate ? data.rewardDate.substring(0, 10) : '');
+                    $('#rewardCnpy').val(data.rewardCnpy);
+                    $('#reward').val(data.reward);
+                    $('#rewardTypeCode').val(data.rewardTypeCode);
+                    $('#rewardPayDate').val(data.rewardPayDate ? data.rewardPayDate.substring(0, 10) : '');
+                    $('#personnelCardInquiry').val(data.personnelCardInquiry || 'N');
+                    $('#payAppearIsnot').val(data.payAppearIsnot || 'N');
+                    $('#lineId').val(data.lineId);
+                    $('#otherType').val(data.otherType);
+                    $('#remarks').val(data.remarks);
+
+                    $('#rewardModalLabel').text('Cập nhật khen thưởng');
+                    var modal = new bootstrap.Modal(document.getElementById('rewardModal'));
+                    modal.show();
+                });
+            };
+
+            window.deleteRaw = function (id) {
+                if (confirm('Bạn có chắc chắn muốn xóa bản ghi này?')) {
+                    $.ajax({
+                        url: '/hrm/empinfo/api/reward/delete/' + id,
+                        type: 'DELETE',
+                        success: function (response) {
+                            if (typeof toastr !== 'undefined') toastr.success(response.message);
+                            else alert(response.message);
+                            table.ajax.reload();
+                        },
+                        error: function (xhr) {
+                            var msg = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : xhr.statusText;
+                            if (typeof toastr !== 'undefined') toastr.error('Lỗi: ' + msg);
+                            else alert('Lỗi: ' + msg);
+                        }
+                    });
+                }
+            };
+
+            window.exportData = function () {
+                alert('Chức năng xuất Excel đang được phát triển');
+            };
+        });
+    </script>
+</template>

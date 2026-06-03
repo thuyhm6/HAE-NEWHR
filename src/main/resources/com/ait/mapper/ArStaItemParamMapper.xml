@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceSettings.mapper.ArStaItemParamMapper">
+
+    <resultMap id="BaseResultMap" type="com.ait.ar.attendanceSettings.model.ArStaItemParam">
+        <id column="PARAM_NO" property="paramNo" />
+        <result column="ITEM_NO" property="itemNo" />
+        <result column="CPNY_ID" property="cpnyId" />
+        <result column="UNIT" property="unit" />
+        <result column="MIN_UNIT" property="minUnit" />
+        <result column="CAL_ORDER" property="calOrder" />
+        <result column="ACTIVITY" property="activity" />
+        <result column="ORDERNO" property="orderno" />
+        <result column="MANAGE_FLAG" property="manageFlag" />
+        <result column="CREATE_DATE" property="createDate" />
+        <result column="CREATED_BY" property="createdBy" />
+        <result column="UPDATE_DATE" property="updateDate" />
+        <result column="UPDATED_BY" property="updatedBy" />
+        <result column="CREATED_IP" property="createdIp" />
+        <result column="UPDATED_IP" property="updatedIp" />
+    </resultMap>
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceSettings.dto.ArStaItemParamDto" extends="BaseResultMap">
+        <result column="ITEM_NAME_VI" property="itemNameVi" />
+        <result column="ITEM_NAME_EN" property="itemNameEn" />
+        <result column="ITEM_NAME_ZH" property="itemNameZh" />
+        <result column="ITEM_NAME_KO" property="itemNameKo" />
+        <result column="COMPANY_NAME" property="companyName" />
+    </resultMap>
+
+    <select id="getNextParamNoSeq" resultType="String">
+        SELECT AR_STA_ITEM_PARAM_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <select id="getMaxCalOrder" resultType="Integer">
+        SELECT NVL(MAX(CAL_ORDER), 0) FROM AR_STA_ITEM_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="getAvailableItems" resultType="java.util.Map">
+        SELECT a.ITEM_NO as itemNo,
+               gvi.CONTENT as nameVi,
+               gen.CONTENT as nameEn,
+               gzh.CONTENT as nameZh,
+               gko.CONTENT as nameKo
+        FROM AR_STA_ITEM a
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE a.ITEM_NO NOT IN (
+            SELECT ITEM_NO FROM AR_STA_ITEM_PARAM WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        )
+        ORDER BY a.ORDERNO, a.ITEM_NO
+    </select>
+
+    <select id="findAll" resultMap="DtoResultMap">
+        SELECT a.*,
+               c.CPNY_LOCATION AS COMPANY_NAME,
+               gvi.CONTENT AS ITEM_NAME_VI,
+               gen.CONTENT AS ITEM_NAME_EN,
+               gzh.CONTENT AS ITEM_NAME_ZH,
+               gko.CONTENT AS ITEM_NAME_KO
+        FROM AR_STA_ITEM_PARAM a
+        LEFT JOIN HR_COMPANY c ON a.CPNY_ID = c.CPNY_ID
+        LEFT JOIN SY_GLOBAL_NAME gvi ON a.ITEM_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+        LEFT JOIN SY_GLOBAL_NAME gen ON a.ITEM_NO = gen.NO AND gen.LANGUAGE = 'en'
+        LEFT JOIN SY_GLOBAL_NAME gzh ON a.ITEM_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
+        LEFT JOIN SY_GLOBAL_NAME gko ON a.ITEM_NO = gko.NO AND gko.LANGUAGE = 'ko'
+        WHERE a.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="searchText != null and searchText != ''">
+            AND (a.ITEM_NO LIKE '%' || #{searchText} || '%' OR 
+                 gvi.CONTENT LIKE '%' || #{searchText} || '%')
+        </if>
+        ORDER BY a.ORDERNO, a.CAL_ORDER, a.PARAM_NO
+    </select>
+
+    <select id="selectByParamNo" resultMap="BaseResultMap">
+        SELECT *
+        FROM AR_STA_ITEM_PARAM
+        WHERE PARAM_NO = #{paramNo}
+    </select>
+
+    <insert id="insert" parameterType="com.ait.ar.attendanceSettings.model.ArStaItemParam">
+        INSERT INTO AR_STA_ITEM_PARAM (
+            PARAM_NO, ITEM_NO, CPNY_ID, UNIT, MIN_UNIT, CAL_ORDER, 
+            ACTIVITY, ORDERNO, MANAGE_FLAG, CREATE_DATE, CREATED_BY, CREATED_IP
+        ) VALUES (
+            #{paramNo}, #{itemNo}, #{cpnyId, jdbcType=VARCHAR}, #{unit}, #{minUnit}, #{calOrder}, 
+            #{activity}, #{orderno}, #{manageFlag}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.ait.ar.attendanceSettings.model.ArStaItemParam">
+        UPDATE AR_STA_ITEM_PARAM
+        SET UNIT = #{unit},
+            MIN_UNIT = #{minUnit},
+            CAL_ORDER = #{calOrder},
+            ACTIVITY = #{activity},
+            ORDERNO = #{orderno},
+            MANAGE_FLAG = #{manageFlag},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE PARAM_NO = #{paramNo}
+    </update>
+
+    <delete id="delete" parameterType="String">
+        DELETE FROM AR_STA_ITEM_PARAM WHERE PARAM_NO = #{paramNo}
+    </delete>
+
+</mapper>

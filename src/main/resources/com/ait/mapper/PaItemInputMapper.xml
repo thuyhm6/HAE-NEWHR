@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.pa.salary.mapper.PaItemInputMapper">
+
+    <resultMap id="PaItemInputResultMap" type="com.ait.pa.salary.dto.PaItemInputDto">
+        <result column="INPUT_NO"  property="inputNo"  jdbcType="NUMERIC" />
+        <result column="ITEM_NO"   property="itemNo"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME" property="itemName" jdbcType="VARCHAR" />
+        <result column="ITEM_ID"   property="itemId"   jdbcType="VARCHAR" />
+        <result column="ORDERNO"   property="orderNo"  jdbcType="NUMERIC" />
+        <result column="IS_USE"    property="isUse"    jdbcType="NUMERIC" />
+        <result column="ITEM_TYPE" property="itemType" jdbcType="NUMERIC" />
+        <result column="ACTIVITY"  property="activity" jdbcType="NUMERIC" />
+        <result column="CPNY_ID"   property="cpnyId"   jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── Hạng mục nhân sự (PA_DISTINCT_LIST + SY_GLOBAL_NAME) ─────────────── -->
+    <select id="selectHrItems" resultMap="PaItemInputResultMap">
+        SELECT T.ID             AS ITEM_NO,
+               T.DISTINCT_FIELD AS ITEM_ID,
+               SY.CONTENT       AS ITEM_NAME
+          FROM PA_DISTINCT_LIST T, SY_GLOBAL_NAME SY
+         WHERE T.ID            = SY.NO(+)
+           AND SY.LANGUAGE(+)  = #{lang, jdbcType=VARCHAR}
+           AND T.TABLE_NAME    = 'PA_HR_V'
+           AND T.CPNY_ID       = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY T.ORDERNO, T.ID
+    </select>
+
+    <!-- ── Hạng mục chấm công (AR_STA_ITEM) ─────────────────────────────────── -->
+    <select id="selectAttendanceItems" resultMap="PaItemInputResultMap">
+        SELECT AR_STA_ITEM.ITEM_NO    AS ITEM_NO,
+               COLUMN_NAME            AS ITEM_ID,
+               SY_GLOBAL_NAME.CONTENT AS ITEM_NAME
+          FROM USER_TAB_COLUMNS,
+               AR_STA_ITEM,
+               AR_STA_ITEM_PARAM,
+               SY_GLOBAL_NAME
+         WHERE TABLE_NAME                    = 'AR_SUMMARY_HTSV'
+           AND DATA_TYPE                     = 'NUMBER'
+           AND COLUMN_NAME                   = STA_ITEM_ID
+           AND AR_STA_ITEM.ITEM_NO           = AR_STA_ITEM_PARAM.ITEM_NO
+           AND AR_STA_ITEM_PARAM.CPNY_ID     = #{cpnyId, jdbcType=VARCHAR}
+           AND AR_STA_ITEM.ITEM_NO           = SY_GLOBAL_NAME.NO(+)
+           AND SY_GLOBAL_NAME.LANGUAGE(+)    = #{lang, jdbcType=VARCHAR}
+           AND AR_STA_ITEM.ACTIVITY          = 1
+           AND NOT EXISTS (
+               SELECT * FROM PA_DISTINCT_LIST
+                WHERE COLUMN_NAME   = DISTINCT_FIELD
+                  AND TABLE_NAME    = 'PA_HR_V'
+                  AND CPNY_ID       = #{cpnyId, jdbcType=VARCHAR}
+           )
+         ORDER BY AR_STA_ITEM_PARAM.CAL_ORDER
+    </select>
+
+    <!-- ── Hạng mục nhập (PA_PARAM_ITEM) ────────────────────────────────────── -->
+    <select id="selectInputItems" resultMap="PaItemInputResultMap">
+        SELECT PI.PARAM_ITEM_NO AS ITEM_NO,
+               PI.PARAM_ITEM_ID  AS ITEM_ID,
+               SY.CONTENT        AS ITEM_NAME
+          FROM PA_PARAM_ITEM_PARAM T,
+               PA_PARAM_ITEM       PI,
+               SY_GLOBAL_NAME      SY
+         WHERE T.PARAM_ITEM_NO   = PI.PARAM_ITEM_NO
+           AND T.PARAM_ITEM_NO   = SY.NO(+)
+           AND SY.LANGUAGE(+)    = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY       = 1
+           AND T.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY PI.ORDER_NO
+    </select>
+
+    <!-- ── Hạng mục tính (PA_ITEM) ───────────────────────────────────────────── -->
+    <select id="selectComputeItems" resultMap="PaItemInputResultMap">
+        SELECT T.ITEM_NO    AS ITEM_NO,
+               PI.ITEM_ID   AS ITEM_ID,
+               SY.CONTENT   AS ITEM_NAME
+          FROM PA_ITEM_PARAM  T,
+               PA_ITEM        PI,
+               SY_GLOBAL_NAME SY
+         WHERE T.ITEM_NO      = PI.ITEM_NO
+           AND T.ITEM_NO      = SY.NO(+)
+           AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
+           AND PI.ACTIVITY    = 1
+           AND T.CPNY_ID      = #{cpnyId, jdbcType=VARCHAR}
+         ORDER BY CALCU_ORDER
+    </select>
+
+    <!-- ── Lấy danh sách đã lưu theo IS_USE và ITEM_TYPE ─────────────────────── -->
+    <select id="selectSavedItems" resultMap="PaItemInputResultMap">
+        SELECT INPUT_NO, ITEM_NO, ITEM_NAME, ITEM_ID, ORDERNO, IS_USE, ITEM_TYPE, ACTIVITY, CPNY_ID
+          FROM PA_ITEM_INPUT
+         WHERE CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+           <if test="isUse != null">
+           AND IS_USE   = #{isUse, jdbcType=NUMERIC}
+           </if>
+           <if test="itemType != null">
+           AND ITEM_TYPE = #{itemType, jdbcType=NUMERIC}
+           </if>
+         ORDER BY ORDERNO, INPUT_NO
+    </select>
+
+    <!-- ── Thêm mới hạng mục vào PA_ITEM_INPUT ───────────────────────────────── -->
+    <insert id="insertItem" parameterType="com.ait.pa.salary.dto.PaItemInputDto">
+        INSERT INTO PA_ITEM_INPUT (
+            INPUT_NO,
+            ITEM_NO,
+            ITEM_NAME,
+            ITEM_ID,
+            ORDERNO,
+            IS_USE,
+            ITEM_TYPE,
+            ACTIVITY,
+            CPNY_ID,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP
+        ) VALUES (
+            PA_ITEM_INPUT_SEQ.NEXTVAL,
+            #{itemNo,   jdbcType=VARCHAR},
+            #{itemName, jdbcType=VARCHAR},
+            #{itemId,   jdbcType=VARCHAR},
+            #{orderNo,  jdbcType=NUMERIC},
+            #{isUse,    jdbcType=NUMERIC},
+            #{itemType, jdbcType=NUMERIC},
+            1,
+            #{cpnyId,   jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,  jdbcType=VARCHAR},
+            #{adminIP,  jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ── Xóa theo IS_USE và ITEM_TYPE ──────────────────────────────────────── -->
+    <delete id="deleteByIsUseAndItemType">
+        DELETE FROM PA_ITEM_INPUT
+         WHERE CPNY_ID   = #{cpnyId,   jdbcType=VARCHAR}
+           AND IS_USE    = #{isUse,    jdbcType=NUMERIC}
+           AND ITEM_TYPE = #{itemType, jdbcType=NUMERIC}
+    </delete>
+
+    <!-- ── Lấy tên hạng mục theo danh sách ITEM_ID (dùng cho header Excel) ─── -->
+    <select id="selectItemNamesByIds" resultMap="PaItemInputResultMap">
+        SELECT ITEM_ID, MAX(ITEM_NAME) AS ITEM_NAME
+          FROM PA_ITEM_INPUT
+         WHERE CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+           AND ITEM_ID IN
+               <foreach collection="itemIds" item="id" open="(" separator="," close=")">
+                   #{id, jdbcType=VARCHAR}
+               </foreach>
+         GROUP BY ITEM_ID
+    </select>
+
+    <!-- ── Lấy dữ liệu PA_SUMMARY_HTSV theo kế hoạch và phòng ban ───────────── -->
+    <select id="selectSummaryHtsvData" resultType="java.util.Map">
+        SELECT S.*,
+               E.LOCAL_NAME      AS LOCAL_NAME_EMP,
+               HD.ORG_NAME_LOCAL AS DEPT_NAME_VAL
+          FROM PA_SUMMARY_HTSV S
+          LEFT JOIN HR_EMPLOYEE   E  ON S.EMPID   = E.EMPID
+                                    AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO  = HD.DEPTNO
+         WHERE S.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           AND S.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+           <if test="deptNos != null and deptNos.size() > 0">
+           AND E.DEPTNO IN
+               <foreach collection="deptNos" item="d" open="(" separator="," close=")">
+                   #{d, jdbcType=VARCHAR}
+               </foreach>
+           </if>
+         ORDER BY S.EMPID
+    </select>
+
+</mapper>

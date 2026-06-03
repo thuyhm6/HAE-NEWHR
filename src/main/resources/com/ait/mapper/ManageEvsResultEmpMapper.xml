@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.ManageEvsResultEmpMapper">
+
+    <resultMap id="ManageEvsResultEmpResultMap" type="com.ait.ess.viewDept.dto.ManageEvsResultEmpDto">
+        <result column="EMPID" property="empId" jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR" />
+        <result column="DEPTNO" property="deptNo" jdbcType="VARCHAR" />
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+        <result column="ORDERNO" property="orderNo" jdbcType="VARCHAR" />
+        <result column="DATE_STARTED" property="dateStarted" jdbcType="VARCHAR" />
+        <result column="POST_FAMILY" property="postFamily" jdbcType="VARCHAR" />
+        <result column="EMP_TYPE_CODE" property="empTypeCode" jdbcType="VARCHAR" />
+        <result column="EMP_OFFICE" property="empOffice" jdbcType="VARCHAR" />
+        <result column="EVS_YEAR" property="evsYear" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH1" property="evsMonth1" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH2" property="evsMonth2" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH3" property="evsMonth3" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH4" property="evsMonth4" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH5" property="evsMonth5" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH6" property="evsMonth6" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH7" property="evsMonth7" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH8" property="evsMonth8" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH9" property="evsMonth9" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH10" property="evsMonth10" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH11" property="evsMonth11" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH12" property="evsMonth12" jdbcType="VARCHAR" />
+        <result column="EVS_MONTH13" property="evsMonth13" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectManageEvsResultEmpList"
+            parameterType="com.ait.ess.viewDept.dto.ManageEvsResultEmpDto"
+            resultMap="ManageEvsResultEmpResultMap">
+        SELECT
+            EMPID AS EMPID,
+            LOCAL_NAME AS LOCAL_NAME,
+            DEPTNO AS DEPTNO,
+            GET_DEPT_NAME(DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            ORDERNO AS ORDERNO,
+            DATE_STARTED AS DATE_STARTED,
+            POST_FAMILY AS POST_FAMILY,
+            EMP_TYPE_CODE AS EMP_TYPE_CODE,
+            EMP_OFFICE AS EMP_OFFICE,
+            EVS_YEAR AS EVS_YEAR,
+            MAX(EVS_MONTH1) AS EVS_MONTH1,
+            MAX(EVS_MONTH2) AS EVS_MONTH2,
+            MAX(EVS_MONTH3) AS EVS_MONTH3,
+            MAX(EVS_MONTH4) AS EVS_MONTH4,
+            MAX(EVS_MONTH5) AS EVS_MONTH5,
+            MAX(EVS_MONTH6) AS EVS_MONTH6,
+            MAX(EVS_MONTH7) AS EVS_MONTH7,
+            MAX(EVS_MONTH8) AS EVS_MONTH8,
+            MAX(EVS_MONTH9) AS EVS_MONTH9,
+            MAX(EVS_MONTH10) AS EVS_MONTH10,
+            MAX(EVS_MONTH11) AS EVS_MONTH11,
+            MAX(EVS_MONTH12) AS EVS_MONTH12,
+            MAX(EVS_MONTH13) AS EVS_MONTH13
+        FROM (
+            SELECT
+                EMPID,
+                LOCAL_NAME,
+                DEPTNO,
+                ORDERNO,
+                DATE_STARTED,
+                POST_FAMILY,
+                EMP_TYPE_CODE,
+                EMP_OFFICE,
+                EVS_YEAR,
+                DECODE(EVS_MONTH, '14015045', MAX(FINAL_GRADE)) AS EVS_MONTH1,
+                DECODE(EVS_MONTH, '14015046', MAX(FINAL_GRADE)) AS EVS_MONTH2,
+                DECODE(EVS_MONTH, '14015047', MAX(FINAL_GRADE)) AS EVS_MONTH3,
+                DECODE(EVS_MONTH, '14015048', MAX(FINAL_GRADE)) AS EVS_MONTH4,
+                DECODE(EVS_MONTH, '14015049', MAX(FINAL_GRADE)) AS EVS_MONTH5,
+                DECODE(EVS_MONTH, '14015050', MAX(FINAL_GRADE)) AS EVS_MONTH6,
+                DECODE(EVS_MONTH, '14015051', MAX(FINAL_GRADE)) AS EVS_MONTH7,
+                DECODE(EVS_MONTH, '14015052', MAX(FINAL_GRADE)) AS EVS_MONTH8,
+                DECODE(EVS_MONTH, '14015053', MAX(FINAL_GRADE)) AS EVS_MONTH9,
+                DECODE(EVS_MONTH, '14015054', MAX(FINAL_GRADE)) AS EVS_MONTH10,
+                DECODE(EVS_MONTH, '14015055', MAX(FINAL_GRADE)) AS EVS_MONTH11,
+                DECODE(EVS_MONTH, '14015057', MAX(FINAL_GRADE)) AS EVS_MONTH12,
+                DECODE(EVS_MONTH, 'ability', MAX(FINAL_GRADE)) AS EVS_MONTH13
+            FROM (
+                SELECT
+                    HRE.EMPID AS EMPID,
+                    HRE.LOCAL_NAME AS LOCAL_NAME,
+                    HRE.DEPTNO AS DEPTNO,
+                    SC.ORDERNO AS ORDERNO,
+                    TO_CHAR(HRE.DATE_STARTED, 'DD/MM/YYYY') AS DATE_STARTED,
+                    HRE.POST_FAMILY AS POST_FAMILY,
+                    HRE.EMP_TYPE_CODE AS EMP_TYPE_CODE,
+                    HRE.EMP_OFFICE AS EMP_OFFICE,
+                    EVS.EVS_YEAR AS EVS_YEAR,
+                    DECODE(
+                        EVS.EVS_TYPE,
+                        'ability',
+                        'ability',
+                        DECODE(EVS.EVS_MONTH, '14015058', '14015050', '14015059', '14015057', EVS.EVS_MONTH)
+                    ) AS EVS_MONTH,
+                    CASE
+                        WHEN EVS.FINAL_GRADE = 'A' THEN 'EX'
+                        WHEN EVS.FINAL_GRADE = 'B' THEN 'VG'
+                        WHEN EVS.FINAL_GRADE = 'C' THEN 'GD'
+                        WHEN EVS.FINAL_GRADE = 'D' THEN 'NI'
+                        WHEN EVS.FINAL_GRADE = 'E' THEN 'UN'
+                        ELSE EVS.FINAL_GRADE
+                    END AS FINAL_GRADE
+                FROM EVS_OBJECT EVS, HR_EMPLOYEE HRE, SY_CODE SC
+                WHERE EVS.PERSON_ID = HRE.PERSON_ID
+                  AND HRE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND HRE.POST_GRADE_NO = SC.CODE_NO(+)
+                  AND PKG_EVS_PROCESS.GET_EVS_FEEDBACK(EVS.RESUME_SEQ, '14015078') = 1
+                  AND EVS.ACTIVITY = '14015361'
+                  AND HRE.EMPID NOT LIKE '11111%'
+                <if test="year != null and year != ''">
+                  AND EVS.EVS_YEAR = #{year, jdbcType=VARCHAR}
+                </if>
+                <if test="keyword != null and keyword != ''">
+                  AND (
+                      UPPER(HRE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                      OR UPPER(HRE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                  )
+                </if>
+                <if test="deptNos != null and deptNos != ''">
+                  AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HRE.DEPTNO || ',') &gt; 0
+                </if>
+                <if test="fromDate != null and fromDate != ''">
+                  AND TRUNC(HRE.DATE_STARTED) &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+                </if>
+                <if test="toDate != null and toDate != ''">
+                  AND TRUNC(HRE.DATE_STARTED) &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+                </if>
+                <if test="postFamily != null and postFamily != ''">
+                  AND HRE.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
+                </if>
+                <if test="empTypeCode != null and empTypeCode != ''">
+                  AND HRE.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+                </if>
+                <if test="empOffice != null and empOffice != ''">
+                  AND HRE.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+                </if>
+                  AND EXISTS (
+                      SELECT B1.DEPTNO
+                      FROM HR_DEPARTMENT B1
+                      WHERE B1.DEPTNO = HRE.DEPTNO
+                      START WITH B1.DEPTNO IN (
+                          SELECT HRD.DEPTID
+                          FROM HR_DEPARTMENT HRD
+                          WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+                      )
+                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                      UNION
+                      SELECT AR_SUPERVISOR_INFO.DEPTNO
+                      FROM AR_SUPERVISOR_INFO
+                      WHERE AR_SUPERVISOR_INFO.DEPTNO = HRE.DEPTNO
+                        AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+                      UNION
+                      SELECT SUD.DEPTNO
+                      FROM SY_USER SU, SY_USER_DEPT SUD
+                      WHERE SU.USER_NO = SUD.USER_NO
+                        AND SU.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+                        AND SUD.DEPTNO = HRE.DEPTNO
+                  )
+            )
+            GROUP BY EMPID, LOCAL_NAME, DEPTNO, ORDERNO, DATE_STARTED, POST_FAMILY, EMP_TYPE_CODE, EMP_OFFICE, EVS_YEAR, EVS_MONTH
+        )
+        GROUP BY EMPID, LOCAL_NAME, DEPTNO, ORDERNO, DATE_STARTED, POST_FAMILY, EMP_TYPE_CODE, EMP_OFFICE, EVS_YEAR
+        ORDER BY DEPTNO, ORDERNO, EMPID, EVS_YEAR
+    </select>
+
+</mapper>

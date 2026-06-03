@@ -1,0 +1,341 @@
+.tab-navigation {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0 15px;
+  margin-bottom: 0;
+  /* min-height: 50px; */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.tab-navigation .nav-tabs {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.tab-navigation .nav-tabs .nav-link {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #6c757d;
+  padding: 5px 10px;
+  margin-right: 2px;
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+
+.tab-navigation .nav-tabs .nav-link:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.tab-navigation .nav-tabs .nav-link.active {
+  background: #fff;
+  color: #007bff;
+  border-bottom-color: #007bff;
+}
+
+.tab-navigation .nav-tabs .nav-link .tab-close {
+  margin-left: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: none;
+  /* Hidden by default */
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  transition: all 0.2s ease;
+}
+
+/* Show close button on tab hover */
+.tab-navigation .nav-tabs .nav-link:hover .tab-close {
+  display: inline-flex;
+}
+
+.tab-navigation .nav-tabs .nav-link .tab-close:hover {
+  background: #dc3545;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Tab context menu */
+.tab-context-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10000;
+  min-width: 150px;
+  display: none;
+}
+
+.tab-context-menu.show {
+  display: block;
+}
+
+.tab-context-menu .menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f8f9fa;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.tab-context-menu .menu-item:last-child {
+  border-bottom: none;
+}
+
+.tab-context-menu .menu-item:hover {
+  background: #f8f9fa;
+}
+
+.tab-context-menu .menu-item i {
+  margin-right: 8px;
+  width: 16px;
+  text-align: center;
+}
+
+.tab-context-menu .menu-item.danger {
+  color: #dc3545;
+}
+
+.tab-context-menu .menu-item.danger:hover {
+  background: #f8d7da;
+}
+
+/* Hide close button when only one tab */
+.tab-navigation .nav-tabs:has(li:only-child) .tab-close {
+  display: none !important;
+}
+
+/* Hide close button on hover when only one tab */
+.tab-navigation .nav-tabs:has(li:only-child) .nav-link:hover .tab-close {
+  display: none !important;
+}
+
+/* Tab content area styling */
+.tab-content-area {
+  background: #fff;
+  min-height: 500px;
+  position: relative;
+  /*padding: 15px;*/
+  height: calc(100vh - 200px);
+  /* Fixed height to enable scrolling */
+  max-height: calc(100vh - 200px);
+  width: 100%;
+
+  /* Scroll handling */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+
+  /* Box sizing */
+  box-sizing: border-box;
+
+  /* Custom scrollbar styling (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Webkit scrollbar styling (Chrome, Safari, Edge) */
+.tab-content-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tab-content-area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tab-content-area::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.tab-content-area::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Fixed layout for page content */
+.page-content {
+  height: calc(100vh - 120px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.container-fluid {
+  flex: 1;
+  overflow: visible;
+  /* Allow content to overflow for scrolling */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+#tab-system-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  /* Allow content to overflow for scrolling */
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}
+
+#tab-navigation {
+  flex-shrink: 0;
+}
+
+#tab-content-area {
+  flex: 1;
+  overflow-y: auto;
+  /* Enable vertical scrolling */
+  overflow-x: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100vh - 60px);
+  /* Fixed height to enable scrolling */
+  max-height: calc(100vh - 60px);
+}
+
+.tab-pane {
+  display: none;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.tab-loading {
+  text-align: center;
+  padding: 50px;
+  color: #6c757d;
+}
+
+/* Default content styling */
+#default-content {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 15px;
+  box-sizing: border-box;
+  width: 100%;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Custom scrollbar for tab-pane and default-content */
+.tab-pane::-webkit-scrollbar,
+#default-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tab-pane::-webkit-scrollbar-track,
+#default-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tab-pane::-webkit-scrollbar-thumb,
+#default-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.tab-pane::-webkit-scrollbar-thumb:hover,
+#default-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ensure content fits within container */
+.tab-content-area *,
+.tab-pane *,
+#default-content * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure body has proper scrolling */
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Prevent content from overflowing */
+.tab-content-area img,
+.tab-pane img,
+#default-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.tab-content-area table,
+.tab-pane table,
+#default-content table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Prevent wide elements from causing horizontal scroll */
+.tab-content-area pre,
+.tab-pane pre,
+#default-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.tab-content-area code,
+.tab-pane code,
+#default-content code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+}

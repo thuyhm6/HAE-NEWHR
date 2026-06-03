@@ -1,0 +1,300 @@
+<th:block th:fragment="approvalOtModal">
+    <div class="modal fade" id="vaot_applyDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vaot_applyDetailTitle" th:text="#{arOtf.applyOt}">[Xin tăng ca]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="table-light text-center" style="width: 160px;" th:text="#{arOtf.applyTitle}">Tiêu đề</th>
+                                    <td id="vaot_modalApplyTitle"></td>
+                                </tr>
+                                <tr>
+                                    <th class="table-light text-center" th:text="#{arOtf.applicant}">Người đăng ký</th>
+                                    <td id="vaot_modalApplicant"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th style="width: 50px;" th:text="#{common.stt}">STT</th>
+                                    <th style="width: 90px;" th:text="#{arOtf.approvalSeq}">Trình tự duyệt</th>
+                                    <th style="width: 110px;" th:text="#{arOtf.approvalStatus}">Trạng thái duyệt</th>
+                                    <th th:text="#{common.empName}">Họ tên</th>
+                                    <th th:text="#{arOtf.opinion}">Ý kiến</th>
+                                    <th style="width: 170px;" th:text="#{arOtf.actionTime}">Thời gian thực hiện</th>
+                                    <th style="width: 120px;" th:text="#{common.deptName}">Phòng ban</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vaot_modalApprovalBody"></tbody>
+                        </table>
+                    </div>
+
+                    <h6 class="fw-bold mb-2" th:text="#{arOtf.empInfo}">Thông tin nhân viên</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <tbody>
+                                <tr>
+                                    <th class="table-light text-center" style="width: 100px;" th:text="#{common.empName}">Họ tên</th>
+                                    <td id="vaot_modalEmpName"></td>
+                                    <th class="table-light text-center" style="width: 100px;" th:text="#{common.empId}">Mã nhân viên</th>
+                                    <td id="vaot_modalEmpId"></td>
+                                </tr>
+                                <tr>
+                                    <th class="table-light text-center" th:text="#{common.deptName}">Phòng ban</th>
+                                    <td id="vaot_modalEmpDept"></td>
+                                    <th class="table-light text-center" th:text="#{attSearch.position}">Chức vụ</th>
+                                    <td id="vaot_modalEmpPost"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h6 class="fw-bold mb-2" th:text="#{arOtf.otInfo}">Thông tin tăng ca</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{arOtf.otType}">Loại tăng ca</th>
+                                    <th style="width: 140px;" th:text="#{arOtf.otDate}">Ngày tăng ca</th>
+                                    <th style="width: 170px;" th:text="#{arOtf.otBegin}">Bắt đầu</th>
+                                    <th style="width: 170px;" th:text="#{arOtf.otEnd}">Kết thúc</th>
+                                    <th style="width: 140px;" th:text="#{common.hours}">Số giờ</th>
+                                    <th th:text="#{common.reason}">Lý do</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="vaot_modalType" class="text-center"></td>
+                                    <td id="vaot_modalDate" class="text-center"></td>
+                                    <td id="vaot_modalFrom" class="text-center"></td>
+                                    <td id="vaot_modalTo" class="text-center"></td>
+                                    <td id="vaot_modalHour" class="text-center"></td>
+                                    <td id="vaot_modalRemark" class="text-center"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <div id="vaot_approveSection" class="d-flex align-items-center gap-2 me-auto" style="display:none!important">
+                        <button type="button" class="btn btn-success btn-sm" onclick="vaotDoAffirm(1)">
+                            <i class="bi bi-check-circle"></i>
+                            <span th:text="#{vae.btn.approve}">Duyệt</span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="vaotDoAffirm(2)">
+                            <i class="bi bi-x-circle"></i>
+                            <span th:text="#{vae.btn.reject}">Từ chối</span>
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<script th:fragment="approvalOtScript" th:inline="javascript">
+    (function () {
+        var _vaot_detailModal = null;
+        var _vaot_affirmCtx = null;
+
+        var _vaot_i18n = {
+            noApplyNo:          /*[[#{arOtf.msg.noApplyNo}]]*/ 'Không tìm thấy số đơn để xem chi tiết',
+            loadingData:        /*[[#{arOtf.loadingData}]]*/ 'Đang tải dữ liệu...',
+            noApprovalData:     /*[[#{arOtf.noApprovalData}]]*/ 'Không có dữ liệu phê duyệt',
+            loadFailed:         /*[[#{arOtf.loadFailed}]]*/ 'Tải dữ liệu thất bại',
+            applyOt:            /*[[#{arOtf.applyOt}]]*/ 'Xin tăng ca',
+            executeFail:        /*[[#{vae.msg.executeFail}]]*/ 'Có lỗi xảy ra trong quá trình xử lý.'
+        };
+
+        function vaotEscHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function vaotSetText(selector, value) {
+            $(selector).text(value || '');
+        }
+
+        function vaotBuildApplyTitle(info) {
+            var otTypeName       = info.otTypeName       || '';
+            var localName        = info.localName        || '';
+            var detailFromDateTime = info.detailFromDateTime || '';
+            var detailToDateTime   = info.detailToDateTime   || '';
+            if (!otTypeName && !localName && !detailFromDateTime && !detailToDateTime) return '';
+            return otTypeName + '/Apply(' + localName + ')[Date: ' + detailFromDateTime + ' ~ ' + detailToDateTime + ']';
+        }
+
+        function vaotResetModal() {
+            vaotSetText('#vaot_modalApplyTitle', '');
+            vaotSetText('#vaot_modalApplicant', '');
+            vaotSetText('#vaot_modalEmpName', '');
+            vaotSetText('#vaot_modalEmpId', '');
+            vaotSetText('#vaot_modalEmpDept', '');
+            vaotSetText('#vaot_modalEmpPost', '');
+            vaotSetText('#vaot_modalType', '');
+            vaotSetText('#vaot_modalDate', '');
+            vaotSetText('#vaot_modalFrom', '');
+            vaotSetText('#vaot_modalTo', '');
+            vaotSetText('#vaot_modalHour', '');
+            vaotSetText('#vaot_modalRemark', '');
+            $('#vaot_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">'
+                + vaotEscHtml(_vaot_i18n.loadingData) + '</td></tr>');
+        }
+
+        function vaotRenderApprovalRows(approvalList) {
+            if (!approvalList || !approvalList.length) {
+                $('#vaot_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">'
+                    + vaotEscHtml(_vaot_i18n.noApprovalData) + '</td></tr>');
+                return;
+            }
+            var canAffirm = _vaot_affirmCtx && _vaot_affirmCtx.fromApprovalEmail
+                && _vaot_affirmCtx.affirmPersonId && String(_vaot_affirmCtx.affirmFlag) === '0';
+            var html = '';
+            approvalList.forEach(function (item, index) {
+                var stt = item.affirmLevel || (index + 1);
+                if (String(stt) === '100') stt = 'HR';
+                var isPending = canAffirm && item.affirmPersonId === _vaot_affirmCtx.affirmPersonId
+                    && String(item.affirmFlag) === '0';
+                var opinionCell = isPending
+                    ? '<input type="text" id="vaot_pendingOpinionInput" class="form-control form-control-sm" style="min-width:140px;">'
+                    : vaotEscHtml(item.affirmContent || '');
+                html += '<tr>'
+                    + '<td class="text-center">' + vaotEscHtml(stt) + '</td>'
+                    + '<td class="text-center">' + vaotEscHtml(item.affirmTypeName || '') + '</td>'
+                    + '<td class="text-center">' + vaotEscHtml(item.affirmFlagName || '') + '</td>'
+                    + '<td>' + vaotEscHtml(item.affirmName || '') + '</td>'
+                    + '<td>' + opinionCell + '</td>'
+                    + '<td class="text-center">' + vaotEscHtml(item.updateDate || '') + '</td>'
+                    + '<td class="text-center">' + vaotEscHtml(item.deptName || '') + '</td>'
+                    + '</tr>';
+            });
+            $('#vaot_modalApprovalBody').html(html);
+
+            if (canAffirm) {
+                $('#vaot_approveSection').show();
+            }
+        }
+
+        function vaotRenderData(data) {
+            var otInfo       = data && data.otInfo       ? data.otInfo       : {};
+            var employeeInfo = data && data.employeeInfo ? data.employeeInfo : otInfo;
+            var approvalList = data && data.approvalList ? data.approvalList : [];
+
+            $('#vaot_applyDetailTitle').text('[' + (otInfo.otTypeName || _vaot_i18n.applyOt) + ']');
+            vaotSetText('#vaot_modalApplyTitle', vaotBuildApplyTitle(otInfo));
+            vaotSetText('#vaot_modalApplicant',
+                (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
+
+            vaotSetText('#vaot_modalEmpName', employeeInfo.localName     || '');
+            vaotSetText('#vaot_modalEmpId',   employeeInfo.empId         || '');
+            vaotSetText('#vaot_modalEmpDept', employeeInfo.deptName      || '');
+            vaotSetText('#vaot_modalEmpPost', employeeInfo.postGradeName || '');
+
+            vaotSetText('#vaot_modalType',   otInfo.otTypeName        || '');
+            vaotSetText('#vaot_modalDate',   otInfo.applyOtDate       || '');
+            vaotSetText('#vaot_modalFrom',   otInfo.detailFromDateTime || '');
+            vaotSetText('#vaot_modalTo',     otInfo.detailToDateTime   || '');
+            vaotSetText('#vaot_modalHour',   otInfo.otApplyHour        || '');
+            vaotSetText('#vaot_modalRemark', otInfo.applyOtRemark      || '');
+
+            vaotRenderApprovalRows(approvalList);
+        }
+
+        window.vaotOpenApplyDetail = function (applyNo, applyType, ctx) {
+            if (!applyNo) {
+                typeof toastr !== 'undefined' && toastr.warning(_vaot_i18n.noApplyNo);
+                return;
+            }
+            _vaot_affirmCtx = ctx || null;
+
+            // Dọn sạch state Bootstrap Modal còn sót từ tab trước
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({ paddingRight: '', overflow: '' });
+
+            // Tìm modal element (có thể đang nằm trong tab pane bị ẩn)
+            var modalEl = document.getElementById('vaot_applyDetailModal');
+            if (!modalEl) return;
+
+            // Di chuyển modal ra thẳng <body> để tránh bị ẩn theo tab pane display:none
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+
+            // Re-init nếu element đã thay đổi hoặc chưa khởi tạo
+            if (!_vaot_detailModal || _vaot_detailModal._element !== modalEl) {
+                try { if (_vaot_detailModal) _vaot_detailModal.dispose(); } catch (e) {}
+                _vaot_detailModal = window.bootstrap ? new bootstrap.Modal(modalEl) : null;
+            }
+
+            vaotResetModal();
+            $('#vaot_approveSection').hide();
+            if (_vaot_detailModal) _vaot_detailModal.show();
+
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/overtime/detail',
+                type: 'GET',
+                data: { applyNo: applyNo, applyType: applyType || '' },
+                success: function (res) { vaotRenderData(res || {}); },
+                error: function () {
+                    $('#vaot_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">'
+                        + vaotEscHtml(_vaot_i18n.loadFailed) + '</td></tr>');
+                    typeof toastr !== 'undefined' && toastr.error(_vaot_i18n.loadFailed);
+                }
+            });
+        };
+
+        window.vaotDoAffirm = function (flag) {
+            if (!_vaot_affirmCtx) return;
+            var affirmContent = ($('#vaot_pendingOpinionInput').val() || '').trim() || (flag === 1 ? 'Ok' : 'Reject');
+            var items = [{
+                applyNo:      _vaot_affirmCtx.applyNo,
+                applyType:    _vaot_affirmCtx.applyType,
+                applyFlag:    _vaot_affirmCtx.applyFlag,
+                affirmLevel:  _vaot_affirmCtx.affirmLevel,
+                flag:         flag,
+                affirmContent: affirmContent
+            }];
+            $.ajax({
+                url: '/ess/infoApply/api/approvalEmail/execute',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ items: items }),
+                success: function (res) {
+                    if (_vaot_detailModal) _vaot_detailModal.hide();
+                    if (res.success) {
+                        typeof vaeLoadList === 'function' && vaeLoadList();
+                    } else {
+                        alert(res.message || _vaot_i18n.executeFail);
+                    }
+                },
+                error: function () {
+                    alert(_vaot_i18n.executeFail);
+                }
+            });
+        };
+
+        $(document).ready(function () {
+            if (window.bootstrap && document.getElementById('vaot_applyDetailModal')) {
+                _vaot_detailModal = new bootstrap.Modal(document.getElementById('vaot_applyDetailModal'));
+            }
+        });
+    })();
+</script>

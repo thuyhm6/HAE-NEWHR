@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.sy.syRole.mapper.SyRoleGroupRelationMapper">
+
+    <!-- Result Map cho SyRoleGroupRelation -->
+    <resultMap id="SyRoleGroupRelationResultMap" type="com.ait.sy.syRole.model.SyRoleGroupRelation">
+        <id column="ROLE_GROUP_NO" property="roleGroupNo"/>
+        <result column="ROLE_NO" property="roleNo"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="ORDERNO" property="orderNo"/>
+        <result column="ACTIVITY" property="activity"/>
+    </resultMap>
+
+    <!-- Tìm relations theo roleGroupNo -->
+    <select id="findByRoleGroupNo" resultMap="SyRoleGroupRelationResultMap">
+        SELECT 
+            ROLE_GROUP_NO,
+            ROLE_NO,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY
+        FROM sy_role_group_relation 
+        WHERE ROLE_GROUP_NO = #{roleGroupNo}
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Tìm relations theo roleNo -->
+    <select id="findByRoleNo" resultMap="SyRoleGroupRelationResultMap">
+        SELECT 
+            ROLE_GROUP_NO,
+            ROLE_NO,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY
+        FROM sy_role_group_relation 
+        WHERE ROLE_NO = #{roleNo}
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Kiểm tra role group có role không -->
+    <select id="hasRole" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM sy_role_group_relation 
+        WHERE ROLE_GROUP_NO = #{roleGroupNo}
+          AND ROLE_NO = #{roleNo}
+          AND ACTIVITY = 1
+    </select>
+
+    <!-- Lấy danh sách relations hoạt động theo roleGroupNo -->
+    <select id="findActiveByRoleGroupNo" resultMap="SyRoleGroupRelationResultMap">
+        SELECT 
+            ROLE_GROUP_NO,
+            ROLE_NO,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ORDERNO,
+            ACTIVITY
+        FROM sy_role_group_relation 
+        WHERE ROLE_GROUP_NO = #{roleGroupNo}
+          AND ACTIVITY = 1
+        ORDER BY ORDERNO
+    </select>
+
+    <!-- Delete all relations for a role group -->
+    <delete id="deleteByRoleGroupNo">
+        DELETE FROM SY_ROLE_GROUP_RELATION WHERE ROLE_GROUP_NO = #{roleGroupNo}
+    </delete>
+
+    <!-- Insert new relation -->
+    <insert id="insert">
+        INSERT INTO SY_ROLE_GROUP_RELATION (
+            ROLE_GROUP_NO, ROLE_NO, CREATE_DATE, CREATED_BY, UPDATE_DATE, UPDATED_BY, ORDERNO, ACTIVITY
+        ) VALUES (
+            #{roleGroupNo}, #{roleNo}, SYSDATE, #{adminID, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{orderNo}, #{activity}
+        )
+    </insert>
+
+</mapper>
+

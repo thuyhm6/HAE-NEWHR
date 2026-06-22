@@ -42,7 +42,7 @@
         FROM (
             SELECT HE.PERSON_ID, HE.EMPID, HE.LOCAL_NAME, HE.DEPTNO,
                    D.ITEM_NO, TO_CHAR(SUM(D.QUANTITY)) AS TOTAL_QUANTITY
-            FROM AR_DETAIL_HTSV D, HR_EMPLOYEE HE
+            FROM AR_DETAIL_HAE D, HR_EMPLOYEE HE
             WHERE HE.PERSON_ID = D.PERSON_ID
               AND D.PERSON_ID  = #{adminID, jdbcType=VARCHAR}
               AND D.ITEM_NO NOT IN (
@@ -88,7 +88,7 @@
                TO_CHAR(D.FROM_TIME, 'HH24:MI')                        AS FROM_TIME_STR,
                TO_CHAR(D.TO_TIME,   'HH24:MI')                        AS TO_TIME_STR,
                TO_CHAR(D.QUANTITY)                                     AS QUANTITY
-        FROM AR_DETAIL_HTSV D, HR_EMPLOYEE HE
+        FROM AR_DETAIL_HAE D, HR_EMPLOYEE HE
         WHERE HE.PERSON_ID = D.PERSON_ID
           AND D.PERSON_ID  = #{personId, jdbcType=VARCHAR}
           AND D.ITEM_NO    = #{itemNo,   jdbcType=VARCHAR}

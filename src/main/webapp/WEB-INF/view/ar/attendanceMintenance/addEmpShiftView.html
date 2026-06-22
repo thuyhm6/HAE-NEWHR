@@ -182,7 +182,7 @@
                     'copy', 'csv', 'excel', 'pdf', 'print'
                 ],
                 ajax: {
-                    url: '/ar/attendanceMintenance/api/scheduleHtsv/list',
+                    url: '/ar/attendanceMintenance/api/scheduleHae/list',
                     dataSrc: '',
                     data: function (d) {
                         d.empId = $('#searchEmpId').val();
@@ -238,12 +238,12 @@
 
             // Tải file Excel mẫu
             window.svDownloadTemplate = function () {
-                window.location.href = '/sy/excel/api/downloadTemplate?templateName=AR_SCHEDULE_HTSV_Template';
+                window.location.href = '/sy/excel/api/downloadTemplate?templateName=AR_SCHEDULE_HAE_Template';
             };
 
             // Mở modal import Excel (dùng shared component ExcelImport)
             window.svOpenImportModal = function () {
-                ExcelImport.open('/sy/excel/api/importTemplate?templateName=AR_SCHEDULE_HTSV_Template', function () {
+                ExcelImport.open('/sy/excel/api/importTemplate?templateName=AR_SCHEDULE_HAE_Template', function () {
                     table.ajax.reload();
                 });
             };
@@ -274,7 +274,7 @@
             // Sửa
             window.svEditRaw = function (pkNo) {
                 $.ajax({
-                    url: '/ar/attendanceMintenance/api/scheduleHtsv/' + pkNo,
+                    url: '/ar/attendanceMintenance/api/scheduleHae/' + pkNo,
                     type: 'GET',
                     success: function (data) {
                         $('#shiftModalTitle').text(_addShift_i18n.modalTitleEdit);
@@ -327,7 +327,7 @@
                 };
 
                 $.ajax({
-                    url: '/ar/attendanceMintenance/api/scheduleHtsv/save',
+                    url: '/ar/attendanceMintenance/api/scheduleHae/save',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(formData),
@@ -361,7 +361,7 @@
             window.svDeleteRaw = function (pkNo) {
                 if (confirm(_addShift_i18n.msgConfirmDelete)) {
                     $.ajax({
-                        url: '/ar/attendanceMintenance/api/scheduleHtsv/delete/' + pkNo,
+                        url: '/ar/attendanceMintenance/api/scheduleHae/delete/' + pkNo,
                         type: 'DELETE',
                         success: function (res) {
                             if (res.success) {

@@ -11,6 +11,7 @@ import com.ait.ess.infoApply.service.EssPersonOtInfoService;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import com.ait.util.MailSendApprovalManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,9 @@ public class EssInfoApplyController {
 
     @Autowired
     private SyAffirmEmailService syAffirmEmailService;
+
+    @Autowired
+    private MailSendApprovalManager mailSendApprovalManager;
 
     @GetMapping("/viewSSTOtApplyInfo")
     public String viewSSTOtApplyInfo() {
@@ -144,6 +149,23 @@ public class EssInfoApplyController {
     @ResponseBody
     public ResponseEntity<List<SyAffirmEmailDto>> getApprovalEmailList(SyAffirmEmailDto dto) {
         return ResponseEntity.ok(syAffirmEmailService.getApprovalEmailList(dto));
+    }
+
+    @PostMapping("/api/approvalEmail/syncEagleOffice")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> syncEagleOffice(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // null → đồng bộ toàn bộ đơn chờ gửi (SEND_EMAIL_FLAG = 0)
+            boolean result = mailSendApprovalManager.sendAffirmInfoEmailApproval(request, null);
+            response.put("success", result);
+            response.put("message", result ? "Đồng bộ Clever thành công." : "Không có đơn nào cần đồng bộ.");
+        } catch (Exception e) {
+            log.error("Failed to sync EagleOffice", e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/viewApprovaledEmail")

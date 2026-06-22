@@ -2,7 +2,7 @@ package com.ait.ar.attendanceSettings.service;
 
 import com.ait.ar.attendanceSettings.dto.ArDepartmentManageDto;
 import com.ait.ar.attendanceSettings.model.ArDepartmentManage;
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface ArDepartmentManageService {

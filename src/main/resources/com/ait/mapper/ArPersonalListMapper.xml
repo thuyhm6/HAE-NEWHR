@@ -109,7 +109,7 @@
     </resultMap>
 
     <!--
-        Chi tiết chấm công từ AR_DETAIL_HTSV cho 1 nhân viên + 1 loại (tìm ITEM_NO qua AR_ITEM.ITEM_ID).
+        Chi tiết chấm công từ AR_DETAIL_HAE cho 1 nhân viên + 1 loại (tìm ITEM_NO qua AR_ITEM.ITEM_ID).
         startDate / endDate định dạng YYYY/MM/DD, so sánh trực tiếp với AR_DATE_STR.
     -->
     <select id="selectDetailList" parameterType="com.ait.ess.viewDept.dto.ArPersonalListDetailDto"
@@ -126,7 +126,7 @@
                TO_CHAR(D.FROM_TIME, 'HH24:MI')                        AS FROM_TIME_STR,
                TO_CHAR(D.TO_TIME,   'HH24:MI')                        AS TO_TIME_STR,
                TO_CHAR(D.QUANTITY)                                     AS QUANTITY
-        FROM AR_DETAIL_HTSV D, HR_EMPLOYEE HE
+        FROM AR_DETAIL_HAE D, HR_EMPLOYEE HE
         WHERE HE.PERSON_ID = D.PERSON_ID
           AND D.PERSON_ID  = #{personId, jdbcType=VARCHAR}
           AND D.ITEM_NO    = (

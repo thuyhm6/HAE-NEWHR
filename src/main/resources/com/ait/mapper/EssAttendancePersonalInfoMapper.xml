@@ -23,7 +23,7 @@
         <result column="ITEM_NAME" property="itemName" />
     </resultMap>
 
-    <!-- Danh sách chấm công cá nhân từ AR_DETAIL_HTSV -->
+    <!-- Danh sách chấm công cá nhân từ AR_DETAIL_HAE -->
     <select id="selectPersonalAttendanceList" resultMap="PersonalInfoResultMap">
         SELECT
             D.PK_NO,
@@ -39,7 +39,7 @@
             TO_CHAR(D.FROM_TIME, 'DD/MM/YYYY HH24:MI') AS FROM_TIME,
             TO_CHAR(D.TO_TIME,   'DD/MM/YYYY HH24:MI') AS TO_TIME,
             D.QUANTITY
-        FROM AR_DETAIL_HTSV D
+        FROM AR_DETAIL_HAE D
         JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = D.PERSON_ID
         WHERE D.PERSON_ID = #{adminID, jdbcType=VARCHAR}
           AND D.ITEM_NO NOT IN (

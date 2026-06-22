@@ -48,23 +48,20 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
 
     @Override
     public List<SlowQueryInfo> getSlowQueries(int limit) {
-        String sql = """
-                SELECT
-                    sql_id,
-                    SUBSTR(sql_text, 1, 100) as sql_text,
-                    executions,
-                    elapsed_time,
-                    CASE WHEN executions > 0 THEN elapsed_time/executions ELSE 0 END as avg_elapsed_time,
-                    cpu_time,
-                    disk_reads,
-                    buffer_gets,
-                    rows_processed
-                FROM v$sql
-                WHERE executions > 0
-                  AND elapsed_time/executions > 1000000  -- More than 1 second average
-                ORDER BY elapsed_time/executions DESC
-                FETCH FIRST ? ROWS ONLY
-                """;
+        String sql = "SELECT sql_id," +
+                     " SUBSTR(sql_text, 1, 100) as sql_text," +
+                     " executions," +
+                     " elapsed_time," +
+                     " CASE WHEN executions > 0 THEN elapsed_time/executions ELSE 0 END as avg_elapsed_time," +
+                     " cpu_time," +
+                     " disk_reads," +
+                     " buffer_gets," +
+                     " rows_processed" +
+                     " FROM v$sql" +
+                     " WHERE executions > 0" +
+                     " AND elapsed_time/executions > 1000000" +
+                     " ORDER BY elapsed_time/executions DESC" +
+                     " FETCH FIRST ? ROWS ONLY";
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, limit);
         List<SlowQueryInfo> slowQueries = new ArrayList<>();
@@ -89,17 +86,9 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
 
     @Override
     public List<TableStatistics> getTableStatistics() {
-        String sql = """
-                SELECT
-                    table_name,
-                    num_rows,
-                    blocks,
-                    avg_row_len,
-                    last_analyzed,
-                    sample_size
-                FROM user_tables
-                ORDER BY num_rows DESC
-                """;
+        String sql = "SELECT table_name, num_rows, blocks, avg_row_len, last_analyzed, sample_size" +
+                     " FROM user_tables" +
+                     " ORDER BY num_rows DESC";
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
         List<TableStatistics> statistics = new ArrayList<>();
@@ -121,18 +110,11 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
 
     @Override
     public List<IndexUsageInfo> getIndexUsage() {
-        String sql = """
-                SELECT
-                    i.index_name,
-                    i.table_name,
-                    i.num_rows,
-                    i.distinct_keys,
-                    i.clustering_factor,
-                    CASE WHEN o.used = 'YES' THEN 1 ELSE 0 END as is_used
-                FROM user_indexes i
-                LEFT JOIN v$object_usage o ON i.index_name = o.index_name
-                ORDER BY i.table_name, i.index_name
-                """;
+        String sql = "SELECT i.index_name, i.table_name, i.num_rows, i.distinct_keys, i.clustering_factor," +
+                     " CASE WHEN o.used = 'YES' THEN 1 ELSE 0 END as is_used" +
+                     " FROM user_indexes i" +
+                     " LEFT JOIN v$object_usage o ON i.index_name = o.index_name" +
+                     " ORDER BY i.table_name, i.index_name";
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
         List<IndexUsageInfo> indexUsage = new ArrayList<>();
@@ -167,11 +149,8 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
             status.setActiveSessions(activeSessions != null ? activeSessions : 0);
 
             // Get long running queries count
-            String longRunningSql = """
-                    SELECT COUNT(*) FROM v$session
-                    WHERE status = 'ACTIVE'
-                    AND last_call_et > 300  -- More than 5 minutes
-                    """;
+            String longRunningSql = "SELECT COUNT(*) FROM v$session" +
+                    " WHERE status = 'ACTIVE' AND last_call_et > 300";
             Long longRunningQueries = jdbcTemplate.queryForObject(longRunningSql, Long.class);
             status.setLongRunningQueries(longRunningQueries != null ? longRunningQueries : 0);
 
@@ -179,19 +158,14 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
             List<String> issues = new ArrayList<>();
 
             // Check for locked tables
-            String lockSql = """
-                    SELECT COUNT(*) FROM v$locked_object
-                    """;
+            String lockSql = "SELECT COUNT(*) FROM v$locked_object";
             Long locks = jdbcTemplate.queryForObject(lockSql, Long.class);
             if (locks != null && locks > 0) {
                 issues.add("Database locks detected: " + locks);
             }
 
             // Check for tablespace usage (simplified)
-            String tablespaceSql = """
-                    SELECT COUNT(*) FROM dba_tablespaces
-                    WHERE status != 'ONLINE'
-                    """;
+            String tablespaceSql = "SELECT COUNT(*) FROM dba_tablespaces WHERE status != 'ONLINE'";
             try {
                 Long offlineTablespaces = jdbcTemplate.queryForObject(tablespaceSql, Long.class);
                 if (offlineTablespaces != null && offlineTablespaces > 0) {
@@ -222,19 +196,12 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
 
     @Override
     public List<DatabaseSession> getActiveSessions() {
-        String sql = """
-                SELECT
-                    sid as session_id,
-                    username,
-                    program,
-                    status,
-                    last_call_et as elapsed_time,
-                    SUBSTR(sql_text, 1, 100) as sql_text
-                FROM v$session s
-                LEFT JOIN v$sqltext t ON s.sql_id = t.sql_id AND t.piece = 0
-                WHERE s.status = 'ACTIVE'
-                ORDER BY s.last_call_et DESC
-                """;
+        String sql = "SELECT sid as session_id, username, program, status," +
+                     " last_call_et as elapsed_time, SUBSTR(sql_text, 1, 100) as sql_text" +
+                     " FROM v$session s" +
+                     " LEFT JOIN v$sqltext t ON s.sql_id = t.sql_id AND t.piece = 0" +
+                     " WHERE s.status = 'ACTIVE'" +
+                     " ORDER BY s.last_call_et DESC";
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
         List<DatabaseSession> sessions = new ArrayList<>();
@@ -257,19 +224,12 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
 
     @Override
     public List<DatabaseLock> getDatabaseLocks() {
-        String sql = """
-                SELECT
-                    l.lock_type,
-                    o.object_name as table_name,
-                    l.session_id,
-                    s.username,
-                    l.status,
-                    l.wait_time
-                FROM v$locked_object l
-                JOIN dba_objects o ON l.object_id = o.object_id
-                JOIN v$session s ON l.session_id = s.sid
-                ORDER BY l.wait_time DESC
-                """;
+        String sql = "SELECT l.lock_type, o.object_name as table_name, l.session_id," +
+                     " s.username, l.status, l.wait_time" +
+                     " FROM v$locked_object l" +
+                     " JOIN dba_objects o ON l.object_id = o.object_id" +
+                     " JOIN v$session s ON l.session_id = s.sid" +
+                     " ORDER BY l.wait_time DESC";
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
         List<DatabaseLock> locks = new ArrayList<>();
@@ -297,7 +257,7 @@ public class DatabaseMonitoringServiceImpl implements DatabaseMonitoringService 
                     "SY_MENU", "SY_ROLE", "SY_ROLE_GROUP", "SY_USER_RELATION", "SY_ROLE_RELATION" };
 
             for (String table : tables) {
-                String sql = "BEGIN DBMS_STATS.GATHER_TABLE_STATS('HTSV_HR', '" + table + "'); END;";
+                String sql = "BEGIN DBMS_STATS.GATHER_TABLE_STATS('HAE_HR', '" + table + "'); END;";
                 jdbcTemplate.execute(sql);
             }
 

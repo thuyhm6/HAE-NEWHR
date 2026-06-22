@@ -8,7 +8,7 @@ import com.ait.ar.attendanceSettings.model.ArCalender;
 import com.ait.ar.attendanceSettings.model.ArCalenderGroup;
 import com.ait.ar.attendanceSettings.model.ArCalenderGroupHistory;
 import com.ait.ar.attendanceSettings.service.ArCalenderService;
-import com.ait.ar.attendanceMintenance.model.ArScheduleHtsv;
+import com.ait.ar.attendanceMintenance.model.ArScheduleHae;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -151,7 +151,7 @@ public class ArCalenderServiceImpl implements ArCalenderService {
         if (personId == null || arDateStr == null)
             return;
 
-        ArScheduleHtsv entity = new ArScheduleHtsv();
+        ArScheduleHae entity = new ArScheduleHae();
         entity.setPersonId(personId);
         entity.setArDateStr(arDateStr);
         entity.setShiftNo(dto.getShiftNo());
@@ -161,11 +161,11 @@ public class ArCalenderServiceImpl implements ArCalenderService {
         entity.setOrderno(0);
         entity.setAddFlag("M");
 
-        int count = arCalenderMapper.countScheduleHtsv(personId, arDateStr);
+        int count = arCalenderMapper.countScheduleHae(personId, arDateStr);
         if (count > 0) {
-            arCalenderMapper.updateScheduleHtsv(entity);
+            arCalenderMapper.updateScheduleHae(entity);
         } else {
-            arCalenderMapper.insertScheduleHtsv(entity);
+            arCalenderMapper.insertScheduleHae(entity);
         }
     }
 

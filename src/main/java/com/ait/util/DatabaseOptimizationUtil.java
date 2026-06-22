@@ -20,10 +20,8 @@ public class DatabaseOptimizationUtil {
      * Kiểm tra index usage
      */
     public boolean isIndexUsed(String indexName) {
-        String sql = """
-                SELECT used FROM v$object_usage
-                WHERE index_name = ?
-                """;
+        String sql = "SELECT used FROM v$object_usage" +
+                     " WHERE index_name = ?";
 
         try {
             String result = jdbcTemplate.queryForObject(sql, String.class, indexName);
@@ -37,11 +35,9 @@ public class DatabaseOptimizationUtil {
      * Lấy thông tin table size
      */
     public long getTableSize(String tableName) {
-        String sql = """
-                SELECT num_rows * avg_row_len as table_size
-                FROM user_tables
-                WHERE table_name = ?
-                """;
+        String sql = "SELECT num_rows * avg_row_len as table_size" +
+                     " FROM user_tables" +
+                     " WHERE table_name = ?";
 
         try {
             Long size = jdbcTemplate.queryForObject(sql, Long.class, tableName.toUpperCase());
@@ -55,11 +51,9 @@ public class DatabaseOptimizationUtil {
      * Kiểm tra table statistics
      */
     public boolean hasValidStatistics(String tableName) {
-        String sql = """
-                SELECT CASE WHEN last_analyzed > SYSDATE - 7 THEN 1 ELSE 0 END as has_valid_stats
-                FROM user_tables
-                WHERE table_name = ?
-                """;
+        String sql = "SELECT CASE WHEN last_analyzed > SYSDATE - 7 THEN 1 ELSE 0 END as has_valid_stats" +
+                     " FROM user_tables" +
+                     " WHERE table_name = ?";
 
         try {
             Integer result = jdbcTemplate.queryForObject(sql, Integer.class, tableName.toUpperCase());
@@ -73,13 +67,11 @@ public class DatabaseOptimizationUtil {
      * Lấy danh sách unused indexes
      */
     public List<String> getUnusedIndexes() {
-        String sql = """
-                SELECT i.index_name
-                FROM user_indexes i
-                LEFT JOIN v$object_usage o ON i.index_name = o.index_name
-                WHERE o.used = 'NO' OR o.used IS NULL
-                ORDER BY i.table_name, i.index_name
-                """;
+        String sql = "SELECT i.index_name" +
+                     " FROM user_indexes i" +
+                     " LEFT JOIN v$object_usage o ON i.index_name = o.index_name" +
+                     " WHERE o.used = 'NO' OR o.used IS NULL" +
+                     " ORDER BY i.table_name, i.index_name";
 
         return jdbcTemplate.queryForList(sql, String.class);
     }
@@ -88,23 +80,20 @@ public class DatabaseOptimizationUtil {
      * Lấy danh sách slow queries
      */
     public List<Map<String, Object>> getSlowQueries(int limit) {
-        String sql = """
-                SELECT
-                    sql_id,
-                    SUBSTR(sql_text, 1, 100) as sql_text,
-                    executions,
-                    elapsed_time,
-                    CASE WHEN executions > 0 THEN elapsed_time/executions ELSE 0 END as avg_elapsed_time,
-                    cpu_time,
-                    disk_reads,
-                    buffer_gets,
-                    rows_processed
-                FROM v$sql
-                WHERE executions > 0
-                  AND elapsed_time/executions > 1000000  -- More than 1 second average
-                ORDER BY elapsed_time/executions DESC
-                FETCH FIRST ? ROWS ONLY
-                """;
+        String sql = "SELECT sql_id," +
+                     " SUBSTR(sql_text, 1, 100) as sql_text," +
+                     " executions," +
+                     " elapsed_time," +
+                     " CASE WHEN executions > 0 THEN elapsed_time/executions ELSE 0 END as avg_elapsed_time," +
+                     " cpu_time," +
+                     " disk_reads," +
+                     " buffer_gets," +
+                     " rows_processed" +
+                     " FROM v$sql" +
+                     " WHERE executions > 0" +
+                     " AND elapsed_time/executions > 1000000" +
+                     " ORDER BY elapsed_time/executions DESC" +
+                     " FETCH FIRST ? ROWS ONLY";
 
         return jdbcTemplate.queryForList(sql, limit);
     }
@@ -163,20 +152,16 @@ public class DatabaseOptimizationUtil {
      */
     public boolean isDatabaseHealthy() {
         try {
-            // Check basic connectivity
             jdbcTemplate.queryForObject("SELECT 1 FROM DUAL", Integer.class);
 
-            // Check for locks
             if (hasDatabaseLocks()) {
                 return false;
             }
 
-            // Check active sessions (should be less than 100)
             if (getActiveSessionCount() > 100) {
                 return false;
             }
 
-            // Check connection pool usage (should be less than 90%)
             if (getConnectionPoolUsage() > 90) {
                 return false;
             }
@@ -247,11 +232,9 @@ public class DatabaseOptimizationUtil {
      * Kiểm tra query performance
      */
     public boolean isQuerySlow(String sqlId) {
-        String sql = """
-                SELECT CASE WHEN elapsed_time/executions > 1000000 THEN 1 ELSE 0 END as is_slow
-                FROM v$sql
-                WHERE sql_id = ? AND executions > 0
-                """;
+        String sql = "SELECT CASE WHEN elapsed_time/executions > 1000000 THEN 1 ELSE 0 END as is_slow" +
+                     " FROM v$sql" +
+                     " WHERE sql_id = ? AND executions > 0";
 
         try {
             Integer result = jdbcTemplate.queryForObject(sql, Integer.class, sqlId);
@@ -265,21 +248,18 @@ public class DatabaseOptimizationUtil {
      * Lấy execution plan cho query
      */
     public List<Map<String, Object>> getExecutionPlan(String sqlId) {
-        String sql = """
-                SELECT
-                    plan_line_id,
-                    plan_depth,
-                    plan_operation,
-                    plan_options,
-                    plan_object_name,
-                    plan_object_type,
-                    plan_cost,
-                    plan_cardinality,
-                    plan_bytes
-                FROM v$sql_plan
-                WHERE sql_id = ?
-                ORDER BY plan_line_id
-                """;
+        String sql = "SELECT plan_line_id," +
+                     " plan_depth," +
+                     " plan_operation," +
+                     " plan_options," +
+                     " plan_object_name," +
+                     " plan_object_type," +
+                     " plan_cost," +
+                     " plan_cardinality," +
+                     " plan_bytes" +
+                     " FROM v$sql_plan" +
+                     " WHERE sql_id = ?" +
+                     " ORDER BY plan_line_id";
 
         return jdbcTemplate.queryForList(sql, sqlId);
     }

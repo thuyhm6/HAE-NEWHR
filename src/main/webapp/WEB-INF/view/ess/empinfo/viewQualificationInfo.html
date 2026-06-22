@@ -2,30 +2,8 @@
     <div class="row">
         <div class="col-12">
 
-            <!-- ===== Thông tin cơ bản ===== -->
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white py-2">
-                    <strong><i class="bx bx-certification me-1"></i><span th:text="#{qi.section.certInfo}">Thông tin Chứng chỉ</span></strong>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-bordered table-sm align-middle mb-0">
-                        <tbody>
-                            <tr>
-                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.fullName}">Họ tên</th>
-                                <td id="qi_localName"></td>
-                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.empId}">Mã nhân viên</th>
-                                <td id="qi_empId"></td>
-                            </tr>
-                            <tr>
-                                <th class="table-light text-center" th:text="#{epi.field.department}">Phòng ban</th>
-                                <td id="qi_deptName"></td>
-                                <th class="table-light text-center" th:text="#{epi.field.position}">Chức vụ</th>
-                                <td id="qi_dutyName"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <!-- ===== Thông tin nhân viên (fragment chung) ===== -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
 
             <!-- ===== Trình độ học vấn ===== -->
             <div class="card mb-3">
@@ -160,14 +138,24 @@
                             <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
                             <textarea class="form-control form-control-sm" id="ed_remark" rows="2"></textarea>
                         </div>
+                        <div class="col-12 mt-2">
+                            <div class="alert alert-info py-2 mb-2 small">
+                                <i class="bx bx-info-circle me-1"></i>
+                                <span th:text="#{epi.msg.applyNote}">Yêu cầu sẽ được gửi đến người quản lý để xét duyệt.</span>
+                            </div>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.attachFiles}">File đính kèm</label>
+                            <input type="file" class="form-control form-control-sm" id="ed_attachFiles"
+                                   multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                            <div class="form-text" th:text="#{epi.msg.uploadHint}">Hỗ trợ: PDF, Word, Excel, hình ảnh.</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-end">
                     <div>
                         <button type="button" class="btn btn-secondary btn-sm me-1"
                             data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="saveEduc()">
-                            <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                        <button type="button" class="btn btn-primary btn-sm" id="ed_btnSave" onclick="saveEduc()">
+                            <i class="bx bx-send me-1"></i><span th:text="#{epi.btn.submitRequest}">Gửi yêu cầu</span>
                         </button>
                     </div>
                 </div>
@@ -220,14 +208,24 @@
                             <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
                             <textarea class="form-control form-control-sm" id="ql_qualRemark" rows="2"></textarea>
                         </div>
+                        <div class="col-12 mt-2">
+                            <div class="alert alert-info py-2 mb-2 small">
+                                <i class="bx bx-info-circle me-1"></i>
+                                <span th:text="#{epi.msg.applyNote}">Yêu cầu sẽ được gửi đến người quản lý để xét duyệt.</span>
+                            </div>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.attachFiles}">File đính kèm</label>
+                            <input type="file" class="form-control form-control-sm" id="ql_attachFiles"
+                                   multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                            <div class="form-text" th:text="#{epi.msg.uploadHint}">Hỗ trợ: PDF, Word, Excel, hình ảnh.</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-end">
                     <div>
                         <button type="button" class="btn btn-secondary btn-sm me-1"
                             data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="saveQual()">
-                            <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                        <button type="button" class="btn btn-primary btn-sm" id="ql_btnSave" onclick="saveQual()">
+                            <i class="bx bx-send me-1"></i><span th:text="#{epi.btn.submitRequest}">Gửi yêu cầu</span>
                         </button>
                     </div>
                 </div>
@@ -238,6 +236,7 @@
 </div>
 
 <template id="fragmentScripts">
+    <div th:replace="~{fragments/essEmpInfoCard :: script}"></div>
     <script th:inline="javascript">
         (function () {
             var i18n = {
@@ -248,6 +247,7 @@
                 loadErrReward:      /*[[#{qi.msg.loadError.reward}]]*/ 'Lỗi tải dữ liệu khen thưởng',
                 validateEducLevel:  /*[[#{qi.msg.validate.educLevel}]]*/ 'Vui lòng chọn Trình độ học vấn!',
                 validateQualName:   /*[[#{qi.msg.validate.qualName}]]*/ 'Vui lòng nhập Tên chứng chỉ!',
+                applySuccess:       /*[[#{epi.msg.applySuccess}]]*/ 'Gửi yêu cầu thành công! Chờ người quản lý xét duyệt.',
                 saveSuccess:        /*[[#{epi.msg.saveSuccess}]]*/ 'Cập nhật thành công!',
                 addSuccess:         /*[[#{epi.msg.addSuccess}]]*/ 'Thêm mới thành công!',
                 systemError:        /*[[#{epi.msg.systemError}]]*/ 'Lỗi hệ thống',
@@ -293,21 +293,6 @@
                 if (!val) return '';
                 if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.substring(0, 10);
                 return '';
-            }
-
-            // ===== Thông tin cơ bản =====
-            function loadBasicInfo() {
-                $.ajax({
-                    url: '/ess/empinfo/api/personalInfo/myInfo',
-                    type: 'GET',
-                    success: function (data) {
-                        if (!data) return;
-                        setText('qi_localName', data.localName);
-                        setText('qi_empId', data.empId);
-                        setText('qi_deptName', data.deptName);
-                        setText('qi_dutyName', data.dutyName);
-                    }
-                });
             }
 
             // ===== Trình độ học vấn =====
@@ -439,29 +424,50 @@
                     return;
                 }
                 var educNo = document.getElementById('ed_educNo').value;
-                var payload = {
-                    educNo: educNo ? parseInt(educNo) : null,
-                    degreeCode: document.getElementById('ed_degreeCode').value || null,
-                    institutionName: document.getElementById('ed_institutionName').value || null,
-                    startDate: document.getElementById('ed_startDate').value || null,
-                    endDate: document.getElementById('ed_endDate').value || null,
-                    subject: document.getElementById('ed_subject').value || null,
-                    degreesCode: document.getElementById('ed_degreesCode').value || null,
-                    eduDegNum: document.getElementById('ed_eduDegNum').value || null,
-                    remark: document.getElementById('ed_remark').value || null
-                };
+                var fd = new FormData();
+                fd.append('degreeCode', document.getElementById('ed_degreeCode').value);
+                var institutionName = document.getElementById('ed_institutionName').value;
+                if (institutionName) fd.append('institutionName', institutionName);
+                var startDate = document.getElementById('ed_startDate').value;
+                if (startDate) fd.append('startDate', startDate);
+                var endDate = document.getElementById('ed_endDate').value;
+                if (endDate) fd.append('endDate', endDate);
+                var subject = document.getElementById('ed_subject').value;
+                if (subject) fd.append('subject', subject);
+                var degreesCode = document.getElementById('ed_degreesCode').value;
+                if (degreesCode) fd.append('degreesCode', degreesCode);
+                var eduDegNum = document.getElementById('ed_eduDegNum').value;
+                if (eduDegNum) fd.append('eduDegNum', eduDegNum);
+                var remark = document.getElementById('ed_remark').value;
+                if (remark) fd.append('remark', remark);
+                if (educNo) fd.append('updateEducNo', educNo);
+
+                var fileInput = document.getElementById('ed_attachFiles');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (var i = 0; i < fileInput.files.length; i++) {
+                        fd.append('attachFiles', fileInput.files[i]);
+                    }
+                }
+
+                var btn = document.getElementById('ed_btnSave');
+                btn.disabled = true;
                 $.ajax({
-                    url: '/ess/empinfo/api/qualInfo/saveEducation',
+                    url: '/ess/empinfo/api/qualInfo/saveEducationApply',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(payload),
+                    data: fd,
+                    contentType: false,
+                    processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalEduc')).hide();
-                        showToast(educNo ? i18n.saveSuccess : i18n.addSuccess, 'success');
+                        showToast(i18n.applySuccess, 'success');
+                        document.getElementById('ed_attachFiles').value = '';
                         loadEducation();
                     },
                     error: function (err) {
                         showToast((err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.systemError, 'danger');
+                    },
+                    complete: function () {
+                        btn.disabled = false;
                     }
                 });
             };
@@ -497,35 +503,56 @@
                     return;
                 }
                 var qualNo = document.getElementById('ql_qualNo').value;
-                var payload = {
-                    qualNo: qualNo ? parseInt(qualNo) : null,
-                    qualName: document.getElementById('ql_qualName').value || null,
-                    qualLevel: document.getElementById('ql_qualLevel').value || null,
-                    dateObtained: document.getElementById('ql_dateObtained').value || null,
-                    validityDate: document.getElementById('ql_validityDate').value || null,
-                    qualCardNo: document.getElementById('ql_qualCardNo').value || null,
-                    qualInstitute: document.getElementById('ql_qualInstitute').value || null,
-                    qualGrade: document.getElementById('ql_qualGrade').value || null,
-                    qualRemark: document.getElementById('ql_qualRemark').value || null
-                };
+                var fd = new FormData();
+                fd.append('qualName', document.getElementById('ql_qualName').value);
+                var qualLevel = document.getElementById('ql_qualLevel').value;
+                if (qualLevel) fd.append('qualLevel', qualLevel);
+                var dateObtained = document.getElementById('ql_dateObtained').value;
+                if (dateObtained) fd.append('dateObtained', dateObtained);
+                var validityDate = document.getElementById('ql_validityDate').value;
+                if (validityDate) fd.append('validityDate', validityDate);
+                var qualCardNo = document.getElementById('ql_qualCardNo').value;
+                if (qualCardNo) fd.append('qualCardNo', qualCardNo);
+                var qualInstitute = document.getElementById('ql_qualInstitute').value;
+                if (qualInstitute) fd.append('qualInstitute', qualInstitute);
+                var qualGrade = document.getElementById('ql_qualGrade').value;
+                if (qualGrade) fd.append('qualGrade', qualGrade);
+                var qualRemark = document.getElementById('ql_qualRemark').value;
+                if (qualRemark) fd.append('qualRemark', qualRemark);
+                if (qualNo) fd.append('updateQualNo', qualNo);
+
+                var fileInput = document.getElementById('ql_attachFiles');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (var i = 0; i < fileInput.files.length; i++) {
+                        fd.append('attachFiles', fileInput.files[i]);
+                    }
+                }
+
+                var btn = document.getElementById('ql_btnSave');
+                btn.disabled = true;
                 $.ajax({
-                    url: '/ess/empinfo/api/qualInfo/saveQualification',
+                    url: '/ess/empinfo/api/qualInfo/saveQualificationApply',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(payload),
+                    data: fd,
+                    contentType: false,
+                    processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalQual')).hide();
-                        showToast(qualNo ? i18n.saveSuccess : i18n.addSuccess, 'success');
+                        showToast(i18n.applySuccess, 'success');
+                        document.getElementById('ql_attachFiles').value = '';
                         loadQualification();
                     },
                     error: function (err) {
                         showToast((err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.systemError, 'danger');
+                    },
+                    complete: function () {
+                        btn.disabled = false;
                     }
                 });
             };
 
             $(document).ready(function () {
-                loadBasicInfo();
+                loadEssEmpInfoCard();
                 loadEducation();
                 loadQualification();
                 loadReward();

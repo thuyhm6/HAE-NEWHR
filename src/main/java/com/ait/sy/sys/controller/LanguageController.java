@@ -1,8 +1,8 @@
 package com.ait.sy.sys.controller;
 
 import com.ait.util.I18nUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Locale;

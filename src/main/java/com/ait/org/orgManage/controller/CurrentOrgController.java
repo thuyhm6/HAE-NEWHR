@@ -6,7 +6,7 @@ import com.ait.org.orgManage.model.HrDepartment;
 import com.ait.org.orgManage.service.CurrentOrgService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

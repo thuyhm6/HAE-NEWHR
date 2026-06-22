@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.HrFamilyApplyMapper">
+
+    <resultMap id="HrFamilyApplyResultMap" type="com.ait.ess.empinfo.dto.HrFamilyApplyDto">
+        <id     property="familyNo"               column="FAMILY_NO"/>
+        <result property="personId"               column="PERSON_ID"/>
+        <result property="famTypeCode"            column="FAM_TYPE_CODE"/>
+        <result property="famName"                column="FAM_NAME"/>
+        <result property="famBorndate"            column="FAM_BORNDATE"/>
+        <result property="famIdcard"              column="FAM_IDCARD"/>
+        <result property="famFamilyPhone"         column="FAM_FAMILY_PHONE"/>
+        <result property="famCompanyName"         column="FAM_COMPANY_NAME"/>
+        <result property="liveYn"                 column="LIVE_YN"/>
+        <result property="emergencyContactYn"     column="EMERGENCY_CONTACT_YN"/>
+        <result property="famPersonId"            column="FAM_PERSON_ID"/>
+        <result property="famAddress"             column="FAM_ADDRESS"/>
+        <result property="famYinyangli"           column="FAM_YINYANGLI"/>
+        <result property="taxYn"                  column="TAX_YN"/>
+        <result property="gender"                 column="GENDER"/>
+        <result property="addressPostal"          column="ADDRESS_POSTAL"/>
+        <result property="activity"               column="ACTIVITY"/>
+        <result property="famEmail"               column="FAM_EMAIL"/>
+        <result property="famEducation"           column="FAM_EDUCATION"/>
+        <result property="isemergencyaddress"     column="ISEMERGENCYADDRESS"/>
+        <result property="nationality"            column="NATIONALITY"/>
+        <result property="mobilePhone"            column="MOBILE_PHONE"/>
+        <result property="workPhone"              column="WORK_PHONE"/>
+        <result property="welfareType"            column="WELFARE_TYPE"/>
+        <result property="applyType"              column="APPLY_TYPE"/>
+        <result property="updateFamilyNo"         column="UPDATE_FAMILY_NO"/>
+        <result property="essTypeCode"            column="ESS_TYPE_CODE"/>
+        <result property="emergencyLiaisonOffice" column="EMERGENCY_LIAISON_OFFICE"/>
+        <result property="famPhone"               column="FAM_PHONE"/>
+        <result property="ocupation"              column="OCUPATION"/>
+        <result property="age"                    column="AGE"/>
+        <result property="note"                   column="NOTE"/>
+        <result property="earror"                 column="EARROR"/>
+        <result property="callback"               column="CALLBACK"/>
+    </resultMap>
+
+    <select id="selectByApplyNo" resultMap="HrFamilyApplyResultMap">
+        SELECT
+            FAMILY_NO, PERSON_ID,
+            FAM_TYPE_CODE,
+            GET_GLOBAL_NAME(FAM_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS FAM_TYPE_NAME,
+            FAM_NAME,
+            TO_CHAR(FAM_BORNDATE,'YYYY/MM/DD') AS FAM_BORNDATE,
+            FAM_IDCARD, FAM_FAMILY_PHONE, FAM_COMPANY_NAME, LIVE_YN,
+            EMERGENCY_CONTACT_YN, FAM_PERSON_ID, FAM_ADDRESS, GENDER,
+            ADDRESS_POSTAL, ACTIVITY, FAM_EMAIL, FAM_EDUCATION,
+            NATIONALITY, MOBILE_PHONE, WORK_PHONE, WELFARE_TYPE,
+            APPLY_TYPE, UPDATE_FAMILY_NO, ESS_TYPE_CODE,
+            EMERGENCY_LIAISON_OFFICE, FAM_PHONE, OCUPATION, AGE, NOTE,
+            EARROR, CALLBACK
+        FROM HR_FAMILY_APPLY
+        WHERE FAMILY_NO = #{applyNo, jdbcType=NUMERIC}
+    </select>
+
+    <!-- FAMILY_NO dùng HR_FAMILY_SEQ_APPLY.NEXTVAL, đồng thời là ESS_FILE.APPLY_NO để liên kết file -->
+    <select id="getNextFamilyNoSeq" resultType="java.lang.Long">
+        SELECT HR_FAMILY_SEQ_APPLY.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertFamilyApply" parameterType="com.ait.ess.empinfo.dto.HrFamilyApplyDto">
+        INSERT INTO HR_FAMILY_APPLY (
+            FAMILY_NO,
+            PERSON_ID,
+            FAM_TYPE_CODE,
+            FAM_NAME,
+            FAM_BORNDATE,
+            FAM_IDCARD,
+            FAM_FAMILY_PHONE,
+            FAM_COMPANY_NAME,
+            LIVE_YN,
+            EMERGENCY_CONTACT_YN,
+            FAM_PERSON_ID,
+            FAM_ADDRESS,
+            FAM_YINYANGLI,
+            TAX_YN,
+            GENDER,
+            ADDRESS_POSTAL,
+            FAM_EMAIL,
+            FAM_EDUCATION,
+            ISEMERGENCYADDRESS,
+            NATIONALITY,
+            MOBILE_PHONE,
+            WORK_PHONE,
+            WELFARE_TYPE,
+            APPLY_TYPE,
+            UPDATE_FAMILY_NO,
+            ESS_TYPE_CODE,
+            EMERGENCY_LIAISON_OFFICE,
+            FAM_PHONE,
+            OCUPATION,
+            AGE,
+            NOTE,
+            ACTIVITY,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATED_BY,
+            UPDATED_IP
+        ) VALUES (
+            #{familyNo,               jdbcType=NUMERIC},
+            #{personId,               jdbcType=VARCHAR},
+            #{famTypeCode,            jdbcType=VARCHAR},
+            #{famName,                jdbcType=VARCHAR},
+            <choose>
+                <when test="famBorndate != null and famBorndate != ''">
+                    TO_DATE(#{famBorndate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>NULL,</otherwise>
+            </choose>
+            #{famIdcard,              jdbcType=VARCHAR},
+            #{famFamilyPhone,         jdbcType=VARCHAR},
+            #{famCompanyName,         jdbcType=VARCHAR},
+            #{liveYn,                 jdbcType=VARCHAR},
+            #{emergencyContactYn,     jdbcType=VARCHAR},
+            #{famPersonId,            jdbcType=VARCHAR},
+            #{famAddress,             jdbcType=VARCHAR},
+            #{famYinyangli,           jdbcType=VARCHAR},
+            #{taxYn,                  jdbcType=VARCHAR},
+            #{gender,                 jdbcType=VARCHAR},
+            #{addressPostal,          jdbcType=VARCHAR},
+            #{famEmail,               jdbcType=VARCHAR},
+            #{famEducation,           jdbcType=VARCHAR},
+            #{isemergencyaddress,     jdbcType=VARCHAR},
+            #{nationality,            jdbcType=VARCHAR},
+            #{mobilePhone,            jdbcType=VARCHAR},
+            #{workPhone,              jdbcType=VARCHAR},
+            #{welfareType,            jdbcType=VARCHAR},
+            #{applyType,              jdbcType=NUMERIC},
+            #{updateFamilyNo,         jdbcType=NUMERIC},
+            #{essTypeCode,            jdbcType=VARCHAR},
+            #{emergencyLiaisonOffice, jdbcType=VARCHAR},
+            #{famPhone,               jdbcType=VARCHAR},
+            #{ocupation,              jdbcType=VARCHAR},
+            #{age,                    jdbcType=VARCHAR},
+            #{note,                   jdbcType=VARCHAR},
+            1,
+            SYSDATE,
+            #{adminID,                jdbcType=VARCHAR},
+            #{adminIP,                jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,                jdbcType=VARCHAR},
+            #{adminIP,                jdbcType=VARCHAR}
+        )
+    </insert>
+
+</mapper>

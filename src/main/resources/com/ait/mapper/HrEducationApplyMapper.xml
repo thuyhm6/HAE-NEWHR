@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.HrEducationApplyMapper">
+
+    <resultMap id="HrEducationApplyResultMap" type="com.ait.ess.empinfo.dto.HrEducationApplyDto">
+        <result property="educNo"               column="EDUC_NO"/>
+        <result property="applyNo"              column="APPLY_NO"/>
+        <result property="personId"             column="PERSON_ID"/>
+        <result property="subject"              column="SUBJECT"/>
+        <result property="degreeCode"           column="DEGREE_CODE"/>
+        <result property="degreeType"           column="DEGREE_TYPE"/>
+        <result property="institutionName"      column="INSTITUTION_NAME"/>
+        <result property="rank"                 column="RANK"/>
+        <result property="educCardNo"           column="EDUC_CARD_NO"/>
+        <result property="schoolAddress"        column="SCHOOL_ADDRESS"/>
+        <result property="startDatess"          column="START_DATESS"/>
+        <result property="endDatess"            column="END_DATESS"/>
+        <result property="competentDepartment"  column="COMPETENT_DEPARTMENT"/>
+        <result property="subjectSecond"        column="SUBJECT_SECOND"/>
+        <result property="particularDegree"     column="PARTICULAR_DEGREE"/>
+        <result property="remarks"              column="REMARKS"/>
+        <result property="subjectClassify"      column="SUBJECT_CLASSIFY"/>
+        <result property="subjectClassifyTwo"   column="SUBJECT_CLASSIFY_TWO"/>
+        <result property="siteProvince"         column="SITE_PROVINCE"/>
+        <result property="siteCity"             column="SITE_CITY"/>
+        <result property="finalDegreeWhether"   column="FINAL_DEGREE_WHETHER"/>
+        <result property="schoolType"           column="SCHOOL_TYPE"/>
+        <result property="degreesCode"          column="DEGREES_CODE"/>
+        <result property="graduationType"       column="GRADUATION_TYPE"/>
+        <result property="eduDegNum"            column="EDU_DEG_NUM"/>
+        <result property="otherSchoolName"      column="OTHER_SCHOOL_NAME"/>
+        <result property="gpa"                  column="GPA"/>
+        <result property="orderno"              column="ORDERNO"/>
+        <result property="activity"             column="ACTIVITY"/>
+        <result property="updateEducNo"         column="UPDATE_EDUC_NO"/>
+        <result property="applyType"            column="APPLY_TYPE"/>
+        <result property="fileUrl"              column="FILE_URL"/>
+        <result property="fileName"             column="FILE_NAME"/>
+        <result property="essTypeCode"          column="ESS_TYPE_CODE"/>
+        <result property="remark"               column="REMARK"/>
+        <result property="place"                column="PLACE"/>
+        <result property="studyExperience"      column="STUDY_EXPERIENCE"/>
+        <result property="siteCountry"          column="SITE_COUNTRY"/>
+        <result property="startDate"            column="START_DATE"/>
+        <result property="endDate"              column="END_DATE"/>
+        <result property="earror"               column="EARROR"/>
+        <result property="callback"             column="CALLBACK"/>
+    </resultMap>
+
+    <select id="selectEducNextval" resultType="java.lang.Long">
+        SELECT HR_EDUCATION_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertEducationApply" parameterType="com.ait.ess.empinfo.dto.HrEducationApplyDto">
+        INSERT INTO HR_EDUCATION_APPLY (
+            EDUC_NO,
+            PERSON_ID,
+            SUBJECT,
+            DEGREE_CODE,
+            DEGREE_TYPE,
+            INSTITUTION_NAME,
+            RANK,
+            EDUC_CARD_NO,
+            SCHOOL_ADDRESS,
+            COMPETENT_DEPARTMENT,
+            SUBJECT_SECOND,
+            PARTICULAR_DEGREE,
+            REMARKS,
+            SUBJECT_CLASSIFY,
+            SUBJECT_CLASSIFY_TWO,
+            SITE_PROVINCE,
+            SITE_CITY,
+            FINAL_DEGREE_WHETHER,
+            SCHOOL_TYPE,
+            DEGREES_CODE,
+            GRADUATION_TYPE,
+            EDU_DEG_NUM,
+            OTHER_SCHOOL_NAME,
+            GPA,
+            ORDERNO,
+            ACTIVITY,
+            UPDATE_EDUC_NO,
+            APPLY_TYPE,
+            ESS_TYPE_CODE,
+            REMARK,
+            PLACE,
+            STUDY_EXPERIENCE,
+            SITE_COUNTRY,
+            START_DATE,
+            END_DATE,
+            EARROR,
+            CALLBACK,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATED_BY,
+            UPDATED_IP
+            
+        ) VALUES (
+            #{educNo,               jdbcType=NUMERIC},
+            #{personId,             jdbcType=VARCHAR},
+            #{subject,              jdbcType=VARCHAR},
+            #{degreeCode,           jdbcType=VARCHAR},
+            #{degreeType,           jdbcType=VARCHAR},
+            #{institutionName,      jdbcType=VARCHAR},
+            #{rank,                 jdbcType=NUMERIC},
+            #{educCardNo,           jdbcType=VARCHAR},
+            #{schoolAddress,        jdbcType=VARCHAR},
+            #{competentDepartment,  jdbcType=VARCHAR},
+            #{subjectSecond,        jdbcType=VARCHAR},
+            #{particularDegree,     jdbcType=VARCHAR},
+            #{remarks,              jdbcType=VARCHAR},
+            #{subjectClassify,      jdbcType=VARCHAR},
+            #{subjectClassifyTwo,   jdbcType=VARCHAR},
+            #{siteProvince,         jdbcType=VARCHAR},
+            #{siteCity,             jdbcType=VARCHAR},
+            #{finalDegreeWhether,   jdbcType=VARCHAR},
+            #{schoolType,           jdbcType=VARCHAR},
+            #{degreesCode,          jdbcType=VARCHAR},
+            #{graduationType,       jdbcType=VARCHAR},
+            #{eduDegNum,            jdbcType=VARCHAR},
+            #{otherSchoolName,      jdbcType=VARCHAR},
+            #{gpa,                  jdbcType=VARCHAR},
+            #{orderno,              jdbcType=NUMERIC},
+            #{activity,             jdbcType=NUMERIC},
+            #{updateEducNo,         jdbcType=NUMERIC},
+            #{applyType,            jdbcType=NUMERIC},
+            #{essTypeCode,          jdbcType=VARCHAR},
+            #{remark,               jdbcType=VARCHAR},
+            #{place,                jdbcType=VARCHAR},
+            #{studyExperience,      jdbcType=VARCHAR},
+            #{siteCountry,          jdbcType=VARCHAR},
+            #{startDate,            jdbcType=VARCHAR},
+            #{endDate,              jdbcType=VARCHAR},
+            #{earror,               jdbcType=VARCHAR},
+            #{callback,             jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,              jdbcType=VARCHAR},
+            #{adminIP,              jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,              jdbcType=VARCHAR},
+            #{adminIP,              jdbcType=VARCHAR}
+            
+        )
+    </insert>
+
+    <select id="selectByApplyNo" resultMap="HrEducationApplyResultMap">
+        SELECT
+            EDUC_NO, PERSON_ID, SUBJECT, 
+            DEGREE_CODE,
+            GET_GLOBAL_NAME(DEGREE_CODE, #{lang, jdbcType=VARCHAR}) AS DEGREE_NAME,
+            DEGREE_TYPE,
+            INSTITUTION_NAME, RANK, EDUC_CARD_NO, SCHOOL_ADDRESS,
+            COMPETENT_DEPARTMENT, SUBJECT_SECOND, PARTICULAR_DEGREE, REMARKS,
+            SUBJECT_CLASSIFY, SUBJECT_CLASSIFY_TWO, SITE_PROVINCE, SITE_CITY,
+            FINAL_DEGREE_WHETHER, SCHOOL_TYPE, DEGREES_CODE, GRADUATION_TYPE,
+            EDU_DEG_NUM, OTHER_SCHOOL_NAME, GPA, ORDERNO,
+            ACTIVITY, UPDATE_EDUC_NO, APPLY_TYPE, FILE_URL, FILE_NAME,
+            ESS_TYPE_CODE, REMARK, PLACE, STUDY_EXPERIENCE, SITE_COUNTRY,
+            START_DATE, END_DATE,
+            EARROR, CALLBACK
+        FROM HR_EDUCATION_APPLY
+        WHERE EDUC_NO = #{applyNo, jdbcType=NUMERIC}
+    </select>
+
+</mapper>

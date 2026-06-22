@@ -23,12 +23,15 @@ public class EssPersonalInfoDto {
 
     private String dateStarted;
 
+    private String englishName;
+
     // === Từ HR_PERSONAL_INFO ===
     private String dob;
     private String sexCode;
     private String sexName;
     private String maritalStatusCode;
     private String maritalStatusName;
+    private String weddingDate;
     private String nationCode;
     private String nationName;
     private String nationalityCode;
@@ -45,4 +48,14 @@ public class EssPersonalInfoDto {
     private String homeAddress;
     private String officePhone;
     private String idcardNo;
+    private String idcardStartDate;
+    private String issuingAuthority;
+    private String regPlace;
+    private String finalDegreeCode;
+    private String finalDegreeName;
+    private String religion;
+    private String politicalStatus;
+    private String cvUpdateStatus;
+    private String armyOrNot;
+    private String obstacleOrNot;
 }

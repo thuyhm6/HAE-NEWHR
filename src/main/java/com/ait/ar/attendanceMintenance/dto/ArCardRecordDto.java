@@ -29,7 +29,7 @@ public class ArCardRecordDto {
     private String postGradeNo;
     private String postGradeName;
 
-    // Từ AR_SCHEDULE_HTSV
+    // Từ AR_SCHEDULE_HAE
     private String shiftNo;
     private String shiftName;
 

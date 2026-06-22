@@ -6,25 +6,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.thymeleaf.spring6.SpringTemplateEngine;
-import org.thymeleaf.spring6.messageresolver.SpringMessageResolver;
-import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
-import org.thymeleaf.spring6.view.ThymeleafViewResolver;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.messageresolver.SpringMessageResolver;
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
-/**
- * Thymeleaf Configuration for WAR deployment
- * Configures Thymeleaf to use WEB-INF/view directory
- */
 @Configuration
 public class ThymeleafConfig implements WebMvcConfigurer {
 
     @Autowired
     private MessageSource messageSource;
 
-    /**
-     * Template Resolver for Thymeleaf
-     * Points to WEB-INF/view directory for templates
-     */
     @Bean
     public SpringResourceTemplateResolver templateResolver() {
         SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
@@ -32,13 +24,10 @@ public class ThymeleafConfig implements WebMvcConfigurer {
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode("HTML");
         templateResolver.setCharacterEncoding("UTF-8");
-        templateResolver.setCacheable(false); // Disable cache for development
+        templateResolver.setCacheable(false);
         return templateResolver;
     }
 
-    /**
-     * Template Engine for Thymeleaf
-     */
     @Bean
     public SpringTemplateEngine templateEngine() {
         SpringMessageResolver messageResolver = new SpringMessageResolver();
@@ -51,9 +40,6 @@ public class ThymeleafConfig implements WebMvcConfigurer {
         return templateEngine;
     }
 
-    /**
-     * View Resolver for Thymeleaf
-     */
     @Bean
     public ThymeleafViewResolver thymeleafViewResolver() {
         ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
@@ -63,21 +49,12 @@ public class ThymeleafConfig implements WebMvcConfigurer {
         return viewResolver;
     }
 
-    /**
-     * Static Resource Handler
-     * Configure static resources (CSS, JS, Images)
-     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Handle assets directory
         registry.addResourceHandler("/assets/**")
                 .addResourceLocations("/assets/");
-
-        // Handle static resources
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("/static/");
-
-        // Handle webjars
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("/webjars/");
     }

@@ -85,7 +85,7 @@ public class PaItemInputServiceImpl implements PaItemInputService {
     }
 
     @Override
-    public byte[] exportSummaryHtsv(String payScheduleNo, List<String> deptNos, List<String> itemIds) {
+    public byte[] exportSummaryHae(String payScheduleNo, List<String> deptNos, List<String> itemIds) {
         try {
             // Lấy tên hiển thị cho từng ITEM_ID (dùng làm header cột)
             List<PaItemInputDto> itemDefs = mapper.selectItemNamesByIds(itemIds);
@@ -100,8 +100,8 @@ public class PaItemInputServiceImpl implements PaItemInputService {
                 itemNameMap.putIfAbsent(id.toUpperCase(), id);
             }
 
-            List<Map<String, Object>> dataList = mapper.selectSummaryHtsvData(payScheduleNo, deptNos);
-            log.info("Xuất Excel PA_SUMMARY_HTSV payScheduleNo={}, deptNos={}, itemIds={}: rows={}",
+            List<Map<String, Object>> dataList = mapper.selectSummaryHaeData(payScheduleNo, deptNos);
+            log.info("Xuất Excel PA_SUMMARY_HAE payScheduleNo={}, deptNos={}, itemIds={}: rows={}",
                     payScheduleNo, deptNos, itemIds, dataList.size());
 
             try (XSSFWorkbook wb = new XSSFWorkbook()) {
@@ -163,7 +163,7 @@ public class PaItemInputServiceImpl implements PaItemInputService {
                 return baos.toByteArray();
             }
         } catch (Exception e) {
-            log.error("Lỗi khi xuất Excel PA_SUMMARY_HTSV payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
+            log.error("Lỗi khi xuất Excel PA_SUMMARY_HAE payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
             throw new RuntimeException("Lỗi khi xuất Excel: " + e.getMessage(), e);
         }
     }

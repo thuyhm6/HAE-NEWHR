@@ -1,5 +1,6 @@
 package com.ait.sy.syAffirm.service.impl;
 
+import com.ait.hrm.approve.mapper.HrmApproveMapper;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.mapper.SyAffirmEmailMapper;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
@@ -21,6 +22,9 @@ public class SyAffirmEmailServiceImpl implements SyAffirmEmailService {
 
     @Autowired
     private SyAffirmEmailMapper mapper;
+
+    @Autowired
+    private HrmApproveMapper hrmApproveMapper;
 
     @Override
     public List<SyAffirmEmailDto> getList(SyAffirmEmailDto dto) {
@@ -124,13 +128,16 @@ public class SyAffirmEmailServiceImpl implements SyAffirmEmailService {
         try {
             int leave = mapper.countHrmPendingLeave();
             int anomalous = mapper.countHrmPendingAnomalous();
+            int personalChange = hrmApproveMapper.countPendingPersonalChanges();
             counts.put("leave", leave);
             counts.put("anomalous", anomalous);
-            counts.put("total", leave + anomalous);
+            counts.put("personalChange", personalChange);
+            counts.put("total", leave + anomalous + personalChange);
         } catch (Exception e) {
             log.error("Failed to get HRM pending counts", e);
             counts.put("leave", 0);
             counts.put("anomalous", 0);
+            counts.put("personalChange", 0);
             counts.put("total", 0);
         }
         return counts;

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 13px; color: #333; }
+  .mail-wrap { width: 700px; margin: 0 auto; border: 1px solid #ccc; }
+  .mail-header { background-color: #1a5276; color: #fff; padding: 14px 20px; font-size: 16px; font-weight: bold; }
+  .mail-section { padding: 16px 20px; }
+  .section-title { font-weight: bold; font-size: 13px; color: #1a5276; border-bottom: 2px solid #1a5276; padding-bottom: 4px; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background-color: #d6eaf8; color: #1a5276; font-weight: bold; text-align: center; padding: 7px 10px; border: 1px solid #aed6f1; font-size: 12px; }
+  .td_type { padding: 7px 10px; border: 1px solid #d5d8dc; font-size: 12px; }
+  .mail-footer { background-color: #f4f6f7; padding: 10px 20px; font-size: 11px; color: #777; text-align: center; border-top: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<div class="mail-wrap">
+  <div class="mail-header">&#91;HAE-VHR&#93; Leave Application - Thông báo đơn xin nghỉ phép</div>
+  <div class="mail-section">
+    <div class="section-title">Applicant Information / Thông tin người nộp đơn</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Name / Họ tên</th>
+          <th>Employee ID / Mã NV</th>
+          <th>Department / Phòng ban</th>
+          <th>Position / Chức vụ</th>
+        </tr>
+      </thead>
+      <tbody>
+        [APPLY_PERSON_INFO]
+      </tbody>
+    </table>
+  </div>
+  <div class="mail-section">
+    <div class="section-title">Leave Details / Chi tiết nghỉ phép</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Leave Type / Loại nghỉ</th>
+          <th>From / Từ ngày</th>
+          <th>To / Đến ngày</th>
+          <th>Duration / Thời lượng</th>
+          <th>Reason / Lý do</th>
+        </tr>
+      </thead>
+      <tbody>
+        [APPAL_ATT_INFO]
+      </tbody>
+    </table>
+  </div>
+  <div class="mail-footer">HAE Vietnam HR System &mdash; Auto-generated, please do not reply.</div>
+</div>
+</body>
+</html>

@@ -163,34 +163,58 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
         affirmorMapper.insert(affirmor0);
 
         // 4. Insert các mức duyệt tiếp theo
-        // 1. Chuẩn bị tham số truyền vào Mapper
-        Map<String, Object> affirmorParams = new HashMap<>();
-        affirmorParams.put("applyTypeNo", params.get("applyTypeNo"));
-        affirmorParams.put("personId", personId);
-        affirmorParams.put("applyTypeCode", params.get("leaveTypeCode"));
-        affirmorParams.put("applyLength", params.get("applyLength"));
-        affirmorParams.put("lang", "vi");
-
-        // 2. Thực thi gọi hàm Oracle qua MyBatis.
-        // Sau khi chạy xong, MyBatis tự động đẩy kết quả vào key "resultList" trong params.
-        affirmorMapper.getAffirmorList(affirmorParams);
-
-        // 3. Ép kiểu an toàn và lấy danh sách kết quả từ tham số OUT
-        // các trường lấy ra lần lượt là empId, localName, positionNo, positionName, deptName, postionname, affirmorId, affirmLevel
         @SuppressWarnings("unchecked")
-        List<SyAffirmEmailDto> affirmorList = (List<SyAffirmEmailDto>) affirmorParams.get("resultList");
-        if (affirmorList != null) {
-            for (SyAffirmEmailDto affirmor : affirmorList) {
+        List<Map<String, Object>> manualApprovers = (List<Map<String, Object>>) params.get("approvers");
+
+        if (manualApprovers != null && !manualApprovers.isEmpty()) {
+            // Dùng danh sách người phê duyệt do người dùng tự thêm
+            log.info("saveLeaveApply: using {} manual approvers for applyNo={}", manualApprovers.size(), applyNo);
+            int level = 1;
+            for (Map<String, Object> approver : manualApprovers) {
+                String approverPersonId = toTrimmedString(approver.get("personId"));
+                if (approverPersonId.isEmpty()) continue;
+                SyAffirmEmailDto affirmor = new SyAffirmEmailDto();
                 affirmor.setAffirmType("1");
                 affirmor.setApplyNo(applyNo);
                 affirmor.setApplyType(params.get("leaveTypeCode").toString());
                 affirmor.setApplyTypeCode("21");
                 affirmor.setApplyAffirmFlag("14014306");
                 affirmor.setApplyFlag("0");
-                affirmor.setAffirmPersonId(affirmor.getAffirmorId());
+                affirmor.setAffirmPersonId(approverPersonId);
+                affirmor.setAffirmLevel(String.valueOf(level++));
                 affirmor.setLastName(lastName);
                 affirmor.setApplyPersonInfo(applyPersonInfo);
+                affirmor.setLocalName(toTrimmedString(approver.get("localName")));
+                affirmor.setEmpId(toTrimmedString(approver.get("empId")));
                 affirmorMapper.insert(affirmor);
+            }
+        } else {
+            // Fallback: lấy người phê duyệt tự động từ hệ thống (GET_AFFIRMOR_LIST_IMPROVE)
+            log.info("saveLeaveApply: no manual approvers, fetching auto approver list for applyNo={}", applyNo);
+            Map<String, Object> affirmorParams = new HashMap<>();
+            affirmorParams.put("applyTypeNo", params.get("applyTypeNo"));
+            affirmorParams.put("personId", personId);
+            affirmorParams.put("applyTypeCode", params.get("leaveTypeCode"));
+            affirmorParams.put("applyLength", params.get("applyLength"));
+            affirmorParams.put("lang", "vi");
+
+            affirmorMapper.getAffirmorList(affirmorParams);
+
+            @SuppressWarnings("unchecked")
+            List<SyAffirmEmailDto> affirmorList = (List<SyAffirmEmailDto>) affirmorParams.get("resultList");
+            if (affirmorList != null) {
+                for (SyAffirmEmailDto affirmor : affirmorList) {
+                    affirmor.setAffirmType("1");
+                    affirmor.setApplyNo(applyNo);
+                    affirmor.setApplyType(params.get("leaveTypeCode").toString());
+                    affirmor.setApplyTypeCode("21");
+                    affirmor.setApplyAffirmFlag("14014306");
+                    affirmor.setApplyFlag("0");
+                    affirmor.setAffirmPersonId(affirmor.getAffirmorId());
+                    affirmor.setLastName(lastName);
+                    affirmor.setApplyPersonInfo(applyPersonInfo);
+                    affirmorMapper.insert(affirmor);
+                }
             }
         }
     }
@@ -214,7 +238,7 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
     public int cancelMyLeaveApplyList(List<String> applyNos) {
         if (applyNos == null || applyNos.isEmpty()) return 0;
         log.info("cancelMyLeaveApplyList checking lock for applyNos={}", applyNos);
-        int lockedByDetail = essLeaveApplymapper.countLockedByArDetailHtsv(applyNos);
+        int lockedByDetail = essLeaveApplymapper.countLockedByArDetailHae(applyNos);
         int lockedByDept   = essLeaveApplymapper.countLockedByArDeptManage(applyNos);
         if (lockedByDetail > 0 || lockedByDept > 0) {
             throw new IllegalStateException("Đơn nghỉ phép này đã bị khóa, không thể hủy bỏ!");

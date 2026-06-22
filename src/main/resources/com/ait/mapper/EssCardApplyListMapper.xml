@@ -65,7 +65,7 @@
 
     <select id="countLockedByArDetail" resultType="int">
         SELECT COUNT(1)
-        FROM AR_DETAIL_HTSV D
+        FROM AR_DETAIL_HAE D
         JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
         WHERE ESS.APPLY_NO IN
         <foreach collection="applyNos" item="no" open="(" separator="," close=")">

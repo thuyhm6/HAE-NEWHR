@@ -2,30 +2,8 @@
     <div class="row">
         <div class="col-12">
 
-            <!-- ===== Thông tin cơ bản ===== -->
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white py-2">
-                    <strong><i class="bx bx-user me-1"></i><span th:text="#{epi.section.basicInfo}">Thông tin cơ bản</span></strong>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-bordered table-sm align-middle mb-0">
-                        <tbody>
-                            <tr>
-                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.fullName}">Họ tên</th>
-                                <td id="epi_localName"></td>
-                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.empId}">Mã nhân viên</th>
-                                <td id="epi_empId"></td>
-                            </tr>
-                            <tr>
-                                <th class="table-light text-center" th:text="#{epi.field.department}">Phòng ban</th>
-                                <td id="epi_deptName"></td>
-                                <th class="table-light text-center" th:text="#{epi.field.position}">Chức vụ</th>
-                                <td id="epi_dutyName"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <!-- ===== Thông tin nhân viên (fragment chung) ===== -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
 
             <!-- ===== Cá nhân ===== -->
             <div class="card mb-3">
@@ -169,7 +147,7 @@
 
     <!-- ===== Modal: Chỉnh sửa Cá nhân ===== -->
     <div class="modal fade" id="modalPersonal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bx bx-id-card me-1"></i><span th:text="#{epi.modal.editPersonal}">Chỉnh sửa thông tin cá nhân</span></h5>
@@ -177,76 +155,165 @@
                 </div>
                 <div class="modal-body">
                     <div class="row g-2">
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.dob}">Ngày sinh</label>
-                            <input type="date" class="form-control form-control-sm" id="mp_dob">
+                        <!-- Row 1: Họ tên | Tên tiếng Anh | Tham gia quân đội | Khuyết tật -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.fullName}">Họ tên</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_localName" readonly>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.engName}">Tên tiếng Anh</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_engName" readonly>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-4 pb-1">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="mp_armyOrNot">
+                                <label class="form-check-label fw-semibold" for="mp_armyOrNot" th:text="#{epi.field.militaryService}">Tham gia quân đội</label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end pb-1">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="mp_obstacleOrNot">
+                                <label class="form-check-label fw-semibold" for="mp_obstacleOrNot" th:text="#{epi.field.disability}">Khuyết tật</label>
+                            </div>
+                        </div>
+                        <!-- Row 2: CMND | Ngày cấp | Nơi cấp | CV update status -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.idcardNo}">CMND</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_idcardNo">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.idcardDate}">Ngày cấp</label>
+                            <input type="date" class="form-control form-control-sm" id="mp_idcardStartDate">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.issuingAuthority}">Nơi cấp</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_issuingAuthority">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.cvUpdateStatus}">CV update status</label>
+                            <select class="form-select form-select-sm" id="mp_cvUpdateStatus" data-parent-code="90000302"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
+                        </div>
+                        <!-- Row 3: Ngày sinh | Độ tuổi | Nơi sinh | Giới tính -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.dob}">Ngày sinh</label>
+                            <input type="date" class="form-control form-control-sm" id="mp_dob" oninput="mp_calcAge()">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.age}">Độ tuổi</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_age" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.birthPlace}">Nơi sinh</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_regPlace">
+                        </div>
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold" th:text="#{epi.field.gender}">Giới tính</label>
                             <select class="form-select form-select-sm" id="mp_sexCode" data-parent-code="1324"
                                 th:attr="data-default-text=#{epi.select.choose}">
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.maritalStatus}">Tình trạng hôn nhân</label>
-                            <select class="form-select form-select-sm" id="mp_maritalStatusCode" data-parent-code="1709"
+                        <!-- Row 4: Trình độ học vấn | Quốc tịch | Dân tộc | Tôn giáo -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.education}">Trình độ học vấn</label>
+                            <select class="form-select form-select-sm" id="mp_finalDegreeCode" data-parent-code="13769"
                                 th:attr="data-default-text=#{epi.select.choose}">
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.ethnicity}">Dân tộc</label>
-                            <select class="form-select form-select-sm" id="mp_nationCode" data-parent-code="210942"
-                                th:attr="data-default-text=#{epi.select.choose}">
-                            </select>
-                        </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold" th:text="#{epi.field.nationality}">Quốc tịch</label>
                             <select class="form-select form-select-sm" id="mp_nationalityCode" data-parent-code="870"
                                 th:attr="data-default-text=#{epi.select.choose}">
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.houseTp}">Ra-giải</label>
-                            <input type="text" class="form-control form-control-sm" id="mp_houseTp">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.ethnicity}">Dân tộc</label>
+                            <select class="form-select form-select-sm" id="mp_nationCode" data-parent-code="210942"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.homePhone}">ĐT gia đình</label>
-                            <input type="text" class="form-control form-control-sm" id="mp_homePhone">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.religion}">Tôn giáo</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_religion">
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.companyPhone}">ĐT công ty</label>
-                            <input type="text" class="form-control form-control-sm" id="mp_companyPhone">
-                        </div>
-                        <div class="col-md-4">
+                        <!-- Row 5: Điện thoại | Tình trạng hôn nhân | Ngày kết hôn | Tình trạng chính trị -->
+                        <div class="col-md-3">
                             <label class="form-label fw-semibold" th:text="#{epi.field.phone}">Điện thoại</label>
                             <input type="text" class="form-control form-control-sm" id="mp_cellphone">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.email}">Email</label>
-                            <input type="email" class="form-control form-control-sm" id="mp_email">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.companyEmail}">Email công ty</label>
-                            <input type="email" class="form-control form-control-sm" id="mp_emailSecond">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.residence}">Chỗ ở</label>
-                            <input type="text" class="form-control form-control-sm" id="mp_residentialDistinction">
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.maritalStatus}">Tình trạng hôn nhân</label>
+                            <select class="form-select form-select-sm" id="mp_maritalStatusCode" data-parent-code="1709"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label fw-semibold" th:text="#{epi.field.existSingle}">Ở công bố mẹ</label>
-                            <input type="text" class="form-control form-control-sm" id="mp_existSingle">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.weddingDate}">Ngày kết hôn</label>
+                            <input type="date" class="form-control form-control-sm" id="mp_weddingDate">
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.politicalStatus}">Tình trạng chính trị</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_politicalStatus">
+                        </div>
+                        <!-- Row 6: EagleM | ĐT gia đình | ĐT công ty | Chỗ ở -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.existSingle}">EagleM</label>
+                            <select class="form-select form-select-sm" id="mp_existSingle"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                                <option value=""></option>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.homePhone}">ĐT gia đình</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_homePhone">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.companyPhone}">ĐT công ty</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_companyPhone">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.residence}">Chỗ ở</label>
+                            <select class="form-select form-select-sm" id="mp_residentialDistinction" data-parent-code="14013865"
+                                th:attr="data-default-text=#{epi.select.choose}">
+                            </select>
+                        </div>
+                        <!-- Row 7: EagleM ID | Hộ khẩu | Email | Email công ty -->
                         <div class="col-md-3">
                             <label class="form-label fw-semibold">EagleM ID</label>
                             <input type="text" class="form-control form-control-sm" id="mp_singId">
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.houseTp}">Hộ khẩu</label>
+                            <input type="text" class="form-control form-control-sm" id="mp_houseTp">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.email}">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="mp_email">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold" th:text="#{epi.field.companyEmail}">Email công ty</label>
+                            <input type="email" class="form-control form-control-sm" id="mp_emailSecond">
+                        </div>
+                    </div>
+                    <!-- Row 8: File đính kèm -->
+                    <div class="col-12 mt-2">
+                        <div class="alert alert-info py-2 mb-2 small">
+                            <i class="bx bx-info-circle me-1"></i>
+                            <span th:text="#{epi.msg.applyNote}">Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.</span>
+                        </div>
+                        <label class="form-label fw-semibold" th:text="#{epi.field.attachFiles}">File đính kèm</label>
+                        <input type="file" class="form-control form-control-sm" id="mp_attachFiles"
+                               multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                        <div class="form-text" th:text="#{epi.msg.uploadHint}">Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="savePersonal()">
-                        <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                    <button type="button" class="btn btn-primary btn-sm" id="mp_btnSave" onclick="savePersonal()">
+                        <i class="bx bx-send me-1"></i><span th:text="#{epi.btn.submitRequest}">Gửi yêu cầu</span>
                     </button>
                 </div>
             </div>
@@ -262,7 +329,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" id="addr_addressNo">
+                    <input type="hidden" id="addr_updateAddressNo">
                     <div class="mb-2">
                         <label class="form-label fw-semibold"><span th:text="#{epi.field.addressType}">Loại địa chỉ</span> <span class="text-danger">*</span></label>
                         <select class="form-select form-select-sm" id="addr_addressType" data-parent-code="14013840"
@@ -324,13 +391,23 @@
                             <label class="form-label fw-semibold" th:text="#{epi.field.phone}">Điện thoại</label>
                             <input type="text" class="form-control form-control-sm" id="fam_famPhone">
                         </div>
+                        <div class="col-12 mt-1">
+                            <div class="alert alert-info py-2 mb-2 small">
+                                <i class="bx bx-info-circle me-1"></i>
+                                <span th:text="#{epi.msg.applyNote}">Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.</span>
+                            </div>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.attachFiles}">File đính kèm</label>
+                            <input type="file" class="form-control form-control-sm" id="fam_attachFiles"
+                                   multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                            <div class="form-text" th:text="#{epi.msg.uploadHint}">Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm me-1"
                         data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveFamily()">
-                        <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                    <button type="button" class="btn btn-primary btn-sm" id="fam_btnSave" onclick="saveFamily()">
+                        <i class="bx bx-send me-1"></i><span th:text="#{epi.btn.submitRequest}">Gửi yêu cầu</span>
                     </button>
                 </div>
             </div>
@@ -376,13 +453,23 @@
                                 <label class="form-check-label" for="emer_isEmergencyAddress" th:text="#{epi.field.isPrimaryContact}">Là liên hệ chính</label>
                             </div>
                         </div>
+                        <div class="col-12 mt-2">
+                            <div class="alert alert-info py-1 px-2 small mb-1">
+                                <i class="bx bx-info-circle me-1"></i>
+                                <span th:text="#{epi.msg.applyNote}">Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.</span>
+                            </div>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.attachFiles}">File đính kèm</label>
+                            <input type="file" class="form-control form-control-sm" id="emer_attachFiles"
+                                   multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                            <div class="form-text" th:text="#{epi.msg.uploadHint}">Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-sm me-1"
                         data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveEmergency()">
-                        <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                    <button type="button" class="btn btn-primary btn-sm" id="emer_btnSave" onclick="saveEmergency()">
+                        <i class="bx bx-send me-1"></i><span th:text="#{epi.btn.submitRequest}">Gửi yêu cầu</span>
                     </button>
                 </div>
             </div>
@@ -392,6 +479,7 @@
 </div>
 
 <template id="fragmentScripts">
+    <th:block th:replace="~{fragments/essEmpInfoCard :: script}"></th:block>
     <script th:inline="javascript">
         (function () {
             var I18N = {
@@ -399,6 +487,7 @@
                 loading:          /*[[#{common.loading}]]*/ 'Đang tải...',
                 saveSuccess:      /*[[#{epi.msg.saveSuccess}]]*/ 'Cập nhật thành công!',
                 addSuccess:       /*[[#{epi.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+                applySuccess:     /*[[#{epi.msg.applySuccess}]]*/ 'Gửi yêu cầu thành công! Chờ người quản lý xét duyệt.',
                 errPersonal:      /*[[#{epi.msg.saveError.personal}]]*/ 'Lỗi khi lưu thông tin cá nhân!',
                 errAddress:       /*[[#{epi.msg.saveError.address}]]*/ 'Lỗi khi lưu địa chỉ!',
                 errFamily:        /*[[#{epi.msg.saveError.family}]]*/ 'Lỗi khi lưu thông tin gia đình!',
@@ -479,10 +568,6 @@
                     success: function (data) {
                         if (!data) return;
                         currentPersonalInfo = data;
-                        setText('epi_localName', data.localName);
-                        setText('epi_empId', data.empId);
-                        setText('epi_deptName', data.deptName);
-                        setText('epi_dutyName', data.dutyName);
                         setText('epi_dob', formatDate(data.dob));
                         setText('epi_sexName', data.sexName);
                         setText('epi_maritalStatusName', data.maritalStatusName);
@@ -599,65 +684,123 @@
             }
 
             // ===== Modal: Cá nhân =====
+            function mp_calcAge() {
+                var dobVal = document.getElementById('mp_dob').value;
+                if (!dobVal) { document.getElementById('mp_age').value = ''; return; }
+                var dob = new Date(dobVal);
+                var now = new Date();
+                var years = now.getFullYear() - dob.getFullYear();
+                var months = now.getMonth() - dob.getMonth();
+                if (months < 0 || (months === 0 && now.getDate() < dob.getDate())) {
+                    years--; months += 12;
+                }
+                document.getElementById('mp_age').value = years + ' Tuổi ' + months + ' Tháng';
+            }
+
             window.openPersonalModal = function () {
                 var d = currentPersonalInfo;
+                document.getElementById('mp_localName').value = d.localName || '';
+                document.getElementById('mp_engName').value = d.englishName || '';
+                document.getElementById('mp_armyOrNot').checked = (d.armyOrNot === '1' || d.armyOrNot === 'Y');
+                document.getElementById('mp_obstacleOrNot').checked = (d.obstacleOrNot === '1' || d.obstacleOrNot === 'Y');
+                document.getElementById('mp_idcardNo').value = d.idcardNo || '';
+                document.getElementById('mp_idcardStartDate').value = toInputDate(d.idcardStartDate);
+                document.getElementById('mp_issuingAuthority').value = d.issuingAuthority || '';
                 document.getElementById('mp_dob').value = toInputDate(d.dob);
-                document.getElementById('mp_sexCode').value = d.sexCode || '';
+                document.getElementById('mp_regPlace').value = d.regPlace || '';
+                document.getElementById('mp_religion').value = d.religion || '';
+                document.getElementById('mp_weddingDate').value = toInputDate(d.weddingDate);
+                document.getElementById('mp_politicalStatus').value = d.politicalStatus || '';
                 document.getElementById('mp_houseTp').value = d.houseTp || '';
                 document.getElementById('mp_homePhone').value = d.homePhone || '';
                 document.getElementById('mp_companyPhone').value = d.companyPhone || '';
                 document.getElementById('mp_cellphone').value = d.cellphone || '';
                 document.getElementById('mp_email').value = d.email || '';
                 document.getElementById('mp_emailSecond').value = d.emailSecond || '';
-                document.getElementById('mp_residentialDistinction').value = d.residentialDistinction || '';
-                document.getElementById('mp_existSingle').value = d.existSingle || '';
                 document.getElementById('mp_singId').value = d.singId || '';
+                mp_calcAge();
 
                 $.when(
                     initCodeSelects('#mp_maritalStatusCode'),
                     initCodeSelects('#mp_nationCode'),
                     initCodeSelects('#mp_nationalityCode'),
-                    initCodeSelects('#mp_sexCode')
+                    initCodeSelects('#mp_sexCode'),
+                    initCodeSelects('#mp_finalDegreeCode'),
+                    initCodeSelects('#mp_cvUpdateStatus'),
+                    initCodeSelects('#mp_residentialDistinction')
                 ).done(function () {
                     $('#mp_maritalStatusCode').val(d.maritalStatusCode || '');
                     $('#mp_nationCode').val(d.nationCode || '');
                     $('#mp_nationalityCode').val(d.nationalityCode || '');
                     $('#mp_sexCode').val(d.sexCode || '');
+                    $('#mp_finalDegreeCode').val(d.finalDegreeCode || '');
+                    $('#mp_existSingle').val(d.existSingle || '');
+                    $('#mp_cvUpdateStatus').val(d.cvUpdateStatus || '');
+                    $('#mp_residentialDistinction').val(d.residentialDistinction || '');
                 });
 
                 new bootstrap.Modal(document.getElementById('modalPersonal')).show();
             };
 
             window.savePersonal = function () {
-                var payload = {
-                    personId: currentPersonalInfo.personId,
-                    dob: document.getElementById('mp_dob').value || null,
-                    sexCode: document.getElementById('mp_sexCode').value || null,
-                    maritalStatusCode: document.getElementById('mp_maritalStatusCode').value || null,
-                    nationCode: document.getElementById('mp_nationCode').value || null,
-                    nationalityCode: document.getElementById('mp_nationalityCode').value || null,
-                    houseTp: document.getElementById('mp_houseTp').value || null,
-                    homePhone: document.getElementById('mp_homePhone').value || null,
-                    companyPhone: document.getElementById('mp_companyPhone').value || null,
-                    cellphone: document.getElementById('mp_cellphone').value || null,
-                    email: document.getElementById('mp_email').value || null,
-                    emailSecond: document.getElementById('mp_emailSecond').value || null,
-                    residentialDistinction: document.getElementById('mp_residentialDistinction').value || null,
-                    existSingle: document.getElementById('mp_existSingle').value || null,
-                    singId: document.getElementById('mp_singId').value || null
+                var fd = new FormData();
+                var fields = {
+                    dob: document.getElementById('mp_dob').value,
+                    sexCode: document.getElementById('mp_sexCode').value,
+                    maritalStatusCode: document.getElementById('mp_maritalStatusCode').value,
+                    weddingDate: document.getElementById('mp_weddingDate').value,
+                    nationCode: document.getElementById('mp_nationCode').value,
+                    nationalityCode: document.getElementById('mp_nationalityCode').value,
+                    finalDegreeCode: document.getElementById('mp_finalDegreeCode').value,
+                    religion: document.getElementById('mp_religion').value,
+                    politicalOutlook: document.getElementById('mp_politicalStatus').value,
+                    armyOrNot: document.getElementById('mp_armyOrNot').checked ? '1' : '0',
+                    obstacleOrNot: document.getElementById('mp_obstacleOrNot').checked ? '1' : '0',
+                    idcardNo: document.getElementById('mp_idcardNo').value,
+                    idcardStartDate: document.getElementById('mp_idcardStartDate').value,
+                    issuingAuthority: document.getElementById('mp_issuingAuthority').value,
+                    cvUpdateStatus: document.getElementById('mp_cvUpdateStatus').value,
+                    regPlace: document.getElementById('mp_regPlace').value,
+                    houseTp: document.getElementById('mp_houseTp').value,
+                    homePhone: document.getElementById('mp_homePhone').value,
+                    companyPhone: document.getElementById('mp_companyPhone').value,
+                    cellphone: document.getElementById('mp_cellphone').value,
+                    email: document.getElementById('mp_email').value,
+                    emailSecond: document.getElementById('mp_emailSecond').value,
+                    residentialDistinction: document.getElementById('mp_residentialDistinction').value,
+                    existSingle: document.getElementById('mp_existSingle').value,
+                    singId: document.getElementById('mp_singId').value
                 };
+                Object.keys(fields).forEach(function (k) {
+                    if (fields[k]) fd.append(k, fields[k]);
+                });
+
+                var fileInput = document.getElementById('mp_attachFiles');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (var i = 0; i < fileInput.files.length; i++) {
+                        fd.append('attachFiles', fileInput.files[i]);
+                    }
+                }
+
+                var btn = document.getElementById('mp_btnSave');
+                btn.disabled = true;
                 $.ajax({
                     url: '/ess/empinfo/api/personalInfo/savePersonal',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(payload),
-                    success: function () {
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (resp) {
                         bootstrap.Modal.getInstance(document.getElementById('modalPersonal')).hide();
-                        showToast(I18N.saveSuccess, 'success');
+                        showToast(I18N.applySuccess, 'success');
+                        document.getElementById('mp_attachFiles').value = '';
                         loadBasicInfo();
                     },
                     error: function () {
                         showToast(I18N.errPersonal, 'danger');
+                    },
+                    complete: function () {
+                        btn.disabled = false;
                     }
                 });
             };
@@ -669,13 +812,13 @@
                     I18N.iconMap + (isNew ? I18N.addAddress : I18N.editAddress);
                 var addressType = '';
                 if (isNew) {
-                    document.getElementById('addr_addressNo').value = '';
+                    document.getElementById('addr_updateAddressNo').value = '';
                     document.getElementById('addr_effectiveStartDate').value = '';
                     document.getElementById('addr_addressContent').value = '';
                 } else {
                     var item = currentAddressList[indexOrNull];
                     addressType = item.addressType || '';
-                    document.getElementById('addr_addressNo').value = item.addressNo || '';
+                    document.getElementById('addr_updateAddressNo').value = item.addressNo || '';
                     document.getElementById('addr_effectiveStartDate').value = toInputDate(item.effectiveStartDate);
                     document.getElementById('addr_addressContent').value = item.addressContent || '';
                 }
@@ -688,9 +831,9 @@
             };
 
             window.saveAddress = function () {
-                var addressNo = document.getElementById('addr_addressNo').value;
+                var updateAddressNo = document.getElementById('addr_updateAddressNo').value;
                 var payload = {
-                    addressNo: addressNo ? parseInt(addressNo) : null,
+                    updateAddressNo: updateAddressNo ? parseInt(updateAddressNo) : null,
                     addressType: document.getElementById('addr_addressType').value || null,
                     effectiveStartDate: document.getElementById('addr_effectiveStartDate').value || null,
                     addressContent: document.getElementById('addr_addressContent').value || null
@@ -706,7 +849,7 @@
                     data: JSON.stringify(payload),
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalAddress')).hide();
-                        showToast(addressNo ? I18N.saveSuccess : I18N.addSuccess, 'success');
+                        showToast(updateAddressNo ? I18N.saveSuccess : I18N.addSuccess, 'success');
                         loadAddress();
                     },
                     error: function () {
@@ -755,26 +898,43 @@
                     showToast(I18N.valFamilyReq, 'danger');
                     return;
                 }
-                var payload = {
-                    familyNo: familyNo ? parseInt(familyNo) : null,
-                    famTypeCode: famTypeCode || null,
-                    famName: famName || null,
-                    gender: document.getElementById('fam_gender').value || null,
-                    famBorndate: document.getElementById('fam_famBorndate').value || null,
-                    famPhone: document.getElementById('fam_famPhone').value || null
-                };
+                var fd = new FormData();
+                fd.append('famTypeCode', famTypeCode);
+                fd.append('famName', famName);
+                var gender = document.getElementById('fam_gender').value;
+                if (gender) fd.append('gender', gender);
+                var famBorndate = document.getElementById('fam_famBorndate').value;
+                if (famBorndate) fd.append('famBorndate', famBorndate);
+                var famPhone = document.getElementById('fam_famPhone').value;
+                if (famPhone) fd.append('famPhone', famPhone);
+                if (familyNo) fd.append('updateFamilyNo', familyNo);
+
+                var fileInput = document.getElementById('fam_attachFiles');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (var i = 0; i < fileInput.files.length; i++) {
+                        fd.append('attachFiles', fileInput.files[i]);
+                    }
+                }
+
+                var btn = document.getElementById('fam_btnSave');
+                btn.disabled = true;
                 $.ajax({
                     url: '/ess/empinfo/api/personalInfo/saveFamily',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(payload),
+                    data: fd,
+                    contentType: false,
+                    processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalFamily')).hide();
-                        showToast(familyNo ? I18N.saveSuccess : I18N.addSuccess, 'success');
+                        showToast(I18N.applySuccess, 'success');
+                        document.getElementById('fam_attachFiles').value = '';
                         loadFamily();
                     },
                     error: function () {
                         showToast(I18N.errFamily, 'danger');
+                    },
+                    complete: function () {
+                        btn.disabled = false;
                     }
                 });
             };
@@ -818,32 +978,51 @@
                     showToast(I18N.valEmerName, 'danger');
                     return;
                 }
-                var payload = {
-                    emergencyNo: emergencyNo ? parseInt(emergencyNo) : null,
-                    emerName: emerName || null,
-                    emerTypeCode: document.getElementById('emer_emerTypeCode').value || null,
-                    emerPhone: document.getElementById('emer_emerPhone').value || null,
-                    emerEmail: document.getElementById('emer_emerEmail').value || null,
-                    emerAddress: document.getElementById('emer_emerAddress').value || null,
-                    isEmergencyAddress: document.getElementById('emer_isEmergencyAddress').checked ? '1' : '0'
-                };
+                var fd = new FormData();
+                fd.append('emerName', emerName);
+                var emerTypeCode = document.getElementById('emer_emerTypeCode').value;
+                if (emerTypeCode) fd.append('emerTypeCode', emerTypeCode);
+                var emerPhone = document.getElementById('emer_emerPhone').value;
+                if (emerPhone) fd.append('emerPhone', emerPhone);
+                var emerEmail = document.getElementById('emer_emerEmail').value;
+                if (emerEmail) fd.append('emerEmail', emerEmail);
+                var emerAddress = document.getElementById('emer_emerAddress').value;
+                if (emerAddress) fd.append('emerAddress', emerAddress);
+                fd.append('isEmergencyAddress', document.getElementById('emer_isEmergencyAddress').checked ? '1' : '0');
+                if (emergencyNo) fd.append('updateEmergencyNo', emergencyNo);
+
+                var fileInput = document.getElementById('emer_attachFiles');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (var i = 0; i < fileInput.files.length; i++) {
+                        fd.append('attachFiles', fileInput.files[i]);
+                    }
+                }
+
+                var btn = document.getElementById('emer_btnSave');
+                btn.disabled = true;
                 $.ajax({
                     url: '/ess/empinfo/api/personalInfo/saveEmergency',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(payload),
+                    data: fd,
+                    contentType: false,
+                    processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalEmergency')).hide();
-                        showToast(emergencyNo ? I18N.saveSuccess : I18N.addSuccess, 'success');
+                        showToast(I18N.applySuccess, 'success');
+                        document.getElementById('emer_attachFiles').value = '';
                         loadEmergency();
                     },
                     error: function () {
                         showToast(I18N.errEmergency, 'danger');
+                    },
+                    complete: function () {
+                        btn.disabled = false;
                     }
                 });
             };
 
             $(document).ready(function () {
+                loadEssEmpInfoCard();
                 loadBasicInfo();
                 loadAddress();
                 loadFamily();

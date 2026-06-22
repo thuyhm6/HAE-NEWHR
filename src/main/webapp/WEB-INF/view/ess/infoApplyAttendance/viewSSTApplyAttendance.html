@@ -57,32 +57,6 @@
                 </div>
             </div>
 
-            <!-- Đính kèm file
-            <div class="mb-3">
-                <div class="mb-2">
-                    <button type="button" class="btn btn-sm btn-secondary me-1" onclick="saInsertFile()"
-                        th:text="#{sa.btn.insertFile}">Chèn file</button>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="saDeleteSelectedFiles()"
-                        th:text="#{sa.btn.delete}">Xóa</button>
-                    <input type="file" id="sa_fileInput" style="display:none;" multiple onchange="saOnFileSelected(this)">
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm mb-0">
-                        <thead class="table-light text-center">
-                            <tr>
-                                <th style="width:40px;">V</th>
-                                <th th:text="#{sa.col.file}">File</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sa_fileListBody">
-                            <tr id="sa_fileListEmpty">
-                                <td colspan="2" class="text-center text-muted" th:text="#{sa.msg.noFile}">Chưa có file đính kèm</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div> -->
-
             <!-- Danh sách người phê duyệt -->
             <div class="table-responsive mb-3">
                 <table class="table table-bordered table-sm align-middle mb-0">
@@ -93,11 +67,17 @@
                             <th style="width:130px;" th:text="#{sa.col.empId}">Mã nhân viên</th>
                             <th th:text="#{sa.col.dept}">Phòng ban</th>
                             <th th:text="#{sa.col.position}">Chức danh</th>
+                            <th style="width:60px;">
+                                <button type="button" class="btn btn-sm btn-success" onclick="saAddApproverRow()"
+                                    th:title="#{sa.btn.addApprover}" title="Thêm người phê duyệt">
+                                    <i class="bx bx-plus"></i>
+                                </button>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="sa_approvalBody">
                         <tr>
-                            <td colspan="5" class="text-center text-muted" th:text="#{sa.msg.selectLeaveTypeFirst}">Chọn loại nghỉ phép để xem người phê duyệt</td>
+                            <td colspan="6" class="text-center text-muted" th:text="#{sa.msg.noApprover}">Chưa có người phê duyệt</td>
                         </tr>
                     </tbody>
                 </table>
@@ -119,33 +99,39 @@
         var _sa_personId = '';
         var _sa_localName = '';
         var _sa_fileList = [];
+        var _sa_approverList = [];
         var _sa_pageBooted = false;
+        var _sa_vacData = null;
+        var _sa_durationDays = null;
 
         var _sa_i18n = {
-            calculating          : /*[[#{sa.msg.calculating}]]*/ 'Đang tính...',
-            loading              : /*[[#{sa.msg.loading}]]*/ 'Đang tải...',
-            noApprovalData       : /*[[#{sa.msg.noApprovalData}]]*/ 'Không có dữ liệu phê duyệt',
-            noApprover           : /*[[#{sa.msg.noApprover}]]*/ 'Không có người phê duyệt',
-            loadApproverFailed   : /*[[#{sa.msg.loadApproverFailed}]]*/ 'Lỗi tải người phê duyệt',
-            noFile               : /*[[#{sa.msg.noFile}]]*/ 'Chưa có file đính kèm',
-            selectFileToDelete   : /*[[#{sa.msg.selectFileToDelete}]]*/ 'Vui lòng chọn file cần xóa',
-            selectLeaveType      : /*[[#{sa.msg.selectLeaveType}]]*/ 'Vui lòng chọn loại nghỉ phép!',
-            enterStartTime       : /*[[#{sa.msg.enterStartTime}]]*/ 'Vui lòng nhập thời gian bắt đầu!',
-            enterEndTime         : /*[[#{sa.msg.enterEndTime}]]*/ 'Vui lòng nhập thời gian kết thúc!',
-            sending              : /*[[#{sa.msg.sending}]]*/ 'Đang gửi...',
-            submitSuccess        : /*[[#{sa.msg.submitSuccess}]]*/ 'Xin phép thành công!',
-            submitError          : /*[[#{sa.msg.submitError}]]*/ 'Lỗi khi gửi đơn!',
-            submitConnError      : /*[[#{sa.msg.submitConnError}]]*/ 'Lỗi kết nối khi gửi đơn!',
-            selectLeaveTypeFirst : /*[[#{sa.msg.selectLeaveTypeFirst}]]*/ 'Chọn loại nghỉ phép để xem người phê duyệt',
-            vacTotalYear         : /*[[#{sa.vac.totalYear}]]*/ 'Tổng phép năm:',
-            vacYearVac           : /*[[#{sa.vac.yearVac}]]*/ 'Tạo phép năm:',
-            vacLastYear          : /*[[#{sa.vac.lastYear}]]*/ 'Còn lại năm ngoái:',
-            vacSpecial           : /*[[#{sa.vac.special}]]*/ 'Đặc biệt:',
-            vacUsed              : /*[[#{sa.vac.used}]]*/ 'Số ngày đã sử dụng:',
-            vacRemain            : /*[[#{sa.vac.remain}]]*/ 'Số ngày còn lại:',
-            unitDays             : /*[[#{sa.unit.days}]]*/ 'Ngày',
-            unitHours            : /*[[#{sa.unit.hours}]]*/ 'Giờ',
-            btnSubmit            : /*[[#{sa.btn.submit}]]*/ 'Xin phép'
+            calculating         : /*[[#{sa.msg.calculating}]]*/ 'Đang tính...',
+            loading             : /*[[#{sa.msg.loading}]]*/ 'Đang tải...',
+            noApprover          : /*[[#{sa.msg.noApprover}]]*/ 'Chưa có người phê duyệt',
+            noFile              : /*[[#{sa.msg.noFile}]]*/ 'Chưa có file đính kèm',
+            selectFileToDelete  : /*[[#{sa.msg.selectFileToDelete}]]*/ 'Vui lòng chọn file cần xóa',
+            selectLeaveType     : /*[[#{sa.msg.selectLeaveType}]]*/ 'Vui lòng chọn loại nghỉ phép!',
+            enterStartTime      : /*[[#{sa.msg.enterStartTime}]]*/ 'Vui lòng nhập thời gian bắt đầu!',
+            enterEndTime        : /*[[#{sa.msg.enterEndTime}]]*/ 'Vui lòng nhập thời gian kết thúc!',
+            sending             : /*[[#{sa.msg.sending}]]*/ 'Đang gửi...',
+            submitSuccess       : /*[[#{sa.msg.submitSuccess}]]*/ 'Xin phép thành công!',
+            submitError         : /*[[#{sa.msg.submitError}]]*/ 'Lỗi khi gửi đơn!',
+            submitConnError     : /*[[#{sa.msg.submitConnError}]]*/ 'Lỗi kết nối khi gửi đơn!',
+            vacTotalYear        : /*[[#{sa.vac.totalYear}]]*/ 'Tổng phép năm:',
+            vacYearVac          : /*[[#{sa.vac.yearVac}]]*/ 'Tạo phép năm:',
+            vacLastYear         : /*[[#{sa.vac.lastYear}]]*/ 'Còn lại năm ngoái:',
+            vacSpecial          : /*[[#{sa.vac.special}]]*/ 'Đặc biệt:',
+            vacUsed             : /*[[#{sa.vac.used}]]*/ 'Số ngày đã sử dụng:',
+            vacRemain           : /*[[#{sa.vac.remain}]]*/ 'Số ngày còn lại:',
+            unitDays            : /*[[#{sa.unit.days}]]*/ 'Ngày',
+            unitHours           : /*[[#{sa.unit.hours}]]*/ 'Giờ',
+            btnSubmit           : /*[[#{sa.btn.submit}]]*/ 'Xin phép',
+            addApprover         : /*[[#{sa.btn.addApprover}]]*/ 'Thêm người phê duyệt',
+            approverPlaceholder     : /*[[#{sa.placeholder.approverName}]]*/ 'Nhập tên người phê duyệt...',
+            endTimeBeforeStart      : /*[[#{sa.msg.endTimeBeforeStart}]]*/ 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu!',
+            durationExceedsRemain   : /*[[#{sa.msg.durationExceedsRemain}]]*/ 'Thời lượng vượt quá số ngày phép còn lại!',
+            enterReason             : /*[[#{sa.msg.enterReason}]]*/ 'Vui lòng nhập lý do!',
+            requireApprover         : /*[[#{sa.msg.requireApprover}]]*/ 'Vui lòng thêm ít nhất một người phê duyệt!'
         };
 
         function saEscHtml(v) {
@@ -192,6 +178,7 @@
 
                 if (!fromDt || !toDt || !leaveTypeCode) {
                     $('#sa_duration').text('-');
+                    _sa_durationDays = null;
                     return;
                 }
 
@@ -205,8 +192,10 @@
                         var dayHour  = parseFloat(res && res.DAY_HOUR);
                         if (isNaN(leaveLen) || isNaN(dayHour) || dayHour === 0) {
                             $('#sa_duration').text('-');
+                            _sa_durationDays = null;
                             return;
                         }
+                        _sa_durationDays = leaveLen / dayHour;
                         var days  = Math.floor(leaveLen / dayHour);
                         var hours = leaveLen - days * dayHour;
                         var text  = '';
@@ -214,7 +203,7 @@
                         if (hours > 0) text += (text ? ' ' : '') + hours + ' ' + _sa_i18n.unitHours;
                         $('#sa_duration').text(text || '0');
                     },
-                    error: function() { $('#sa_duration').text('-'); }
+                    error: function() { $('#sa_duration').text('-'); _sa_durationDays = null; }
                 });
             }, 300);
         };
@@ -224,51 +213,108 @@
                 url: '/ess/infoApplyAttendance/api/vacationInfo',
                 type: 'GET',
                 success: function(data) {
+                    _sa_vacData = data || null;
                     var info = saFormatVacInfo(data);
                     $('#sa_vacInfo').text(info || '');
                 }
             });
         }
 
-        function saLoadApprovers() {
-            if (!_sa_personId) return;
-            var leaveTypeCode = $('#sa_leaveType').val() || '';
+        function saRenderApprovers() {
             var $tbody = $('#sa_approvalBody');
-            $tbody.html('<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.loading) + '</td></tr>');
-
-            $.post('/ar/attendanceMintenance/api/leaveApply/approvers', {
-                applyTypeNo: '21',
-                personId: _sa_personId,
-                applyTypeCode: leaveTypeCode,
-                applyLength: '0'
-            }, function(data) {
-                if (!data || !data.length) {
-                    $tbody.html('<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.noApprovalData) + '</td></tr>');
-                    return;
-                }
-                var html = '';
-                var counter = 0;
-                data.forEach(function(item) {
-                    var level = item.affirmLevel;
-                    if (String(level) === '0') return;
-                    counter++;
-                    html += '<tr>'
-                        + '<td class="text-center">' + saEscHtml(level || counter) + '</td>'
-                        + '<td>' + saEscHtml(item.localName || '') + '</td>'
-                        + '<td class="text-center">' + saEscHtml(item.empId || '') + '</td>'
-                        + '<td>' + saEscHtml(item.deptName || '') + '</td>'
-                        + '<td>' + saEscHtml(item.postionName || item.positionName || '') + '</td>'
-                        + '</tr>';
-                });
-                $tbody.html(html || '<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.noApprover) + '</td></tr>');
-            }).fail(function() {
-                $tbody.html('<tr><td colspan="5" class="text-center text-danger">' + saEscHtml(_sa_i18n.loadApproverFailed) + '</td></tr>');
+            if (!_sa_approverList.length) {
+                $tbody.html('<tr><td colspan="6" class="text-center text-muted">' + saEscHtml(_sa_i18n.noApprover) + '</td></tr>');
+                return;
+            }
+            var html = '';
+            _sa_approverList.forEach(function(item, idx) {
+                html += '<tr>'
+                    + '<td class="text-center">' + (idx + 1) + '</td>'
+                    + '<td>' + saEscHtml(item.localName || '') + '</td>'
+                    + '<td class="text-center">' + saEscHtml(item.empId || '') + '</td>'
+                    + '<td>' + saEscHtml(item.deptName || '') + '</td>'
+                    + '<td>' + saEscHtml(item.positionName || '') + '</td>'
+                    + '<td class="text-center">'
+                    +   '<button type="button" class="btn btn-sm btn-danger" onclick="saRemoveApprover(' + idx + ')">'
+                    +     '<i class="bx bx-trash"></i>'
+                    +   '</button>'
+                    + '</td>'
+                    + '</tr>';
             });
+            $tbody.html(html);
         }
+
+        window.saAddApproverRow = function() {
+            if ($('#sa_approverInputRow').length) {
+                $('#sa_approverInput').focus();
+                return;
+            }
+            var placeholder = saEscHtml(_sa_i18n.approverPlaceholder);
+            var inputRowHtml = '<tr id="sa_approverInputRow">'
+                + '<td class="text-center text-muted">-</td>'
+                + '<td colspan="3">'
+                +   '<div class="input-group input-group-sm">'
+                +     '<input type="text" class="form-control" id="sa_approverInput" placeholder="' + placeholder + '"'
+                +           ' onkeydown="saApproverInputKeydown(event, this)">'
+                +     '<button class="btn btn-outline-secondary" type="button" onclick="saPickApprover(this)">'
+                +       '<i class="bx bx-search"></i>'
+                +     '</button>'
+                +   '</div>'
+                + '</td>'
+                + '<td></td>'
+                + '<td class="text-center">'
+                +   '<button type="button" class="btn btn-sm btn-secondary" onclick="saCancelApproverInput()">'
+                +     '<i class="bx bx-x"></i>'
+                +   '</button>'
+                + '</td>'
+                + '</tr>';
+            $('#sa_approvalBody').append(inputRowHtml);
+            $('#sa_approverInput').focus();
+        };
+
+        window.saApproverInputKeydown = function(e, input) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                var $input = $(input);
+                var keyword = $input.val().trim();
+                $input.closest('.input-group').find('button').each(function() {
+                    saPickApprover(this, keyword);
+                    return false;
+                });
+            }
+        };
+
+        window.saPickApprover = function(btn, keyword) {
+            if (typeof EmployeeSearchModal !== 'undefined') {
+                EmployeeSearchModal.open(function(emp) {
+                    _sa_approverList.push({
+                        personId:     emp.personId || '',
+                        localName:    emp.localName || '',
+                        empId:        emp.empId    || '',
+                        deptName:     emp.deptNo   || emp.deptName || '',
+                        positionName: emp.position || emp.positionName || ''
+                    });
+                    saRenderApprovers();
+                }, keyword || '');
+            } else {
+                alert(_sa_i18n.addApprover + ': EmployeeSearchModal not found.');
+            }
+        };
+
+        window.saRemoveApprover = function(idx) {
+            _sa_approverList.splice(idx, 1);
+            saRenderApprovers();
+        };
+
+        window.saCancelApproverInput = function() {
+            $('#sa_approverInputRow').remove();
+            if (!_sa_approverList.length) {
+                saRenderApprovers();
+            }
+        };
 
         window.saOnLeaveTypeChange = function() {
             saLoadVacationInfo();
-            saLoadApprovers();
             saCalcDuration();
         };
 
@@ -322,6 +368,30 @@
             if (!fromTime) { toastr && toastr.warning(_sa_i18n.enterStartTime); return; }
             if (!toTime)   { toastr && toastr.warning(_sa_i18n.enterEndTime);   return; }
 
+            if (toTime <= fromTime) {
+                toastr && toastr.warning(_sa_i18n.endTimeBeforeStart);
+                return;
+            }
+
+            if (leaveTypeCode === '26') {
+                var remainVac    = _sa_vacData ? parseFloat(_sa_vacData.REMAIN_VAC) : NaN;
+                var durationDays = (_sa_durationDays !== null) ? _sa_durationDays : NaN;
+                if (!isNaN(remainVac) && !isNaN(durationDays) && durationDays > remainVac) {
+                    toastr && toastr.warning(_sa_i18n.durationExceedsRemain);
+                    return;
+                }
+            }
+
+            if (!$('#sa_reason').val().trim()) {
+                toastr && toastr.warning(_sa_i18n.enterReason);
+                return;
+            }
+
+            if (!_sa_approverList.length) {
+                toastr && toastr.warning(_sa_i18n.requireApprover);
+                return;
+            }
+
             var payload = {
                 applyNo:       '',
                 personId:      _sa_personId,
@@ -330,7 +400,10 @@
                 leaveFromTime: fromTime,
                 leaveToTime:   toTime,
                 applyLength:   null,
-                leaveReason:   $('#sa_reason').val()
+                leaveReason:   $('#sa_reason').val(),
+                approvers:     _sa_approverList.map(function(a) {
+                    return { personId: a.personId, localName: a.localName, empId: a.empId };
+                })
             };
 
             var $btn = $('#sa_submitBtn');
@@ -361,6 +434,8 @@
         function saResetForm() {
             $('#sa_leaveType').val('');
             $('#sa_vacInfo').text('');
+            _sa_vacData = null;
+            _sa_durationDays = null;
             var now = new Date();
             var ryyyy = now.getFullYear();
             var rmm = String(now.getMonth() + 1).padStart(2, '0');
@@ -370,8 +445,9 @@
             $('#sa_reason').val('');
             _sa_fileList = [];
             saRenderFileList();
+            _sa_approverList = [];
+            saRenderApprovers();
             saCalcDuration();
-            $('#sa_approvalBody').html('<tr><td colspan="5" class="text-center text-muted">' + saEscHtml(_sa_i18n.selectLeaveTypeFirst) + '</td></tr>');
         }
 
         function saBootPage() {
@@ -403,7 +479,6 @@
                     var onReady = function() {
                         $('#sa_leaveType').on('change', window.saOnLeaveTypeChange);
                         saLoadVacationInfo();
-                        saLoadApprovers();
                     };
 
                     if (typeof initCodeSelects === 'function') {

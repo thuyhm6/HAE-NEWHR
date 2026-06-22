@@ -28,6 +28,6 @@ public interface PaItemInputMapper {
 
     List<PaItemInputDto> selectItemNamesByIds(@Param("itemIds") List<String> itemIds);
 
-    List<Map<String, Object>> selectSummaryHtsvData(@Param("payScheduleNo") String payScheduleNo,
+    List<Map<String, Object>> selectSummaryHaeData(@Param("payScheduleNo") String payScheduleNo,
                                                     @Param("deptNos") List<String> deptNos);
 }

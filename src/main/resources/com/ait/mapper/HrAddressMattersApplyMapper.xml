@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.HrAddressMattersApplyMapper">
+
+    <resultMap id="HrAddressMattersApplyResultMap" type="com.ait.ess.empinfo.dto.HrAddressMattersApplyDto">
+        <id  property="addressNo"         column="ADDRESS_NO"/>
+        <result property="personId"        column="PERSON_ID"/>
+        <result property="addressType"     column="ADDRESS_TYPE"/>
+        <result property="effectiveStartDate" column="EFFECTIVE_START_DATE"/>
+        <result property="addressContent"  column="ADDRESS_CONTENT"/>
+        <result property="activity"        column="ACTIVITY"/>
+        <result property="nationality"     column="NATIONALITY"/>
+        <result property="applyType"       column="APPLY_TYPE"/>
+        <result property="updateAddressNo" column="UPDATE_ADDRESS_NO"/>
+        <result property="essTypeCode"     column="ESS_TYPE_CODE"/>
+        <result property="callback"        column="CALLBACK"/>
+        <result property="earror"          column="EARROR"/>
+    </resultMap>
+
+    <!-- Pre-generate ADDRESS_NO từ sequence của bảng HR_ADDRESS_MATTERS_APPLY -->
+    <select id="getNextAddressNoSeq" resultType="java.lang.Long">
+        SELECT HR_ADDRESS_MATTERS_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertAddressApply" parameterType="com.ait.ess.empinfo.dto.HrAddressMattersApplyDto">
+        INSERT INTO HR_ADDRESS_MATTERS_APPLY (
+            ADDRESS_NO,
+            PERSON_ID,
+            ADDRESS_TYPE,
+            EFFECTIVE_START_DATE,
+            ADDRESS_CONTENT,
+            ACTIVITY,
+            NATIONALITY,
+            APPLY_TYPE,
+            UPDATE_ADDRESS_NO,
+            ESS_TYPE_CODE,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATE_BY,
+            UPDATED_IP
+        ) VALUES (
+            #{addressNo,          jdbcType=NUMERIC},
+            #{personId,           jdbcType=VARCHAR},
+            #{addressType,        jdbcType=VARCHAR},
+            <choose>
+                <when test="effectiveStartDate != null and effectiveStartDate != ''">
+                    TO_DATE(#{effectiveStartDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+                </when>
+                <otherwise>
+                    NULL,
+                </otherwise>
+            </choose>
+            #{addressContent,     jdbcType=VARCHAR},
+            #{activity,           jdbcType=NUMERIC},
+            #{nationality,        jdbcType=VARCHAR},
+            #{applyType,          jdbcType=NUMERIC},
+            #{updateAddressNo,    jdbcType=NUMERIC},
+            #{essTypeCode,        jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,            jdbcType=VARCHAR},
+            #{adminIP,            jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,            jdbcType=VARCHAR},
+            #{adminIP,            jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- Truy vấn theo ADDRESS_NO (PK) — dùng để getApplyDetail -->
+    <select id="selectByAddressNo" resultMap="HrAddressMattersApplyResultMap">
+        SELECT
+            ADDRESS_NO, PERSON_ID,
+            ADDRESS_TYPE,
+            GET_GLOBAL_NAME(ADDRESS_TYPE, #{lang, jdbcType=VARCHAR}) AS ADDRESS_TYPE_NAME,
+            TO_CHAR(EFFECTIVE_START_DATE,'YYYY/MM/DD') AS EFFECTIVE_START_DATE,
+            ADDRESS_CONTENT, ACTIVITY, NATIONALITY, APPLY_TYPE, UPDATE_ADDRESS_NO,
+            ESS_TYPE_CODE, CALLBACK, EARROR
+        FROM HR_ADDRESS_MATTERS_APPLY
+        WHERE ADDRESS_NO = #{addressNo, jdbcType=NUMERIC}
+    </select>
+
+</mapper>

@@ -33,7 +33,7 @@ public class LoggingAspect {
      * Log tất cả method trong service layer (exclude PerformanceMonitoringService
      * to avoid recursion)
      */
-    @Around("execution(* com.ait.service..*(..)) && !execution(* com.ait.service.PerformanceMonitoringService.*(..)) && !execution(* com.ait.service.LoggingService.*(..)) && !execution(* com.ait.service.MetricsService.*(..))")
+    @Around("@within(org.springframework.stereotype.Service) && !within(com.ait.sy.sys.service.PerformanceMonitoringService+) && !within(com.ait.sy.sys.service.LoggingService+) && !within(com.ait.sy.sys.service.MetricsService+)")
     public Object logServiceMethods(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();

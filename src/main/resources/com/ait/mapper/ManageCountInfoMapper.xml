@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.ManageCountInfoMapper">
+
+    <resultMap id="ManageCountItemResultMap" type="com.ait.ess.viewDept.dto.ManageCountItemDto">
+        <result column="CODE"  property="code"  jdbcType="VARCHAR"/>
+        <result column="LABEL" property="label" jdbcType="VARCHAR"/>
+        <result column="CNT"   property="count" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="ManageCountInfoEmpResultMap" type="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto">
+        <result column="EMPID"            property="empId"          jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME"       property="localName"      jdbcType="VARCHAR"/>
+        <result column="DEPTNAME"         property="deptName"       jdbcType="VARCHAR"/>
+        <result column="POST_FAMILY_NAME" property="postFamilyName" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NO"    property="postGradeNo"    jdbcType="VARCHAR"/>
+        <result column="EMP_TYPE_NAME"    property="empTypeName"    jdbcType="VARCHAR"/>
+        <result column="DOB"              property="dob"            jdbcType="VARCHAR"/>
+        <result column="SEX_NAME"         property="sexName"        jdbcType="VARCHAR"/>
+        <result column="DATE_STARTED"     property="dateStarted"    jdbcType="VARCHAR"/>
+        <result column="EMP_OFFICE_NAME"  property="empOfficeName"  jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- ===== Fragment điều kiện lọc dùng chung ===== -->
+    <sql id="filterCondition">
+        H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        AND H.DEPTNO = D.DEPTNO(+)
+        AND HP.PERSON_ID = H.PERSON_ID
+        AND H.EMPID NOT LIKE '111111%'
+        AND EXISTS (
+            SELECT B1.DEPTID
+            FROM HR_DEPARTMENT B1
+            WHERE B1.DEPTNO = D.DEPTNO
+            START WITH B1.DEPTNO IN (
+                SELECT HRD.DEPTID
+                FROM HR_DEPARTMENT HRD
+                WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+            )
+            CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+            UNION
+            SELECT ASI.DEPTNO
+            FROM AR_SUPERVISOR_INFO ASI
+            WHERE ASI.DEPTNO = D.DEPTNO
+              AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        )
+        <choose>
+            <when test="empOffice != null and empOffice != ''">
+                AND H.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                AND H.EMP_OFFICE = '15119'
+            </otherwise>
+        </choose>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || H.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="postFamily != null and postFamily != ''">
+            AND H.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
+        </if>
+        <if test="empTypeCode != null and empTypeCode != ''">
+            AND H.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+        </if>
+    </sql>
+
+    <!-- ===== Đếm tổng số nhân viên ===== -->
+    <select id="countTotal" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+        WHERE <include refid="filterCondition"/>
+    </select>
+
+    <!-- ===== Thống kê theo giới tính ===== -->
+    <select id="countByGender" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountItemResultMap">
+        SELECT
+            NVL(HP.SEXCODE, 'unknown') AS CODE,
+            NVL(GET_GLOBAL_NAME(HP.SEXCODE, #{lang, jdbcType=VARCHAR}), 'Không xác định') AS LABEL,
+            COUNT(*) AS CNT
+        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+        WHERE <include refid="filterCondition"/>
+        GROUP BY HP.SEXCODE
+        ORDER BY HP.SEXCODE
+    </select>
+
+    <!-- ===== Thống kê theo loại nhân viên ===== -->
+    <select id="countByEmpType" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountItemResultMap">
+        SELECT
+            NVL(H.EMP_TYPE_CODE, 'unknown') AS CODE,
+            NVL(GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}), 'Không xác định') AS LABEL,
+            COUNT(*) AS CNT
+        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+        WHERE <include refid="filterCondition"/>
+        GROUP BY H.EMP_TYPE_CODE
+        ORDER BY CNT DESC
+    </select>
+
+    <!-- ===== Thống kê theo phòng ban ===== -->
+    <select id="countByDept" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountItemResultMap">
+        SELECT
+            NVL(H.DEPTNO, 'unknown') AS CODE,
+            NVL(GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}), 'Không xác định') AS LABEL,
+            COUNT(*) AS CNT
+        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+        WHERE <include refid="filterCondition"/>
+        GROUP BY H.DEPTNO
+        ORDER BY CNT DESC
+    </select>
+
+    <!-- ===== Thống kê theo nhóm nhân viên (POST_FAMILY) ===== -->
+    <select id="countByPostFamily" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountItemResultMap">
+        SELECT
+            NVL(H.POST_FAMILY, 'unknown') AS CODE,
+            NVL(GET_GLOBAL_NAME(H.POST_FAMILY, #{lang, jdbcType=VARCHAR}), 'Không xác định') AS LABEL,
+            COUNT(*) AS CNT
+        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+        WHERE <include refid="filterCondition"/>
+        GROUP BY H.POST_FAMILY
+        ORDER BY CNT DESC
+    </select>
+
+    <!-- ===== Thống kê theo chức danh (POST_GRADE_NO) ===== -->
+    <select id="countByPostGrade" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountItemResultMap">
+        SELECT
+            NVL(H.POST_GRADE_NO, 'unknown') AS CODE,
+            NVL(GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}), 'Không xác định') AS LABEL,
+            COUNT(*) AS CNT
+        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+        WHERE <include refid="filterCondition"/>
+        GROUP BY H.POST_GRADE_NO
+        ORDER BY CNT DESC
+    </select>
+
+    <!-- ===== Thống kê theo độ tuổi ===== -->
+    <select id="countByAge" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountItemResultMap">
+        SELECT
+            SORT_NO AS CODE,
+            AGE_GRP AS LABEL,
+            COUNT(*) AS CNT
+        FROM (
+            SELECT
+                CASE
+                    WHEN HP.DOB IS NULL THEN '8'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) &lt; 25 THEN '1'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 25 AND 30 THEN '2'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 31 AND 35 THEN '3'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 36 AND 40 THEN '4'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 41 AND 45 THEN '5'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 46 AND 50 THEN '6'
+                    ELSE '7'
+                END AS SORT_NO,
+                CASE
+                    WHEN HP.DOB IS NULL THEN 'Không xác định'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) &lt; 25 THEN 'Dưới 25'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 25 AND 30 THEN '25 - 30'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 31 AND 35 THEN '31 - 35'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 36 AND 40 THEN '36 - 40'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 41 AND 45 THEN '41 - 45'
+                    WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, HP.DOB) / 12) BETWEEN 46 AND 50 THEN '46 - 50'
+                    ELSE 'Trên 50'
+                END AS AGE_GRP
+            FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+            WHERE <include refid="filterCondition"/>
+        )
+        GROUP BY SORT_NO, AGE_GRP
+        ORDER BY SORT_NO
+    </select>
+
+    <!-- ===== Đếm danh sách nhân viên (dùng cho phân trang) ===== -->
+    <select id="countList" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+        WHERE <include refid="filterCondition"/>
+    </select>
+
+    <!-- ===== Danh sách nhân viên có phân trang ===== -->
+    <select id="selectListPage" parameterType="com.ait.ess.viewDept.dto.ManageCountInfoEmpDto"
+            resultMap="ManageCountInfoEmpResultMap">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                SELECT
+                    H.EMPID                                                          AS EMPID,
+                    H.LOCAL_NAME                                                     AS LOCAL_NAME,
+                    GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR})               AS DEPTNAME,
+                    GET_GLOBAL_NAME(H.POST_FAMILY, #{lang, jdbcType=VARCHAR})        AS POST_FAMILY_NAME,
+                    GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})      AS POST_GRADE_NO,
+                    GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR})      AS EMP_TYPE_NAME,
+                    HP.DOB                                                           AS DOB,
+                    GET_GLOBAL_NAME(HP.SEXCODE, #{lang, jdbcType=VARCHAR})           AS SEX_NAME,
+                    TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY')                           AS DATE_STARTED,
+                    GET_GLOBAL_NAME(H.EMP_OFFICE, #{lang, jdbcType=VARCHAR})         AS EMP_OFFICE_NAME
+                FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
+                WHERE <include refid="filterCondition"/>
+                ORDER BY H.EMPID ASC
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+</mapper>

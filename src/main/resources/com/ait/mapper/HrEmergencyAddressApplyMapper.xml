@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.HrEmergencyAddressApplyMapper">
+
+    <resultMap id="HrEmergencyAddressApplyResultMap" type="com.ait.ess.empinfo.dto.HrEmergencyAddressApplyDto">
+        <result property="emergencyNo"        column="EMERGENCY_NO"/>
+        <result property="personId"           column="PERSON_ID"/>
+        <result property="emerName"           column="EMER_NAME"/>
+        <result property="emerPhone"          column="EMER_PHONE"/>
+        <result property="emerPhoneSecond"    column="EMER_PHONE_SECOND"/>
+        <result property="emerEmail"          column="EMER_EMAIL"/>
+        <result property="mainLiaisonOffice"  column="MAIN_LIAISON_OFFICE"/>
+        <result property="emerAddress"        column="EMER_ADDRESS"/>
+        <result property="emerTypeCode"       column="EMER_TYPE_CODE"/>
+        <result property="activity"           column="ACTIVITY"/>
+        <result property="mobilePhone"        column="MOBILE_PHONE"/>
+        <result property="nationality"        column="NATIONALITY"/>
+        <result property="applyType"          column="APPLY_TYPE"/>
+        <result property="updateEmergencyNo"  column="UPDATE_EMERGENCY_NO"/>
+        <result property="essTypeCode"        column="ESS_TYPE_CODE"/>
+        <result property="emerCellphone"      column="EMER_CELLPHONE"/>
+        <result property="emerWorkPhone"      column="EMER_WORK_PHONE"/>
+        <result property="isEmergencyAddress" column="ISEMERGENCYADDRESS"/>
+        <result property="earror"             column="EARROR"/>
+        <result property="callback"           column="CALLBACK"/>
+    </resultMap>
+
+    <select id="selectEmergencyNextval" resultType="java.lang.Long">
+        SELECT hr_emergency_address_apply_seq.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertEmergencyApply" parameterType="com.ait.ess.empinfo.dto.HrEmergencyAddressApplyDto">
+        INSERT INTO HR_EMERGENCY_ADDRESS_APPLY (
+            EMERGENCY_NO,
+            PERSON_ID,
+            EMER_NAME,
+            EMER_PHONE,
+            EMER_PHONE_SECOND,
+            EMER_EMAIL,
+            MAIN_LIAISON_OFFICE,
+            EMER_ADDRESS,
+            EMER_TYPE_CODE,
+            ACTIVITY,
+            MOBILE_PHONE,
+            NATIONALITY,
+            APPLY_TYPE,
+            UPDATE_EMERGENCY_NO,
+            ESS_TYPE_CODE,
+            EMER_CELLPHONE,
+            EMER_WORK_PHONE,
+            ISEMERGENCYADDRESS,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATED_BY,
+            UPDATED_IP
+        ) VALUES (
+            #{emergencyNo,        jdbcType=NUMERIC},
+            #{personId,           jdbcType=VARCHAR},
+            #{emerName,           jdbcType=VARCHAR},
+            #{emerPhone,          jdbcType=VARCHAR},
+            #{emerPhoneSecond,    jdbcType=VARCHAR},
+            #{emerEmail,          jdbcType=VARCHAR},
+            #{mainLiaisonOffice,  jdbcType=VARCHAR},
+            #{emerAddress,        jdbcType=VARCHAR},
+            #{emerTypeCode,       jdbcType=VARCHAR},
+            1,
+            #{mobilePhone,        jdbcType=VARCHAR},
+            #{nationality,        jdbcType=VARCHAR},
+            #{applyType,          jdbcType=NUMERIC},
+            #{updateEmergencyNo,  jdbcType=NUMERIC},
+            #{essTypeCode,        jdbcType=VARCHAR},
+            #{emerCellphone,      jdbcType=VARCHAR},
+            #{emerWorkPhone,      jdbcType=VARCHAR},
+            #{isEmergencyAddress, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,            jdbcType=VARCHAR},
+            #{adminIP,            jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,            jdbcType=VARCHAR},
+            #{adminIP,            jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="selectByEmergencyNo" resultMap="HrEmergencyAddressApplyResultMap">
+        SELECT
+            EMERGENCY_NO, PERSON_ID, EMER_NAME, EMER_PHONE, EMER_PHONE_SECOND,
+            EMER_EMAIL, MAIN_LIAISON_OFFICE, EMER_ADDRESS, 
+            EMER_TYPE_CODE,
+            GET_GLOBAL_NAME(EMER_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMER_TYPE_NAME,
+            ACTIVITY, MOBILE_PHONE, NATIONALITY, APPLY_TYPE, UPDATE_EMERGENCY_NO,
+            ESS_TYPE_CODE, EMER_CELLPHONE, EMER_WORK_PHONE, ISEMERGENCYADDRESS,
+            EARROR, CALLBACK
+        FROM HR_EMERGENCY_ADDRESS_APPLY
+        WHERE EMERGENCY_NO = #{emergencyNo, jdbcType=NUMERIC}
+    </select>
+
+</mapper>

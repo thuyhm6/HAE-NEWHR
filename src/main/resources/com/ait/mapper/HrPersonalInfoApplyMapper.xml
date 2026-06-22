@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.HrPersonalInfoApplyMapper">
+
+    <select id="getNextPersonNoSeq" resultType="java.lang.Long">
+        SELECT HR_PERSONAL_INFO_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertPersonalInfoApply" parameterType="com.ait.ess.empinfo.dto.HrPersonalInfoApplyDto">
+        INSERT INTO HR_PERSONAL_INFO_APPLY (
+            PERSON_NO,
+            PERSON_ID,
+            FINAL_DEGREE_CODE,
+            SEXCODE,
+            DOB,
+            NATION_CODE,
+            NATIONALITY_CODE,
+            MARITAL_STATUS_CODE,
+            WEDDING_DATE,
+            IDCARD_NO,
+            IDCARD_START_DATE,
+            ISSUING_AUTHORITY,
+            HOME_ADDRESS,
+            EMAIL,
+            EMAIL_SECOND,
+            REG_PLACE,
+            OFFICE_PHONE,
+            HOME_PHONE,
+            CELLPHONE,
+            COMPANY_PHONE,
+            HOUSE_TP,
+            RESIDENTIAL_DISTINCTION,
+            EXIST_SINGLE,
+            SING_ID,
+            RELIGION,
+            POLITICAL_OUTLOOK,
+            CV_UPDATE_STATUS,
+            ARMY_OR_NOT,
+            OBSTACLE_OR_NOT,
+            APPLY_TYPE,
+            ESS_TYPE_CODE,
+            ACTIVITY,
+            ORDERNO,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP
+        ) VALUES (
+            #{personNo, jdbcType=VARCHAR},
+            #{personId, jdbcType=VARCHAR},
+            #{finalDegreeCode, jdbcType=VARCHAR},
+            #{sexCode, jdbcType=VARCHAR},
+            TO_DATE(#{dob, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+            #{nationCode, jdbcType=VARCHAR},
+            #{nationalityCode, jdbcType=VARCHAR},
+            #{maritalStatusCode, jdbcType=VARCHAR},
+            TO_DATE(#{weddingDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+            #{idcardNo, jdbcType=VARCHAR},
+            #{idcardStartDate, jdbcType=VARCHAR},
+            #{issuingAuthority, jdbcType=VARCHAR},
+            #{homeAddress, jdbcType=VARCHAR},
+            #{email, jdbcType=VARCHAR},
+            #{emailSecond, jdbcType=VARCHAR},
+            #{regPlace, jdbcType=VARCHAR},
+            #{officePhone, jdbcType=VARCHAR},
+            #{homePhone, jdbcType=VARCHAR},
+            #{cellphone, jdbcType=VARCHAR},
+            #{companyPhone, jdbcType=VARCHAR},
+            #{houseTp, jdbcType=VARCHAR},
+            #{residentialDistinction, jdbcType=VARCHAR},
+            #{existSingle, jdbcType=VARCHAR},
+            #{singId, jdbcType=VARCHAR},
+            #{religion, jdbcType=VARCHAR},
+            #{politicalOutlook, jdbcType=VARCHAR},
+            #{cvUpdateStatus, jdbcType=VARCHAR},
+            #{armyOrNot, jdbcType=VARCHAR},
+            #{obstacleOrNot, jdbcType=VARCHAR},
+            #{applyType, jdbcType=NUMERIC},
+            #{essTypeCode, jdbcType=VARCHAR},
+            #{activity, jdbcType=NUMERIC},
+            #{orderNo, jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <resultMap id="HrPersonalInfoApplyResultMap" type="com.ait.ess.empinfo.dto.HrPersonalInfoApplyDto">
+        <result property="personNo"              column="PERSON_NO"/>
+        <result property="personId"              column="PERSON_ID"/>
+        <result property="finalDegreeCode"       column="FINAL_DEGREE_CODE"/>
+        <result property="finalDegreeName"       column="FINAL_DEGREE_NAME"/>
+        <result property="sexCode"               column="SEXCODE"/>
+        <result property="sexName"               column="SEX_NAME"/>
+        <result property="dob"                   column="DOB"/>
+        <result property="nationCode"            column="NATION_CODE"/>
+        <result property="nationName"           column="NATION_NAME"/>
+        <result property="nationalityCode"       column="NATIONALITY_CODE"/>
+        <result property="nationalityName"       column="NATIONALITY_NAME"/>
+        <result property="maritalStatusCode"     column="MARITAL_STATUS_CODE"/>
+        <result property="maritalStatusName"     column="MARITAL_STATUS_NAME"/>
+        <result property="weddingDate"           column="WEDDING_DATE"/>
+        <result property="idcardNo"              column="IDCARD_NO"/>
+        <result property="idcardStartDate"       column="IDCARD_START_DATE"/>
+        <result property="issuingAuthority"      column="ISSUING_AUTHORITY"/>
+        <result property="homeAddress"           column="HOME_ADDRESS"/>
+        <result property="email"                 column="EMAIL"/>
+        <result property="emailSecond"           column="EMAIL_SECOND"/>
+        <result property="officePhone"           column="OFFICE_PHONE"/>
+        <result property="homePhone"             column="HOME_PHONE"/>
+        <result property="cellphone"             column="CELLPHONE"/>
+        <result property="companyPhone"          column="COMPANY_PHONE"/>
+        <result property="houseTp"               column="HOUSE_TP"/>
+        <result property="religion"              column="RELIGION"/>
+        <result property="politicalOutlook"      column="POLITICAL_OUTLOOK"/>
+        <result property="armyOrNot"             column="ARMY_OR_NOT"/>
+        <result property="obstacleOrNot"         column="OBSTACLE_OR_NOT"/>
+        <result property="applyType"             column="APPLY_TYPE"/>
+        <result property="essTypeCode"           column="ESS_TYPE_CODE"/>
+        <result property="activity"              column="ACTIVITY"/>
+    </resultMap>
+
+    <select id="selectByApplyNo" resultMap="HrPersonalInfoApplyResultMap">
+        SELECT
+            PERSON_NO, PERSON_ID, FINAL_DEGREE_CODE, GET_GLOBAL_NAME(FINAL_DEGREE_CODE, #{lang, jdbcType=VARCHAR}) AS FINAL_DEGREE_NAME, 
+            SEXCODE,
+            GET_GLOBAL_NAME(SEXCODE, #{lang, jdbcType=VARCHAR}) AS SEX_NAME,
+            TO_CHAR(DOB,'YYYY/MM/DD') AS DOB,
+            NATION_CODE,
+            GET_GLOBAL_NAME(NATION_CODE, #{lang, jdbcType=VARCHAR}) AS NATION_NAME,
+            NATIONALITY_CODE,
+            GET_GLOBAL_NAME(NATIONALITY_CODE, #{lang, jdbcType=VARCHAR}) AS NATIONALITY_NAME,
+            MARITAL_STATUS_CODE,
+            GET_GLOBAL_NAME(MARITAL_STATUS_CODE, #{lang, jdbcType=VARCHAR}) AS MARITAL_STATUS_NAME,
+            TO_CHAR(WEDDING_DATE,'YYYY/MM/DD') AS WEDDING_DATE,
+            IDCARD_NO, IDCARD_START_DATE,
+            ISSUING_AUTHORITY, HOME_ADDRESS, EMAIL, EMAIL_SECOND,
+            OFFICE_PHONE, HOME_PHONE, CELLPHONE, COMPANY_PHONE, HOUSE_TP,
+            RELIGION, POLITICAL_OUTLOOK, ARMY_OR_NOT, OBSTACLE_OR_NOT,
+            APPLY_TYPE, ESS_TYPE_CODE, ACTIVITY
+        FROM HR_PERSONAL_INFO_APPLY
+        WHERE PERSON_NO = #{applyNo, jdbcType=VARCHAR}
+    </select>
+
+</mapper>

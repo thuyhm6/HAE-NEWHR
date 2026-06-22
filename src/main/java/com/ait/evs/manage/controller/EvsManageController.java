@@ -8,7 +8,7 @@ import com.ait.evs.manage.dto.EvsAffirmTarget2AbilityDto;
 import com.ait.evs.manage.dto.EvsAffirmTarget2Dto;
 import com.ait.evs.manage.dto.EvsAffirmorSetupDto;
 import com.ait.evs.manage.dto.EvsConfirmTarget1Dto;
-import com.ait.evs.manage.dto.EvsEvsBySelfHtsvDto;
+import com.ait.evs.manage.dto.EvsEvsBySelfHaeDto;
 import com.ait.evs.manage.dto.EvsEvsBySelfSSTAbilityDto;
 import com.ait.evs.manage.dto.EvsItemAbilityDto;
 import com.ait.evs.manage.dto.EvsFormulaDto;
@@ -31,7 +31,7 @@ import com.ait.evs.manage.service.EvsAffirmTarget1Service;
 import com.ait.evs.manage.service.EvsAffirmTarget2Service;
 import com.ait.evs.manage.service.EvsAffirmorSetupService;
 import com.ait.evs.manage.service.EvsConfirmTarget1Service;
-import com.ait.evs.manage.service.EvsEvsBySelfHtsvService;
+import com.ait.evs.manage.service.EvsEvsBySelfHaeService;
 import com.ait.evs.manage.service.EvsEvsBySelfSSTAbilityService;
 import com.ait.evs.manage.service.EvsFormulaService;
 import com.ait.evs.manage.service.EvsItemParamService;
@@ -100,7 +100,7 @@ public class EvsManageController {
     private EvsConfirmTarget1Service evsConfirmTarget1Service;
 
     @Autowired
-    private EvsEvsBySelfHtsvService evsEvsBySelfHtsvService;
+    private EvsEvsBySelfHaeService evsEvsBySelfHaeService;
 
     @Autowired
     private EvsEvsBySelfSSTAbilityService evsEvsBySelfSSTAbilityService;
@@ -768,42 +768,42 @@ public class EvsManageController {
         }
     }
 
-    // ── Đánh giá bản thân HTSV (EVS_OBJECT + EVS_ITEM_SST.EVS_SCORE) ─────────────
+    // ── Đánh giá bản thân HAE (EVS_OBJECT + EVS_ITEM_SST.EVS_SCORE) ─────────────
 
-    @GetMapping("/viewEvsBySelfHTSV")
-    public String viewEvsBySelfHTSV() {
-        return "evs/manage/viewEvsBySelfHTSV";
+    @GetMapping("/viewEvsBySelfHAE")
+    public String viewEvsBySelfHAE() {
+        return "evs/manage/viewEvsBySelfHAE";
     }
 
-    @GetMapping("/api/evsBySelfHTSV/objectList")
+    @GetMapping("/api/evsBySelfHAE/objectList")
     @ResponseBody
-    public ResponseEntity<DataTablesResponse<EvsEvsBySelfHtsvDto>> getEvsBySelfHTSVObjectList(
+    public ResponseEntity<DataTablesResponse<EvsEvsBySelfHaeDto>> getEvsBySelfHAEObjectList(
             @RequestParam(required = false) String resumeSeq,
             @RequestParam(required = false) String evsType,
             @RequestParam(defaultValue = "1") int draw,
             @RequestParam(defaultValue = "0") int start,
             @RequestParam(defaultValue = "50") int length) {
-        EvsEvsBySelfHtsvDto params = new EvsEvsBySelfHtsvDto();
+        EvsEvsBySelfHaeDto params = new EvsEvsBySelfHaeDto();
         params.setResumeSeq(resumeSeq);
         params.setEvsType(evsType);
         params.setDraw(draw);
         params.setStart(start);
         params.setLength(length);
-        return ResponseEntity.ok(evsEvsBySelfHtsvService.getObjectList(params));
+        return ResponseEntity.ok(evsEvsBySelfHaeService.getObjectList(params));
     }
 
-    @GetMapping("/api/evsBySelfHTSV/objectInfo")
+    @GetMapping("/api/evsBySelfHAE/objectInfo")
     @ResponseBody
-    public ResponseEntity<EvsPersonalTargetDto> getEvsBySelfHTSVObjectInfo(
+    public ResponseEntity<EvsPersonalTargetDto> getEvsBySelfHAEObjectInfo(
             @RequestParam String evsObjectSeq) {
-        return ResponseEntity.ok(evsEvsBySelfHtsvService.getObjectInfoBySeq(evsObjectSeq));
+        return ResponseEntity.ok(evsEvsBySelfHaeService.getObjectInfoBySeq(evsObjectSeq));
     }
 
-    @PostMapping("/api/evsBySelfHTSV/save")
+    @PostMapping("/api/evsBySelfHAE/save")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> saveEvsBySelfHTSV(@RequestBody EvsEvsBySelfHtsvDto dto) {
+    public ResponseEntity<Map<String, Object>> saveEvsBySelfHAE(@RequestBody EvsEvsBySelfHaeDto dto) {
         try {
-            evsEvsBySelfHtsvService.save(dto);
+            evsEvsBySelfHaeService.save(dto);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));

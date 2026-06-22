@@ -5,7 +5,7 @@ import com.ait.ar.attendanceSettings.service.ArShiftService;
 import com.ait.sy.basicMaintenance.dto.SyCodeParamDto;
 import com.ait.sy.basicMaintenance.service.SyCodeParamService;
 import com.ait.sy.excel.service.ExcelService;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class ExcelController {
 
     /**
      * Download template dung chung.
-     * GET /sy/excel/api/downloadTemplate?templateName=AR_SCHEDULE_HTSV_Template
+     * GET /sy/excel/api/downloadTemplate?templateName=AR_SCHEDULE_HAE_Template
      */
     @GetMapping("/api/downloadTemplate")
     public void downloadTemplate(@RequestParam("templateName") String templateName,
@@ -55,11 +55,11 @@ public class ExcelController {
     }
 
     /**
-     * Alias cu cho AR_SCHEDULE_HTSV.
+     * Alias cu cho AR_SCHEDULE_HAE.
      */
-    @GetMapping("/api/scheduleHtsv/downloadTemplate")
-    public void downloadScheduleHtsvTemplate(HttpServletResponse response) throws IOException {
-        downloadTemplateInternal("AR_SCHEDULE_HTSV_Template", response);
+    @GetMapping("/api/scheduleHae/downloadTemplate")
+    public void downloadScheduleHaeTemplate(HttpServletResponse response) throws IOException {
+        downloadTemplateInternal("AR_SCHEDULE_HAE_Template", response);
     }
 
     /**
@@ -103,10 +103,10 @@ public class ExcelController {
     /**
      * Alias cu cho upload schedule.
      */
-    @PostMapping("/api/scheduleHtsv/upload")
+    @PostMapping("/api/scheduleHae/upload")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> importScheduleHtsvTemplate(@RequestParam("file") MultipartFile file) {
-        return importTemplate("AR_SCHEDULE_HTSV_Template", file);
+    public ResponseEntity<Map<String, Object>> importScheduleHaeTemplate(@RequestParam("file") MultipartFile file) {
+        return importTemplate("AR_SCHEDULE_HAE_Template", file);
     }
 
     private String validateUploadFile(MultipartFile file) {
@@ -179,7 +179,7 @@ public class ExcelController {
     }
 
     private Workbook buildTemplateByName(String templateName) {
-        if ("AR_SCHEDULE_HTSV_Template".equalsIgnoreCase(templateName)) {
+        if ("AR_SCHEDULE_HAE_Template".equalsIgnoreCase(templateName)) {
             return excelService.buildTemplate(loadShiftList(), loadCodeList("1439"), templateName);
         } else if ("AttendanceApply_add_Template".equalsIgnoreCase(templateName)) {
             return excelService.buildTemplate(loadShiftList(), loadCodeList("21"), templateName);

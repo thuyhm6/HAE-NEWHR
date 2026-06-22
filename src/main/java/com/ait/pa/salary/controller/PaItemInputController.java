@@ -92,7 +92,7 @@ public class PaItemInputController {
                     : Arrays.asList(deptNos.split(","));
             List<String> itemIdList = Arrays.asList(itemIds.split(","));
 
-            byte[] data = paItemInputService.exportSummaryHtsv(payScheduleNo, deptList, itemIdList);
+            byte[] data = paItemInputService.exportSummaryHae(payScheduleNo, deptList, itemIdList);
 
             String filename = URLEncoder.encode("PaSummary_" + payScheduleNo + ".xlsx", StandardCharsets.UTF_8);
             return ResponseEntity.ok()
@@ -100,7 +100,7 @@ public class PaItemInputController {
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(data);
         } catch (Exception e) {
-            log.error("Lỗi khi xuất Excel PA_SUMMARY_HTSV payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
+            log.error("Lỗi khi xuất Excel PA_SUMMARY_HAE payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

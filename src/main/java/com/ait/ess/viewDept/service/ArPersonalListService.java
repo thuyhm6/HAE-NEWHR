@@ -16,6 +16,6 @@ public interface ArPersonalListService {
      */
     List<Map<String, Object>> getSummaryList(ArPersonalListDto params);
 
-    /** Chi tiết từng bản ghi chấm công từ AR_DETAIL_HTSV cho 1 nhân viên + 1 loại. */
+    /** Chi tiết từng bản ghi chấm công từ AR_DETAIL_HAE cho 1 nhân viên + 1 loại. */
     List<ArPersonalListDetailDto> getDetailList(ArPersonalListDetailDto params);
 }

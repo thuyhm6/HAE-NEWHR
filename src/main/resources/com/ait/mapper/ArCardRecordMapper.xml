@@ -50,9 +50,9 @@
                GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})  AS POST_GRADE_NAME,
                SH.SHIFT_NO,
                GET_GLOBAL_NAME(SH.SHIFT_NO, #{lang, jdbcType=VARCHAR})       AS SHIFT_NAME
-          FROM AR_MAC_RECORDS_HTSV AR
+          FROM AR_MAC_RECORDS_HAE AR
          INNER JOIN HR_EMPLOYEE HE ON AR.PERSON_ID = HE.PERSON_ID
-          LEFT JOIN AR_SCHEDULE_HTSV SH
+          LEFT JOIN AR_SCHEDULE_HAE SH
                  ON SH.PERSON_ID   = AR.PERSON_ID
                 AND SH.AR_DATE_STR = AR.AR_DATE_STR
          WHERE AR.ACTIVITY = 1
@@ -137,14 +137,14 @@
                TO_CHAR(AR.R_TIME, 'YYYY/MM/DD HH24:MI') AS SWIPE_DATETIME,
                HE.EMPID,
                HE.LOCAL_NAME
-          FROM AR_MAC_RECORDS_HTSV AR
+          FROM AR_MAC_RECORDS_HAE AR
          INNER JOIN HR_EMPLOYEE HE ON AR.PERSON_ID = HE.PERSON_ID
          WHERE AR.RECORD_NO = #{recordNo, jdbcType=NUMERIC}
            AND AR.ACTIVITY  = 1
     </select>
 
     <insert id="insertRecord" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
-        INSERT INTO AR_MAC_RECORDS_HTSV (
+        INSERT INTO AR_MAC_RECORDS_HAE (
             RECORD_NO,
             CARD_NO,
             PERSON_ID,
@@ -168,7 +168,7 @@
     </insert>
 
     <update id="updateRecord" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
-        UPDATE AR_MAC_RECORDS_HTSV
+        UPDATE AR_MAC_RECORDS_HAE
            SET CARD_NO    = #{cardNo,        jdbcType=VARCHAR},
                PERSON_ID  = #{personId,      jdbcType=VARCHAR},
                DOOR_TYPE  = #{doorType,      jdbcType=VARCHAR},
@@ -181,7 +181,7 @@
     </update>
 
     <update id="deleteByRecordNo">
-        UPDATE AR_MAC_RECORDS_HTSV
+        UPDATE AR_MAC_RECORDS_HAE
            SET ACTIVITY = 0
          WHERE RECORD_NO = #{recordNo, jdbcType=NUMERIC}
     </update>
@@ -196,7 +196,7 @@
     <select id="countDuplicate" resultType="int"
             parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
         SELECT COUNT(*)
-          FROM AR_MAC_RECORDS_HTSV
+          FROM AR_MAC_RECORDS_HAE
          WHERE CARD_NO   = #{cardNo,        jdbcType=VARCHAR}
            AND R_TIME    = TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
            AND DOOR_TYPE = #{doorType,      jdbcType=VARCHAR}
@@ -204,7 +204,7 @@
     </select>
 
     <insert id="insertFromDevice" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordDto">
-        INSERT INTO AR_MAC_RECORDS_HTSV (
+        INSERT INTO AR_MAC_RECORDS_HAE (
             RECORD_NO,
             CARD_NO,
             PERSON_ID,

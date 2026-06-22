@@ -51,6 +51,9 @@
                             <button type="button" class="btn btn-success" onclick="asExportExcel()">
                                 <i class="bx bx-export"></i> <span th:text="#{common.exportExcel}">Xuất excel</span>
                             </button>
+                            <button type="button" class="btn btn-warning" onclick="asOpenSyncClerverseModal()">
+                                <i class="bx bx-transfer"></i> <span th:text="#{attSearch.syncCleverseDev}">Test Đồng Bộ Cleverse (DEV)</span>
+                            </button>
                         </div>
                     </form>
 
@@ -77,6 +80,84 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Test Sync Cleverse DEV -->
+<div class="modal fade" id="as_sync_modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" th:text="#{attSearch.syncModal.title}">Test Gửi Chấm Công Lên Cleverse</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3">
+                    <strong>DEV Endpoint:</strong> <code>https://epdev.cleverse.kr/soap/org/neoHrWs</code>
+                </div>
+                <form id="as_sync_form">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="as_sync_enterCd" class="form-label fw-bold" th:text="#{attSearch.syncModal.enterCd}">Mã công ty</label>
+                            <input type="text" class="form-control" id="as_sync_enterCd" value="HAPM" maxlength="10">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="as_sync_sabun" class="form-label fw-bold" th:text="#{attSearch.syncModal.sabun}">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="as_sync_sabun" value="19945437" maxlength="13">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="as_sync_gntCd" class="form-label fw-bold" th:text="#{attSearch.syncModal.gntCd}">Mã chấm công</label>
+                            <input type="text" class="form-control" id="as_sync_gntCd" value="517_EH" maxlength="10">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_sync_sYmd" class="form-label fw-bold" th:text="#{attSearch.syncModal.sYmd}">Ngày bắt đầu (YYYYMMDD)</label>
+                            <input type="text" class="form-control" id="as_sync_sYmd" value="20260612" maxlength="8">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_sync_eYmd" class="form-label fw-bold" th:text="#{attSearch.syncModal.eYmd}">Ngày kết thúc (YYYYMMDD)</label>
+                            <input type="text" class="form-control" id="as_sync_eYmd" value="20260612" maxlength="8">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="as_sync_instanceId" class="form-label fw-bold" th:text="#{attSearch.syncModal.instanceId}">Instance ID</label>
+                            <input type="text" class="form-control" id="as_sync_instanceId" value="HAPM19910157Q28242988" maxlength="25">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_sync_cancelYn" class="form-label fw-bold" th:text="#{attSearch.syncModal.cancelYn}">Hủy (Y/N)</label>
+                            <select class="form-select" id="as_sync_cancelYn">
+                                <option value="N" selected>N</option>
+                                <option value="Y">Y</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_sync_ifId" class="form-label fw-bold" th:text="#{attSearch.syncModal.ifId}">Interface ID</label>
+                            <input type="text" class="form-control" id="as_sync_ifId" value="HHR" maxlength="13">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_sync_status" class="form-label fw-bold" th:text="#{attSearch.syncModal.status}">Trạng thái</label>
+                            <select class="form-select" id="as_sync_status">
+                                <option value="0" selected>0</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="as_sync_reason" class="form-label fw-bold" th:text="#{attSearch.syncModal.reason}">Lý do</label>
+                            <input type="text" class="form-control" id="as_sync_reason" value="Refresh" maxlength="128">
+                        </div>
+                    </div>
+                </form>
+                <hr>
+                <div id="as_sync_result_area" style="display:none;">
+                    <label class="form-label fw-bold" th:text="#{attSearch.syncModal.result}">Kết quả</label>
+                    <div id="as_sync_result_box" class="alert" role="alert"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{common.cancel}">Đóng</button>
+                <button type="button" class="btn btn-warning" id="as_sync_send_btn" onclick="asSendSyncCleverse()">
+                    <i class="bx bx-send"></i> <span th:text="#{attSearch.syncModal.send}">Gửi</span>
+                </button>
             </div>
         </div>
     </div>
@@ -258,6 +339,72 @@
             if (_as_table) {
                 _as_table.button('.buttons-excel').trigger();
             }
+        };
+
+        window.asOpenSyncClerverseModal = function () {
+            $('#as_sync_result_area').hide();
+            $('#as_sync_result_box').text('').removeClass('alert-success alert-danger');
+            var modal = new bootstrap.Modal(document.getElementById('as_sync_modal'));
+            modal.show();
+        };
+
+        window.asSendSyncCleverse = function () {
+            var enterCd = $('#as_sync_enterCd').val().trim();
+            var sabun = $('#as_sync_sabun').val().trim();
+            var gntCd = $('#as_sync_gntCd').val().trim();
+            var sYmd = $('#as_sync_sYmd').val().trim();
+            var eYmd = $('#as_sync_eYmd').val().trim();
+            var instanceId = $('#as_sync_instanceId').val().trim();
+
+            if (!enterCd || !sabun || !gntCd || !sYmd || !eYmd || !instanceId) {
+                alert('Vui lòng nhập đầy đủ các trường bắt buộc: Mã công ty, Mã nhân viên, Mã chấm công, Ngày bắt đầu, Ngày kết thúc, Instance ID.');
+                return;
+            }
+
+            var payload = {
+                enterCd: enterCd,
+                sabun: sabun,
+                gntCd: gntCd,
+                sYmd: sYmd,
+                eYmd: eYmd,
+                orgCd: '',
+                instanceId: instanceId,
+                cancelYn: $('#as_sync_cancelYn').val(),
+                ifId: $('#as_sync_ifId').val().trim(),
+                status: $('#as_sync_status').val(),
+                reason: $('#as_sync_reason').val().trim()
+            };
+
+            $('#as_sync_send_btn').prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Đang gửi...');
+            $('#as_sync_result_area').hide();
+
+            $.ajax({
+                url: '/ar/attendanceMintenance/api/syncCleverse/test',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#as_sync_result_area').show();
+                    if (res.success) {
+                        $('#as_sync_result_box')
+                            .removeClass('alert-danger').addClass('alert-success')
+                            .text('Kết quả: ' + res.result);
+                    } else {
+                        $('#as_sync_result_box')
+                            .removeClass('alert-success').addClass('alert-danger')
+                            .text('Lỗi: ' + res.message);
+                    }
+                },
+                error: function (xhr) {
+                    $('#as_sync_result_area').show();
+                    $('#as_sync_result_box')
+                        .removeClass('alert-success').addClass('alert-danger')
+                        .text('Lỗi kết nối: ' + xhr.status + ' ' + xhr.statusText);
+                },
+                complete: function () {
+                    $('#as_sync_send_btn').prop('disabled', false).html('<i class="bx bx-send"></i> Gửi');
+                }
+            });
         };
 
         if (document.readyState === 'loading') {

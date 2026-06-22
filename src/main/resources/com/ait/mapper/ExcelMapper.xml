@@ -14,8 +14,8 @@
         SELECT PERSON_ID FROM HR_EMPLOYEE WHERE EMPID = #{empId, jdbcType=VARCHAR} AND ROWNUM = 1
     </select>
 
-    <insert id="insertScheduleHtsv" parameterType="map">
-        INSERT INTO AR_SCHEDULE_HTSV (
+    <insert id="insertScheduleHae" parameterType="map">
+        INSERT INTO AR_SCHEDULE_HAE (
             PK_NO,
             PERSON_ID,
             SHIFT_NO,

@@ -40,7 +40,7 @@
                AR.REMARK,
                GET_GLOBAL_NAME(AR.STATUS_CODE, #{lang, jdbcType=VARCHAR}) STATUS_NAME,
                AR.LOCK_YN
-          FROM AR_DETAIL_HTSV AR, HR_EMPLOYEE HE
+          FROM AR_DETAIL_HAE AR, HR_EMPLOYEE HE
          WHERE AR.PERSON_ID = HE.PERSON_ID
            AND AR.PERSON_ID NOT LIKE '111111%'
            AND AR.ITEM_NO NOT IN (

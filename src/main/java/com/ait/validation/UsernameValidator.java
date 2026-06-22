@@ -1,7 +1,7 @@
 package com.ait.validation;
 
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 import org.springframework.util.StringUtils;
 
 import java.util.regex.Pattern;

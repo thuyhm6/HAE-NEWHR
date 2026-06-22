@@ -5,7 +5,7 @@ import com.ait.ar.attendanceSettings.dto.ArEmpCalenderDto;
 import com.ait.ar.attendanceSettings.model.ArCalender;
 import com.ait.ar.attendanceSettings.model.ArCalenderGroup;
 import com.ait.ar.attendanceSettings.dto.ArCalenderGroupDto;
-import com.ait.ar.attendanceMintenance.model.ArScheduleHtsv;
+import com.ait.ar.attendanceMintenance.model.ArScheduleHae;
 import com.ait.ar.attendanceSettings.model.ArCalenderGroupHistory;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -77,19 +77,19 @@ public interface ArCalenderMapper {
                 @Param("imonth") String imonth,
                 @Param("personId") String personId);
 
-        // AR_SCHEDULE_HTSV: đếm xem đã có dữ liệu chưa
-        int countScheduleHtsv(
+        // AR_SCHEDULE_HAE: đếm xem đã có dữ liệu chưa
+        int countScheduleHae(
                 @Param("personId") String personId,
                 @Param("arDateStr") String arDateStr);
 
-        // AR_SCHEDULE_HTSV: lấy chi tiết 1 ngày của 1 người
+        // AR_SCHEDULE_HAE: lấy chi tiết 1 ngày của 1 người
         ArEmpCalenderDto selectEmpScheduleDetail(
                 @Param("personId") String personId,
                 @Param("arDateStr") String arDateStr);
 
-        // AR_SCHEDULE_HTSV: thêm mới
-        void insertScheduleHtsv(ArScheduleHtsv entity);
+        // AR_SCHEDULE_HAE: thêm mới
+        void insertScheduleHae(ArScheduleHae entity);
 
-        // AR_SCHEDULE_HTSV: cập nhật
-        void updateScheduleHtsv(ArScheduleHtsv entity);
+        // AR_SCHEDULE_HAE: cập nhật
+        void updateScheduleHae(ArScheduleHae entity);
 }

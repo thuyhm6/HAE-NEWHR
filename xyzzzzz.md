@@ -150,15 +150,15 @@ căn cứ vào hình ảnh tham khảo hãy Tạo cho tôi một file viewDepart
 căn cứ vào cấu trúc của viewArItem.html hãy Tạo cho tôi một file viewDynamicGroup.html - Nhân viên đặc biệt nằm trong module ar/attendanceSettings. dữ liệu lấy từ bảng AR_EMP_GROUP với các trường tham khảo từ hình ảnh. Có đầy đủ chức năng thêm mới, sửa, xóa, phân trang, xuất excel. dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID. khi thêm mới hoặc sửa, thì giá trị của GROUP_NO luôn là 80000084
 
 
-căn cứ vào cấu trúc của viewDynamicGroup.html hãy Tạo cho tôi một file addEmpShiftView.html - Xếp ca làm việc nằm trong module ar/attendanceMintenance. dữ liệu lấy từ bảng AR_SCHEDULE_HTSV với các trường tham khảo từ hình ảnh. mặc định khi hiển thị dữ liệu sẽ hiển thị theo tháng hiện tại với điều kiện AR_DATE_STR. dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Có đầy đủ chức năng thêm mới, sửa, xóa, phân trang, xuất excel. lưu ý trường PK_NO của bảng AR_SCHEDULE_HTSV khi tạo mới là tự động tăng với giá trị AR_SCHEDULE_SEQ.NEXTVAL. dữu liệu của trường SHIFT_NO lấy từ /ar/attendanceSettings/api/shift. Dữ liệu của trường TYPEID lấy thông qua data-parent-code="1439"
+căn cứ vào cấu trúc của viewDynamicGroup.html hãy Tạo cho tôi một file addEmpShiftView.html - Xếp ca làm việc nằm trong module ar/attendanceMintenance. dữ liệu lấy từ bảng AR_SCHEDULE_HAE với các trường tham khảo từ hình ảnh. mặc định khi hiển thị dữ liệu sẽ hiển thị theo tháng hiện tại với điều kiện AR_DATE_STR. dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Có đầy đủ chức năng thêm mới, sửa, xóa, phân trang, xuất excel. lưu ý trường PK_NO của bảng AR_SCHEDULE_HAE khi tạo mới là tự động tăng với giá trị AR_SCHEDULE_SEQ.NEXTVAL. dữu liệu của trường SHIFT_NO lấy từ /ar/attendanceSettings/api/shift. Dữ liệu của trường TYPEID lấy thông qua data-parent-code="1439"
 
-Thêm cho tôi chức năng thêm mới dữ liệu thông qua việc upload file excel. Trước hết tạo chức năng tải file excel mẫu, sau đó tạo chức năng upload file excel. Với chức năng tạo file excel mẫu, thì tạo ra một file excel với các cột tham khảo từ hình ảnh, với dữ liệu là dữ liệu mẫu. Lưu ý cột D - Date type chính là lấy danh sách từ data-parent-code="1439", khi chọn một giá trị ở cột D - Date type thì cột E - Date type code sẽ tự động điền giá trị code tương ứng. tương tự với cột F - Shift chính là lấy danh sách từ /ar/attendanceSettings/api/shift, khi chọn một giá trị ở cột F - Shift thì cột G - Shift code sẽ tự động điền giá trị code tương ứng. Khi thực hiện upload file excel, thì sẽ hiển thị một modal để chọn file excel, sau khi chọn file excel, thì dựa vào dữ liệu trong file excel để Insert vào bảng AR_SCHEDULE_HTSV. Lưu ý khi Insert vào bảng AR_SCHEDULE_HTSV, thì giá trị của PK_NO là tự động tăng với giá trị AR_SCHEDULE_SEQ.NEXTVAL, giá trị của SHIFT_NO là lấy từ cột G - Shift, giá trị của TYPEID là lấy từ cột E - Date type code, giá trị của AR_DATE_STR là lấy từ cột C - Date, giá trị của PERSON_ID là lấy từ cột A - Employee ID (lấy PERSON_ID tương ứng với EMPID trong bảng HR_EMPLOYEE), giá trị của REMARK là lấy từ cột J - Remark. các chức năng liên quan đến tải file excel mẫu và upload file excel hãy để ở module sy/excel cho mực đích dùng chung, về sau ở các giao diện khác muốn sử dụng đến chức năng này thì sẽ gọi đến module sy/excel
+Thêm cho tôi chức năng thêm mới dữ liệu thông qua việc upload file excel. Trước hết tạo chức năng tải file excel mẫu, sau đó tạo chức năng upload file excel. Với chức năng tạo file excel mẫu, thì tạo ra một file excel với các cột tham khảo từ hình ảnh, với dữ liệu là dữ liệu mẫu. Lưu ý cột D - Date type chính là lấy danh sách từ data-parent-code="1439", khi chọn một giá trị ở cột D - Date type thì cột E - Date type code sẽ tự động điền giá trị code tương ứng. tương tự với cột F - Shift chính là lấy danh sách từ /ar/attendanceSettings/api/shift, khi chọn một giá trị ở cột F - Shift thì cột G - Shift code sẽ tự động điền giá trị code tương ứng. Khi thực hiện upload file excel, thì sẽ hiển thị một modal để chọn file excel, sau khi chọn file excel, thì dựa vào dữ liệu trong file excel để Insert vào bảng AR_SCHEDULE_HAE. Lưu ý khi Insert vào bảng AR_SCHEDULE_HAE, thì giá trị của PK_NO là tự động tăng với giá trị AR_SCHEDULE_SEQ.NEXTVAL, giá trị của SHIFT_NO là lấy từ cột G - Shift, giá trị của TYPEID là lấy từ cột E - Date type code, giá trị của AR_DATE_STR là lấy từ cột C - Date, giá trị của PERSON_ID là lấy từ cột A - Employee ID (lấy PERSON_ID tương ứng với EMPID trong bảng HR_EMPLOYEE), giá trị của REMARK là lấy từ cột J - Remark. các chức năng liên quan đến tải file excel mẫu và upload file excel hãy để ở module sy/excel cho mực đích dùng chung, về sau ở các giao diện khác muốn sử dụng đến chức năng này thì sẽ gọi đến module sy/excel
 
-nếu tôi đã có sẵn file mẫu tên là AR_SCHEDULE_HTSV_Template.xlsx nằm trong thư mục src/main/resources/templates. và nội dung cả file mẫu đã có sẵn dòng tiêu đề (dòng 1), đã có sẵn 2 sheet Template và TemplateCode. thì đoạn này sẽ sửa lại code như thế nào.
+nếu tôi đã có sẵn file mẫu tên là AR_SCHEDULE_HAE_Template.xlsx nằm trong thư mục src/main/resources/templates. và nội dung cả file mẫu đã có sẵn dòng tiêu đề (dòng 1), đã có sẵn 2 sheet Template và TemplateCode. thì đoạn này sẽ sửa lại code như thế nào.
 
 căn cứ vào viewCompanyCalendar.html hãy Tạo cho tôi một file viewClassCalendar.html - Lịch nhóm ca nằm trong module ar/attendanceSettings. dữ liệu lấy từ bảng AR_CALENDER_GROUP với điều kiện CPNY_ID = #{cpnyId}. mặc định khi hiển thị lịch nhóm ca sẽ hiển thị theo tháng năm hiện tại, Dữ liệu của trường GROUP_ID lấy thông qua data-parent-code="400223", Khi bấm thêm mới sẽ lựa chọn ngày bắt đầu - START_DATE và ngày kết thúc - END_DATE (định dạng DD-MM-YYYY), lựa chọn nhóm ca - GROUP_ID, lựa chọn Ca làm việc - WORK_SHIFT, lựa chọn Ca nghỉ ngơi - REST_SHIFT, danh sách ca lấy từ /ar/attendanceSettings/api/shift. khi bấm lưu thì sẽ gọi đến Procedure AR_ADD_CALENDER_DATE_BANCI_P(to_date(#{START_DATE, jdbcType=VARCHAR},'DD-MM-YYYY'), to_date(#{END_DATE, jdbcType=VARCHAR},'DD-MM-YYYY'), #{WORK_SHIFT, jdbcType=VARCHAR}, #{REST_SHIFT, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{GROUP_ID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}). Có thể bấm vào ngày để sửa. lưu ý khi sửa, thì chính là sửa dữ liệu trong bảng AR_CALENDER_GROUP, đồng thời xóa dữ liệu trong bảng ar_calender_group_history, sau đó thêm dữ liệu vào bảng ar_calender_group_history thông qua bảng AR_CALENDER_GROUP thông qua trường AR_DATE_STR và CPNY_ID và GROUP_ID.
 
-căn cứ vào viewCompanyCalendar.html hãy Tạo cho tôi một file viewEmpCalendar.html - Lịch cá nhân nằm trong module ar/attendanceSettings. dữ liệu lấy từ câu lệnh SELECT a.DDATE, a.IYEAR, a.IMONTH, a.IDAY, a.IWEEK, a.WORKDAYFLAG, a.DDATE_STR, a.CPNY_ID, GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID) as SHIFT_NO, GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID) as TYPEID, a.OVERTYPEID, a.TYPEID_DEFAULT, a.STATUTORY_FLAG, a.REMARK, TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED, GET_GLOBAL_NAME(GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang}) AS SHIFT_NAME, GET_GLOBAL_NAME(GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang}) AS TYPEID_NAME, GET_GLOBAL_NAME(a.OVERTYPEID, #{lang}) AS OVERTYPEID_NAME, GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang}) AS TYPEID_DEFAULT_NAME FROM AR_CALENDER a WHERE a.DDATE BETWEEN GET_AR_START_DATE(#{iyear}||#{imonth}, a.CPNY_ID,'') AND GET_AR_END_DATE(#{iyear}||#{imonth}, a.CPNY_ID,'')#{imonth}   AND a.CPNY_ID = #{cpnyId}   ORDER BY a.IDAY. mặc định khi hiển thị lịch cá nhân sẽ hiển thị theo tháng năm hiện tại và người đang đăng nhập, bên cạnh phần chọn tháng năm là phần chọn nhân viên. Có thể bấm vào ngày để sửa lịch. lưu ý khi sửa, thì chính là sửa dữ liệu trong bảng AR_SCHEDULE_HTSV, nếu trong bảng AR_SCHEDULE_HTSV chưa có dữ liệu thì thêm mới, nếu đã có dữ liệu thì sửa mới.
+căn cứ vào viewCompanyCalendar.html hãy Tạo cho tôi một file viewEmpCalendar.html - Lịch cá nhân nằm trong module ar/attendanceSettings. dữ liệu lấy từ câu lệnh SELECT a.DDATE, a.IYEAR, a.IMONTH, a.IDAY, a.IWEEK, a.WORKDAYFLAG, a.DDATE_STR, a.CPNY_ID, GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID) as SHIFT_NO, GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID) as TYPEID, a.OVERTYPEID, a.TYPEID_DEFAULT, a.STATUTORY_FLAG, a.REMARK, TO_CHAR(a.DDATE, 'YYYY-MM-DD') AS DDATE_FORMATTED, GET_GLOBAL_NAME(GET_AR_SHIFTNO(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang}) AS SHIFT_NAME, GET_GLOBAL_NAME(GET_AR_DATETYPE_DETAIL(#{personId}, a.DDATE_STR, a.CPNY_ID), #{lang}) AS TYPEID_NAME, GET_GLOBAL_NAME(a.OVERTYPEID, #{lang}) AS OVERTYPEID_NAME, GET_GLOBAL_NAME(a.TYPEID_DEFAULT, #{lang}) AS TYPEID_DEFAULT_NAME FROM AR_CALENDER a WHERE a.DDATE BETWEEN GET_AR_START_DATE(#{iyear}||#{imonth}, a.CPNY_ID,'') AND GET_AR_END_DATE(#{iyear}||#{imonth}, a.CPNY_ID,'')#{imonth}   AND a.CPNY_ID = #{cpnyId}   ORDER BY a.IDAY. mặc định khi hiển thị lịch cá nhân sẽ hiển thị theo tháng năm hiện tại và người đang đăng nhập, bên cạnh phần chọn tháng năm là phần chọn nhân viên. Có thể bấm vào ngày để sửa lịch. lưu ý khi sửa, thì chính là sửa dữ liệu trong bảng AR_SCHEDULE_HAE, nếu trong bảng AR_SCHEDULE_HAE chưa có dữ liệu thì thêm mới, nếu đã có dữ liệu thì sửa mới.
 
 
 căn cứ vào cấu trúc của addEmpShiftView.html hãy Tạo cho tôi một file viewArShiftGroupList.html - Lịch sử ca làm cá nhân nằm trong module /ess/deptEmpAtt. dữ liệu lấy từ bảng AR_SHIFTGROUP_MANAGEMENT với các trường tham khảo từ hình ảnh.dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. dữ liệu của trường SHIFT_NO lấy thông qua data-parent-code="400223", BEFOR_SHIFT_NO là Ca làm việc trước khi thay đổi, SHIFT_NO là Ca làm việc sau khi thay đổi, START_DATE là ngày bắt đầu thay đổi. Khi query ra dữ liệu thì có thể trực tiếp thay đổi được trên các dòng dữ liệu, các cột có thể thay đổi được là  SHIFT_NO, START_DATE, REMARK. khi bấm lưu thì sẽ gọi đến Procedure AR_SHIFTGROUP_CHANGE_P(#{PERSON_ID, jdbcType=VARCHAR}, #{BEFOR_SHIFT_NO, jdbcType=VARCHAR}, #{SHIFT_NO, jdbcType=VARCHAR}, #{START_DATE, jdbcType=VARCHAR}, #{REMARK, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}). START_DATE có định dạng là YYYY-MM-DD.
@@ -169,7 +169,7 @@ hãy tạo một module /sy/syAffirm. dữ liệu lấy từ bảng SY_AFFIRM_EM
 
 khi bấm đây sẽ hiện lên modal là thông tin phê duyệt của đơn đó, bao gồm các thông tin như hình ảnh.
 
-căn cứ vào cấu trúc của addEmpShiftView.html hãy Tạo cho tôi một file viewAttendanceManagentForSerchInfoList.html - Tra cứu chấm công nằm trong module /ar/attendanceMintenance. dữ liệu lấy từ bảng AR_DETAIL_HTSV với các trường tham khảo từ hình ảnh.dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. DEPT_NAME - Tên phòng ban, POST_GRADE_NAME - Chức vụ. với các điều kiện truy vấn kèm theo là AND ITEM_NO NOT IN ('90000295',
+căn cứ vào cấu trúc của addEmpShiftView.html hãy Tạo cho tôi một file viewAttendanceManagentForSerchInfoList.html - Tra cứu chấm công nằm trong module /ar/attendanceMintenance. dữ liệu lấy từ bảng AR_DETAIL_HAE với các trường tham khảo từ hình ảnh.dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. DEPT_NAME - Tên phòng ban, POST_GRADE_NAME - Chức vụ. với các điều kiện truy vấn kèm theo là AND ITEM_NO NOT IN ('90000295',
                           '90000296',
                           '90000297',
                           '90000298',
@@ -181,7 +181,7 @@ căn cứ vào cấu trúc của addEmpShiftView.html hãy Tạo cho tôi một 
          WHERE AR_SUPERVISOR_INFO.DEPTNO = HR_EMPLOYEE.DEPTNO
            AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID}). mặc định khi vòa giao diện này thì truy xuất những dữ liệu có AR_DATE_STR nằm trong khoảng ngày hiện tại, và trước ngầy hiện tại 1 ngày. có chức năng xuất excel. ở phần điều kiện tìm kiếm có những điều kiện gồm: Mã nhân viên/Họ tên, Phòng ban (tham khảo viewDepartManagerList.html để lấy ra list phòng ban), Thời gian (Ngày bắt đầu, Ngày kết thúc), Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-code="14015812"), Ca làm việc - SHIFT_NO(danh sách ca lấy từ /ar/attendanceSettings/api/shift), Loại nghỉ phép - ITEM_NO (lấy ra danh sách ITEM thông qua bảng AR_ITEM_PARAM kết hợp cùng bảng AR_ITEM với điều kiện AR_ITEM_PARAM.ITEM_NO = AR_ITEM.ITEM_NO AND AR_ITEM.ITEM_GROUP_CODE != '1433')
 
-tương tự tạo luôn tiếp cho tôi một file viewSearchApplyOtInfoList.html - Tra cứu tăng ca nằm trong module /ar/attendanceMintenance. dữ liệu lấy từ bảng AR_DETAIL_HTSV.dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. DEPT_NAME - Tên phòng ban, POST_GRADE_NAME - Chức vụ. với các điều kiện truy vấn kèm theo là AND ITEM_NO IN ('90000295',
+tương tự tạo luôn tiếp cho tôi một file viewSearchApplyOtInfoList.html - Tra cứu tăng ca nằm trong module /ar/attendanceMintenance. dữ liệu lấy từ bảng AR_DETAIL_HAE.dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. DEPT_NAME - Tên phòng ban, POST_GRADE_NAME - Chức vụ. với các điều kiện truy vấn kèm theo là AND ITEM_NO IN ('90000295',
                           '90000296',
                           '90000297',
                           '90000298',
@@ -195,7 +195,7 @@ tương tự tạo luôn tiếp cho tôi một file viewSearchApplyOtInfoList.ht
 
 khi bấm đây sẽ hiện lên modal là thông tin phê duyệt của đơn đó, bao gồm các thông tin như hình ảnh. với phần thoogn tin phê duyệt lấy từ câu lệnh SELECT * FROM (SELECT A.SEQ, A.AFFIRM_TYPE, DECODE(A.AFFIRM_TYPE,'1','审核','2','协议','3','通告','4','企案','审核') AFFIRM_TYPE_NAME, A.APPLY_NO, A.APPLY_TYPE, A.APPLY_FLAG, A.APPLY_PERSON_ID, A.AFFIRM_PERSON_ID, A.TITLE, A.AFFIRM_LEVEL, A.AFFIRM_FLAG, A.AFFIRM_URL, A.APPLY_TYPE_CODE, A.APPLY_PERSON_INFO, A.ACTIVITY, DECODE(A.AFFIRM_TYPE,'3',DECODE(A.AFFIRM_FLAG,'0','未通告','已通告'),4,DECODE(A.AFFIRM_FLAG,'2','取消','提交'),DECODE(A.AFFIRM_FLAG,'0','未审批',1,'已通过','已否决')) AFFIRM_FLAG_NAME, HR.LOCAL_NAME || '/' || GET_CODE_NAME(HR.POST_GRADE_NO,#{lang}) AFFIRM_NAME, GET_DEPT_NAME(HR.DEPTNO,#{lang}) DEPTNAME, A.APPLY_AFFIRM_FLAG APPLY_AFFIRM_FLAG_NO, GET_CODE_NAME(A.APPLY_AFFIRM_FLAG,#{lang}) APPLY_AFFIRM_FLAG, TO_CHAR(A.AFFIRM_DATE,'DD/MM/YYYY HH24:MI:SS') UPDATE_DATE, A.AFFIRM_CONTENT FROM SY_AFFIRM_EMAIL A, HR_EMPLOYEE HR WHERE A.AFFIRM_PERSON_ID = HR.PERSON_ID AND A.APPLY_NO = #APPLY_NO# AND A.APPLY_TYPE = #APPLY_TYPE# AND A.APPLY_AFFIRM_FLAG <> '14014310' UNION ALL SELECT '' AS SEQ, '' AS AFFIRM_TYPE, '' AS AFFIRM_TYPE_NAME, B.APPLY_NO AS APPLY_NO, '' AS APPLY_TYPE, '' AS APPLY_FLAG, '' AS APPLY_PERSON_ID, '' AS AFFIRM_PERSON_ID, '' AS TITLE, 100 AS AFFIRM_LEVEL, TO_CHAR(B.CONFIRM_FLAG) AS AFFIRM_FLAG, '' AS AFFIRM_URL, '' AS APPLY_TYPE_CODE, '' AS APPLY_PERSON_INFO, '' AS ACTIVITY, '' AS AFFIRM_FLAG_NAME, get_local_name_by_personid(B.CONFIRM_BY, #{lang}) AS AFFIRM_NAME, 'HR' AS DEPTNAME, '' AS APPLY_AFFIRM_FLAG_NO, '' AS APPLY_AFFIRM_FLAG, TO_CHAR(B.CONFIRM_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE, B.HR_COMMENT AS AFFIRM_CONTENT  FROM   ESS_LEAVE_APPLY_TB B    WHERE B.APPLY_NO = #APPLY_NO# )  ORDER BY to_number(AFFIRM_LEVEL); Thoogn tin nhân viên và Thông tin xin phép lấy dữ liệu từ cấu lệnh SELECT HE.EMPID, HE.LOCAL_NAME, HE.PERSON_ID, HE.DEPTNO, HE.CPNY_ID, ESS.APPLY_NO, ESS.LEAVE_TYPE_CODE, GET_DEPT_NAME(HE.DEPTNO, #{lang}) DEPTNAME, get_global_name(ESS.LEAVE_TYPE_CODE, #{lang}) LEAVE_TYPE_NAME, TO_CHAR(ESS.LEAVE_FROM_TIME, 'DD/MM/YYYY  HH24:MI') LEAVE_FROM_TIME, TO_CHAR(ESS.LEAVE_TO_TIME, 'DD/MM/YYYY  HH24:MI') LEAVE_TO_TIME, ESS.APPLY_LENGTH LEAVE_LENGTH, AR_GET_DAY_HOURS(HE.PERSON_ID,TO_CHAR(ESS.LEAVE_FROM_TIME,'YYYY/MM/DD')) DAY_HOURS, ESS.LEAVE_REASON APPLY_REMARK, ESS.AFFIRM_FLAG, get_global_name(ESS.AFFIRM_FLAG, #{lang}) AFFIRM_FLAG_NAME, get_global_name(HE.POST_GRADE_NO, #{lang}) POST_GRADE_NAME, TO_CHAR(ESS.CREATE_DATE, 'YYYY/MM/DD HH24:MI:SS') CREATE_DATE, ESS.DETAIL_TYPE, get_global_name(ESS.DETAIL_TYPE, #{lang}) DETAIL_TYPE_NAME, ESS.ACTIVITY, ESS.CONFIRM_FLAG FROM ESS_LEAVE_APPLY_TB ESS, HR_EMPLOYEE HE WHERE ESS.PERSON_ID = HE.PERSON_ID AND ESS.APPLY_NO = #APPLY_NO:VARCHAR#
 
-Dựa vào viewAttendanceManagentForSerchInfoList.html hãy tạo cho tôi một file viewAttendanceExForBatchInfoList.html - Nghỉ bất thường nằm trong module /ess/infoApplyAttendance. Giao diện này để lấy ra những người có dữ liệu quẹt thẻ bất thường (không đúng với ca làm việc),  dữ liệu lấy từ bảng AR_DETAIL_HTSV.dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. DEPT_NAME - Tên phòng ban, POST_GRADE_NAME - Chức vụ. với câu lệnh lấy dữ liệu là SELECT           TO_CHAR(TO_DATE(EC.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR,           TO_CHAR(TO_DATE(REPLACE(EC.AR_DATE_STR,'/','.'),'YYYY.MM.DD'),'DD.MM.YYYY') DATE_STR,        EC.PK_NO APPLY_NO,        EC.PERSON_ID,        TO_CHAR(EC.FROM_TIME,'DD-MM-YYYY HH24:MI') FROM_DATE,        TO_CHAR(EC.TO_TIME,'DD-MM-YYYY HH24:MI') TO_DATE,        EC.QUANTITY WORK_HOUR,        EC.ITEM_NO,        get_global_name(EC.ITEM_NO,#{lang}) ITEM_NO_NAME,        TO_CHAR(EC.CREATE_DATE,'DD-MM-YYYY') CREATE_DATE,        get_local_name_by_personid(EC.CREATED_BY,#{cpnyId}) CREATED_NAME,        TO_CHAR(EC.UPDATE_DATE,'DD-MM-YYYY') UPDATE_DATE,        get_local_name_by_personid(EC.UPDATED_BY,#{cpnyId}) UPDATED_NAME,        GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'IN') INDOOR_TIME,        GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'OUT') OUTDOOR_TIME,        TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY') SHIFT_START_YEAR,        TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'HH24') SHIFT_START_HH,        TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'MI') SHIFT_START_MI,        TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY') SHIFT_END_YEAR,        TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'HH24') SHIFT_END_HH,        TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'MI') SHIFT_END_MI,        HR.EMPID,        HR.LOCAL_NAME,        get_dept_name(HR.DEPTNO,#{lang}) DEPT_NAME,        GET_UPDATED_INFO(EC.CREATED_BY) CREATED_BY,             GET_UPDATED_INFO(EC.UPDATED_BY) UPDATED_BY,             LOCK_YN      FROM AR_DETAIL_HTSV EC,HR_EMPLOYEE HR      WHERE EC.PERSON_ID = HR.PERSON_ID       AND HR.PERSON_ID NOT LIKE '111111%'         AND EC.AR_DATE_STR NOT IN        (SELECT AR_DATE_STR           FROM ESS_CARD_APPLY_TB CARD          WHERE AFFIRM_FLAG IN ('14014306','14014307','14014308') AND CARD.CONFIRM_FLAG <> '2' AND  PERSON_ID = EC.PERSON_ID)      AND EC.ITEM_NO IN ('141443','141441','141442','14015448')      AND EC.AR_DATE_STR < TO_CHAR(SYSDATE,'YYYY/MM/DD')      AND (             EXISTS             (SELECT B1.DEPTID                      FROM HR_DEPARTMENT B1                     WHERE B1.DEPTNO = HR.DEPTNO                     START WITH B1.DEPTNO in                                (SELECT HRD.DEPTID                                   FROM HR_DEPARTMENT HRD                                  WHERE HRD.MANAGER_EMP_ID = #{adminID})                    CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO                UNION                SELECT AR_SUPERVISOR_INFO.DEPTNO                  FROM AR_SUPERVISOR_INFO                 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO                   AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID}                    ) )         AND               EC.AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#{fromDate},'DD/MM/YYYY'),'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#{toDate},'DD/MM/YYYY'),'YYYY/MM/DD')             ORDER BY EC.AR_DATE_STR DESC     
+Dựa vào viewAttendanceManagentForSerchInfoList.html hãy tạo cho tôi một file viewAttendanceExForBatchInfoList.html - Nghỉ bất thường nằm trong module /ess/infoApplyAttendance. Giao diện này để lấy ra những người có dữ liệu quẹt thẻ bất thường (không đúng với ca làm việc),  dữ liệu lấy từ bảng AR_DETAIL_HAE.dữ liệu kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. DEPT_NAME - Tên phòng ban, POST_GRADE_NAME - Chức vụ. với câu lệnh lấy dữ liệu là SELECT           TO_CHAR(TO_DATE(EC.AR_DATE_STR,'YYYY/MM/DD'),'DD/MM/YYYY') AR_DATE_STR,           TO_CHAR(TO_DATE(REPLACE(EC.AR_DATE_STR,'/','.'),'YYYY.MM.DD'),'DD.MM.YYYY') DATE_STR,        EC.PK_NO APPLY_NO,        EC.PERSON_ID,        TO_CHAR(EC.FROM_TIME,'DD-MM-YYYY HH24:MI') FROM_DATE,        TO_CHAR(EC.TO_TIME,'DD-MM-YYYY HH24:MI') TO_DATE,        EC.QUANTITY WORK_HOUR,        EC.ITEM_NO,        get_global_name(EC.ITEM_NO,#{lang}) ITEM_NO_NAME,        TO_CHAR(EC.CREATE_DATE,'DD-MM-YYYY') CREATE_DATE,        get_local_name_by_personid(EC.CREATED_BY,#{cpnyId}) CREATED_NAME,        TO_CHAR(EC.UPDATE_DATE,'DD-MM-YYYY') UPDATE_DATE,        get_local_name_by_personid(EC.UPDATED_BY,#{cpnyId}) UPDATED_NAME,        GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'IN') INDOOR_TIME,        GET_AR_MAC_TIME(EC.PERSON_ID,EC.AR_DATE_STR,'OUT') OUTDOOR_TIME,        TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY') SHIFT_START_YEAR,        TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'HH24') SHIFT_START_HH,        TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'MI') SHIFT_START_MI,        TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'DD/MM/YYYY') SHIFT_END_YEAR,        TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'HH24') SHIFT_END_HH,        TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(EC.PERSON_ID,EC.AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'MI') SHIFT_END_MI,        HR.EMPID,        HR.LOCAL_NAME,        get_dept_name(HR.DEPTNO,#{lang}) DEPT_NAME,        GET_UPDATED_INFO(EC.CREATED_BY) CREATED_BY,             GET_UPDATED_INFO(EC.UPDATED_BY) UPDATED_BY,             LOCK_YN      FROM AR_DETAIL_HAE EC,HR_EMPLOYEE HR      WHERE EC.PERSON_ID = HR.PERSON_ID       AND HR.PERSON_ID NOT LIKE '111111%'         AND EC.AR_DATE_STR NOT IN        (SELECT AR_DATE_STR           FROM ESS_CARD_APPLY_TB CARD          WHERE AFFIRM_FLAG IN ('14014306','14014307','14014308') AND CARD.CONFIRM_FLAG <> '2' AND  PERSON_ID = EC.PERSON_ID)      AND EC.ITEM_NO IN ('141443','141441','141442','14015448')      AND EC.AR_DATE_STR < TO_CHAR(SYSDATE,'YYYY/MM/DD')      AND (             EXISTS             (SELECT B1.DEPTID                      FROM HR_DEPARTMENT B1                     WHERE B1.DEPTNO = HR.DEPTNO                     START WITH B1.DEPTNO in                                (SELECT HRD.DEPTID                                   FROM HR_DEPARTMENT HRD                                  WHERE HRD.MANAGER_EMP_ID = #{adminID})                    CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO                UNION                SELECT AR_SUPERVISOR_INFO.DEPTNO                  FROM AR_SUPERVISOR_INFO                 WHERE AR_SUPERVISOR_INFO.DEPTNO = HR.DEPTNO                   AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID}                    ) )         AND               EC.AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#{fromDate},'DD/MM/YYYY'),'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#{toDate},'DD/MM/YYYY'),'YYYY/MM/DD')             ORDER BY EC.AR_DATE_STR DESC     
 . mặc định khi vào giao diện này thì truy xuất những dữ liệu có AR_DATE_STR nằm trong tuần hiện tại. có chức năng xuất excel. ở phần điều kiện tìm kiếm có những điều kiện gồm: Mã nhân viên/Họ tên, Phòng ban (tham khảo viewDepartManagerList.html để lấy ra list phòng ban), Thời gian (Ngày bắt đầu, Ngày kết thúc), Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-code="14015812"), Ca làm việc - SHIFT_NO(danh sách ca lấy từ /ar/attendanceSettings/api/shift), Loại nghỉ phép - ITEM_NO (lấy ra danh sách ITEM gồm <option value=""><!--请选择-->Lựa chọn</option>
 							<option value="141443"><!--旷工-->Nghỉ không phép</option>
 							<option value="141442"><!--早退-->Về sớm</option>
@@ -256,7 +256,7 @@ Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-
 Loại nhân viên - EMP_TYPE_CODE (dữ liệu lấy lấy thông qua data-parent-code="13864"), 
 Trạng thái - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118"), Có chức năng xuất excel.
 
-Tham khảo theo file viewDeptPersonalInfoManageList.html. Tạo cho tôi một file viewHTSVCardInfoList.html - Thẻ nhân sự nằm trong module hrm/empinfo. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ bảng HR_EMPLOYEE và bảng HR_PERSONAL_INFO, 2 bảng này có quan hệ 1-1. Điều kiện tìm kiếm có những điều kiện gồm: Mã nhân viên/Họ tên, 
+Tham khảo theo file viewDeptPersonalInfoManageList.html. Tạo cho tôi một file viewHAECardInfoList.html - Thẻ nhân sự nằm trong module hrm/empinfo. giao diện tham khảo từ hình ảnh. Dữ liệu lấy từ bảng HR_EMPLOYEE và bảng HR_PERSONAL_INFO, 2 bảng này có quan hệ 1-1. Điều kiện tìm kiếm có những điều kiện gồm: Mã nhân viên/Họ tên, 
 Phòng ban (tham khảo viewDepartManagerList.html để lấy ra list phòng ban), 
 Thời gian vòa làm - DATE_STARTED (Ngày bắt đầu, Ngày kết thúc), 
 Nhóm nhân viên - POST_FAMILY (dữ liệu lấy lấy thông qua data-parent-code="14015812"), 
@@ -352,7 +352,7 @@ tương tự như file viewSSTApplyAttendance.html. Tạo cho tôi một file vi
           TO_CHAR(TO_DATE(get_ar_shift_end_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'HH24')shift_end_hh,
           TO_CHAR(TO_DATE(get_ar_shift_end_time(AR_DETAIL.PERSON_ID,AR_DATE_STR,#{cpnyId}),'YYYY/MM/DD HH24:MI'),'MI')shift_end_mi,
           LOCK_YN
-        FROM AR_DETAIL_HTSV AR_DETAIL 
+        FROM AR_DETAIL_HAE AR_DETAIL 
         WHERE AR_DETAIL.PERSON_ID=#{adminID}  
           AND AR_DETAIL.ITEM_NO IN ('141443','141441','141442','14015448')
           AND AR_DETAIL.AR_DATE_STR < TO_CHAR(SYSDATE,'YYYY/MM/DD')
@@ -367,17 +367,17 @@ tương tự như file viewSSTApplyAttendance.html. Tạo cho tôi một file vi
 
 Tham khảo theo file viewPOtApplyInfoList.html. Tạo cho tôi một file viewApplyLeaveInfoList.html - Chi tiết nghỉ bất thường nằm trong module /ess/infoApplyLeave. giao diện tham khảo từ hình ảnh. Trạng thái duyệt - AFFIRM_FLAG (dữ liệu lấy lấy thông qua data-parent-code="14014304"). với dữ liệu được lấy từ bảng ESS_CARD_APPLY_TB. Khi bấm vào 1 dòng dữ liệu thì sẽ hiện ra thông tin phê duyệt của dòng đó. modal hiển thị thông tin phê duyệt tham khảo từ dòng 90 đến dòng 179 ở file viewCheckAttencetanceExForBatchList.html
 
-Tham khảo theo file viewApplyAttendanceInfoList.html. Tạo cho tôi một file viewAttendancePersonalInfoList.html - Tra cứu chấm công nằm trong module /ess/infoApplyAttendance. giao diện tham khảo từ hình ảnh. Phân loại - ITEM_NO (dữ liệu lấy lấy thông qua câu lệnh: select AIP.ITEM_NO, get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE != '1433' --Không lấy tăng ca;). với dữ liệu được lấy từ bảng AR_DETAIL_HTSV kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HTSV.ITEM_NO NOT IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433')
+Tham khảo theo file viewApplyAttendanceInfoList.html. Tạo cho tôi một file viewAttendancePersonalInfoList.html - Tra cứu chấm công nằm trong module /ess/infoApplyAttendance. giao diện tham khảo từ hình ảnh. Phân loại - ITEM_NO (dữ liệu lấy lấy thông qua câu lệnh: select AIP.ITEM_NO, get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE != '1433' --Không lấy tăng ca;). với dữ liệu được lấy từ bảng AR_DETAIL_HAE kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HAE.ITEM_NO NOT IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433')
 
 Dựa vào file viewEmpCalendar.html ở module /ar/attendanceSettings. Tạo cho tôi một file viewEmpCalendar.html - Lịch làm việc nằm trong module /ess/viewDept. Dữ liệu được truy xuất ra theo tháng hiện tại. Nếu có thể tái sử dụng luôn được file viewEmpCalendar.html ở module /ar/attendanceSettings để hiển thị thì càng tốt.
 
 
 hãy xem lại cách lấy dữ liệu từ giao diện ManageEmpPositionInfoList.html. hãy thêm cho tôi điều kiện tìm kiếm để chọn ngày cụ thể, sau đó chọn mep_empOffice là đang làm, thì sẽ lấy ra những nhân viên đang làm việc vào ngày đó. tức là nếu nhân viên mà nghỉ việc sau ngày hôm đó hoặc nghỉ việc mà không có ngày nghỉ việc thì sẽ được hiển thị ra, còn những nhân viên nghỉ việc trước ngày đó thì sẽ không được hiển thị ra. hoặc nhân viên có ngày vào làm sau ngày hôm đó cũng không hiện ra. 
 
-Căn cứ và file viewAttendancePersonalInfoList.html. hãy tạo cho tôi một file viewArPersonalSelfList.html - Tình hình chấm công nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. dữ liệu được lấy ra khác với viewAttendancePersonalInfoList là ở giao diện này lại hiển thị theo chiều ngang (tính tổng các loại chấm công), với các loại chấm công được lấy từ câu lệnh : select get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE != '1433' --Không lấy tăng ca;). với dữ liệu được lấy từ bảng AR_DETAIL_HTSV kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HTSV.ITEM_NO NOT IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433'. Khi bấm vào từng con số sẽ hiển thị ra chi tiết của loại chấm công đó trong Khoảng thời gian ngày bắt đầu và ngày kết thúc, phần chi tiết này tham khảo giao diện hình ảnh.
+Căn cứ và file viewAttendancePersonalInfoList.html. hãy tạo cho tôi một file viewArPersonalSelfList.html - Tình hình chấm công nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. dữ liệu được lấy ra khác với viewAttendancePersonalInfoList là ở giao diện này lại hiển thị theo chiều ngang (tính tổng các loại chấm công), với các loại chấm công được lấy từ câu lệnh : select get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE != '1433' --Không lấy tăng ca;). với dữ liệu được lấy từ bảng AR_DETAIL_HAE kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HAE.ITEM_NO NOT IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433'. Khi bấm vào từng con số sẽ hiển thị ra chi tiết của loại chấm công đó trong Khoảng thời gian ngày bắt đầu và ngày kết thúc, phần chi tiết này tham khảo giao diện hình ảnh.
 
 
-Căn cứ và file viewArPersonalSelfList.html. hãy tạo cho tôi một file viewOtApplyPersonalSelfList.html - Tình hình tăng ca nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. dữ liệu giao diện này lại hiển thị theo chiều ngang (tính tổng các loại tăng ca), với các loại tăng ca được lấy từ câu lệnh : select get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433';). với dữ liệu được lấy từ bảng AR_DETAIL_HTSV kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HTSV.ITEM_NO IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433'). Khi bấm vào từng con số sẽ hiển thị ra chi tiết của loại tăng ca đó trong Khoảng thời gian ngày bắt đầu và ngày kết thúc, phần chi tiết này tham khảo giao diện hình ảnh.
+Căn cứ và file viewArPersonalSelfList.html. hãy tạo cho tôi một file viewOtApplyPersonalSelfList.html - Tình hình tăng ca nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. dữ liệu giao diện này lại hiển thị theo chiều ngang (tính tổng các loại tăng ca), với các loại tăng ca được lấy từ câu lệnh : select get_global_name(AIP.ITEM_NO, #{lang}) as ITEM_NAME from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433';). với dữ liệu được lấy từ bảng AR_DETAIL_HAE kết hợp với bảng HR_EMPLOYEE thông qua trường PERSON_ID để lấy ra EMPID - Mã nhân viên, LOCAL_NAME - Tên nhân viên. Dữ liệu được truy xuất ra theo tháng hiện tại, với điều kiện AR_DETAIL_HAE.ITEM_NO IN (select AIP.ITEM_NO from AR_ITEM_PARAM AIP, AR_ITEM AI WHERE AIP.ITEM_NO = AI.ITEM_NO AND AIP.CPNY_ID = #{cpnyId} and AI.ITEM_GROUP_CODE = '1433'). Khi bấm vào từng con số sẽ hiển thị ra chi tiết của loại tăng ca đó trong Khoảng thời gian ngày bắt đầu và ngày kết thúc, phần chi tiết này tham khảo giao diện hình ảnh.
 
 
 Căn cứ và file viewPersonOtApplyInfoList.html. hãy tạo cho tôi một file yearUseInfo.html - Nghỉ phép năm nằm trong module /ess/viewDept. giao diện tham khảo từ hình ảnh. Thông tin nghỉ phép năm được lấy theo năm hiện tại, với dữ liệu được lấy từ essLeaveApplymapper.selectMyVacationInfo
@@ -781,7 +781,7 @@ căn cứ vào cấu trúc của viewSummaryFormula.html hãy Tạo cho tôi m�
  "Hạng mục chấm công" lấy dữ liệu từ câu lệnh: SELECT COLUMN_NAME  AS ITEM_ID,
        SY_GLOBAL_NAME.CONTENT  AS ITEM_NAME
   FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
- WHERE TABLE_NAME = 'AR_SUMMARY_HTSV'
+ WHERE TABLE_NAME = 'AR_SUMMARY_HAE'
    AND DATA_TYPE = 'NUMBER'
    AND COLUMN_NAME = STA_ITEM_ID
    AND AR_STA_ITEM.ITEM_NO = AR_STA_ITEM_PARAM.ITEM_NO
@@ -936,7 +936,7 @@ Hạng mục nhân sự lấy ra thông qua câu lệnh SQL: SELECT T.ID AS ITEM
 COLUMN_NAME  AS ITEM_ID,
        SY_GLOBAL_NAME.CONTENT  AS ITEM_NAME
   FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
- WHERE TABLE_NAME = 'AR_SUMMARY_HTSV'
+ WHERE TABLE_NAME = 'AR_SUMMARY_HAE'
    AND DATA_TYPE = 'NUMBER'
    AND COLUMN_NAME = STA_ITEM_ID
    AND AR_STA_ITEM.ITEM_NO = AR_STA_ITEM_PARAM.ITEM_NO
@@ -977,10 +977,10 @@ PI.PARAM_ITEM_ID  AS ITEM_ID,
 Khi tick chọn vào các hạng mục - item, thì sẽ lấy giá trị ITEM_NO, ITEM_NAME, ITEM_ID và thứ tự điền vào ở bên cạnh - ORDERNO, cùng với IS_USE và ITEM_TYPE để thêm vào bảng PA_ITEM_INPUT. INPUT_NO của bảng PA_ITEM_INPUT khi thêm mới sẽ được sinh ra tự động theo PA_ITEM_INPUT_SEQ.NEXTVAL
    AND SY.LANGUAGE(+) = #{lang, jdbcType=VARCHAR}
 
-   thêm cho tôi điều kiện tìm kiếm sử dụng vpid_deptSearch như của viewPaInputItemData.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban. sử dụng vpwf_payScheduleNo như của viewPaWorkFlow.html để lấy ra danh sách kế hoạch trả lương làm điều kiện tìm kiếm. mục đích để khi chọn phòng ban và kế hoạch trả lương, sau đó tick chọn các hạng mục bên dưới thì Khi click vào nút xuất excel thì sẽ xuất ra file excel dữ liệu được lọc theo phòng ban và kế hoạch trả lương đã chọn để láy trong bảng PA_SUMMARY_HTSV với các trường được lấy ra chính là các ITEM_ID đã được tick 
+   thêm cho tôi điều kiện tìm kiếm sử dụng vpid_deptSearch như của viewPaInputItemData.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban. sử dụng vpwf_payScheduleNo như của viewPaWorkFlow.html để lấy ra danh sách kế hoạch trả lương làm điều kiện tìm kiếm. mục đích để khi chọn phòng ban và kế hoạch trả lương, sau đó tick chọn các hạng mục bên dưới thì Khi click vào nút xuất excel thì sẽ xuất ra file excel dữ liệu được lọc theo phòng ban và kế hoạch trả lương đã chọn để láy trong bảng PA_SUMMARY_HAE với các trường được lấy ra chính là các ITEM_ID đã được tick 
    chọn.
 
-dựa vào cấu trúc của viewPaResult.html hãy Tạo cho tôi một file payStub.html - Phiếu lương nằm trong module /pa/workManagement. Giao diện tham khảo hình ảnh. điều kiện tìm kiếm sử dụng vpid_deptSearch như của viewPaInputItemData.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban. sử dụng vpwf_payScheduleNo như của viewPaWorkFlow.html để lấy ra danh sách kế hoạch trả lương làm điều kiện tìm kiếm, sử dụng cách tìm kiếm Họ tên / Mã NV như của viewPaInputItemData.html để tìm nhân viên. Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118"). Thoogn tin phiếu lương sẽ được lấy ra từ bảng PA_SUMMARY_HTSV với các trường tham khảo hình ảnh. với điều  kiện tìm kiếm sẽ tìm ra được 1 hoặc nhiều phiếu lương của nhân viên, nếu ra nhiều phiếu lương thì các phiếu lương sẽ được cách nhau và mỗi phiếu lương sẽ được giới hạn trong một khổ giấy A4 để dễ dàng in ấn. tương ứng với số lượng nhân viên tìm được sẽ chạy vòng lặp để chạy pakage PA_FOR_EMP_SALARY_PAGE_P(#{cpnyId, jdbcType=VARCHAR}, #{payScheduleNo, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}). sau đó sử dụng câu lệnh SQL sau để hiển thị dữ liệu vào phiếu lương: SELECT T.CPNY_ID,
+dựa vào cấu trúc của viewPaResult.html hãy Tạo cho tôi một file payStub.html - Phiếu lương nằm trong module /pa/workManagement. Giao diện tham khảo hình ảnh. điều kiện tìm kiếm sử dụng vpid_deptSearch như của viewPaInputItemData.html để lấy ra cây phòng ban để làm điều kiện tìm kiếm phòng ban. sử dụng vpwf_payScheduleNo như của viewPaWorkFlow.html để lấy ra danh sách kế hoạch trả lương làm điều kiện tìm kiếm, sử dụng cách tìm kiếm Họ tên / Mã NV như của viewPaInputItemData.html để tìm nhân viên. Trạng thái làm việc - EMP_OFFICE (dữ liệu lấy lấy thông qua data-parent-code="15118"). Thoogn tin phiếu lương sẽ được lấy ra từ bảng PA_SUMMARY_HAE với các trường tham khảo hình ảnh. với điều  kiện tìm kiếm sẽ tìm ra được 1 hoặc nhiều phiếu lương của nhân viên, nếu ra nhiều phiếu lương thì các phiếu lương sẽ được cách nhau và mỗi phiếu lương sẽ được giới hạn trong một khổ giấy A4 để dễ dàng in ấn. tương ứng với số lượng nhân viên tìm được sẽ chạy vòng lặp để chạy pakage PA_FOR_EMP_SALARY_PAGE_P(#{cpnyId, jdbcType=VARCHAR}, #{payScheduleNo, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}). sau đó sử dụng câu lệnh SQL sau để hiển thị dữ liệu vào phiếu lương: SELECT T.CPNY_ID,
        T.PERSON_ID,
        T.ITEM_TYPE,
        T.ITEM_NO,
@@ -998,7 +998,7 @@ ITEM_TYPE = 2 sẽ hiển thị ở phần Lương chi tiết
 ITEM_TYPE = 3 sẽ hiển thị ở phần Khoản trừ chi tiết
 ITEM_TYPE = 4 sẽ hiển thị ở phần Hạng mục tiêu chuẩn
 phần Hạng mục khác sẽ hiển thị dữ liệu từ câu lệnh SQL: SELECT TO_NUMBER(NVL(C.RETURN_VALUE, 0)) RETURN_VALUE, C.REMARK
-  FROM PA_PARAM_ITEM_PARAM B, PA_PARAM_DATA C, PA_SUMMARY_HTSV PA
+  FROM PA_PARAM_ITEM_PARAM B, PA_PARAM_DATA C, PA_SUMMARY_HAE PA
  WHERE B.PARAM_NO = C.PARAM_NO
    AND C.PERSON_ID = PA.PERSON_ID
    AND B.PARAM_ITEM_NO IN
@@ -1151,7 +1151,7 @@ Giống như viewConfirmTarget1.html, hãy tạo cho tôi một file viewConfirm
             #flag:VARCHAR#,
             #message,jdbcType=VARCHAR,mode=OUT#), đồng thời cũng cập nhật lại trường AFFIRM_COMMENT của bảng EVS_AFFIRM tương tự như ở viewConfirmTarget1.html. Khi xác nhận hoặc từ chối xong thì sẽ tự động load lại trang viewConfirmTarget2.html để cập nhật lại danh sách những nhân viên cần phải xác nhận mục tiêu lần 2.
 
-Giống như viewRegPersonalTarget.html, hãy tạo cho tôi một file viewEvsBySelfHTSV.html - Đánh giá bản thân nằm trong module /evs/manage. Giao diện và cách lấy dữ liệu tương tự như viewConfirmTarget1.html, chỉ khác ở chỗ viewEvsBySelfHTSV.html sẽ thêm một cột mới là Điểm đánh giá bản thân, cột này sẽ lấy dữ liệu từ trường EVS_SCORE của bảng EVS_ITEM_SST. Người dùng không thể sửa dữ liệu ở các cột khác mà chỉ có thể nhập điểm ở cột Điểm đánh giá bản thân này. điểm này chính là tỷ lệ của cột Tỷ lệ(%) tương ứng. sau khi nhập thì sẽ tính toán điểm tổng. khi bấm vào nút Lưu tạm thời (flag = '0') hoặc thực hiện (flag = '1') thì sẽ cập nhật lại trường EVS_SCORE của bảng EVS_ITEM_SST với điểm mà nhân viên vừa nhập vào. Khi bấm vào Thục hiện (FLAG = 1) thì ngoài việc lưu lại giống chức năng của Lưu tạm thời thì sẽ gọi thêm pakage PKG_EVS_PROCESS.PR_MODIFY_OBJECT_ACTIVITY(
+Giống như viewRegPersonalTarget.html, hãy tạo cho tôi một file viewEvsBySelfHAE.html - Đánh giá bản thân nằm trong module /evs/manage. Giao diện và cách lấy dữ liệu tương tự như viewConfirmTarget1.html, chỉ khác ở chỗ viewEvsBySelfHAE.html sẽ thêm một cột mới là Điểm đánh giá bản thân, cột này sẽ lấy dữ liệu từ trường EVS_SCORE của bảng EVS_ITEM_SST. Người dùng không thể sửa dữ liệu ở các cột khác mà chỉ có thể nhập điểm ở cột Điểm đánh giá bản thân này. điểm này chính là tỷ lệ của cột Tỷ lệ(%) tương ứng. sau khi nhập thì sẽ tính toán điểm tổng. khi bấm vào nút Lưu tạm thời (flag = '0') hoặc thực hiện (flag = '1') thì sẽ cập nhật lại trường EVS_SCORE của bảng EVS_ITEM_SST với điểm mà nhân viên vừa nhập vào. Khi bấm vào Thục hiện (FLAG = 1) thì ngoài việc lưu lại giống chức năng của Lưu tạm thời thì sẽ gọi thêm pakage PKG_EVS_PROCESS.PR_MODIFY_OBJECT_ACTIVITY(
 						#EVS_OBJECT_SEQ:VARCHAR#,
 						#adminID:VARCHAR#,
 						#adminIP:VARCHAR#,
@@ -1942,7 +1942,7 @@ Chỉ khi nào Trạng thái đơn nghỉ phép - AFFIRM_FLAG, có các giá tr�
 1 - Đã xác nhận
 2 - Từ chối.
 
-Ngoài ra, khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:SELECT COUNT(1) FROM AR_DETAIL_HTSV D
+Ngoài ra, khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:SELECT COUNT(1) FROM AR_DETAIL_HAE D
         JOIN ESS_LEAVE_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
         WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
         AND TO_CHAR(ESS.APPLY_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
@@ -1955,7 +1955,7 @@ SELECT COUNT(1) FROM AR_DEPARTMENT_MANAGE AD
         AND (AD.LOCK_ATTEN_FLAG = '1' OR AD.LOCK_ATTEN_ANNUAL_FLAG  = '1' OR AD.LOCK_ATTEN_ANNUAL_NIGHT_FLAG  = '1' OR AD.LOCK_ATTEN_NIGHT_FLAG = '1'); nếu 1 trong 2 điều kiện trả về > 0 thì sẽ báo lỗi: "Đơn nghỉ phép này đã bị khóa, không thể hủy bỏ!".
 
 
-Ngoài ra, khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:SELECT COUNT(1) FROM AR_DETAIL_HTSV D
+Ngoài ra, khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:SELECT COUNT(1) FROM AR_DETAIL_HAE D
         JOIN ess_apply_ot ESS ON ESS.PERSON_ID = D.PERSON_ID
         WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
         AND TO_CHAR(ESS.OT_FROM_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
@@ -1974,7 +1974,7 @@ SELECT COUNT(1) FROM AR_DEPARTMENT_MANAGE AD
 14014306 - Gửi. còn lại thì không hiện checkbox đối với dòng dữ liệu đó
 
 khi bấm Hủy bỏ, check 2 điều kiện SQL như sau:
-SELECT COUNT(1) FROM AR_DETAIL_HTSV D
+SELECT COUNT(1) FROM AR_DETAIL_HAE D
         JOIN ESS_CARD_APPLY_TB ESS ON ESS.PERSON_ID = D.PERSON_ID
         WHERE ESS.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
         AND TO_CHAR(ESS.APPLY_TIME, 'YYYY/MM/DD') = D.AR_DATE_STR
@@ -2017,7 +2017,7 @@ Dựa vào viewAttendanceExForBatchInfoList.html hãy tạo cho tôi một file 
        GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NO,
        ESS.REMARK,
        ESS.LOCK_YN
-  FROM AR_DETAIL_HTSV ESS, HR_EMPLOYEE HE
+  FROM AR_DETAIL_HAE ESS, HR_EMPLOYEE HE
  WHERE ESS.PERSON_ID = HE.PERSON_ID
    AND ESS.PERSON_ID NOT LIKE '111111%'
    AND ESS.ITEM_NO NOT IN ('90000295',
@@ -2066,7 +2066,7 @@ Dựa vào viewCoordApplyAttendanceInfoList.html hãy tạo cho tôi một file 
        GET_GLOBAL_NAME(ESS.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NO,
        GET_AR_TIME_BY_CPNYID(ESS.PERSON_ID, ESS.AR_DATE_STR, 'IN', #{cpnyId, jdbcType=VARCHAR}) INDOOR_TIME,
        GET_AR_TIME_BY_CPNYID(ESS.PERSON_ID, ESS.AR_DATE_STR, 'OUT', #{cpnyId, jdbcType=VARCHAR}) OUTDOOR_TIME
-  FROM AR_DETAIL_HTSV ESS, HR_EMPLOYEE HE
+  FROM AR_DETAIL_HAE ESS, HR_EMPLOYEE HE
  WHERE ESS.PERSON_ID = HE.PERSON_ID
    AND ESS.PERSON_ID NOT LIKE '111111%'
    AND ESS.ITEM_NO NOT IN ('90000295',
@@ -2099,7 +2099,7 @@ Dựa vào viewCoordApplyAttendanceInfoList.html hãy tạo cho tôi một file 
 Giống như viewArPersonalList.html, hãy tạo cho tôi một file viewOtApplyPersonalList.html - Chi tiết tăng ca nằm trong module /ess/viewDept. giống như viewArPersonalList.html, chỉ khác prefix và itemGroup ở đây sẽ là '1433'
 
 
-Dựa vào viewSearchApplyOtInfoList.html hãy tạo cho tôi file viewArCardRecord.html - Lịch sử ra vào nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_HTSV với các trường tham khảo hình ảnh, kết hợp với bảng HR_EMPLOYEE để lấy thông tin nhân viên. Định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày hiện tại. ở cột Nguồn dữ liệu sẽ hiển thị từ trường INSERT_BY của bảng AR_MAC_RECORDS_HTSV, với điều kiện nếu INSERT_BY = 'M' thì hiển thị là "Tự động", nếu INSERT_BY = 'A' thì hiển thị là "Xin phép", Cột Loại hiển thị dữ liệu từ trường DOOR_TYPE còn lại sẽ hiển thị là Thủ công. khi lấy dữ liệu thì gài thêm điều kiện cuối EXISTS (SELECT B1.DEPTID
+Dựa vào viewSearchApplyOtInfoList.html hãy tạo cho tôi file viewArCardRecord.html - Lịch sử ra vào nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_HAE với các trường tham khảo hình ảnh, kết hợp với bảng HR_EMPLOYEE để lấy thông tin nhân viên. Định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày hiện tại. ở cột Nguồn dữ liệu sẽ hiển thị từ trường INSERT_BY của bảng AR_MAC_RECORDS_HAE, với điều kiện nếu INSERT_BY = 'M' thì hiển thị là "Tự động", nếu INSERT_BY = 'A' thì hiển thị là "Xin phép", Cột Loại hiển thị dữ liệu từ trường DOOR_TYPE còn lại sẽ hiển thị là Thủ công. khi lấy dữ liệu thì gài thêm điều kiện cuối EXISTS (SELECT B1.DEPTID
           FROM HR_DEPARTMENT B1
          WHERE B1.DEPTNO = HE.DEPTNO
          START WITH B1.DEPTNO in
@@ -2113,7 +2113,7 @@ Dựa vào viewSearchApplyOtInfoList.html hãy tạo cho tôi file viewArCardRec
          WHERE AR_SUPERVISOR_INFO.DEPTNO = HE.DEPTNO
            AND AR_SUPERVISOR_INFO.PERSON_ID = #{adminID, jdbcType=VARCHAR})
 
-Thêm cho tôi nút Đọc dữ liệu quẹt thẻ, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu quẹt thẻ để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HTSV. máy chủ có thông tin như sau: 
+Thêm cho tôi nút Đọc dữ liệu quẹt thẻ, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu quẹt thẻ để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HAE. máy chủ có thông tin như sau: 
 driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
 userName = "hrsystem";
 passwrod = "5tkatjd!";
@@ -2127,13 +2127,13 @@ thông qua cấu lệnh sql: sql =   " select P.EmployeeNo, p.FirstName,cr.Reade
 							+ " ON ar.ReaderId = rd.ReaderIDX join ACS_DEVICE_VIEW DV on dv.DeviceIDX = rd.DeviceIDX) CR "
 							+ " ON E.ControllerId = cr.LoopID and E.BoardNo = CR.DeviceID and E.IoIndex = CR.ReaderID "
 							+ " where DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) >= '"+ acr_fromDate +"' "
-							+ " and DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) <= '"+ acr_toDate +"' "; để lấy dữ liệu. với EmployeeNo là EMPID và CARD_NO, LocalDateTime là R_TIME, trong giá trị của ReaderName nếu có chứa "IN" thì ghi DOOR_TYPE là "IN", nếu có chứa "OUT" thì ghi DOOR_TYPE là "OUT", còn lại sẽ ghi DOOR_TYPE là "  ". sau khi lấy dữ liệu xong thì sẽ lưu vào bảng AR_MAC_RECORDS_HTSV với INSERT_BY = 'M'. khi lưu vào bảng AR_MAC_RECORDS_HTSV thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_NO, R_TIME và DOOR_TYPE thì sẽ không lưu nữa để tránh bị trùng dữ liệu.
+							+ " and DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) <= '"+ acr_toDate +"' "; để lấy dữ liệu. với EmployeeNo là EMPID và CARD_NO, LocalDateTime là R_TIME, trong giá trị của ReaderName nếu có chứa "IN" thì ghi DOOR_TYPE là "IN", nếu có chứa "OUT" thì ghi DOOR_TYPE là "OUT", còn lại sẽ ghi DOOR_TYPE là "  ". sau khi lấy dữ liệu xong thì sẽ lưu vào bảng AR_MAC_RECORDS_HAE với INSERT_BY = 'M'. khi lưu vào bảng AR_MAC_RECORDS_HAE thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_NO, R_TIME và DOOR_TYPE thì sẽ không lưu nữa để tránh bị trùng dữ liệu.
 
-Thêm cho tôi chức năng upload file excel (có thể tham khảo chức năng upload attNewOpenImportModal của viewApplyAttenanceManagentInfoList_new.html), khi người dùng upload file excel lên thì sẽ đọc dữ liệu từ file đó và lưu vào bảng AR_MAC_RECORDS_TEMP (cá trường tham khảo hình ảnh). file excel sẽ có định dạng như sau: cột A là EMPID, cột B là LOCAL_NAME, cột C là AR_DATE_STR, cột D là R_DATE, cột E là R_TIME, cột F là DOOR_TYPE, cột G là REMARK (tham khảo hình ảnh). sau khi lưu vào bảng AR_MAC_RECORDS_TEMP, thì tạo cho tạo luôn cho file viewImportExcelTempMacRecordsList.html ở module /ar/attendanceMintenance. giao diện này để hiển thị thông tin vừa nhập lên cho người dùng. sau khi bấm xác nhận thì sẽ đưa dữ liệu từ bảng AR_MAC_RECORDS_TEMP sang bảng AR_MAC_RECORDS_HTSV. đồng thời xóa dữ liệu ở bảng AR_MAC_RECORDS_TEMP đi. khi lưu vào bảng AR_MAC_RECORDS_HTSV thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_NO, R_TIME và DOOR_TYPE thì sẽ không lưu nữa để tránh bị trùng dữ liệu. với những dòng dữ liệu được lưu thành công thì sẽ ghi INSERT_BY = 'A', 
+Thêm cho tôi chức năng upload file excel (có thể tham khảo chức năng upload attNewOpenImportModal của viewApplyAttenanceManagentInfoList_new.html), khi người dùng upload file excel lên thì sẽ đọc dữ liệu từ file đó và lưu vào bảng AR_MAC_RECORDS_TEMP (cá trường tham khảo hình ảnh). file excel sẽ có định dạng như sau: cột A là EMPID, cột B là LOCAL_NAME, cột C là AR_DATE_STR, cột D là R_DATE, cột E là R_TIME, cột F là DOOR_TYPE, cột G là REMARK (tham khảo hình ảnh). sau khi lưu vào bảng AR_MAC_RECORDS_TEMP, thì tạo cho tạo luôn cho file viewImportExcelTempMacRecordsList.html ở module /ar/attendanceMintenance. giao diện này để hiển thị thông tin vừa nhập lên cho người dùng. sau khi bấm xác nhận thì sẽ đưa dữ liệu từ bảng AR_MAC_RECORDS_TEMP sang bảng AR_MAC_RECORDS_HAE. đồng thời xóa dữ liệu ở bảng AR_MAC_RECORDS_TEMP đi. khi lưu vào bảng AR_MAC_RECORDS_HAE thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_NO, R_TIME và DOOR_TYPE thì sẽ không lưu nữa để tránh bị trùng dữ liệu. với những dòng dữ liệu được lưu thành công thì sẽ ghi INSERT_BY = 'A', 
 
 Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordForSelf.html - Lịch sử ra vào công ty nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_SST với các trường tham khảo hình ảnh, kết hợp với bảng HR_EMPLOYEE để lấy thông tin nhân viên, trường CARD_NO tương ứng với EMPID HR_EMPLOYEE, sẽ có những dữ liệu trong bảng AR_MAC_RECORDS_SST mà giá trị của trường CARD_NO không nằm trong HR_EMPLOYEE, nếu vậy thì vẫn lấy CARD_NO và LOCAL_NAME sẽ thay bằng CARD_NO.  Định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày hiện tại. có chức năng xuất excel, khi bấm vào sẽ xuất dữ liệu ra file excel.
 
-Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordMeal.html - Tra cứu suất ăn nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_HTSV_EAT với các trường tham khảo hình ảnh, câu lệnh lẫy dữ liệu sử dụng SQL: SELECT  A.SEQ,
+Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordMeal.html - Tra cứu suất ăn nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_HAE_EAT với các trường tham khảo hình ảnh, câu lệnh lẫy dữ liệu sử dụng SQL: SELECT  A.SEQ,
 			          A.EMPID,
 			          A.EAT_DATE,
 			          A.EAT_NAME,
@@ -2152,15 +2152,15 @@ Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordMea
 					  A.REMARK,
 					  GET_CODE_NAME(B.POST_GRADE_NO,#{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
 					  INSERT_BY
-				 FROM AR_MAC_RECORDS_HTSV_EAT A,
+				 FROM AR_MAC_RECORDS_HAE_EAT A,
 					  HR_EMPLOYEE B
 				WHERE  A.EMPID =  B.EMPID(+). 
- trường EMPID của bảng AR_MAC_RECORDS_HTSV_EAT tương ứng với EMPID của HR_EMPLOYEE, sẽ có những dữ liệu trong bảng AR_MAC_RECORDS_HTSV_EAT mà giá trị của trường EMPID không nằm trong HR_EMPLOYEE, nếu vậy thì vẫn lấy EMPID và LOCAL_NAME sẽ thay bằng EMPLOYEE_NAME.       
+ trường EMPID của bảng AR_MAC_RECORDS_HAE_EAT tương ứng với EMPID của HR_EMPLOYEE, sẽ có những dữ liệu trong bảng AR_MAC_RECORDS_HAE_EAT mà giá trị của trường EMPID không nằm trong HR_EMPLOYEE, nếu vậy thì vẫn lấy EMPID và LOCAL_NAME sẽ thay bằng EMPLOYEE_NAME.       
          Định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày hiện tại. có chức năng xuất excel, khi bấm vào sẽ xuất dữ liệu ra file excel.
 
          với việc Đọc dữ liệu quẹt thẻ từ server nơi chưass dữ liệu quẹt thẻ. hãy thêm cho tôi 1 tính năng tự động chạy vào phút thứ 5 của mỗi tiếng, tức là 08:05, 09:05, ... và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu quẹt thẻ được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu quẹt thẻ, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu quẹt thẻ nhiều lần trong ngày.
 
-Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordMeal.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HTSV_EAT. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
+Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordMeal.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HAE_EAT. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
 							+ " DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) AS LocalDateTime, e.OccuredDateTime as UTCDateTime,"
 							+ " P.DepartmentID, P.DepartmentID AS DeptName	"
 							+ " from ACS_CARDHOLDER_VIEW P join ACS_EVENT_ACCESS_VIEW E on P.PSNID = E.PSNId right "
@@ -2175,9 +2175,9 @@ FirstName Tương ứng với	EMPLOYEE_NAME
  LocalDateTime Tương ứng với	CARD_TIME
  DoorName Tương ứng với	DOOR_NAME
  DeptName Tương ứng với	DEPART_NAME 10
-  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_HTSV_EAT thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
+  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_HAE_EAT thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
 
-  Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordForSelf.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HTSV_EAT. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
+  Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordForSelf.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HAE_EAT. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
 							+ " DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) AS LocalDateTime, e.OccuredDateTime as UTCDateTime,"
 							+ " P.DepartmentID, P.DepartmentID AS DeptName	"
 							+ " from ACS_CARDHOLDER_VIEW P join ACS_EVENT_ACCESS_VIEW E on P.PSNID = E.PSNId right "
@@ -2192,7 +2192,7 @@ FirstName Tương ứng với	EMPLOYEE_NAME
  LocalDateTime Tương ứng với	CARD_TIME
  DoorName Tương ứng với	DOOR_NAME
  DeptName Tương ứng với	DEPART_NAME 10
-  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_HTSV_EAT thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
+  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_HAE_EAT thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
 
 
 Căn cứ viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordDay.html - Dữ liệu quet thẻ - Ca làm nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. câu lệnh lẫy dữ liệu sử dụng SQL: SELECT D.LOCAL_NAME,
@@ -2226,7 +2226,7 @@ Căn cứ viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordDay.ht
                                               D.CPNY_ID)) SHIFT_TIME,
        (SELECT GET_EMP_LOCAL_NAME(ARS.CREATED_BY, #{cpnyId, jdbcType=VARCHAR}) || ' ' ||
                TO_CHAR(ARS.CREATE_DATE, 'DD/MM/YYYY HH24:MI')
-          FROM AR_SCHEDULE_HTSV ARS
+          FROM AR_SCHEDULE_HAE ARS
          WHERE D.PERSON_ID = ARS.PERSON_ID
            AND D.AR_DATE_STR = ARS.AR_DATE_STR) CHANGE_SHIFT_PERSON,
        GET_GLOBAL_NAME(D.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) EMP_TYPE_NAME,
@@ -2257,7 +2257,7 @@ Căn cứ viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordDay.ht
                                  WHEN DOOR_TYPE IS NULL OR DOOR_TYPE <> 'IN' THEN
                                   MAX(R_TIME)
                                END OUT_TIME
-                          FROM AR_MAC_RECORDS_HTSV
+                          FROM AR_MAC_RECORDS_HAE
                          WHERE 1 = 1
                            AND R_TIME >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
                            AND R_TIME <= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'DD/MM/YYYY') + 2
@@ -2273,7 +2273,7 @@ Căn cứ viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordDay.ht
                                  WHEN DOOR_TYPE IS NULL OR DOOR_TYPE <> 'IN' THEN
                                   MAX(R_TIME)
                                END OUT_TIME
-                          FROM AR_MAC_RECORDS_HTSV
+                          FROM AR_MAC_RECORDS_HAE
                          WHERE 1 = 1
                            AND R_TIME >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
                            AND R_TIME <= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'DD/MM/YYYY') + 2
@@ -2391,8 +2391,8 @@ EMPID, VIETNAM_NAME, ENGLISH_NAME, DOB, DATE_STARTED, END_PROBATION_DATE,  JOIN_
 server chạy của tôi (10.42.200.141) có tomcat: C:\apache-tomcat-10.1.55
 JDK: C:\Program Files\Java\jdk-21.0.10
 JEUS_HOME=D:\JEUS
-DB_URL=jdbc:oracle:thin:@//10.42.200.55:1526/HTSVHR
-DB_USERNAME=HTSV_HR
+DB_URL=jdbc:oracle:thin:@//10.42.200.55:1526/HAEHR
+DB_USERNAME=HAE_HR
 DB_PASSWORD=`1q2w3a4s
 có cần phải viết lại deploy-jeus.bat để phù hợp với cấu hình này không
 
@@ -2402,15 +2402,42 @@ REM === Java Options ===
 set "JAVA_OPTS=-Xms512m -Xmx1024m -Dfile.encoding=UTF-8"
 
 REM === Database Configuration ===
-set "DB_URL=jdbc:oracle:thin:@//10.42.200.55:1526/HTSVHR"
-set "DB_USERNAME=HTSV_HR"
+set "DB_URL=jdbc:oracle:thin:@//10.42.200.55:1526/HAEHR"
+set "DB_USERNAME=HAE_HR"
 set "DB_PASSWORD=`1q2w3a4s"
 
 REM === Photo Upload Path ===
-set "PHOTO_UPLOAD_PATH=D:/source/VHR/HTSV_HR/resources/photo/HTSV"
+set "PHOTO_UPLOAD_PATH=D:/source/VHR/HAE_HR/resources/photo/HAE"
 
 REM === Session Cookie (đặt false nếu dùng HTTP thay vì HTTPS) ===
 set "SESSION_COOKIE_SECURE=false"
 
 trong C:\apache-tomcat-10.1.55\conf\server.xml tôi cũng sửa port=8088
 Nhưng vẫn không được, cmd tắt rất nhanh, còn không ghi ra log nữa
+
+ở đây hãy loại bỏ cách lấy thông tin người phê duyệt từ /ar/attendanceMintenance/api/leaveApply/approvers. thay vào đó người dùng sẽ tự thêm người phê duyệt vòa. Cụ thể hãy thêm cho tôi dấu (+) để người dùng có thể bấm vào đó để thêm người phê duyệt, khi bấm vào sẽ hiện ra 1 dòng mới để người dùng nhập tên người phê duyệt vào, sau khi nhập xong thì bấm Enter để lưu lại người phê duyệt đó vào danh sách những người phê duyệt của đơn xin nghỉ phép đó (Tham khảo cách tìm người với abEmpInputKeydown của viewApplyAttenanceBatchInfoList). Người dùng có thể thêm nhiều người phê duyệt nếu cần thiết, và cũng có thể xóa người phê duyệt đã thêm nếu muốn. Việc này sẽ giúp cho người dùng linh hoạt hơn trong việc quản lý những người phê duyệt cho đơn xin nghỉ phép của mình mà không bị giới hạn bởi việc phải lấy thông tin từ một API nào đó.
+
+Vì đã dùng chức năng thêm lien phê duyệt, nên khi bấm Xin phép thì không cần gọi GET_AFFIRMOR_LIST_IMPROVE để lấy line phê duyệt nữa, mà thay vào đó sử dụng luôn line phê duyệt vừa thêm để thực hiện
+
+khi Lưu thành công thì sẽ gọi đến function sendAffirmInfoEmailApproval của MailSendApprovalManager để gửi thông tin đến những người phê duyệt đã được thêm vào, với nội dung bao gồm thông tin về đơn xin nghỉ phép của người dùng như tên người dùng, ngày bắt đầu, ngày kết thúc, thời lượng, lý do nghỉ và danh sách những người phê duyệt đã được thêm vào. hãy xem lại function sendAffirmInfoEmailApproval và các function liên quan, đây là function tôi dùng từ dự án khác (dùng để kết nối đến web service, với các function liên quan nằm trong \hanwha\neo\branch), bắt buộc phải dùng EagleOffice SOAP web service (hanwha.neo.branch), vì mục đích là đồng bộ dữ liệu EagleOffice SOAP web service, hãy kiểm tra lại và chỉnh sửa cho phù hợp với dự án này, để đảm bảo rằng việc đồng bộ được gửi đi đúng định dạng và nội dung như mong muốn.
+
+thêm cho tôi function getWaitSendApplyInfoList này, function này sẽ lấy dữ liệu từ câu lệnh SQl: SELECT APPLY_DATA.*,
+			   (GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(APPLY_DATA.FROM_TIME, 'DD/MM/YYYY HH24:MI'),'YYYY/MM/DD'),'HAE',APPLY_DATA.PERSON_ID,'30') + 
+			   GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(APPLY_DATA.FROM_TIME, 'DD/MM/YYYY HH24:MI'),'YYYY/MM/DD'),'HAE',APPLY_DATA.PERSON_ID,'301') ) OT_TOTAIL_MONTH,
+			   MISDOCID
+		  FROM 
+			) APPLY_DATA
+
+
+thêm cho tôi function getAffirmListByApplyNo này, function này sẽ lấy dữ liệu từ câu lệnh SQl: SELECT S.SEQ,
+		            
+thêm cho tôi function getReceiverListByApplyNo này, function này sẽ lấy dữ liệu từ câu lệnh SQl: SELECT S.SEQ,
+
+thêm cho tôi function getNeedCancelApprovalInfo này, function này sẽ lấy dữ liệu từ câu lệnh SQl: SELECT A.APPLY_NO,
+
+thêm cho tôi function getSynchronizationApprovalList này, function này sẽ lấy dữ liệu từ câu lệnh SQl: SELECT *
+
+thêm cho tôi function getSendDataInfoList này, function này sẽ lấy dữ liệu từ câu lệnh SQl: SELECT ATT.APPLY_NO,
+
+thêm cho tôi function viewModifyApprovalInfo này, function này sẽ dùng câu lệnh SQl: UPDATE SY_AFFIRM_EMAIL A SET A.SEND_FLAG = #SEND_FINISH_FLAG#
+			 WHERE A.SEQ = #SEQ#

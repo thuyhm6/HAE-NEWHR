@@ -3,7 +3,7 @@ package com.ait.sy.sys.service;
 import com.ait.sy.sys.dto.DataTablesRequest;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.Map;
 import org.slf4j.Logger;

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -177,28 +176,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    /**
-     * Handle NoResourceFoundException (Status 404 for static resources)
-     * Suppress error logs for missing static resources
-     */
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
-        // Do not log as error to keep logs clean
-        logger.debug("Resource not found: {}", ex.getResourcePath());
-
-        if (isAjaxRequest(request)) {
-            Map<String, Object> response = createErrorResponse(
-                    "RESOURCE_NOT_FOUND",
-                    "Không tìm thấy tài nguyên: " + ex.getResourcePath(),
-                    HttpStatus.NOT_FOUND.value(),
-                    request.getDescription(false));
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } else {
-            // For static resources or browser navigation, just return 404 without body
-            // to avoid HttpMediaTypeNotAcceptableException
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
 
     /**
      * Handle SecurityException

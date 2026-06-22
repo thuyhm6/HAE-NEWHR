@@ -1,0 +1,685 @@
+<div th:fragment="content">
+    <!-- ===== Thanh tìm kiếm ===== -->
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <form id="hmai_searchForm" class="row g-2 align-items-end flex-wrap">
+                <div class="col-auto d-flex align-items-center gap-2 flex-wrap">
+                    <label class="form-label mb-0 fw-semibold" th:text="#{common.time}">Thời gian</label>
+                    <input type="text" class="form-control form-control-sm js-daterangepicker" id="hmai_fromDate"
+                        style="width:130px;" data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
+                    <span>~</span>
+                    <input type="text" class="form-control form-control-sm js-daterangepicker" id="hmai_toDate"
+                        style="width:130px;" data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
+                </div>
+                <div class="col-auto d-flex align-items-center gap-3 flex-wrap">
+                    <label class="form-label mb-0 fw-semibold" th:text="#{common.status}">Trạng thái</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="hmai_activity" id="hmai_actAll" value="">
+                            <label class="form-check-label" for="hmai_actAll" th:text="#{hmai.filter.all}">Tất cả</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="hmai_activity" id="hmai_actSubmit" value="1" checked>
+                            <label class="form-check-label" for="hmai_actSubmit" th:text="#{hmai.status.submitted}">Chờ duyệt</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="hmai_activity" id="hmai_actApproved" value="2">
+                            <label class="form-check-label" for="hmai_actApproved" th:text="#{hmai.status.approved}">Đã duyệt</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="hmai_activity" id="hmai_actRejected" value="3">
+                            <label class="form-check-label" for="hmai_actRejected" th:text="#{hmai.status.rejected}">Đã từ chối</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 fw-semibold" th:text="#{hmai.filter.keyword}">Mã NV / Tên NV</label>
+                    <input type="text" id="hmai_keyword" class="form-control form-control-sm" style="width:200px;"
+                        th:placeholder="#{hmai.filter.keyword}">
+                </div>
+                <div class="col-auto ms-auto">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="hmaiSearch()">
+                        <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary ms-1" onclick="hmaiClear()">
+                        <i class="bx bx-x"></i> <span th:text="#{common.reset}">Đặt lại</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== Split panel: Danh sách | Chi tiết ===== -->
+    <div class="row g-3">
+
+        <!-- == CỘT TRÁI: Danh sách == -->
+        <div class="col-xl-5 col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height:calc(100vh - 250px); overflow-y:auto;">
+                        <table id="hmai_dataTable"
+                               class="table table-striped table-bordered table-hover table-sm align-middle mb-0"
+                               style="width:100%;">
+                            <thead class="table-light text-center align-middle"
+                                   style="position:sticky;top:0;z-index:1;">
+                                <tr>
+                                    <th style="width:40px;">No.</th>
+                                    <th th:text="#{hmai.col.empCode}">Mã NV</th>
+                                    <th th:text="#{hmai.col.empName}">Tên nhân viên</th>
+                                    <th th:text="#{hmai.col.dept}">Phòng ban</th>
+                                    <th th:text="#{hmai.col.type}">Loại thay đổi</th>
+                                    <th th:text="#{hmai.col.applyDate}">Ngày nộp</th>
+                                    <th th:text="#{hmai.col.distinction}">Loại áp dụng</th>
+                                    <th th:text="#{hmai.col.status}">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- == CỘT PHẢI: Chi tiết == -->
+        <div class="col-xl-7 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header py-2 d-flex align-items-center gap-2 flex-wrap">
+                    <i class="bx bx-info-circle text-primary"></i>
+                    <strong th:text="#{hmai.detail.title}">Chi tiết yêu cầu thay đổi</strong>
+                    <span id="hmai_detailBadge" class="badge bg-secondary ms-2 d-none"></span>
+                    <div class="ms-auto d-flex gap-2" id="hmai_actionBtns" style="display:none!important;">
+                        <button type="button" id="hmai_btnApprove" class="btn btn-sm btn-success"
+                                onclick="hmaiApprove()">
+                            <i class="bx bx-check-circle"></i>
+                            <span th:text="#{hmai.btn.approve}">Phê duyệt</span>
+                        </button>
+                        <button type="button" id="hmai_btnReject" class="btn btn-sm btn-danger"
+                                onclick="hmaiReject()">
+                            <i class="bx bx-x-circle"></i>
+                            <span th:text="#{hmai.btn.reject}">Từ chối</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="hmai_detailBody"
+                     style="min-height:300px; overflow-y:auto; max-height:calc(100vh - 210px);">
+
+                    <!-- Placeholder -->
+                    <div class="text-center text-muted py-5" id="hmai_placeholder">
+                        <i class="bx bx-select-multiple fs-1 d-block mb-2"></i>
+                        <span th:text="#{hmai.detail.placeholder}">Chọn một yêu cầu để xem chi tiết</span>
+                    </div>
+
+                    <!-- Khu vực so sánh dữ liệu -->
+                    <div id="hmai_comparison" class="d-none">
+                        <div class="row g-2">
+                            <!-- Dữ liệu thay đổi (mới) -->
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-header py-1 bg-primary bg-opacity-10 text-primary fw-semibold small">
+                                        <i class="bx bx-edit-alt me-1"></i>
+                                        <span th:text="#{hmai.detail.newData}">Dữ liệu thay đổi</span>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-sm mb-0">
+                                                <tbody id="hmai_newDataBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Dữ liệu ban đầu (gốc) -->
+                            <div class="col-md-6">
+                                <div class="card border-secondary">
+                                    <div class="card-header py-1 bg-secondary bg-opacity-10 text-secondary fw-semibold small">
+                                        <i class="bx bx-history me-1"></i>
+                                        <span th:text="#{hmai.detail.originalData}">Dữ liệu ban đầu</span>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-sm mb-0">
+                                                <tbody id="hmai_origDataBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File đính kèm -->
+                        <div class="mt-3">
+                            <h6 class="fw-bold text-secondary border-bottom pb-1">
+                                <i class="bx bx-paperclip me-1"></i>
+                                <span th:text="#{epi.field.attachFiles}">File đính kèm</span>
+                            </h6>
+                            <ul id="hmai_fileList" class="list-group list-group-flush"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        /* =====================================================================
+           viewEssApplyInfo (hrm/approve) — Phê duyệt thay đổi thông tin cá nhân
+           Prefix ID: hmai_
+        ===================================================================== */
+        var _hmai_table       = null;
+        var _hmai_selectedNo  = null;   // applyNo đang chọn
+        var _hmai_selectedType= null;   // applyTableType đang chọn
+        var _hmai_selectedAct = null;   // activity đang chọn (để kiểm tra có thể duyệt)
+
+        var _hmai_msg = {
+            noData:          /*[[#{common.noData}]]*/ 'Không có dữ liệu',
+            loading:         /*[[#{common.loading}]]*/ 'Đang tải...',
+            loadFailed:      /*[[#{hmai.msg.loadFailed}]]*/ 'Không thể tải dữ liệu',
+            approveConfirm:  /*[[#{hmai.msg.approveConfirm}]]*/ 'Bạn có chắc chắn muốn phê duyệt yêu cầu này không?',
+            rejectConfirm:   /*[[#{hmai.msg.rejectConfirm}]]*/ 'Bạn có chắc chắn muốn từ chối yêu cầu này không?',
+            approveSuccess:  /*[[#{hmai.msg.approveSuccess}]]*/ 'Phê duyệt thành công',
+            rejectSuccess:   /*[[#{hmai.msg.rejectSuccess}]]*/ 'Từ chối thành công',
+            actionFailed:    /*[[#{hmai.msg.actionFailed}]]*/ 'Thao tác thất bại',
+            noOriginal:      /*[[#{hmai.detail.noOriginal}]]*/ 'Bản ghi mới (chưa có dữ liệu ban đầu)',
+            onlyPending:     /*[[#{hmai.msg.onlyPending}]]*/ 'Chỉ có thể phê duyệt/từ chối yêu cầu đang chờ duyệt',
+            noFile:          /*[[#{veai.msg.noFile}]]*/ 'Không có file đính kèm'
+        };
+
+        var _hmai_typeLabel = {
+            PERSONAL:      /*[[#{hmai.type.personal}]]*/ 'Thông tin cá nhân',
+            ADDRESS:       /*[[#{hmai.type.address}]]*/ 'Địa chỉ',
+            FAMILY:        /*[[#{hmai.type.family}]]*/ 'Thông tin gia đình',
+            EMERGENCY:     /*[[#{hmai.type.emergency}]]*/ 'Liên hệ khẩn cấp',
+            WORK_EXP:      /*[[#{hmai.type.workExp}]]*/ 'Kinh nghiệm làm việc',
+            EDUCATION:     /*[[#{hmai.type.education}]]*/ 'Học vấn',
+            QUALIFICATION: /*[[#{hmai.type.qualification}]]*/ 'Chứng chỉ'
+        };
+
+        var _hmai_actLabel = {
+            1: /*[[#{hmai.status.submitted}]]*/ 'Chờ duyệt',
+            2: /*[[#{hmai.status.approved}]]*/ 'Đã duyệt',
+            3: /*[[#{hmai.status.rejected}]]*/ 'Đã từ chối'
+        };
+        var _hmai_actClass  = { 1: 'warning', 2: 'success', 3: 'danger' };
+
+        var _hmai_distinc = {
+            1: /*[[#{hmai.distinction.new}]]*/ 'Thêm mới',
+            2: /*[[#{hmai.distinction.update}]]*/ 'Cập nhật'
+        };
+
+        // ------------------------------------------------------------------ //
+        // Utility
+        // ------------------------------------------------------------------ //
+        function hmaiEsc(v) {
+            if (v == null) return '';
+            return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function hmaiRow(label, newVal, origVal) {
+            var same = (String(newVal||'').trim() === String(origVal||'').trim());
+            var newClass = same ? '' : 'table-warning fw-semibold';
+            return '<tr class="' + newClass + '">'
+                 + '<th class="table-light text-nowrap small" style="width:40%;">' + hmaiEsc(label) + '</th>'
+                 + '<td class="small">' + hmaiEsc(newVal) + '</td>'
+                 + '</tr>';
+        }
+
+        function hmaiOrigRow(label, origVal) {
+            return '<tr>'
+                 + '<th class="table-light text-nowrap small" style="width:40%;">' + hmaiEsc(label) + '</th>'
+                 + '<td class="small">' + hmaiEsc(origVal) + '</td>'
+                 + '</tr>';
+        }
+
+        // ------------------------------------------------------------------ //
+        // Khởi tạo DataTable server-side
+        // ------------------------------------------------------------------ //
+        function hmaiBootTable() {
+            if (_hmai_table) { _hmai_table.destroy(); _hmai_table = null; }
+            _hmai_table = $('#hmai_dataTable').DataTable({
+                destroy:     true,
+                serverSide:  true,
+                processing:  true,
+                paging:      true,
+                pageLength:  50,
+                lengthMenu:  [20, 50, 100, 200],
+                ordering:    false,
+                searching:   false,
+                language: {
+                    processing:  /*[[#{common.loading}]]*/ 'Đang tải...',
+                    zeroRecords: /*[[#{common.noData}]]*/ 'Không có dữ liệu',
+                    info:        '_START_ - _END_ / _TOTAL_',
+                    paginate: { first: '«', last: '»', previous: '‹', next: '›' }
+                },
+                ajax: {
+                    url:  '/hrm/approve/api/applyList',
+                    type: 'GET',
+                    data: function (d) {
+                        d.fromDate       = $('#hmai_fromDate').val();
+                        d.toDate         = $('#hmai_toDate').val();
+                        d.activitySearch = $('input[name="hmai_activity"]:checked').val() || '';
+                        d.keyword        = $('#hmai_keyword').val();
+                        return d;
+                    }
+                },
+                columns: [
+                    { data: null, render: function(d, t, r, meta) {
+                        return meta.settings._iDisplayStart + meta.row + 1;
+                    }, className: 'text-center', width: '40px' },
+                    { data: 'empCode',       defaultContent: '', className: 'text-center text-nowrap' },
+                    { data: 'empName',       defaultContent: '' },
+                    { data: 'deptName',      defaultContent: '' },
+                    { data: 'applyTableType', defaultContent: '', render: function(val) {
+                        return hmaiEsc(_hmai_typeLabel[val] || val);
+                    }},
+                    { data: 'createDate',    defaultContent: '', className: 'text-center text-nowrap' },
+                    { data: 'applyType',     defaultContent: '', className: 'text-center', render: function(val) {
+                        return hmaiEsc(_hmai_distinc[val] || '');
+                    }},
+                    { data: 'activity',      defaultContent: '', className: 'text-center', render: function(val) {
+                        var cls = _hmai_actClass[val] || 'secondary';
+                        var lbl = hmaiEsc(_hmai_actLabel[val] || val);
+                        return '<span class="badge bg-' + cls + '">' + lbl + '</span>';
+                    }}
+                ],
+                rowCallback: function(row, data) {
+                    $(row).attr('data-apply-no',   data.applyNo);
+                    $(row).attr('data-apply-type', data.applyTableType);
+                    $(row).attr('data-activity',   data.activity);
+                    $(row).css('cursor', 'pointer');
+                    $(row).off('click').on('click', function() {
+                        _hmai_table.$('tr.table-active').removeClass('table-active');
+                        $(this).addClass('table-active');
+                        hmaiLoadDetail(data.applyNo, data.applyTableType, data.activity);
+                    });
+                }
+            });
+        }
+
+        // ------------------------------------------------------------------ //
+        // Tải chi tiết: dữ liệu mới + dữ liệu gốc
+        // ------------------------------------------------------------------ //
+        function hmaiResetDetail() {
+            $('#hmai_placeholder').removeClass('d-none');
+            $('#hmai_comparison').addClass('d-none');
+            $('#hmai_detailBadge').addClass('d-none').text('');
+            $('#hmai_actionBtns').css('display', 'none');
+            $('#hmai_fileList').html('');
+            _hmai_selectedNo   = null;
+            _hmai_selectedType = null;
+            _hmai_selectedAct  = null;
+        }
+
+        function hmaiLoadDetail(applyNo, applyTableType, activity) {
+            _hmai_selectedNo   = applyNo;
+            _hmai_selectedType = applyTableType;
+            _hmai_selectedAct  = activity;
+
+            $('#hmai_placeholder').addClass('d-none');
+            $('#hmai_comparison').removeClass('d-none');
+            $('#hmai_detailBadge').removeClass('d-none')
+                .text(_hmai_typeLabel[applyTableType] || applyTableType);
+
+            $('#hmai_newDataBody').html('<tr><td class="text-center text-muted">' + hmaiEsc(_hmai_msg.loading) + '</td></tr>');
+            $('#hmai_origDataBody').html('<tr><td class="text-center text-muted">' + hmaiEsc(_hmai_msg.loading) + '</td></tr>');
+
+            // Hiện/ẩn nút duyệt/từ chối theo trạng thái
+            if (activity == 1) {
+                $('#hmai_actionBtns').css('display', '');
+            } else {
+                $('#hmai_actionBtns').css('display', 'none');
+            }
+
+            $.ajax({
+                url:  '/hrm/approve/api/applyDetail',
+                type: 'GET',
+                data: { applyNo: applyNo, applyTableType: applyTableType },
+                success: function (res) {
+                    if (res.success) {
+                        var newData  = res.applyData    || {};
+                        var origData = res.originalData || null;
+                        hmaiRenderNewData(applyTableType, newData);
+                        hmaiRenderOrigData(applyTableType, origData);
+                        hmaiRenderFiles(res.files || []);
+                    } else {
+                        hmaiShowDetailError();
+                    }
+                },
+                error: function () { hmaiShowDetailError(); }
+            });
+        }
+
+        function hmaiShowDetailError() {
+            var err = '<tr><td class="text-center text-danger">' + hmaiEsc(_hmai_msg.loadFailed) + '</td></tr>';
+            $('#hmai_newDataBody').html(err);
+            $('#hmai_origDataBody').html(err);
+        }
+
+        function hmaiRenderFiles(files) {
+            var ul = $('#hmai_fileList');
+            if (!files || !files.length) {
+                ul.html('<li class="list-group-item text-muted small">' + hmaiEsc(_hmai_msg.noFile) + '</li>');
+                return;
+            }
+            var html = '';
+            files.forEach(function (f) {
+                html += '<li class="list-group-item py-1 px-2 d-flex align-items-center gap-2">'
+                      + '<i class="bx bx-file text-primary"></i>'
+                      + '<a href="/ess/empinfo/api/files/download/' + hmaiEsc(f.fileNo) + '" target="_blank" class="text-truncate">'
+                      + hmaiEsc(f.fileName) + '</a></li>';
+            });
+            ul.html(html);
+        }
+
+        // ------------------------------------------------------------------ //
+        // Render bảng dữ liệu mới
+        // ------------------------------------------------------------------ //
+        function hmaiRenderNewData(type, d) {
+            var rows = hmaiBuildRows(type, d, null);
+            $('#hmai_newDataBody').html(rows);
+        }
+
+        // ------------------------------------------------------------------ //
+        // Render bảng dữ liệu gốc
+        // ------------------------------------------------------------------ //
+        function hmaiRenderOrigData(type, origD) {
+            if (!origD || Object.keys(origD).length === 0) {
+                $('#hmai_origDataBody').html(
+                    '<tr><td class="text-center text-muted small py-3">'
+                    + '<i class="bx bx-info-circle me-1"></i>'
+                    + hmaiEsc(_hmai_msg.noOriginal)
+                    + '</td></tr>'
+                );
+                return;
+            }
+            var rows = hmaiOrigBuildRows(type, origD);
+            $('#hmai_origDataBody').html(rows);
+        }
+
+        // ------------------------------------------------------------------ //
+        // Build rows cho từng loại thay đổi (hiển thị dữ liệu mới, so sánh với gốc)
+        // ------------------------------------------------------------------ //
+        function hmaiBuildRows(type, d, o) {
+            if (!d || Object.keys(d).length === 0) {
+                return '<tr><td class="text-muted text-center">' + hmaiEsc(_hmai_msg.noData) + '</td></tr>';
+            }
+            var rows = '';
+            var ov = o || {};
+            switch (type) {
+                case 'PERSONAL':
+                    rows += hmaiRow('Giới tính',          d.sexName,               ov.sexName);
+                    rows += hmaiRow('Ngày sinh',           d.dob,                   ov.dob);
+                    rows += hmaiRow('Dân tộc',             d.nationName,            ov.nationName);
+                    rows += hmaiRow('Quốc tịch',           d.nationalityName,       ov.nationalityName);
+                    rows += hmaiRow('Tình trạng HN',       d.maritalStatusName,     ov.maritalStatusName);
+                    rows += hmaiRow('Ngày kết hôn',        d.weddingDate,           ov.weddingDate);
+                    rows += hmaiRow('CMND/CCCD',           d.idcardNo,              ov.idcardNo);
+                    rows += hmaiRow('Ngày cấp CMND',       d.idcardStartDate,       ov.idcardStartDate);
+                    rows += hmaiRow('Nơi cấp',             d.issuingAuthority,      ov.issuingAuthority);
+                    rows += hmaiRow('Email cá nhân',       d.email,                 ov.email);
+                    rows += hmaiRow('Email thứ 2',         d.emailSecond,           ov.emailSecond);
+                    rows += hmaiRow('ĐT di động',          d.cellphone,             ov.cellphone);
+                    rows += hmaiRow('ĐT công ty',          d.companyPhone,          ov.companyPhone);
+                    rows += hmaiRow('Địa chỉ thường trú',  d.homeAddress,           ov.homeAddress);
+                    rows += hmaiRow('Nơi đăng ký HK',      d.regPlace,              ov.regPlace);
+                    rows += hmaiRow('Tôn giáo',            d.religion,              ov.religion);
+                    rows += hmaiRow('Quan điểm chính trị', d.politicalOutlook,      ov.politicalOutlook);
+                    rows += hmaiRow('Trình độ học vấn',    d.finalDegreeName,       ov.finalDegreeName);
+                    rows += hmaiRow('Nghĩa vụ quân sự',   d.armyOrNot,             ov.armyOrNot);
+                    rows += hmaiRow('Người khuyết tật',    d.obstacleOrNot,         ov.obstacleOrNot);
+                    break;
+                case 'ADDRESS':
+                    rows += hmaiRow('Loại địa chỉ',       d.addressTypeName,           ov.addressTypeName);
+                    rows += hmaiRow('Ngày hiệu lực',       d.effectiveStartDate,    ov.effectiveStartDate);
+                    rows += hmaiRow('Nội dung địa chỉ',   d.addressContent,        ov.addressContent);
+                    rows += hmaiRow('Quốc tịch',           d.nationalityName,           ov.nationalityName);
+                    break;
+                case 'FAMILY':
+                    rows += hmaiRow('Quan hệ',             d.famTypeName,           ov.famTypeName);
+                    rows += hmaiRow('Họ tên',              d.famName,               ov.famName);
+                    rows += hmaiRow('Ngày sinh',           d.famBorndate,           ov.famBorndate);
+                    rows += hmaiRow('CMND/CCCD',           d.famIdcard,             ov.famIdcard);
+                    rows += hmaiRow('Điện thoại',          d.famFamilyPhone,        ov.famFamilyPhone);
+                    rows += hmaiRow('Giới tính',           d.gender,                ov.gender);
+                    rows += hmaiRow('Công ty',             d.famCompanyName,        ov.famCompanyName);
+                    rows += hmaiRow('Địa chỉ',             d.famAddress,            ov.famAddress);
+                    rows += hmaiRow('Email',               d.famEmail,              ov.famEmail);
+                    rows += hmaiRow('Ghi chú',             d.note,                  ov.note);
+                    break;
+                case 'EMERGENCY':
+                    rows += hmaiRow('Họ tên',              d.emerName,              ov.emerName);
+                    rows += hmaiRow('Loại liên hệ',        d.emerTypeName,          ov.emerTypeName);
+                    rows += hmaiRow('Điện thoại',          d.emerPhone,             ov.emerPhone);
+                    rows += hmaiRow('Di động',             d.emerCellphone,         ov.emerCellphone);
+                    rows += hmaiRow('ĐT cơ quan',          d.emerWorkPhone,         ov.emerWorkPhone);
+                    rows += hmaiRow('Email',               d.emerEmail,             ov.emerEmail);
+                    rows += hmaiRow('Địa chỉ',             d.emerAddress,           ov.emerAddress);
+                    break;
+                case 'WORK_EXP':
+                    rows += hmaiRow('Tên công ty',         d.cpnyName,              ov.cpnyName);
+                    rows += hmaiRow('Phòng ban',           d.deptName,              ov.deptName);
+                    rows += hmaiRow('Vị trí',              d.position,              ov.position);
+                    rows += hmaiRow('Ngày bắt đầu',        d.startDate||d.startMonth, ov.startDate);
+                    rows += hmaiRow('Ngày kết thúc',       d.endDate||d.endMonth,   ov.endDate);
+                    rows += hmaiRow('ĐT liên hệ',          d.tel,                   ov.tel);
+                    rows += hmaiRow('Lý do nghỉ',          d.resignReason,          ov.resignReason);
+                    rows += hmaiRow('Ghi chú',             d.remark,                ov.remark);
+                    break;
+                case 'EDUCATION':
+                    rows += hmaiRow('Chuyên ngành',        d.subject,               ov.subject);
+                    rows += hmaiRow('Trình độ',            d.degreeName,            ov.degreeName);
+                    rows += hmaiRow('Tên trường',          d.institutionName,       ov.institutionName);
+                    rows += hmaiRow('Ngày bắt đầu',        d.startDate,             ov.startDate);
+                    rows += hmaiRow('Ngày kết thúc',       d.endDate,               ov.endDate);
+                    rows += hmaiRow('Quốc gia',            d.siteCountry,           ov.siteCountry);
+                    rows += hmaiRow('GPA',                 d.gpa,                   '');
+                    rows += hmaiRow('Ghi chú',             d.remarks||d.remark,     ov.remarks);
+                    break;
+                case 'QUALIFICATION':
+                    rows += hmaiRow('Tên chứng chỉ',      d.qualName,              ov.qualName);
+                    rows += hmaiRow('Ngày cấp',            d.dateObtained,          ov.dateObtained);
+                    rows += hmaiRow('Số chứng chỉ',        d.qualCardNo,            ov.qualCardNo);
+                    rows += hmaiRow('Nơi cấp',             d.qualInstitute,         ov.qualInstitute);
+                    rows += hmaiRow('Ngày hết hạn',        d.validityDate,          ov.validityDate);
+                    rows += hmaiRow('Cấp độ',              d.qualLevel,             ov.qualLevel);
+                    rows += hmaiRow('Ghi chú',             d.qualRemark,            ov.qualRemark);
+                    break;
+                default:
+                    rows = '<tr><td class="text-muted text-center">' + hmaiEsc(_hmai_msg.noData) + '</td></tr>';
+            }
+            return rows;
+        }
+
+        function hmaiOrigBuildRows(type, o) {
+            if (!o || Object.keys(o).length === 0) {
+                return '<tr><td class="text-muted text-center">' + hmaiEsc(_hmai_msg.noData) + '</td></tr>';
+            }
+            var rows = '';
+            switch (type) {
+                case 'PERSONAL':
+                    rows += hmaiOrigRow('Giới tính',           o.sexCode);
+                    rows += hmaiOrigRow('Ngày sinh',           o.dob);
+                    rows += hmaiOrigRow('Dân tộc',             o.nationCode);
+                    rows += hmaiOrigRow('Quốc tịch',           o.nationalityCode);
+                    rows += hmaiOrigRow('Tình trạng HN',       o.maritalStatusCode);
+                    rows += hmaiOrigRow('Ngày kết hôn',        o.weddingDate);
+                    rows += hmaiOrigRow('CMND/CCCD',           o.idcardNo);
+                    rows += hmaiOrigRow('Ngày cấp CMND',       o.idcardStartDate);
+                    rows += hmaiOrigRow('Nơi cấp',             o.issuingAuthority);
+                    rows += hmaiOrigRow('Email cá nhân',       o.email);
+                    rows += hmaiOrigRow('Email thứ 2',         o.emailSecond);
+                    rows += hmaiOrigRow('ĐT di động',          o.cellphone);
+                    rows += hmaiOrigRow('ĐT công ty',          o.companyPhone);
+                    rows += hmaiOrigRow('Địa chỉ thường trú',  o.homeAddress);
+                    rows += hmaiOrigRow('Nơi đăng ký HK',      o.regPlace);
+                    rows += hmaiOrigRow('Tôn giáo',            o.religion);
+                    rows += hmaiOrigRow('Quan điểm chính trị', o.politicalOutlook);
+                    rows += hmaiOrigRow('Trình độ học vấn',    o.finalDegreeCode);
+                    rows += hmaiOrigRow('Nghĩa vụ quân sự',    o.armyOrNot);
+                    rows += hmaiOrigRow('Người khuyết tật',    o.obstacleOrNot);
+                    break;
+                case 'ADDRESS':
+                    rows += hmaiOrigRow('Loại địa chỉ',       o.addressType);
+                    rows += hmaiOrigRow('Ngày hiệu lực',       o.effectiveStartDate);
+                    rows += hmaiOrigRow('Nội dung địa chỉ',   o.addressContent);
+                    rows += hmaiOrigRow('Quốc tịch',           o.nationality);
+                    break;
+                case 'FAMILY':
+                    rows += hmaiOrigRow('Quan hệ',             o.famTypeCode);
+                    rows += hmaiOrigRow('Họ tên',              o.famName);
+                    rows += hmaiOrigRow('Ngày sinh',           o.famBorndate);
+                    rows += hmaiOrigRow('CMND/CCCD',           o.famIdcard);
+                    rows += hmaiOrigRow('Điện thoại',          o.famFamilyPhone);
+                    rows += hmaiOrigRow('Giới tính',           o.gender);
+                    rows += hmaiOrigRow('Công ty',             o.famCompanyName);
+                    rows += hmaiOrigRow('Địa chỉ',             o.famAddress);
+                    rows += hmaiOrigRow('Email',               o.famEmail);
+                    rows += hmaiOrigRow('Ghi chú',             o.note);
+                    break;
+                case 'EMERGENCY':
+                    rows += hmaiOrigRow('Họ tên',              o.emerName);
+                    rows += hmaiOrigRow('Loại liên hệ',        o.emerTypeCode);
+                    rows += hmaiOrigRow('Điện thoại',          o.emerPhone);
+                    rows += hmaiOrigRow('Di động',             o.emerCellphone);
+                    rows += hmaiOrigRow('ĐT cơ quan',          o.emerWorkPhone);
+                    rows += hmaiOrigRow('Email',               o.emerEmail);
+                    rows += hmaiOrigRow('Địa chỉ',             o.emerAddress);
+                    break;
+                case 'WORK_EXP':
+                    rows += hmaiOrigRow('Tên công ty',         o.cpnyName);
+                    rows += hmaiOrigRow('Phòng ban',           o.deptName);
+                    rows += hmaiOrigRow('Vị trí',              o.position);
+                    rows += hmaiOrigRow('Ngày bắt đầu',        o.startDate);
+                    rows += hmaiOrigRow('Ngày kết thúc',       o.endDate);
+                    rows += hmaiOrigRow('ĐT liên hệ',          o.tel);
+                    rows += hmaiOrigRow('Lý do nghỉ',          o.resignReason);
+                    rows += hmaiOrigRow('Ghi chú',             o.remark);
+                    break;
+                case 'EDUCATION':
+                    rows += hmaiOrigRow('Chuyên ngành',        o.subject);
+                    rows += hmaiOrigRow('Trình độ',            o.degreeCode);
+                    rows += hmaiOrigRow('Tên trường',          o.institutionName);
+                    rows += hmaiOrigRow('Ngày bắt đầu',        o.startDate);
+                    rows += hmaiOrigRow('Ngày kết thúc',       o.endDate);
+                    rows += hmaiOrigRow('Quốc gia',            o.siteCountry);
+                    rows += hmaiOrigRow('GPA',                 '');
+                    rows += hmaiOrigRow('Ghi chú',             o.remarks);
+                    break;
+                case 'QUALIFICATION':
+                    rows += hmaiOrigRow('Tên chứng chỉ',       o.qualName);
+                    rows += hmaiOrigRow('Ngày cấp',            o.dateObtained);
+                    rows += hmaiOrigRow('Số chứng chỉ',        o.qualCardNo);
+                    rows += hmaiOrigRow('Nơi cấp',             o.qualInstitute);
+                    rows += hmaiOrigRow('Ngày hết hạn',        o.validityDate);
+                    rows += hmaiOrigRow('Cấp độ',              o.qualLevel);
+                    rows += hmaiOrigRow('Ghi chú',             o.qualRemark);
+                    break;
+                default:
+                    rows = '<tr><td class="text-muted text-center">' + hmaiEsc(_hmai_msg.noData) + '</td></tr>';
+            }
+            return rows;
+        }
+
+        // ------------------------------------------------------------------ //
+        // Phê duyệt
+        // ------------------------------------------------------------------ //
+        window.hmaiApprove = function () {
+            if (!_hmai_selectedNo) return;
+            if (_hmai_selectedAct != 1) {
+                if (typeof toastr !== 'undefined') toastr.warning(_hmai_msg.onlyPending);
+                return;
+            }
+            if (!confirm(_hmai_msg.approveConfirm)) return;
+
+            // $('#hmai_btnApprove, #hmai_btnReject').prop('disabled', true);
+            $.ajax({
+                url:  '/hrm/approve/api/approve',
+                type: 'POST',
+                data: { applyNo: _hmai_selectedNo, applyTableType: _hmai_selectedType },
+                success: function (res) {
+                    if (res.success) {
+                        if (typeof toastr !== 'undefined') toastr.success(_hmai_msg.approveSuccess);
+                        hmaiResetDetail();
+                        if (_hmai_table) _hmai_table.ajax.reload(null, false);
+                    } else {
+                        if (typeof toastr !== 'undefined') toastr.error(res.message || _hmai_msg.actionFailed);
+                        // $('#hmai_btnApprove, #hmai_btnReject').prop('disabled', false);
+                    }
+                },
+                error: function () {
+                    if (typeof toastr !== 'undefined') toastr.error(_hmai_msg.actionFailed);
+                    // $('#hmai_btnApprove, #hmai_btnReject').prop('disabled', false);
+                }
+            });
+        };
+
+        // ------------------------------------------------------------------ //
+        // Từ chối
+        // ------------------------------------------------------------------ //
+        window.hmaiReject = function () {
+            if (!_hmai_selectedNo) return;
+            if (_hmai_selectedAct != 1) {
+                if (typeof toastr !== 'undefined') toastr.warning(_hmai_msg.onlyPending);
+                return;
+            }
+            if (!confirm(_hmai_msg.rejectConfirm)) return;
+
+            // $('#hmai_btnApprove, #hmai_btnReject').prop('disabled', true);
+            $.ajax({
+                url:  '/hrm/approve/api/reject',
+                type: 'POST',
+                data: { applyNo: _hmai_selectedNo, applyTableType: _hmai_selectedType },
+                success: function (res) {
+                    if (res.success) {
+                        if (typeof toastr !== 'undefined') toastr.success(_hmai_msg.rejectSuccess);
+                        hmaiResetDetail();
+                        if (_hmai_table) _hmai_table.ajax.reload(null, false);
+                    } else {
+                        if (typeof toastr !== 'undefined') toastr.error(res.message || _hmai_msg.actionFailed);
+                        // $('#hmai_btnApprove, #hmai_btnReject').prop('disabled', false);
+                    }
+                },
+                error: function () {
+                    if (typeof toastr !== 'undefined') toastr.error(_hmai_msg.actionFailed);
+                    // $('#hmai_btnApprove, #hmai_btnReject').prop('disabled', false);
+                }
+            });
+        };
+
+        // ------------------------------------------------------------------ //
+        // Search / Reset
+        // ------------------------------------------------------------------ //
+        window.hmaiSearch = function () {
+            hmaiResetDetail();
+            if (_hmai_table) _hmai_table.ajax.reload(null, true);
+        };
+
+        window.hmaiClear = function () {
+            $('#hmai_fromDate').val('');
+            $('#hmai_toDate').val('');
+            $('#hmai_keyword').val('');
+            $('input[name="hmai_activity"][value="1"]').prop('checked', true);
+            hmaiResetDetail();
+            if (_hmai_table) _hmai_table.ajax.reload(null, true);
+        };
+
+        // ------------------------------------------------------------------ //
+        // Khởi động
+        // ------------------------------------------------------------------ //
+        function hmaiBootPage() {
+            if (!document.getElementById('hmai_dataTable')) { setTimeout(hmaiBootPage, 30); return; }
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#hmai_searchForm');
+            hmaiBootTable();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', hmaiBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(hmaiBootPage);
+        } else {
+            hmaiBootPage();
+        }
+    </script>
+</template>

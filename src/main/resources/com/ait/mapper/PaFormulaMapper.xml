@@ -55,7 +55,7 @@
         SELECT COLUMN_NAME           AS ITEM_ID,
                SY_GLOBAL_NAME.CONTENT AS ITEM_NAME
           FROM USER_TAB_COLUMNS, AR_STA_ITEM, AR_STA_ITEM_PARAM, SY_GLOBAL_NAME
-         WHERE TABLE_NAME              = 'AR_SUMMARY_HTSV'
+         WHERE TABLE_NAME              = 'AR_SUMMARY_HAE'
            AND DATA_TYPE               = 'NUMBER'
            AND COLUMN_NAME             = STA_ITEM_ID
            AND AR_STA_ITEM.ITEM_NO     = AR_STA_ITEM_PARAM.ITEM_NO

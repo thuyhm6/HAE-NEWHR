@@ -26,7 +26,7 @@ public class PaSalaryCodeDto {
     private String createDate;
     private Integer activity;
 
-    // Danh sách công ty sử dụng (HTSV, HAE) - dùng cho modal form
+    // Danh sách công ty sử dụng (HAE, HAE) - dùng cho modal form
     private List<String> companyUsage;
     // Chuỗi gộp công ty sử dụng - dùng để hiển thị trên danh sách
     private String companyUsageStr;

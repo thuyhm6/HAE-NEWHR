@@ -10,7 +10,7 @@ import java.util.Map;
 public interface ExcelMapper {
     String getPersonIdByEmpId(@Param("empId") String empId);
     List<Map<String, Object>> getDeptList(Map<String, Object> params);
-    void insertScheduleHtsv(Map<String, Object> row);
+    void insertScheduleHae(Map<String, Object> row);
     void deleteAttendanceApplyTempByUploader(Map<String, Object> params);
     void insertAttendanceApplyTemp(Map<String, Object> row);
     void callValidateAttendanceApplyTemp(Map<String, Object> params);

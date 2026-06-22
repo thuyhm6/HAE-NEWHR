@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.EssFileMapper">
+
+    <resultMap id="EssFileResultMap" type="com.ait.ess.empinfo.dto.EssFileDto">
+        <id  property="fileNo"    column="FILE_NO" />
+        <result property="applyNo"   column="APPLY_NO" />
+        <result property="applyType" column="APPLY_TYPE" />
+        <result property="fileUrl"   column="FILE_URL" />
+        <result property="fileName"  column="FILE_NAME" />
+    </resultMap>
+
+    <insert id="insertEssFile" parameterType="com.ait.ess.empinfo.dto.EssFileDto">
+        INSERT INTO ESS_FILE (
+            FILE_NO,
+            APPLY_NO,
+            APPLY_TYPE,
+            FILE_URL,
+            FILE_NAME,
+            CREATE_DATE,
+            CREATED_BY,
+            UPDATE_DATE,
+            UPDATED_BY,
+            ACTIVITY,
+            CPNY_ID
+        ) VALUES (
+            ESS_FILE_SEQ.NEXTVAL,
+            #{applyNo, jdbcType=VARCHAR},
+            #{applyType, jdbcType=VARCHAR},
+            #{fileUrl, jdbcType=VARCHAR},
+            #{fileName, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            1,
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="selectByFileNo" resultMap="EssFileResultMap">
+        SELECT FILE_NO, APPLY_NO, APPLY_TYPE, FILE_URL, FILE_NAME
+        FROM ESS_FILE
+        WHERE FILE_NO = #{fileNo, jdbcType=VARCHAR}
+          AND ACTIVITY = 1
+    </select>
+
+    <select id="selectFilesByApplyNo" resultMap="EssFileResultMap">
+        SELECT
+            FILE_NO,
+            APPLY_NO,
+            APPLY_TYPE,
+            FILE_URL,
+            FILE_NAME
+        FROM ESS_FILE
+        WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+          AND ACTIVITY = 1
+        ORDER BY CREATE_DATE
+    </select>
+
+</mapper>

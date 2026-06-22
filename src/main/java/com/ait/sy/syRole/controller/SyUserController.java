@@ -3,7 +3,7 @@ package com.ait.sy.syRole.controller;
 import com.ait.sy.syRole.dto.SyUserDto;
 import com.ait.sy.syRole.service.SyUserService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -139,6 +139,6 @@ public class SyUserController {
         }
 
         String userType = user.getSyUser().getUserType();
-        return "ADMIN".equalsIgnoreCase(userType) || "SYS".equalsIgnoreCase(userType);
+        return "ADMIN".equalsIgnoreCase(userType) || "SYS".equalsIgnoreCase(userType) || "HRM".equalsIgnoreCase(userType);
     }
 }

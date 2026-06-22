@@ -36,7 +36,7 @@
                AR_STA_ITEM,
                AR_STA_ITEM_PARAM,
                SY_GLOBAL_NAME
-         WHERE TABLE_NAME                    = 'AR_SUMMARY_HTSV'
+         WHERE TABLE_NAME                    = 'AR_SUMMARY_HAE'
            AND DATA_TYPE                     = 'NUMBER'
            AND COLUMN_NAME                   = STA_ITEM_ID
            AND AR_STA_ITEM.ITEM_NO           = AR_STA_ITEM_PARAM.ITEM_NO
@@ -152,12 +152,12 @@
          GROUP BY ITEM_ID
     </select>
 
-    <!-- ── Lấy dữ liệu PA_SUMMARY_HTSV theo kế hoạch và phòng ban ───────────── -->
-    <select id="selectSummaryHtsvData" resultType="java.util.Map">
+    <!-- ── Lấy dữ liệu PA_SUMMARY_HAE theo kế hoạch và phòng ban ───────────── -->
+    <select id="selectSummaryHaeData" resultType="java.util.Map">
         SELECT S.*,
                E.LOCAL_NAME      AS LOCAL_NAME_EMP,
                HD.ORG_NAME_LOCAL AS DEPT_NAME_VAL
-          FROM PA_SUMMARY_HTSV S
+          FROM PA_SUMMARY_HAE S
           LEFT JOIN HR_EMPLOYEE   E  ON S.EMPID   = E.EMPID
                                     AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO  = HD.DEPTNO

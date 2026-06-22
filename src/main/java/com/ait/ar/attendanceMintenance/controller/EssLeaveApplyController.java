@@ -5,12 +5,15 @@ import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyImportTempDto;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import com.ait.util.MailSendApprovalManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +29,9 @@ public class EssLeaveApplyController {
 
     @Autowired
     private SyAffirmEmailService affirmorService;
+
+    @Autowired
+    private MailSendApprovalManager mailSendApprovalManager;
 
     @GetMapping("/viewApplyAttenanceManagentInfoList_new")
     public String view() {
@@ -89,12 +95,21 @@ public class EssLeaveApplyController {
 
     @PostMapping("/api/leaveApply/save")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> save(@RequestBody Map<String, Object> params) {
+    public ResponseEntity<Map<String, Object>> save(@RequestBody Map<String, Object> params,
+                                                    HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
             service.saveLeaveApply(params);
             response.put("success", true);
             response.put("message", "Lưu thành công");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            String savedApplyNo = params.get("applyNo") != null ? params.get("applyNo").toString() : "";
+            try {
+                mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+            }
         } catch (Exception e) {
             log.error("Failed to save leave application payloadKeys={}",
                     params != null ? params.keySet() : null, e);

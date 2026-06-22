@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 
 /**
  * DemoController - Controller để demo hệ thống tab nội bộ

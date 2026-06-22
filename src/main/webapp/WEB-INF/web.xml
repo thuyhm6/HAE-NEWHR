@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
-         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-         version="6.0">
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
 
     <display-name>HR-11 Application</display-name>
     <description>Human Resources Management System</description>
 
     <!--
-        Spring Boot 3.x WAR deploy on Tomcat 10.x / JEUS 8.5+:
-        - Namespace Jakarta EE 10 (Servlet 6.0) - khong dung javax namespace cu
+        Spring Boot 2.7.x WAR deploy on JEUS 7.0:
+        - Namespace JavaEE 7 (Servlet 3.1) - tuong thich voi JEUS 7.0
         - SpringBootServletInitializer (Hr11Application.java) tu dang ky DispatcherServlet
         - Khong can ContextLoaderListener, DispatcherServlet o day
         - application.properties + @Configuration classes xu ly toan bo cau hinh

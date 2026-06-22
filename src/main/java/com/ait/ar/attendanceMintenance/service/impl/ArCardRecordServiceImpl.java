@@ -209,7 +209,7 @@ public class ArCardRecordServiceImpl implements ArCardRecordService {
                             continue;
                         }
 
-                        // Lưu vào AR_MAC_RECORDS_HTSV với INSERT_BY='M'
+                        // Lưu vào AR_MAC_RECORDS_HAE với INSERT_BY='M'
                         ArCardRecordDto insertDto = new ArCardRecordDto();
                         insertDto.setCardNo(empId.trim());
                         insertDto.setPersonId(personId);

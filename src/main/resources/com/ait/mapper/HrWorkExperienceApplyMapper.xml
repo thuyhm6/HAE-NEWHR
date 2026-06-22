@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.HrWorkExperienceApplyMapper">
+
+    <resultMap id="HrWorkExperienceApplyResultMap" type="com.ait.ess.empinfo.dto.HrWorkExperienceApplyDto">
+        <result property="workExperNo"          column="WORK_EXPER_NO"/>
+        <result property="personId"             column="PERSON_ID"/>
+        <result property="cpnyName"             column="CPNY_NAME"/>
+        <result property="deptName"             column="DEPT_NAME"/>
+        <result property="position"             column="POSITION"/>
+        <result property="duty"                 column="DUTY"/>
+        <result property="payroll"              column="PAYROLL"/>
+        <result property="resignReason"         column="RESIGN_REASON"/>
+        <result property="witness"              column="WITNESS"/>
+        <result property="tel"                  column="TEL"/>
+        <result property="ageLimit"             column="AGE_LIMIT"/>
+        <result property="workAddress"          column="WORK_ADDRESS"/>
+        <result property="seniorityResponse"    column="SENIORITY_RESPONSE"/>
+        <result property="activity"             column="ACTIVITY"/>
+        <result property="nationality"          column="NATIONALITY"/>
+        <result property="enPositionName"       column="EN_POSITION_NAME"/>
+        <result property="oldId"                column="OLD_ID"/>
+        <result property="payYear"              column="PAY_YEAR"/>
+        <result property="applyType"            column="APPLY_TYPE"/>
+        <result property="updateWorkExperNo"    column="UPDATE_WORK_EXPER_NO"/>
+        <result property="essTypeCode"          column="ESS_TYPE_CODE"/>
+        <result property="remark"               column="REMARK"/>
+        <result property="overseas"             column="OVERSEAS"/>
+        <result property="callback"             column="CALLBACK"/>
+        <result property="earror"               column="EARROR"/>
+        <result property="endMonth"             column="END_MONTH"/>
+        <result property="startMonth"           column="START_MONTH"/>
+        <result property="startDate"            column="START_DATE"/>
+        <result property="endDate"              column="END_DATE"/>
+        <result property="orderno"              column="ORDERNO"/>
+    </resultMap>
+
+    <select id="selectWorkExperNextval" resultType="java.lang.Long">
+        SELECT HR_WORK_EXPERIENCE_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertWorkExperienceApply" parameterType="com.ait.ess.empinfo.dto.HrWorkExperienceApplyDto">
+        INSERT INTO HR_WORK_EXPERIENCE_APPLY (
+            WORK_EXPER_NO,
+            PERSON_ID,
+            CPNY_NAME,
+            DEPT_NAME,
+            POSITION,
+            DUTY,
+            PAYROLL,
+            RESIGN_REASON,
+            WITNESS,
+            TEL,
+            AGE_LIMIT,
+            WORK_ADDRESS,
+            SENIORITY_RESPONSE,
+            ACTIVITY,
+            NATIONALITY,
+            EN_POSITION_NAME,
+            OLD_ID,
+            PAY_YEAR,
+            APPLY_TYPE,
+            UPDATE_WORK_EXPER_NO,
+            ESS_TYPE_CODE,
+            REMARK,
+            OVERSEAS,
+            CALLBACK,
+            EARROR,
+            END_MONTH,
+            START_MONTH,
+            START_DATE,
+            END_DATE,
+            ORDERNO,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATED_BY,
+            UPDATED_IP
+            
+        ) VALUES (
+            #{workExperNo,          jdbcType=NUMERIC},
+            #{personId,             jdbcType=VARCHAR},
+            #{cpnyName,             jdbcType=VARCHAR},
+            #{deptName,             jdbcType=VARCHAR},
+            #{position,             jdbcType=VARCHAR},
+            #{duty,                 jdbcType=VARCHAR},
+            #{payroll,              jdbcType=NUMERIC},
+            #{resignReason,         jdbcType=VARCHAR},
+            #{witness,              jdbcType=VARCHAR},
+            #{tel,                  jdbcType=VARCHAR},
+            #{ageLimit,             jdbcType=NUMERIC},
+            #{workAddress,          jdbcType=VARCHAR},
+            #{seniorityResponse,    jdbcType=VARCHAR},
+            #{activity,             jdbcType=NUMERIC},
+            #{nationality,          jdbcType=VARCHAR},
+            #{enPositionName,       jdbcType=VARCHAR},
+            #{oldId,                jdbcType=VARCHAR},
+            #{payYear,              jdbcType=VARCHAR},
+            #{applyType,            jdbcType=NUMERIC},
+            #{updateWorkExperNo,    jdbcType=NUMERIC},
+            #{essTypeCode,          jdbcType=VARCHAR},
+            #{remark,               jdbcType=VARCHAR},
+            #{overseas,             jdbcType=VARCHAR},
+            #{callback,             jdbcType=VARCHAR},
+            #{earror,               jdbcType=VARCHAR},
+            #{endMonth,             jdbcType=VARCHAR},
+            #{startMonth,           jdbcType=VARCHAR},
+            #{startDate,            jdbcType=VARCHAR},
+            #{endDate,              jdbcType=VARCHAR},
+            #{orderno,              jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID,              jdbcType=VARCHAR},
+            #{adminIP,              jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,              jdbcType=VARCHAR},
+            #{adminIP,              jdbcType=VARCHAR}
+            
+        )
+    </insert>
+
+    <!-- Tìm kiếm theo WORK_EXPER_NO (dùng để load lại sau khi lưu, liên kết ESS_FILE qua APPLY_NO) -->
+    <select id="selectByWorkExperNo" resultMap="HrWorkExperienceApplyResultMap">
+        SELECT
+            WORK_EXPER_NO, PERSON_ID, CPNY_NAME, DEPT_NAME, POSITION, DUTY,
+            PAYROLL, RESIGN_REASON, WITNESS, TEL, AGE_LIMIT, WORK_ADDRESS,
+            SENIORITY_RESPONSE, ACTIVITY, NATIONALITY, EN_POSITION_NAME, OLD_ID,
+            PAY_YEAR, APPLY_TYPE, UPDATE_WORK_EXPER_NO, ESS_TYPE_CODE, REMARK,
+            OVERSEAS, CALLBACK, EARROR, END_MONTH, START_MONTH,
+            START_DATE, END_DATE,
+            ORDERNO
+        FROM HR_WORK_EXPERIENCE_APPLY
+        WHERE WORK_EXPER_NO = #{workExperNo, jdbcType=NUMERIC}
+    </select>
+
+</mapper>

@@ -1,6 +1,10 @@
 package com.ait.ar.attendanceMintenance.controller;
 
 import com.ait.ar.attendanceMintenance.dto.ArAttendanceSearchDto;
+import hanwha.neo.branch.ss.att.service.NeoHrWsProxy;
+import hanwha.neo.branch.ss.att.vo.ArraysHrOffVo;
+import hanwha.neo.branch.ss.att.vo.HrOffListVo;
+import hanwha.neo.branch.ss.att.vo.SyncHrOffDataRequest;
 import com.ait.ar.attendanceMintenance.dto.ArCardRecordDayDto;
 import com.ait.ar.attendanceMintenance.dto.ArCardRecordDto;
 import com.ait.ar.attendanceMintenance.dto.ArCardRecordForSelfDto;
@@ -13,8 +17,8 @@ import com.ait.ar.attendanceMintenance.service.ArCardRecordService;
 import com.ait.ar.attendanceMintenance.service.ArMacRecordEatService;
 import com.ait.ar.attendanceMintenance.service.ArMacRecordTempService;
 import com.ait.sy.sys.dto.DataTablesResponse;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -426,6 +430,49 @@ public class ArAttendanceSearchController {
         dto.setStart(start);
         dto.setLength(length);
         return ResponseEntity.ok(arMacRecordEatService.getPageList(dto));
+    }
+
+    @PostMapping("/api/syncCleverse/test")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> testSyncCleverse(@RequestBody Map<String, String> body) {
+        Map<String, Object> result = new java.util.HashMap<>();
+        final String DEV_ENDPOINT = "https://epdev.cleverse.kr/soap/org/neoHrWs";
+        try {
+            HrOffListVo item = new HrOffListVo();
+            item.setEnterCd(body.getOrDefault("enterCd", ""));
+            item.setSabun(body.getOrDefault("sabun", ""));
+            item.setGntCd(body.getOrDefault("gntCd", ""));
+            item.setSYmd(body.getOrDefault("sYmd", ""));
+            item.setEYmd(body.getOrDefault("eYmd", ""));
+            item.setOrgCd(body.getOrDefault("orgCd", ""));
+            item.setInstanceId(body.getOrDefault("instanceId", ""));
+            item.setCancelYn(body.getOrDefault("cancelYn", "N"));
+            item.setIfDate(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date()));
+            item.setIfId(body.getOrDefault("ifId", "HHR"));
+            item.setStatus(body.getOrDefault("status", "0"));
+            item.setReason(body.getOrDefault("reason", ""));
+
+            ArraysHrOffVo arrays = new ArraysHrOffVo();
+            arrays.setHrOffList(new HrOffListVo[]{item});
+
+            SyncHrOffDataRequest request = new SyncHrOffDataRequest();
+            request.setArraysHrOffVo(arrays);
+
+            NeoHrWsProxy proxy = new NeoHrWsProxy();
+            proxy.setEndpoint(DEV_ENDPOINT);
+
+            log.info("[syncCleverse/test] Sending to DEV endpoint: {}, sabun={}, gntCd={}", DEV_ENDPOINT, item.getSabun(), item.getGntCd());
+            String wsResult = proxy.syncHrOffData(request);
+            log.info("[syncCleverse/test] Response: {}", wsResult);
+
+            result.put("success", true);
+            result.put("result", wsResult);
+        } catch (Exception e) {
+            log.error("[syncCleverse/test] Error calling Cleverse DEV", e);
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/api/macRecordEat/exportExcel")

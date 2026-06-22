@@ -177,14 +177,14 @@ public class ArMacRecordTempServiceImpl implements ArMacRecordTempService {
                 // Kết hợp ngày + giờ để kiểm tra trùng: "YYYY/MM/DD HH:MM"
                 String combinedDatetime = rDate.trim() + " " + rTime.trim();
 
-                int dupCount = mapper.countDuplicateInHtsv(empId.trim(), combinedDatetime, doorType);
+                int dupCount = mapper.countDuplicateInHae(empId.trim(), combinedDatetime, doorType);
                 if (dupCount > 0) {
                     log.debug("[confirm] Bỏ qua trùng: empId={}, datetime={}, doorType={}", empId, combinedDatetime, doorType);
                     skippedDup++;
                     continue;
                 }
 
-                // Chuẩn bị DTO để insert vào HTSV
+                // Chuẩn bị DTO để insert vào HAE
                 ArMacRecordTempDto insertDto = new ArMacRecordTempDto();
                 insertDto.setCardNo(empId.trim());
                 insertDto.setEmpId(personId);  // Dùng empId field để truyền PERSON_ID vào mapper
@@ -193,7 +193,7 @@ public class ArMacRecordTempServiceImpl implements ArMacRecordTempService {
                 insertDto.setArDateStr(temp.getArDateStr() != null ? temp.getArDateStr() : rDate.trim());
                 insertDto.setRDate(rDate.trim());
                 insertDto.setRTime(rTime.trim());
-                mapper.insertIntoHtsv(insertDto);
+                mapper.insertIntoHae(insertDto);
                 inserted++;
             }
 

@@ -110,17 +110,17 @@
            AND ROWNUM = 1
     </select>
 
-    <select id="countDuplicateInHtsv" resultType="int">
+    <select id="countDuplicateInHae" resultType="int">
         SELECT COUNT(*)
-          FROM AR_MAC_RECORDS_HTSV
+          FROM AR_MAC_RECORDS_HAE
          WHERE CARD_NO   = #{cardNo,           jdbcType=VARCHAR}
            AND R_TIME    = TO_DATE(#{combinedDatetime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
            AND DOOR_TYPE = #{doorType,         jdbcType=VARCHAR}
            AND ACTIVITY  = 1
     </select>
 
-    <insert id="insertIntoHtsv" parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordTempDto">
-        INSERT INTO AR_MAC_RECORDS_HTSV (
+    <insert id="insertIntoHae" parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordTempDto">
+        INSERT INTO AR_MAC_RECORDS_HAE (
             RECORD_NO,
             CARD_NO,
             PERSON_ID,

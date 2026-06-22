@@ -459,7 +459,7 @@
     <select id="countExpiringContracts" resultType="int">
         SELECT COUNT(*)
         FROM HR_CONTRACT hc
-        WHERE hc.ACTIVITY = 'ACTIVE'
+        WHERE hc.ACTIVITY = '1'
         AND TRUNC(hc.END_CONTRACT_DATE) BETWEEN TRUNC(SYSDATE) AND TRUNC(SYSDATE) + #{days}
     </select>
 

@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PaPayStubDto {
 
-    // PA_SUMMARY_HTSV fields
+    // PA_SUMMARY_HAE fields
     private String payScheduleNo;
     private String payDate;
     private String hrStartDate;

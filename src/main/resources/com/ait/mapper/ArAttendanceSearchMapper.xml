@@ -69,7 +69,7 @@
             D.UPDATED_BY,
             TO_CHAR(D.ACTIVITY) AS ACTIVITY,
             TO_CHAR(D.ORDERNO) AS ORDERNO
-        FROM AR_DETAIL_HTSV D
+        FROM AR_DETAIL_HAE D
         INNER JOIN HR_EMPLOYEE HE
             ON D.PERSON_ID = HE.PERSON_ID
         WHERE 1 = 1
@@ -150,7 +150,7 @@
             D.UPDATED_BY,
             TO_CHAR(D.ACTIVITY) AS ACTIVITY,
             TO_CHAR(D.ORDERNO) AS ORDERNO
-        FROM AR_DETAIL_HTSV D
+        FROM AR_DETAIL_HAE D
         INNER JOIN HR_EMPLOYEE HE
             ON D.PERSON_ID = HE.PERSON_ID
         WHERE 1 = 1
@@ -198,7 +198,7 @@
     </select>
 
     <delete id="deleteArDetail">
-        DELETE FROM AR_DETAIL_HTSV WHERE PK_NO = #{pkNo, jdbcType=VARCHAR}
+        DELETE FROM AR_DETAIL_HAE WHERE PK_NO = #{pkNo, jdbcType=VARCHAR}
     </delete>
 
 </mapper>

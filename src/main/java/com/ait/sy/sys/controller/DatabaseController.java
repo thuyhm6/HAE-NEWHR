@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.ait.sy.sys.service.DatabaseMonitoringService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

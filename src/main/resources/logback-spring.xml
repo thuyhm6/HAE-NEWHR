@@ -2,7 +2,7 @@
 <configuration>
 
     <!-- Custom converter: chỉ hiển thị frame com.ait.* và root cause -->
-    <conversionRule conversionWord="cex" class="com.ait.config.CompactExceptionConverter"/>
+    <conversionRule conversionWord="cex" converterClass="com.ait.config.CompactExceptionConverter"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

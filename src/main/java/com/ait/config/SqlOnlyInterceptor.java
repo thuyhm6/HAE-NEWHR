@@ -139,7 +139,8 @@ public class SqlOnlyInterceptor implements Interceptor {
 
     private BoundSql resolveBoundSql(Invocation invocation, MappedStatement mappedStatement, Object parameterObject) {
         Object[] args = invocation.getArgs();
-        if (args.length >= 6 && args[5] instanceof BoundSql existingBoundSql) {
+        if (args.length >= 6 && args[5] instanceof BoundSql) {
+            BoundSql existingBoundSql = (BoundSql) args[5];
             return existingBoundSql;
         }
         return mappedStatement.getBoundSql(parameterObject);
@@ -202,8 +203,11 @@ public class SqlOnlyInterceptor implements Interceptor {
             return parameterObject;
         }
 
-        if (parameterObject instanceof Map<?, ?> mapParameter && mapParameter.containsKey(propertyName)) {
-            return mapParameter.get(propertyName);
+        if (parameterObject instanceof Map) {
+            Map<?, ?> mapParameter = (Map<?, ?>) parameterObject;
+            if (mapParameter.containsKey(propertyName)) {
+                return mapParameter.get(propertyName);
+            }
         }
 
         MetaObject metaObject = configuration.newMetaObject(parameterObject);
@@ -278,7 +282,8 @@ public class SqlOnlyInterceptor implements Interceptor {
             return "[]";
         }
 
-        if (parameterObject instanceof Map<?, ?> mapParameter) {
+        if (parameterObject instanceof Map) {
+            Map<?, ?> mapParameter = (Map<?, ?>) parameterObject;
             StringBuilder builder = new StringBuilder("[");
             int index = 0;
             for (Map.Entry<?, ?> entry : mapParameter.entrySet()) {
@@ -397,7 +402,17 @@ public class SqlOnlyInterceptor implements Interceptor {
         return className;
     }
 
-    private record SqlParameter(String propertyName, String renderedValue) {
+    private static class SqlParameter {
+        private final String propertyName;
+        private final String renderedValue;
+
+        SqlParameter(String propertyName, String renderedValue) {
+            this.propertyName = propertyName;
+            this.renderedValue = renderedValue;
+        }
+
+        String propertyName() { return propertyName; }
+        String renderedValue() { return renderedValue; }
     }
 
     @Override

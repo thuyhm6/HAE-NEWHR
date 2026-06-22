@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.5</version>
+        <version>2.7.18</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.ait</groupId>
@@ -28,14 +28,14 @@
         <url/>
     </scm>
     <properties>
-        <java.version>21</java.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>11</java.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         
         <!-- JEUS exploded WAR properties -->
-        <jeus.deploy.dir>C:\tmaxsoft\jeus8\resource</jeus.deploy.dir>
+        <jeus.deploy.dir>C:\tmaxsoft\jeus7\resource</jeus.deploy.dir>
         <jeus.app.name>HR-11</jeus.app.name>
     </properties>
     <dependencies>
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>3.0.5</version>
+            <version>2.3.1</version>
         </dependency>
 
         <dependency>
@@ -65,7 +65,8 @@
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
+            <artifactId>ojdbc8</artifactId>
+            <version>21.9.0.0</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -78,6 +79,13 @@
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- javax.servlet-api cho JEUS 7.0 (Servlet 3.1) - provided vì JEUS cung cấp lúc runtime -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -86,7 +94,7 @@
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter-test</artifactId>
-            <version>3.0.5</version>
+            <version>2.3.1</version>
             <scope>test</scope>
         </dependency>
         
@@ -161,6 +169,35 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>12.4.2.jre11</version>
         </dependency>
+
+        <!-- javax.activation (JAF) - bị loại khỏi JDK từ Java 9+, cần thiết cho Apache Axis -->
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <!-- Apache Axis 1.4 - Web Service client (WSDL auto-generated code) -->
+        <dependency>
+            <groupId>axis</groupId>
+            <artifactId>axis</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>axis</groupId>
+            <artifactId>axis-jaxrpc</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-discovery</groupId>
+            <artifactId>commons-discovery</artifactId>
+            <version>0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <version>1.6.3</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -173,9 +210,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                    <release>21</release>
+                    <source>11</source>
+                    <target>11</target>
                     <!-- Cáº¥u hÃ¬nh output directory cho compiled classes -->
                     <outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
                     <annotationProcessorPaths>
@@ -250,29 +286,6 @@
                 </executions>
             </plugin>
             
-            <!-- Maven Antrun Plugin Ä‘á»ƒ táº¡o thÆ° má»¥c classes -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>create-webapp-classes-dir</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <mkdir dir="src/main/webapp/WEB-INF/classes"/>
-                                <mkdir dir="src/main/webapp/WEB-INF/lib"/>
-                                <echo message="Created webapp/WEB-INF/classes and lib directories"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            
             <!-- WAR Plugin for JEUS: build exploded directory + WAR file -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -306,18 +319,28 @@
                 </executions>
             </plugin>
             
-            <!-- Copy Exploded WAR to JEUS -->
+            <!-- Antrun: tao thu muc WEB-INF/classes,lib va copy exploded WAR vao JEUS -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
                     <execution>
+                        <id>create-webapp-classes-dir</id>
+                        <phase>initialize</phase>
+                        <goals><goal>run</goal></goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="src/main/webapp/WEB-INF/classes"/>
+                                <mkdir dir="src/main/webapp/WEB-INF/lib"/>
+                                <echo message="Created webapp/WEB-INF/classes and lib directories"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-to-jeus</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
+                        <goals><goal>run</goal></goals>
                         <configuration>
                             <target>
                                 <copy todir="${jeus.deploy.dir}/${jeus.app.name}" overwrite="true">

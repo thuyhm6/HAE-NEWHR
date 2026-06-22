@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Đăng nhập - HR System</title>
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+    <link href="/assets/plugins/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(255,200,120,0.55) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 75%, rgba(140,40,0,0.45) 0%, transparent 55%),
+                radial-gradient(ellipse at 55% 50%, #f4731f 0%, #d05800 100%);
+        }
+
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* ===== LEFT PANEL (8 phần) ===== */
+        .login-left {
+            flex: 0 0 66.6667%;
+            max-width: 66.6667%;
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        /* Hiệu ứng vòng tròn nền */
+        .login-left::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+            top: -100px;
+            left: -150px;
+            border-radius: 50%;
+        }
+
+        .login-left::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            bottom: -80px;
+            right: -80px;
+            border-radius: 50%;
+        }
+
+        .login-brand {
+            position: absolute;
+            top: 2rem;
+            left: 2.5rem;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            z-index: 2;
+        }
+
+        .login-brand i {
+            margin-right: 0.5rem;
+        }
+
+        .login-image-wrap {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-image-wrap img {
+            max-width: 70%;
+            max-height: 65vh;
+            object-fit: contain;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+            animation: floatImg 4s ease-in-out infinite;
+        }
+
+        @keyframes floatImg {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-12px); }
+        }
+
+        .login-tagline {
+            margin-top: 1.8rem;
+            text-align: center;
+            color: rgba(255,255,255,0.92);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .login-tagline small {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-top: 0.4rem;
+            color: rgba(255,255,255,0.75);
+        }
+
+        /* ===== RIGHT PANEL (4 phần) ===== */
+        .login-right {
+            flex: 0 0 33.3333%;
+            max-width: 33.3333%;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+            padding: 2.2rem 2rem;
+            width: 100%;
+        }
+
+        .login-right-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-right-header .icon-wrap {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #f4731f, #ff9a4d);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 20px rgba(244,115,31,0.35);
+        }
+
+        .login-right-header .icon-wrap i {
+            color: white;
+            font-size: 1.6rem;
+        }
+
+        .login-right-header h4 {
+            font-weight: 700;
+            color: #2d2d2d;
+            margin-bottom: 0.25rem;
+        }
+
+        .login-right-header p {
+            color: #888;
+            font-size: 0.875rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        .form-floating .form-control:focus {
+            border-color: #f4731f;
+            box-shadow: 0 0 0 0.2rem rgba(244,115,31,0.2);
+        }
+
+        .form-floating label {
+            color: #aaa;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #f4731f 0%, #ff9a4d 100%);
+            border: none;
+            padding: 0.8rem;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(244,115,31,0.45);
+            background: linear-gradient(135deg, #e05e0a 0%, #f4731f 100%);
+            color: #fff;
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.78rem;
+            color: #bbb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-left  { display: none; }
+            .login-right {
+                flex: 0 0 100%;
+                max-width: 100%;
+                min-height: 100vh;
+                padding: 2rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-wrapper">
+
+        <!-- LEFT: ảnh minh họa (8/12) -->
+        <div class="login-left">
+            <div class="login-brand">
+                <img src="/assets/images/HVV_logo_login.jpg" alt="VHR System" th:alt="#{login.title}">
+            </div>
+            <div class="login-image-wrap">
+                <img src="/assets/images/login-img-1.jpg" alt="VHR System" th:alt="#{login.title}">
+                <div class="login-tagline">
+                    <span th:text="#{login.title}">Đăng nhập vào hệ thống</span>
+                    <small th:text="#{login.copyright}">© 2026 VVHR System. Tất cả quyền được bảo lưu.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: form đăng nhập (4/12) -->
+        <div class="login-right">
+          <div class="login-card">
+            <div class="login-right-header">
+                <div class="icon-wrap">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <h4 th:text="#{login.button}">Đăng nhập</h4>
+                <p th:text="#{login.title}">Đăng nhập vào hệ thống</p>
+            </div>
+
+            <!-- Language Selector -->
+            <div class="text-end mb-3">
+                <div th:replace="~{fragments/multilingual :: languageSelectorCompact}"></div>
+            </div>
+
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Login Form -->
+            <form th:action="@{/login}" method="post">
+                <input type="hidden" name="csrfToken" th:value="${csrfToken}">
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="lang" id="loginLangInput" value="vi">
+
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="username" name="username"
+                        th:placeholder="#{login.username}" th:value="${username}" required>
+                    <label for="username">
+                        <i class="fas fa-user me-2"></i><span th:text="#{login.username}">Tên đăng nhập</span>
+                    </label>
+                </div>
+
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password" name="password"
+                        th:placeholder="#{login.password}" required>
+                    <label for="password">
+                        <i class="fas fa-lock me-2"></i><span th:text="#{login.password}">Mật khẩu</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-login w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i><span th:text="#{login.button}">Đăng nhập</span>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <span th:text="#{login.copyright}">© 2026 VHR System. Tất cả quyền được bảo lưu.</span>
+            </div>
+          </div><!-- /.login-card -->
+        </div><!-- /.login-right -->
+
+    </div>
+
+    <script src="/assets/plugin/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/jquery-3.6.0.min.js"></script>
+    <script src="/assets/js/app.js"></script>
+
+    <script th:inline="javascript">
+        var I18N_LOGIN = {
+            validateUsername: /*[[#{login.validate.username}]]*/ 'Vui lòng nhập tên đăng nhập!',
+            validatePassword: /*[[#{login.validate.password}]]*/ 'Vui lòng nhập mật khẩu!'
+        };
+
+        // Sync hidden lang input với languageSelect
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'languageSelect') {
+                var inp = document.getElementById('loginLangInput');
+                if (inp) inp.value = e.target.value;
+            }
+        });
+
+        $(document).ready(function () {
+            $('#username').focus();
+
+            $('form').on('submit', function (e) {
+                const username = $('#username').val().trim();
+                const password = $('#password').val().trim();
+
+                if (!username) {
+                    e.preventDefault();
+                    $('#username').focus();
+                    showAlert(I18N_LOGIN.validateUsername, 'danger');
+                    return false;
+                }
+                if (!password) {
+                    e.preventDefault();
+                    $('#password').focus();
+                    showAlert(I18N_LOGIN.validatePassword, 'danger');
+                    return false;
+                }
+            });
+
+            function showAlert(message, type) {
+                const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'} me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                $('.login-right form').before(alertHtml);
+                setTimeout(() => { $('.alert').fadeOut(); }, 5000);
+            }
+        });
+    </script>
+</body>
+
+</html>

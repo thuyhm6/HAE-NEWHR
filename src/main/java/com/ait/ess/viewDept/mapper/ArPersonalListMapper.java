@@ -21,6 +21,6 @@ public interface ArPersonalListMapper {
      */
     List<Map<String, Object>> selectSummaryList(ArPersonalListDto params);
 
-    /** Chi tiết từng bản ghi chấm công của 1 nhân viên + 1 loại trong AR_DETAIL_HTSV. */
+    /** Chi tiết từng bản ghi chấm công của 1 nhân viên + 1 loại trong AR_DETAIL_HAE. */
     List<ArPersonalListDetailDto> selectDetailList(ArPersonalListDetailDto params);
 }

@@ -4,7 +4,7 @@ import com.ait.validation.ValidUsername;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 /**

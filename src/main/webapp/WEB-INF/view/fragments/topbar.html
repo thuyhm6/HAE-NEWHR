@@ -60,12 +60,12 @@
                     <div class="d-flex align-items-center gap-1 topbar-actions">
 
                          <!-- Theme Color (Light/Dark) -->
-                         <div class="topbar-item">
+                         <!-- <div class="topbar-item">
                               <button type="button" class="topbar-button" id="light-dark-mode">
                                    <iconify-icon icon="solar:moon-bold-duotone"
                                         class="fs-24 align-middle"></iconify-icon>
                               </button>
-                         </div>
+                         </div> -->
 
                          <!-- Notification -->
                          <div class="dropdown topbar-item">
@@ -90,8 +90,19 @@
                                         </div>
                                    </div>
                                    <div data-simplebar style="max-height: 280px;">
-                                        <!-- HRM mode: Nghỉ phép + Nghỉ bất thường chờ xác nhận -->
+                                        <!-- HRM mode: Chi tiết thay đổi + Nghỉ phép + Nghỉ bất thường chờ xác nhận -->
                                         <th:block th:if="${sysMode == 'hrm'}">
+
+                                             <a href="/hrm/approve/viewEssApplyInfo"
+                                                  data-tab="/hrm/approve/viewEssApplyInfo"
+                                                  th:attr="data-title=#{topbar.notification.personalChange}"
+                                                  class="dropdown-item py-3 border-bottom d-flex align-items-center justify-content-between">
+                                                  <div class="d-flex align-items-center gap-2">
+                                                       <iconify-icon icon="solar:user-id-bold-duotone" class="fs-22 text-success"></iconify-icon>
+                                                       <span th:text="#{topbar.notification.personalChange}">Chi tiết thay đổi thông tin</span>
+                                                  </div>
+                                                  <span id="topbar-notif-hrm-personalChange" class="badge bg-danger rounded-pill">0</span>
+                                             </a>
                                              <a href="/ess/arConfirm/viewLeaveConfirmList"
                                                   data-tab="/ess/arConfirm/viewLeaveConfirmList"
                                                   th:attr="data-title=#{topbar.notification.leave}"
@@ -184,14 +195,14 @@
                          </div>
 
                          <!-- Activity -->
-                         <div class="topbar-item d-none d-md-flex">
+                         <!-- <div class="topbar-item d-none d-md-flex">
                               <button type="button" class="topbar-button" id="theme-activity-btn"
                                    data-bs-toggle="offcanvas" data-bs-target="#theme-activity-offcanvas"
                                    aria-controls="theme-settings-offcanvas">
                                    <iconify-icon icon="solar:clock-circle-bold-duotone"
                                         class="fs-24 align-middle"></iconify-icon>
                               </button>
-                         </div>
+                         </div> -->
 
                          <!-- User -->
                          <div class="dropdown topbar-item">
@@ -213,7 +224,7 @@
                                         <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle">HR Management System</span>
                                    </a>
-                                   <a class="dropdown-item" href="pages-profile.html">
+                                   <!-- <a class="dropdown-item" href="pages-profile.html">
                                         <i class="bx bx-user-circle text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle" th:text="#{topbar.profile}">Hồ sơ cá nhân</span>
                                    </a>
@@ -224,19 +235,19 @@
                                    <a class="dropdown-item" href="pages-pricing.html">
                                         <i class="bx bx-wallet text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle" th:text="#{topbar.pricing}">Bảng giá</span>
-                                   </a>
-                                   <a class="dropdown-item" th:href="@{/change-password}">
+                                   </a> -->
+                                   <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#topbarCpwdModal">
                                         <i class="fas fa-key text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle" th:text="#{topbar.changePassword}">Cập nhật mật khẩu</span>
                                    </a>
-                                   <a class="dropdown-item" href="pages-faqs.html">
+                                   <!-- <a class="dropdown-item" href="pages-faqs.html">
                                         <i class="bx bx-help-circle text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle" th:text="#{topbar.help}">Trợ giúp</span>
                                    </a>
                                    <a class="dropdown-item" href="javascript:void(0);" onclick="topbarLockScreen()">
                                         <i class="bx bx-lock text-muted fs-18 align-middle me-1"></i>
                                         <span class="align-middle" th:text="#{topbar.lockScreen}">Khóa màn hình</span>
-                                   </a>
+                                   </a> -->
                                    <div class="dropdown-divider my-1"></div>
                                    <a class="dropdown-item text-danger" th:href="@{/logout}">
                                         <i class="bx bx-log-out fs-18 align-middle me-1"></i>
@@ -248,6 +259,191 @@
                </div>
           </div>
      </header>
+
+     <!-- Modal Cập nhật mật khẩu -->
+     <div class="modal fade" id="topbarCpwdModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+               <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header">
+                         <h5 class="modal-title">
+                              <i class="fas fa-key me-2"></i>
+                              <span th:text="#{topbar.changePassword}">Cập nhật mật khẩu</span>
+                         </h5>
+                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                         <div class="topbar-cpwd-alertBox" style="display:none;"></div>
+                         <div class="mb-3">
+                              <label class="form-label fw-semibold">
+                                   <span th:text="#{pwd.oldPassword}">Mật khẩu cũ</span>
+                                   <span class="text-danger">*</span>
+                              </label>
+                              <div class="input-group">
+                                   <input type="password" class="form-control topbar-cpwd-oldPassword"
+                                        th:placeholder="#{pwd.placeholder.oldPassword}" placeholder="Nhập mật khẩu hiện tại"
+                                        autocomplete="current-password">
+                                   <button class="btn btn-outline-secondary" type="button"
+                                        onclick="topbarCpwdToggle(this, 'topbar-cpwd-oldPassword')">
+                                        <i class="bx bx-hide"></i>
+                                   </button>
+                              </div>
+                         </div>
+                         <div class="mb-3">
+                              <label class="form-label fw-semibold">
+                                   <span th:text="#{pwd.newPassword}">Mật khẩu mới</span>
+                                   <span class="text-danger">*</span>
+                              </label>
+                              <div class="input-group">
+                                   <input type="password" class="form-control topbar-cpwd-newPassword"
+                                        th:placeholder="#{fcp.newPassword.placeholder}" placeholder="Tối thiểu 8 ký tự"
+                                        autocomplete="new-password">
+                                   <button class="btn btn-outline-secondary" type="button"
+                                        onclick="topbarCpwdToggle(this, 'topbar-cpwd-newPassword')">
+                                        <i class="bx bx-hide"></i>
+                                   </button>
+                              </div>
+                              <div class="form-text" th:text="#{fcp.requirements}">Ít nhất 8 ký tự, gồm: chữ hoa, chữ thường, số và ký tự đặc biệt.</div>
+                         </div>
+                         <div class="mb-3">
+                              <label class="form-label fw-semibold">
+                                   <span th:text="#{pwd.confirmPassword}">Xác nhận mật khẩu mới</span>
+                                   <span class="text-danger">*</span>
+                              </label>
+                              <div class="input-group">
+                                   <input type="password" class="form-control topbar-cpwd-confirmPassword"
+                                        th:placeholder="#{pwd.placeholder.confirmPassword}" placeholder="Nhập lại mật khẩu mới"
+                                        autocomplete="new-password">
+                                   <button class="btn btn-outline-secondary" type="button"
+                                        onclick="topbarCpwdToggle(this, 'topbar-cpwd-confirmPassword')">
+                                        <i class="bx bx-hide"></i>
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+                    <div class="modal-footer">
+                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                              <span th:text="#{common.cancel}">Hủy</span>
+                         </button>
+                         <button type="button" class="btn btn-primary" onclick="topbarCpwdSubmit(this)">
+                              <i class="bx bx-save me-1"></i>
+                              <span th:text="#{pwd.update}">Cập nhật mật khẩu</span>
+                         </button>
+                    </div>
+               </div>
+          </div>
+     </div>
+
+     <script th:inline="javascript">
+          /*<![CDATA[*/
+          (function() {
+               var _cpwd_i18n = {
+                    emptyFields  : /*[[#{topbar.cpwd.js.emptyFields}]]*/ 'Vui lòng nhập đầy đủ thông tin (mật khẩu hiện tại, mật khẩu mới và xác nhận).',
+                    minLength    : /*[[#{fcp.js.minLength}]]*/ 'Mật khẩu phải có ít nhất 8 ký tự.',
+                    noUppercase  : /*[[#{fcp.js.noUppercase}]]*/ 'Mật khẩu phải chứa ít nhất 1 chữ hoa (A-Z).',
+                    noLowercase  : /*[[#{fcp.js.noLowercase}]]*/ 'Mật khẩu phải chứa ít nhất 1 chữ thường (a-z).',
+                    noDigit      : /*[[#{fcp.js.noDigit}]]*/ 'Mật khẩu phải chứa ít nhất 1 chữ số (0-9).',
+                    noSpecial    : /*[[#{fcp.js.noSpecial}]]*/ 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (!@#$%...).',
+                    notMatch     : /*[[#{fcp.js.notMatch}]]*/ 'Mật khẩu xác nhận không khớp. Vui lòng nhập lại.',
+                    oldIncorrect : /*[[#{hrm.login.OLD_PASSWORD_INCORRECT}]]*/ 'Mật khẩu cũ không đúng!',
+                    sameAsOld    : /*[[#{hrm.login.MATCH_OLD_PASSWORD}]]*/ 'Không được trùng với mật khẩu cũ!',
+                    processing   : /*[[#{common.processing}]]*/ 'Đang thực hiện...',
+                    submit       : /*[[#{pwd.update}]]*/ 'Cập nhật mật khẩu',
+                    success      : /*[[#{topbar.cpwd.js.success}]]*/ 'Cập nhật mật khẩu thành công!',
+                    error        : /*[[#{fcp.js.error}]]*/ 'Có lỗi xảy ra.',
+                    systemError  : /*[[#{common.systemError}]]*/ 'Lỗi hệ thống.'
+               };
+
+               window.topbarCpwdToggle = function(btn, targetClass) {
+                    var container = btn.closest('.input-group');
+                    var input = container.querySelector('.' + targetClass);
+                    var icon = btn.querySelector('i');
+                    if (input.type === 'password') {
+                         input.type = 'text';
+                         icon.className = 'bx bx-show';
+                    } else {
+                         input.type = 'password';
+                         icon.className = 'bx bx-hide';
+                    }
+               };
+
+               window.topbarCpwdSubmit = function(btn) {
+                    var modal = document.getElementById('topbarCpwdModal');
+                    var oldPwdInput     = modal.querySelector('.topbar-cpwd-oldPassword');
+                    var newPwdInput     = modal.querySelector('.topbar-cpwd-newPassword');
+                    var confirmPwdInput = modal.querySelector('.topbar-cpwd-confirmPassword');
+                    var alertBox        = modal.querySelector('.topbar-cpwd-alertBox');
+
+                    var oldPwd     = oldPwdInput.value.trim();
+                    var newPwd     = newPwdInput.value.trim();
+                    var confirmPwd = confirmPwdInput.value.trim();
+
+                    function showAlert(msg, type) {
+                         alertBox.className = 'alert alert-' + (type || 'danger') + ' topbar-cpwd-alertBox mb-3';
+                         alertBox.textContent = msg;
+                         alertBox.style.display = 'block';
+                    }
+
+                    alertBox.style.display = 'none';
+
+                    if (!oldPwd || !newPwd || !confirmPwd) { showAlert(_cpwd_i18n.emptyFields, 'danger'); return; }
+                    if (newPwd.length < 8)                  { showAlert(_cpwd_i18n.minLength,   'danger'); return; }
+                    if (!/[A-Z]/.test(newPwd))              { showAlert(_cpwd_i18n.noUppercase, 'danger'); return; }
+                    if (!/[a-z]/.test(newPwd))              { showAlert(_cpwd_i18n.noLowercase, 'danger'); return; }
+                    if (!/[0-9]/.test(newPwd))              { showAlert(_cpwd_i18n.noDigit,     'danger'); return; }
+                    if (!/[^A-Za-z0-9]/.test(newPwd))      { showAlert(_cpwd_i18n.noSpecial,   'danger'); return; }
+                    if (newPwd !== confirmPwd)               { showAlert(_cpwd_i18n.notMatch,    'danger'); return; }
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>' + _cpwd_i18n.processing;
+
+                    $.ajax({
+                         url: '/password/api/change-password',
+                         type: 'POST',
+                         data: { oldPassword: oldPwd, newPassword: newPwd, confirmPassword: confirmPwd },
+                         success: function(data) {
+                              if (data.success) {
+                                   showAlert(_cpwd_i18n.success, 'success');
+                                   oldPwdInput.value = '';
+                                   newPwdInput.value = '';
+                                   confirmPwdInput.value = '';
+                                   setTimeout(function() {
+                                        var bsModal = bootstrap.Modal.getInstance(document.getElementById('topbarCpwdModal'));
+                                        if (bsModal) bsModal.hide();
+                                   }, 2000);
+                              } else {
+                                   var msg = data.message || _cpwd_i18n.error;
+                                   if (data.code === 'OLD_PASSWORD_INCORRECT') msg = _cpwd_i18n.oldIncorrect;
+                                   if (data.code === 'SAME_AS_OLD')            msg = _cpwd_i18n.sameAsOld;
+                                   showAlert(msg, 'danger');
+                              }
+                              btn.disabled = false;
+                              btn.innerHTML = '<i class="bx bx-save me-1"></i>' + _cpwd_i18n.submit;
+                         },
+                         error: function(xhr) {
+                              var msg = _cpwd_i18n.systemError;
+                              try { msg = JSON.parse(xhr.responseText).message || msg; } catch(e) {}
+                              showAlert(msg, 'danger');
+                              btn.disabled = false;
+                              btn.innerHTML = '<i class="bx bx-save me-1"></i>' + _cpwd_i18n.submit;
+                         }
+                    });
+               };
+
+               document.addEventListener('DOMContentLoaded', function() {
+                    var modalEl = document.getElementById('topbarCpwdModal');
+                    if (modalEl) {
+                         modalEl.addEventListener('hidden.bs.modal', function() {
+                              modalEl.querySelector('.topbar-cpwd-oldPassword').value = '';
+                              modalEl.querySelector('.topbar-cpwd-newPassword').value = '';
+                              modalEl.querySelector('.topbar-cpwd-confirmPassword').value = '';
+                              var alertBox = modalEl.querySelector('.topbar-cpwd-alertBox');
+                              alertBox.style.display = 'none';
+                         });
+                    }
+               });
+          })();
+          /*]]>*/
+     </script>
 
      <!-- Lock Screen Overlay -->
      <!-- <div id="lockScreenOverlay"
@@ -343,6 +539,7 @@
                          var total = parseInt(data.total, 10) || 0;
                          var leave = parseInt(data.leave, 10) || 0;
                          var anomalous = parseInt(data.anomalous, 10) || 0;
+                         var personalChange = parseInt(data.personalChange, 10) || 0;
 
                          var badge = document.getElementById('topbar-notif-badge');
                          if (badge) {
@@ -354,6 +551,8 @@
                          if (leaveEl) leaveEl.textContent = leave;
                          var anomalousEl = document.getElementById('topbar-notif-hrm-anomalous');
                          if (anomalousEl) anomalousEl.textContent = anomalous;
+                         var personalChangeEl = document.getElementById('topbar-notif-hrm-personalChange');
+                         if (personalChangeEl) personalChangeEl.textContent = personalChange;
                     })
                     .catch(function (err) {
                          console.warn('[topbar] Failed to load HRM pending counts:', err);

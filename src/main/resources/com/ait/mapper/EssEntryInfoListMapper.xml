@@ -82,7 +82,7 @@
                    AR_DATE_STR,
                    MIN(CASE WHEN DOOR_TYPE = 'IN' THEN R_TIME END)                              AS IN_TIME,
                    MAX(CASE WHEN DOOR_TYPE IS NULL OR DOOR_TYPE != 'IN' THEN R_TIME END)        AS OUT_TIME
-              FROM AR_MAC_RECORDS_HTSV
+              FROM AR_MAC_RECORDS_HAE
              WHERE R_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
                AND R_TIME &lt;= TO_DATE(#{toDate,   jdbcType=VARCHAR}, 'YYYY-MM-DD') + 2
              GROUP BY PERSON_ID, AR_DATE_STR
@@ -105,7 +105,7 @@
                    AR_DATE_STR,
                    MIN(CASE WHEN DOOR_TYPE = 'IN' THEN R_TIME END)                              AS IN_TIME,
                    MAX(CASE WHEN DOOR_TYPE IS NULL OR DOOR_TYPE != 'IN' THEN R_TIME END)        AS OUT_TIME
-              FROM AR_MAC_RECORDS_HTSV
+              FROM AR_MAC_RECORDS_HAE
              WHERE R_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
                AND R_TIME &lt;= TO_DATE(#{toDate,   jdbcType=VARCHAR}, 'YYYY-MM-DD') + 2
              GROUP BY PERSON_ID, AR_DATE_STR
@@ -145,7 +145,7 @@
                            AND ROWNUM = 1)                                                     AS LEAVE_CONTENT,
                        (SELECT GET_EMP_LOCAL_NAME(ARS.CREATED_BY, #{cpnyId, jdbcType=VARCHAR}) || ' ' ||
                                TO_CHAR(ARS.CREATE_DATE, 'DD/MM/YYYY HH24:MI')
-                          FROM AR_SCHEDULE_HTSV ARS
+                          FROM AR_SCHEDULE_HAE ARS
                          WHERE ARS.PERSON_ID  = D.PERSON_ID
                            AND ARS.AR_DATE_STR = D.AR_DATE_STR)                               AS CHANGE_SHIFT_PERSON,
                        TO_CHAR(TO_DATE(D.AR_DATE_STR, 'YYYY/MM/DD'), 'DD/MM/YYYY')           AS AR_DATE_STR,

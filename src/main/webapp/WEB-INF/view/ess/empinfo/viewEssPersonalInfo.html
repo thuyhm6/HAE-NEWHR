@@ -2,30 +2,8 @@
     <div class="row">
         <div class="col-12">
 
-            <!-- ===== Thông tin cơ bản ===== -->
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white py-2">
-                    <strong><i class="bx bx-briefcase me-1"></i><span th:text="#{epi.section.workInfo}">Thông tin Công việc</span></strong>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-bordered table-sm align-middle mb-0">
-                        <tbody>
-                            <tr>
-                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.fullName}">Họ tên</th>
-                                <td id="wi_localName"></td>
-                                <th class="table-light text-center" style="width:150px;" th:text="#{epi.field.empId}">Mã nhân viên</th>
-                                <td id="wi_empId"></td>
-                            </tr>
-                            <tr>
-                                <th class="table-light text-center" th:text="#{epi.field.department}">Phòng ban</th>
-                                <td id="wi_deptName"></td>
-                                <th class="table-light text-center" th:text="#{epi.field.position}">Chức vụ</th>
-                                <td id="wi_dutyName"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <!-- ===== Thông tin nhân viên (fragment chung) ===== -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
 
             <!-- ===== Quyết định nhân sự ===== -->
             <div class="card mb-3">
@@ -129,14 +107,24 @@
                             <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
                             <textarea class="form-control form-control-sm" id="we_remark" rows="2"></textarea>
                         </div>
+                        <div class="col-12 mt-2">
+                            <div class="alert alert-info py-2 mb-2 small">
+                                <i class="bx bx-info-circle me-1"></i>
+                                <span th:text="#{epi.msg.applyNote}">Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.</span>
+                            </div>
+                            <label class="form-label fw-semibold" th:text="#{epi.field.attachFiles}">File đính kèm</label>
+                            <input type="file" class="form-control form-control-sm" id="we_attachFiles"
+                                   multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                            <div class="form-text" th:text="#{epi.msg.uploadHint}">Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.</div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-end">
                     <div>
                         <button type="button" class="btn btn-secondary btn-sm me-1"
                             data-bs-dismiss="modal" th:text="#{common.close}">Đóng</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="saveWorkExp()">
-                            <i class="bx bx-save me-1"></i><span th:text="#{common.save}">Lưu</span>
+                        <button type="button" class="btn btn-primary btn-sm" id="we_btnSave" onclick="saveWorkExp()">
+                            <i class="bx bx-send me-1"></i><span th:text="#{epi.btn.submitRequest}">Gửi yêu cầu</span>
                         </button>
                     </div>
                 </div>
@@ -147,6 +135,7 @@
 </div>
 
 <template id="fragmentScripts">
+    <div th:replace="~{fragments/essEmpInfoCard :: script}"></div>
     <script th:inline="javascript">
         (function () {
             var i18n = {
@@ -155,8 +144,8 @@
                 loadErrWorkInfo:   /*[[#{epi.msg.loadError.workInfo}]]*/ 'Lỗi tải dữ liệu công việc',
                 loadErrWorkExp:    /*[[#{epi.msg.loadError.workExp}]]*/ 'Lỗi tải dữ liệu kinh nghiệm',
                 validateCpnyName:  /*[[#{epi.msg.validate.cpnyName}]]*/ 'Vui lòng nhập Tên công ty!',
-                saveSuccess:       /*[[#{epi.msg.saveSuccess}]]*/ 'Cập nhật thành công!',
-                addSuccess:        /*[[#{epi.msg.addSuccess}]]*/ 'Thêm mới thành công!',
+                applySuccess:      /*[[#{epi.msg.applySuccess}]]*/ 'Gửi yêu cầu thành công! Chờ người quản lý xét duyệt.',
+                errWorkExp:        /*[[#{epi.msg.saveError.workExp}]]*/ 'Lỗi khi gửi yêu cầu kinh nghiệm làm việc!',
                 systemError:       /*[[#{epi.msg.systemError}]]*/ 'Lỗi hệ thống',
                 titleAddWorkExp:   /*[[#{epi.modal.addWorkExp}]]*/ 'Thêm mới kinh nghiệm',
                 titleEditWorkExp:  /*[[#{epi.modal.editWorkExp}]]*/ 'Cập nhật kinh nghiệm'
@@ -182,21 +171,6 @@
                 toast.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
                 container.appendChild(toast);
                 setTimeout(function () { if (toast.parentNode) toast.remove(); }, 3500);
-            }
-
-            // ===== Thông tin cơ bản =====
-            function loadBasicInfo() {
-                $.ajax({
-                    url: '/ess/empinfo/api/personalInfo/myInfo',
-                    type: 'GET',
-                    success: function (data) {
-                        if (!data) return;
-                        setText('wi_localName', data.localName);
-                        setText('wi_empId', data.empId);
-                        setText('wi_deptName', data.deptName);
-                        setText('wi_dutyName', data.dutyName);
-                    }
-                });
             }
 
             // ===== Quyết định nhân sự =====
@@ -298,36 +272,57 @@
                     return;
                 }
                 var workExpNo = document.getElementById('we_workExpNo').value;
-                var payload = {
-                    workExpNo: workExpNo ? parseInt(workExpNo) : null,
-                    cpnyName: cpnyName,
-                    deptName: document.getElementById('we_deptName').value || null,
-                    startMonth: document.getElementById('we_startMonth').value || null,
-                    endMonth: document.getElementById('we_endMonth').value || null,
-                    position: document.getElementById('we_position').value || null,
-                    resignReason: document.getElementById('we_resignReason').value || null,
-                    witness: document.getElementById('we_witness').value || null,
-                    remark: document.getElementById('we_remark').value || null
-                };
+                var fd = new FormData();
+                fd.append('cpnyName', cpnyName);
+                var deptName = document.getElementById('we_deptName').value;
+                if (deptName) fd.append('deptName', deptName);
+                var startMonth = document.getElementById('we_startMonth').value;
+                if (startMonth) fd.append('startMonth', startMonth);
+                var endMonth = document.getElementById('we_endMonth').value;
+                if (endMonth) fd.append('endMonth', endMonth);
+                var position = document.getElementById('we_position').value;
+                if (position) fd.append('position', position);
+                var resignReason = document.getElementById('we_resignReason').value;
+                if (resignReason) fd.append('resignReason', resignReason);
+                var witness = document.getElementById('we_witness').value;
+                if (witness) fd.append('witness', witness);
+                var remark = document.getElementById('we_remark').value;
+                if (remark) fd.append('remark', remark);
+                if (workExpNo) fd.append('updateWorkExperNo', workExpNo);
+
+                var fileInput = document.getElementById('we_attachFiles');
+                if (fileInput && fileInput.files.length > 0) {
+                    for (var i = 0; i < fileInput.files.length; i++) {
+                        fd.append('attachFiles', fileInput.files[i]);
+                    }
+                }
+
+                var btn = document.getElementById('we_btnSave');
+                btn.disabled = true;
                 $.ajax({
-                    url: '/ess/empinfo/api/workInfo/saveWorkExperience',
+                    url: '/ess/empinfo/api/workInfo/saveWorkExperienceApply',
                     type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(payload),
+                    data: fd,
+                    contentType: false,
+                    processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalWorkExp')).hide();
-                        showToast(workExpNo ? i18n.saveSuccess : i18n.addSuccess, 'success');
+                        showToast(i18n.applySuccess, 'success');
+                        document.getElementById('we_attachFiles').value = '';
                         loadWorkExperience();
                     },
                     error: function (err) {
-                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.systemError;
+                        var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : i18n.errWorkExp;
                         showToast(msg, 'danger');
+                    },
+                    complete: function () {
+                        btn.disabled = false;
                     }
                 });
             };
 
             $(document).ready(function () {
-                loadBasicInfo();
+                if (typeof loadEssEmpInfoCard === 'function') loadEssEmpInfoCard();
                 loadInsideExperience();
                 loadWorkExperience();
             });

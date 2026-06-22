@@ -7,7 +7,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.ait.sy.sys.service.MultilingualService;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 import java.util.Map;
 

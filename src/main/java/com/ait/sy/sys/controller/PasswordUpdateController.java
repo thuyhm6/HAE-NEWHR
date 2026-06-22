@@ -2,7 +2,7 @@ package com.ait.sy.sys.controller;
 
 import com.ait.sy.sys.service.PasswordUpdateService;
 import com.ait.sy.sys.service.PasswordUpdateService.UserPasswordInfo;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -130,6 +130,67 @@ public class PasswordUpdateController {
             response.put("success", false);
             response.put("message", "System error");
             return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @PostMapping("/api/change-password")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> changePasswordFromModal(
+            @RequestParam("oldPassword") String oldPassword,
+            @RequestParam("newPassword") String newPassword,
+            @RequestParam("confirmPassword") String confirmPassword,
+            HttpSession session) {
+
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            String userNo = getCurrentUserNo(session);
+            if (userNo == null || userNo.isEmpty()) {
+                resp.put("success", false);
+                resp.put("message", "Hết phiên làm việc, vui lòng đăng nhập lại.");
+                return ResponseEntity.status(401).body(resp);
+            }
+
+            if (!newPassword.equals(confirmPassword)) {
+                resp.put("success", false);
+                resp.put("message", "Mật khẩu xác nhận không khớp.");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
+            if (!passwordUpdateService.isPasswordStrong(newPassword)) {
+                resp.put("success", false);
+                resp.put("message", "Mật khẩu phải ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
+            if (!passwordUpdateService.verifyOldPassword(userNo, oldPassword)) {
+                resp.put("success", false);
+                resp.put("code", "OLD_PASSWORD_INCORRECT");
+                resp.put("message", "Mật khẩu hiện tại không đúng.");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
+            if (newPassword.equals(oldPassword)) {
+                resp.put("success", false);
+                resp.put("code", "SAME_AS_OLD");
+                resp.put("message", "Mật khẩu mới không được trùng với mật khẩu cũ.");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
+            if (passwordUpdateService.updatePassword(userNo, newPassword)) {
+                log.info("Password changed via topbar modal for userNo={}", userNo);
+                resp.put("success", true);
+                resp.put("message", "Cập nhật mật khẩu thành công!");
+                return ResponseEntity.ok(resp);
+            }
+
+            resp.put("success", false);
+            resp.put("message", "Không thể cập nhật mật khẩu. Vui lòng thử lại.");
+            return ResponseEntity.internalServerError().body(resp);
+        } catch (Exception e) {
+            log.error("Error changing password from topbar modal", e);
+            resp.put("success", false);
+            resp.put("message", "Lỗi hệ thống.");
+            return ResponseEntity.internalServerError().body(resp);
         }
     }
 

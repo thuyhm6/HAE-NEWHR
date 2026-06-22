@@ -36,6 +36,10 @@
                                 <i class="bi bi-x-circle"></i>
                                 <span th:text="#{vae.btn.reject}">Từ chối</span>
                             </button>
+                            <button type="button" class="btn btn-warning btn-sm" id="vae_syncBtn" onclick="vaeSyncEagleOffice()">
+                                <i class="bi bi-arrow-repeat"></i>
+                                <span th:text="#{vae.btn.syncEagleOffice}">Đồng bộ Clever</span>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -150,7 +154,10 @@
                 loading:        /*[[#{vae.msg.loading}]]*/ 'Đang tải...',
                 loadError:      /*[[#{vae.msg.loadError}]]*/ 'Lỗi tải dữ liệu',
                 approveTitle:   /*[[#{vae.modal.approve.title}]]*/ 'Xác nhận duyệt',
-                rejectTitle:    /*[[#{vae.modal.reject.title}]]*/ 'Xác nhận từ chối'
+                rejectTitle:    /*[[#{vae.modal.reject.title}]]*/ 'Xác nhận từ chối',
+                syncing:        /*[[#{vae.msg.syncing}]]*/ 'Đang đồng bộ...',
+                syncSuccess:    /*[[#{vae.msg.syncSuccess}]]*/ 'Đồng bộ Clever thành công!',
+                syncFail:       /*[[#{vae.msg.syncFail}]]*/ 'Đồng bộ Clever thất bại.'
             };
 
             function vae$(sel) { return $('#' + _vae_tabId).find(sel); }
@@ -272,6 +279,26 @@ function vaeRenderTable(rows) {
                 vae$('#vae_actionModalTitle').text(flag === 1 ? _vae_i18n.approveTitle : _vae_i18n.rejectTitle);
                 vae$('#vae_affirmContent').val(flag === 1 ? 'Ok' : 'Reject');
                 _vae_modal.show();
+            };
+
+            window.vaeSyncEagleOffice = function () {
+                var $btn = vae$('#vae_syncBtn');
+                $btn.prop('disabled', true).find('span').text(_vae_i18n.syncing);
+                $.ajax({
+                    url: '/ess/infoApply/api/approvalEmail/syncEagleOffice',
+                    type: 'POST',
+                    success: function (res) {
+                        vaeShowToast(res.message || (res.success ? _vae_i18n.syncSuccess : _vae_i18n.syncFail),
+                                     res.success ? 'success' : 'danger');
+                        if (res.success) vaeLoadList();
+                    },
+                    error: function () {
+                        vaeShowToast(_vae_i18n.syncFail, 'danger');
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).find('span').text(/*[[#{vae.btn.syncEagleOffice}]]*/ 'Đồng bộ Clever');
+                    }
+                });
             };
 
             window.vaeConfirmAction = function () {

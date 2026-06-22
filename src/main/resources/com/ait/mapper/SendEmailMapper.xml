@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.sys.mapper.SendEmailMapper">
+
+
+    <!-- Cập nhật cờ gửi email cho đơn xin nghỉ phép -->
+    <update id="updateApplySendFlag">
+        UPDATE ESS_LEAVE_APPLY_TB
+           SET SEND_EMAIL_FLAG = 1
+             WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateAttendace" parameterType="java.util.Map">
+        UPDATE ESS_LEAVE_APPLY_TB
+			   SET ATTENDACE_FLAG = 1
+             WHERE APPLY_NO = #{APPLY_NO, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Lấy danh sách đơn chờ gửi email (nghỉ phép, OT, quẹt thẻ, đăng ký đào tạo) -->
+    <select id="getWaitSendApplyInfoList" resultType="java.util.HashMap">
+        SELECT APPLY_DATA.*,
+               (GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(APPLY_DATA.FROM_TIME, 'DD/MM/YYYY HH24:MI'),'YYYY/MM/DD'),'HAE',APPLY_DATA.PERSON_ID,'30') +
+               GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(APPLY_DATA.FROM_TIME, 'DD/MM/YYYY HH24:MI'),'YYYY/MM/DD'),'HAE',APPLY_DATA.PERSON_ID,'301')) OT_TOTAIL_MONTH,
+               MISDOCID
+          FROM (
+            SELECT HR.LOCAL_NAME,
+                   HR.ENGLISH_NAME,
+                   HR.EMPID,
+                   HR.PERSON_ID,
+                   HR.DEPTNO,
+                   GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+                   HR.POSITION_NO,
+                   GET_GLOBAL_NAME(POSITION_NO, #{lang, jdbcType=VARCHAR}) POSITION_NAME,
+                   A.APPLY_NO,
+                   A.APPLY_TYPE_NO,
+                   A.APPLY_TYPE_CODE,
+                   GET_GLOBAL_NAME(APPLY_TYPE_CODE,'ko') APPLY_TYPE_NAME_KO,
+                   GET_GLOBAL_NAME(APPLY_TYPE_CODE,'vi') APPLY_TYPE_NAME_VI,
+                   A.APPLY_TYPE_NAME,
+                   A.APPLY_TIME,
+                   A.FROM_TIME,
+                   A.TO_TIME,
+                   A.APPLY_LENGTH,
+                   AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME) DAY_HOURS,
+                   CASE WHEN A.APPLY_TYPE_CODE = '141474' THEN
+                       GET_AR_LEAVE_LENGTH(HR.PERSON_ID,
+                           #{cpnyId, jdbcType=VARCHAR},
+                           TO_DATE(FROM_TIME, 'DD/MM/YYYY HH24:MI'),
+                           TO_DATE(TO_TIME, 'DD/MM/YYYY HH24:MI'),
+                           '141474') || ' minutes'
+                   ELSE
+                       CASE WHEN A.APPLY_LENGTH &gt;= AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME) THEN
+                           CASE WHEN ROUND(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) &gt; 1 THEN
+                               CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) &gt; 0 THEN
+                                   CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) &gt; 1 THEN
+                                       TO_CHAR(TRUNC(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' days ' || TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hours'
+                                   ELSE
+                                       TO_CHAR(TRUNC(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' days ' || TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hour'
+                                   END
+                               ELSE
+                                   TO_CHAR(TRUNC(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' days '
+                               END
+                           ELSE
+                               CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) &gt; 0 THEN
+                                   CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) &gt; 1 THEN
+                                       TO_CHAR(TRUNC(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' day ' || TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hours'
+                                   ELSE
+                                       TO_CHAR(TRUNC(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' day ' || TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hour'
+                                   END
+                               ELSE
+                                   TO_CHAR(TRUNC(A.APPLY_LENGTH / AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' day '
+                               END
+                           END
+                       ELSE
+                           CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) &gt; 0 THEN
+                               CASE WHEN MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME)) &gt; 1 THEN
+                                   TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hours'
+                               ELSE
+                                   TO_CHAR(MOD(A.APPLY_LENGTH, AR_GET_DAY_HOURS(HR.PERSON_ID, A.ORDER_TIME))) || ' hour'
+                               END
+                           ELSE
+                               '0 hour'
+                           END
+                       END
+                   END ATT_LENGTH,
+                   CASE WHEN A.APPLY_LENGTH &gt; 1 THEN A.APPLY_LENGTH || ' hours' ELSE A.APPLY_LENGTH || ' hour' END OT_LENGTH,
+                   A.REMARK,
+                   A.BATCH_YN,
+                   A.BATCH_NO,
+                   A.MISDOCID
+              FROM (
+                SELECT ATT.APPLY_NO,
+                       ATT.PERSON_ID,
+                       ATT.LEAVE_TYPE_NO      APPLY_TYPE_NO,
+                       ATT.LEAVE_TYPE_CODE    APPLY_TYPE_CODE,
+                       GET_GLOBAL_NAME(ATT.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                       TO_CHAR(ATT.APPLY_TIME, 'DD/MM/YYYY')       APPLY_TIME,
+                       TO_CHAR(ATT.APPLY_TIME, 'YYYY/MM/DD')       ORDER_TIME,
+                       TO_CHAR(ATT.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                       TO_CHAR(ATT.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI')   TO_TIME,
+                       ATT.APPLY_LENGTH,
+                       ATT.LEAVE_REASON       REMARK,
+                       ATT.BATCH_YN,
+                       ATT.BATCH_NO,
+                       ATT.MISDOCID
+                  FROM ESS_LEAVE_APPLY_TB ATT
+                 WHERE ATT.AFFIRM_FLAG IN ('14014306','14014307')
+                   AND ATT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND ATT.PERSON_ID IS NOT NULL
+                   AND ATT.LEAVE_TYPE_CODE IS NOT NULL
+                   AND ATT.APPLY_LENGTH IS NOT NULL
+                   AND ATT.APPLY_LENGTH &gt; 0
+                   AND ATT.ACTIVITY = 1
+                   AND ATT.CREATED_BY NOT LIKE '111111%'
+                   AND ATT.SEND_EMAIL_FLAG = 0
+                UNION ALL
+                SELECT OT.APPLY_NO,
+                       OT.PERSON_ID,
+                       OT.OT_TYPE_NO          APPLY_TYPE_NO,
+                       OT.OT_TYPE_CODE        APPLY_TYPE_CODE,
+                       GET_GLOBAL_NAME(OT.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                       TO_CHAR(OT.APPLY_TIME, 'DD/MM/YYYY')        APPLY_TIME,
+                       TO_CHAR(OT.APPLY_TIME, 'YYYY/MM/DD')        ORDER_TIME,
+                       TO_CHAR(OT.OT_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                       TO_CHAR(OT.OT_TO_TIME, 'DD/MM/YYYY HH24:MI')   TO_TIME,
+                       OT.OT_APPLY_HOUR       APPLY_LENGTH,
+                       OT.APPLY_OT_REMARK     REMARK,
+                       OT.BATCH_YN,
+                       OT.BATCH_NO,
+                       OT.MISDOCID
+                  FROM ESS_APPLY_OT OT
+                 WHERE OT.AFFIRM_FLAG IN ('14014306','14014307')
+                   AND OT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND OT.PERSON_ID IS NOT NULL
+                   AND OT.OT_TYPE_NO IS NOT NULL
+                   AND OT.OT_APPLY_HOUR IS NOT NULL
+                   AND OT.OT_APPLY_HOUR &gt; 0
+                   AND OT.ACTIVITY = 1
+                   AND OT.CREATED_BY NOT LIKE '111111%'
+                   AND OT.SEND_EMAIL_FLAG = 0
+                UNION ALL
+                SELECT OTO.APPLY_NO,
+                       OTO.PERSON_ID,
+                       OTO.OT_TYPE_NO         APPLY_TYPE_NO,
+                       OTO.OT_TYPE_CODE       APPLY_TYPE_CODE,
+                       GET_GLOBAL_NAME(OTO.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                       TO_CHAR(OTO.APPLY_TIME, 'DD/MM/YYYY')       APPLY_TIME,
+                       TO_CHAR(OTO.APPLY_TIME, 'YYYY/MM/DD')       ORDER_TIME,
+                       TO_CHAR(OTO.OT_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                       TO_CHAR(OTO.OT_TO_TIME, 'DD/MM/YYYY HH24:MI')   TO_TIME,
+                       OTO.OT_APPLY_HOUR      APPLY_LENGTH,
+                       OTO.APPLY_OT_REMARK    REMARK,
+                       OTO.BATCH_YN,
+                       OTO.BATCH_NO,
+                       OTO.MISDOCID
+                  FROM ESS_APPLY_OT_OVER OTO
+                 WHERE OTO.AFFIRM_FLAG IN ('14014306','14014307')
+                   AND OTO.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND OTO.PERSON_ID IS NOT NULL
+                   AND OTO.OT_TYPE_NO IS NOT NULL
+                   AND OTO.OT_APPLY_HOUR IS NOT NULL
+                   AND OTO.OT_APPLY_HOUR &gt; 0
+                   AND OTO.ACTIVITY = 1
+                   AND OTO.CREATED_BY NOT LIKE '111111%'
+                   AND OTO.SEND_EMAIL_FLAG = 0
+                UNION ALL
+                SELECT CARD.APPLY_NO,
+                       CARD.PERSON_ID,
+                       '218197'               APPLY_TYPE_NO,
+                       CARD.ITEM_NO           APPLY_TYPE_CODE,
+                       GET_GLOBAL_NAME(CARD.ITEM_NO, #{lang, jdbcType=VARCHAR}) APPLY_TYPE_NAME,
+                       TO_CHAR(CARD.APPLY_TIME, 'DD/MM/YYYY')      APPLY_TIME,
+                       TO_CHAR(CARD.APPLY_TIME, 'YYYY/MM/DD ')     ORDER_TIME,
+                       TO_CHAR(CARD.IN_TIME, 'DD/MM/YYYY HH24:MI')  FROM_TIME,
+                       TO_CHAR(CARD.OUT_TIME, 'DD/MM/YYYY HH24:MI') TO_TIME,
+                       TO_NUMBER(CARD.WORK_HOUR)                   APPLY_LENGTH,
+                       CARD.APPLY_REASON      REMARK,
+                       0                      BATCH_YN,
+                       0                      BATCH_NO,
+                       CARD.MISDOCID
+                  FROM ESS_CARD_APPLY_TB CARD
+                 WHERE CARD.AFFIRM_FLAG IN ('14014306','14014307')
+                   AND CARD.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND CARD.PERSON_ID IS NOT NULL
+                   AND CARD.ITEM_NO IS NOT NULL
+                   AND CARD.ACTIVITY = '1'
+                   AND CARD.CREATED_BY NOT LIKE '111111%'
+                   AND CARD.SEND_EMAIL_FLAG = 0
+                UNION ALL
+                SELECT A.APPLY_NO,
+                       A.PERSON_ID,
+                       '81006456'             APPLY_TYPE_NO,
+                       A.TRAINING_TYPE        APPLY_TYPE_CODE,
+                       GET_GLOBAL_NAME(A.TRAINING_TYPE, 'vi') APPLY_TYPE_NAME,
+                       TO_CHAR(A.START_DATE, 'DD/MM/YYYY')         APPLY_TIME,
+                       TO_CHAR(A.END_DATE, 'YYYY/MM/DD')           ORDER_TIME,
+                       TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+                       TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') TO_TIME,
+                       A.ACTIVITY             APPLY_LENGTH,
+                       A.REMARK               REMARK,
+                       0                      BATCH_YN,
+                       0                      BATCH_NO,
+                       A.MISDOCID
+                  FROM EDU_TRAINING_REGISTER A
+                 WHERE A.AFFIRM_FLAG IN ('14014306','14014307')
+                   AND A.PERSON_ID IS NOT NULL
+                   AND A.ACTIVITY = 1
+                   AND A.CREATED_BY NOT LIKE '111111%'
+                   AND A.SEND_EMAIL_FLAG = 0
+              ) A,
+              HR_EMPLOYEE HR
+             WHERE A.PERSON_ID = HR.PERSON_ID
+               AND A.PERSON_ID NOT LIKE '111111%'
+               AND HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+             ORDER BY A.ORDER_TIME
+          ) APPLY_DATA
+        <where>
+            <if test="applyNo != null and applyNo != ''">
+                APPLY_DATA.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <!-- Lấy danh sách người phê duyệt theo số đơn -->
+    <select id="getAffirmListByApplyNo" resultType="java.util.HashMap">
+        SELECT S.SEQ,
+               S.AFFIRM_TYPE,
+               DECODE(S.AFFIRM_TYPE, 4, 0, 1)    ASSIGN_TYPE,
+               S.APPLY_TYPE,
+               S.APPLY_FLAG,
+               E.EMPID                            AFFIRM_EMPID,
+               (SELECT HR.EMAIL FROM HR_PERSONAL_INFO HR WHERE E.PERSON_ID = HR.PERSON_ID) EMAIL,
+               S.AFFIRM_PERSON_ID,
+               S.TITLE,
+               S.AFFIRM_LEVEL,
+               CASE WHEN S.APPLY_TYPE_CODE = '31' THEN TO_CHAR(DECODE(S.AFFIRM_TYPE, 4, 0, 1)) ELSE S.AFFIRM_LEVEL END AFFIRM_LEVEL_FORMAT,
+               (ROW_NUMBER() OVER(ORDER BY S.AFFIRM_LEVEL)) - 1 ROW_LEVEL,
+               S.AFFIRM_FLAG,
+               S.APPLY_AFFIRM_FLAG,
+               S.ACTIVITY
+          FROM SY_AFFIRM_EMAIL S, HR_EMPLOYEE E
+         WHERE S.AFFIRM_PERSON_ID = E.PERSON_ID
+           AND S.APPLY_NO = #{APPLY_NO, jdbcType=VARCHAR}
+           AND S.AFFIRM_TYPE != 3
+           AND S.AFFIRM_FLAG = 0
+         ORDER BY S.AFFIRM_LEVEL
+    </select>
+
+    <!-- Lấy danh sách người nhận/tham chiếu email theo số đơn -->
+    <select id="getReceiverListByApplyNo" resultType="java.util.HashMap">
+        SELECT S.SEQ,
+               S.AFFIRM_TYPE,
+               DECODE(S.AFFIRM_TYPE, 3, 'referer', 'receiver') RECEIVER_TYPE,
+               S.APPLY_TYPE,
+               S.APPLY_FLAG,
+               E.EMPID                 AFFIRM_EMPID,
+               S.AFFIRM_PERSON_ID,
+               S.TITLE,
+               S.AFFIRM_LEVEL,
+               (ROW_NUMBER() OVER(ORDER BY S.AFFIRM_LEVEL)) - 1 ROW_LEVEL,
+               S.AFFIRM_FLAG,
+               S.APPLY_AFFIRM_FLAG,
+               S.ACTIVITY
+          FROM SY_AFFIRM_EMAIL S, HR_EMPLOYEE E
+         WHERE S.AFFIRM_PERSON_ID = E.PERSON_ID
+           AND S.APPLY_NO = #{APPLY_NO, jdbcType=VARCHAR}
+           AND S.AFFIRM_TYPE IN (3, 4)
+         ORDER BY S.AFFIRM_LEVEL
+    </select>
+
+    <!-- Lấy danh sách đơn cần hủy phê duyệt theo danh sách APPLY_NO -->
+    <select id="getNeedCancelApprovalInfo" resultType="java.util.HashMap">
+        SELECT A.APPLY_NO,
+               A.MISDOCID,
+               A.REMARK
+          FROM (
+            SELECT TB.APPLY_NO,
+                   TB.MISDOCID,
+                   TB.LEAVE_REASON REMARK
+              FROM ESS_LEAVE_APPLY_TB TB
+             WHERE TB.AFFIRM_FLAG = '14014310'
+               AND TB.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+               AND TB.SEND_EMAIL_FLAG = 1
+               AND TB.APPLY_NO IN (${APPLY_NOS})
+            UNION ALL
+            SELECT OT.APPLY_NO,
+                   OT.MISDOCID,
+                   OT.APPLY_OT_REMARK REMARK
+              FROM ESS_APPLY_OT OT
+             WHERE OT.AFFIRM_FLAG = '14014310'
+               AND OT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+               AND OT.SEND_EMAIL_FLAG = 1
+               AND OT.APPLY_NO IN (${APPLY_NOS})
+            UNION ALL
+            SELECT OTV.APPLY_NO,
+                   OTV.MISDOCID,
+                   OTV.APPLY_OT_REMARK REMARK
+              FROM ESS_APPLY_OT_OVER OTV
+             WHERE OTV.AFFIRM_FLAG = '14014310'
+               AND OTV.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+               AND OTV.SEND_EMAIL_FLAG = 1
+               AND OTV.APPLY_NO IN (${APPLY_NOS})
+            UNION ALL
+            SELECT CARD.APPLY_NO,
+                   CARD.MISDOCID,
+                   CARD.APPLY_REASON REMARK
+              FROM ESS_CARD_APPLY_TB CARD
+             WHERE CARD.AFFIRM_FLAG = '14014310'
+               AND CARD.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+               AND CARD.SEND_EMAIL_FLAG = 1
+               AND CARD.APPLY_NO IN (${APPLY_NOS})
+            UNION ALL
+            SELECT A.APPLY_NO,
+                   A.MISDOCID,
+                   A.REMARK
+              FROM EDU_TRAINING_REGISTER A
+             WHERE A.AFFIRM_FLAG = '14014310'
+               AND A.SEND_EMAIL_FLAG = 1
+               AND A.APPLY_NO IN (${APPLY_NOS})
+          ) A
+    </select>
+
+    <!-- Lấy danh sách đơn đang chờ đồng bộ trạng thái phê duyệt với EagleOffice -->
+    <select id="getSynchronizationApprovalList" resultType="java.util.HashMap">
+        SELECT *
+          FROM (
+            SELECT ATT.APPLY_NO,
+                   ATT.PERSON_ID,
+                   ATT.LEAVE_TYPE_NO   APPLY_TYPE_NO,
+                   ATT.LEAVE_TYPE_CODE APPLY_TYPE_CODE,
+                   (CASE WHEN (
+                       TO_DATE(TO_CHAR(ATT.LEAVE_FROM_TIME, 'HH24:MI'), 'HH24:MI') >
+                       TO_DATE(SUBSTR(SUBSTR(GET_AR_SHIFT_TIME(GET_AR_SHIFTNO(ATT.PERSON_ID, TO_CHAR(ATT.LEAVE_FROM_TIME, 'YYYY/MM/DD'), 'HAE'),
+                           TO_CHAR(ATT.LEAVE_FROM_TIME, 'YYYY/MM/DD'), 'HAE', 'FIRST'), 0, 16), 12, 16), 'HH24:MI')
+                   ) THEN '1' ELSE '0' END) TIME_FLAG,
+                   ATT.BATCH_YN,
+                   ATT.BATCH_NO,
+                   ATT.MISDOCID
+              FROM ESS_LEAVE_APPLY_TB ATT
+             WHERE ATT.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+               AND ATT.CPNY_ID = 'HAE'
+               AND ATT.ACTIVITY = 1
+               AND ATT.SEND_EMAIL_FLAG = 1
+               AND ATT.MISDOCID IS NOT NULL
+            UNION ALL
+            SELECT OT.APPLY_NO,
+                   OT.PERSON_ID,
+                   OT.OT_TYPE_NO   APPLY_TYPE_NO,
+                   OT.OT_TYPE_CODE APPLY_TYPE_CODE,
+                   '0'             TIME_FLAG,
+                   OT.BATCH_YN,
+                   OT.BATCH_NO,
+                   OT.MISDOCID
+              FROM ESS_APPLY_OT OT
+             WHERE OT.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+               AND OT.CPNY_ID = 'HAE'
+               AND OT.ACTIVITY = 1
+               AND OT.SEND_EMAIL_FLAG = 1
+               AND OT.MISDOCID IS NOT NULL
+            UNION ALL
+            SELECT OTO.APPLY_NO,
+                   OTO.PERSON_ID,
+                   OTO.OT_TYPE_NO   APPLY_TYPE_NO,
+                   OTO.OT_TYPE_CODE APPLY_TYPE_CODE,
+                   '0'              TIME_FLAG,
+                   OTO.BATCH_YN,
+                   OTO.BATCH_NO,
+                   OTO.MISDOCID
+              FROM ESS_APPLY_OT_OVER OTO
+             WHERE OTO.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+               AND OTO.CPNY_ID = 'HAE'
+               AND OTO.ACTIVITY = 1
+               AND OTO.SEND_EMAIL_FLAG = 1
+               AND OTO.MISDOCID IS NOT NULL
+            UNION ALL
+            SELECT CARD.APPLY_NO,
+                   CARD.PERSON_ID,
+                   '218197'      APPLY_TYPE_NO,
+                   CARD.ITEM_NO  APPLY_TYPE_CODE,
+                   '0'           TIME_FLAG,
+                   0             BATCH_YN,
+                   0             BATCH_NO,
+                   CARD.MISDOCID
+              FROM ESS_CARD_APPLY_TB CARD
+             WHERE CARD.AFFIRM_FLAG NOT IN ('14014308', '14014309', '14014310')
+               AND CARD.CPNY_ID = 'HAE'
+               AND CARD.ACTIVITY = '1'
+               AND CARD.SEND_EMAIL_FLAG = 1
+               AND CARD.MISDOCID IS NOT NULL
+          ) A
+         ORDER BY A.APPLY_NO
+    </select>
+
+    <!-- Lấy thông tin đơn xin nghỉ phép để gửi email -->
+    <select id="getSendDataInfoList" resultType="java.util.HashMap">
+        SELECT ATT.APPLY_NO,
+               ATT.PERSON_ID,
+               HR.LOCAL_NAME,
+               HR.EMPID,
+               GET_DEPT_NAME(HR.DEPTNO, 'vi')        DEPT_NAME,
+               GET_GLOBAL_NAME(HR.POSITION_NO, 'vi') POSITION_NAME,
+               ATT.LEAVE_TYPE_NO                     APPLY_TYPE_NO,
+               ATT.LEAVE_TYPE_CODE                   APPLY_TYPE_CODE,
+               GET_GLOBAL_NAME(ATT.LEAVE_TYPE_CODE, 'vi') APPLY_TYPE_NAME_VI,
+               GET_GLOBAL_NAME(ATT.LEAVE_TYPE_CODE, 'ko') APPLY_TYPE_NAME_KO,
+               TO_CHAR(ATT.APPLY_TIME, 'DD/MM/YYYY')          APPLY_TIME,
+               TO_CHAR(ATT.APPLY_TIME, 'YYYY/MM/DD')          ORDER_TIME,
+               TO_CHAR(ATT.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_TIME,
+               TO_CHAR(ATT.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI')   TO_TIME,
+               ATT.APPLY_LENGTH,
+               ATT.LEAVE_REASON REMARK,
+               ATT.BATCH_YN,
+               ATT.BATCH_NO,
+               ATT.MISDOCID
+          FROM ESS_LEAVE_APPLY_TB ATT, HR_EMPLOYEE HR
+         WHERE ATT.PERSON_ID = HR.PERSON_ID
+           AND ATT.APPLY_NO = #{paramMap.APPLY_NO, jdbcType=VARCHAR}
+           AND ATT.ATTENDACE_FLAG IS NULL
+    </select>
+
+
+    <!-- Lấy danh sách email phê duyệt cần gửi (SEND_FLAG = 0 hoặc 3) -->
+    <select id="viewApprovalInfo" resultType="java.util.HashMap">
+        SELECT A.SEQ,
+               A.APPLY_NO,
+               A.APPLY_TYPE,
+               A.APPLY_FLAG,
+               A.APPLY_PERSON_ID,
+               A.APPLY_TYPE_CODE,
+               A.SEND_FLAG,
+               A.EMAIL_TITLE,
+               REPLACE(A.EMAIL_CONTENT, '[MAIL_LOGIN_EMPID]', HRE.EMPID) EMAIL_CONTENT,
+               HR.EMAIL,
+               HRE.EMPID                      MAIL_LOGIN_EMPID,
+               TO_CHAR(A.CREATE_DATE, 'YYYY') YEAR
+          FROM SY_AFFIRM_EMAIL A, HR_PERSONAL_INFO HR, HR_EMPLOYEE HRE
+         WHERE A.AFFIRM_PERSON_ID = HR.PERSON_ID
+           AND A.AFFIRM_PERSON_ID = HRE.PERSON_ID
+           AND A.SEND_FLAG IN (0, 3)
+    </select>
+
+
+    <!-- Cập nhật trạng thái gửi email trong SY_AFFIRM_EMAIL -->
+    <update id="viewModifyApprovalInfo" parameterType="java.util.Map">
+        UPDATE SY_AFFIRM_EMAIL A
+           SET A.SEND_FLAG = #{SEND_FINISH_FLAG, jdbcType=NUMERIC}
+         WHERE A.SEQ = #{SEQ, jdbcType=NUMERIC}
+    </update>
+
+    <select id="getNeedCancelApprovaledInfo">
+        SELECT A.APPLY_NO,
+			  	     A.MISDOCID_OLD MISDOCID,
+			  	     A.REMARK
+				  FROM (SELECT TB.APPLY_NO, TB.MISDOCID, TB.MISDOCID_OLD, TB.LEAVE_REASON REMARK
+				          FROM ESS_LEAVE_APPLY_TB TB
+				         WHERE TB.AFFIRM_FLAG IN ('14014307','14014308','14014309')
+				           AND TB.CPNY_ID = #interCpnyID:VARCHAR#
+				           AND TB.SEND_EMAIL_FLAG IN ('0','1')
+				           AND TB.APPLY_NO IN 
+                           <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+                                #{no, jdbcType=VARCHAR}
+                            </foreach>
+				        UNION ALL
+				        SELECT OT.APPLY_NO, OT.MISDOCID, OT.MISDOCID_OLD, OT.APPLY_OT_REMARK REMARK
+				          FROM ESS_APPLY_OT OT
+				         WHERE OT.AFFIRM_FLAG IN ('14014307','14014308','14014309')
+				           AND OT.CPNY_ID = #interCpnyID:VARCHAR#
+				           AND OT.SEND_EMAIL_FLAG IN ('0','1')
+				           AND OT.APPLY_NO IN 
+                           <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+                                #{no, jdbcType=VARCHAR}
+                            </foreach>
+				        UNION ALL
+				        SELECT CARD.APPLY_NO, CARD.MISDOCID, CARD.MISDOCID_OLD, CARD.APPLY_REASON REMARK
+				          FROM ESS_CARD_APPLY_TB CARD
+				         WHERE CARD.AFFIRM_FLAG IN ('14014307','14014308','14014309')
+				           AND CARD.CPNY_ID = #interCpnyID:VARCHAR#
+				           AND CARD.SEND_EMAIL_FLAG IN ('0','1')
+				           AND CARD.APPLY_NO IN 
+                           <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+                                #{no, jdbcType=VARCHAR}
+                            </foreach>) A
+    </select>
+
+</mapper>

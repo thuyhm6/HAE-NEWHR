@@ -2,7 +2,7 @@ package com.ait.sy.sys.controller;
 
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PasswordMigrationService;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;

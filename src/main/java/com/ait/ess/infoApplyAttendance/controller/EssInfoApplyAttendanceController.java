@@ -10,8 +10,9 @@ import com.ait.ess.infoApplyAttendance.service.EssAttendanceExForBatchService;
 import com.ait.ess.infoApplyAttendance.service.EssAttendancePersonalInfoService;
 import com.ait.ess.infoApplyAttendance.service.EssCoordApplyAttendanceService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import com.ait.util.MailSendApprovalManager;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,8 @@ public class EssInfoApplyAttendanceController {
 
     @Autowired
     private EssCoordApplyAttendanceService coordApplyAttendanceService;
+    @Autowired    
+    private MailSendApprovalManager mailSendApprovalManager;
 
     @GetMapping("/viewSSTApplyAttendance")
     public String viewSSTApplyAttendance() {
@@ -156,6 +159,8 @@ public class EssInfoApplyAttendanceController {
             response.put("success", true);
             response.put("count", count);
             response.put("message", "Hủy bỏ thành công " + count + " dòng.");
+
+            boolean cancelApproval = mailSendApprovalManager.cancelMailApprovaledInfo(applyNos);
         } catch (Exception e) {
             log.error("Failed to cancel leave applications", e);
             response.put("success", false);

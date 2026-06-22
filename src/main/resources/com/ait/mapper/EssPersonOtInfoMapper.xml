@@ -26,7 +26,7 @@
         <result column="ITEM_NAME" property="itemName" />
     </resultMap>
 
-    <!-- Danh sách tăng ca cá nhân từ AR_DETAIL_HTSV (ITEM_GROUP_CODE = '1433') -->
+    <!-- Danh sách tăng ca cá nhân từ AR_DETAIL_HAE (ITEM_GROUP_CODE = '1433') -->
     <select id="selectPersonOtList" resultMap="PersonOtInfoResultMap">
         SELECT
             D.PK_NO,
@@ -46,7 +46,7 @@
             TO_CHAR(D.FROM_TIME, 'DD/MM/YYYY HH24:MI')               AS OT_START_TIME,
             TO_CHAR(D.TO_TIME,   'DD/MM/YYYY HH24:MI')               AS OT_END_TIME,
             D.QUANTITY
-        FROM AR_DETAIL_HTSV D
+        FROM AR_DETAIL_HAE D
         JOIN HR_EMPLOYEE HE ON HE.PERSON_ID = D.PERSON_ID
         WHERE D.PERSON_ID = #{adminID, jdbcType=VARCHAR}
           AND D.ITEM_NO IN (

@@ -24,7 +24,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -636,7 +636,7 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
         try {
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attrs != null) {
-                jakarta.servlet.http.HttpServletRequest req = attrs.getRequest();
+                javax.servlet.http.HttpServletRequest req = attrs.getRequest();
                 String ip = req.getHeader("X-Forwarded-For");
                 if (ip == null || ip.isEmpty()) ip = req.getRemoteAddr();
                 return ip;

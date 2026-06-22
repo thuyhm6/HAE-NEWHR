@@ -2,11 +2,11 @@
  * ExcelImport - Shared Excel Import Component
  *
  * Cách sử dụng:
- *   1. Đặt nút gọi: onclick="ExcelImport.open('/sy/excel/api/scheduleHtsv/upload', onSuccessCallback)"
+ *   1. Đặt nút gọi: onclick="ExcelImport.open('/sy/excel/api/scheduleHae/upload', onSuccessCallback)"
  *   2. callback sẽ được gọi sau khi import thành công (ví dụ: reload table)
  *
  * Ví dụ:
- *   ExcelImport.open('/sy/excel/api/scheduleHtsv/upload', function() {
+ *   ExcelImport.open('/sy/excel/api/scheduleHae/upload', function() {
  *       table.ajax.reload();
  *   });
  */

@@ -2,11 +2,196 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ait.ess.empinfo.mapper.EssPersonalInfoMapper">
 
+    <resultMap id="EssApplyInfoResultMap" type="com.ait.ess.empinfo.dto.EssApplyInfoDto">
+        <result property="applyNo"        column="APPLY_NO"/>
+        <result property="applyTableType" column="APPLY_TABLE_TYPE"/>
+        <result property="personId"       column="PERSON_ID"/>
+        <result property="createDate"     column="CREATE_DATE"/>
+        <result property="activity"       column="ACTIVITY"/>
+        <result property="applyType"      column="APPLY_TYPE"/>
+        <result property="managerInfo"    column="MANAGER_INFO"/>
+        <result property="callback"       column="CALLBACK"/>
+        <result property="earror"         column="EARROR"/>
+    </resultMap>
+
+    <sql id="applyUnionAll">
+        SELECT
+            TO_CHAR(PERSON_NO) AS APPLY_NO,
+            'PERSONAL'  AS APPLY_TABLE_TYPE,
+            PERSON_ID,
+            TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            ACTIVITY,
+            APPLY_TYPE,
+            CREATED_BY AS MANAGER_INFO,
+            NULL        AS CALLBACK,
+            NULL        AS EARROR
+        FROM HR_PERSONAL_INFO_APPLY
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          <if test="fromDate != null and fromDate != ''">
+            AND CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(ADDRESS_NO) AS APPLY_NO,
+            'ADDRESS'   AS APPLY_TABLE_TYPE,
+            PERSON_ID,
+            TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            ACTIVITY,
+            APPLY_TYPE,
+            CREATED_BY  AS MANAGER_INFO,
+            CALLBACK,
+            EARROR
+        FROM HR_ADDRESS_MATTERS_APPLY
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          <if test="fromDate != null and fromDate != ''">
+            AND CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(FAMILY_NO) AS APPLY_NO,
+            'FAMILY'    AS APPLY_TABLE_TYPE,
+            PERSON_ID,
+            TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            ACTIVITY,
+            APPLY_TYPE,
+            CREATED_BY  AS MANAGER_INFO,
+            CALLBACK,
+            EARROR
+        FROM HR_FAMILY_APPLY
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          <if test="fromDate != null and fromDate != ''">
+            AND CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(EMERGENCY_NO) AS APPLY_NO,
+            'EMERGENCY' AS APPLY_TABLE_TYPE,
+            PERSON_ID,
+            TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            ACTIVITY,
+            APPLY_TYPE,
+            CREATED_BY  AS MANAGER_INFO,
+            CALLBACK,
+            EARROR
+        FROM HR_EMERGENCY_ADDRESS_APPLY
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          <if test="fromDate != null and fromDate != ''">
+            AND CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(WORK_EXPER_NO) AS APPLY_NO,
+            'WORK_EXP'  AS APPLY_TABLE_TYPE,
+            PERSON_ID,
+            TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            ACTIVITY,
+            APPLY_TYPE,
+            CREATED_BY  AS MANAGER_INFO,
+            CALLBACK,
+            EARROR
+        FROM HR_WORK_EXPERIENCE_APPLY
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          <if test="fromDate != null and fromDate != ''">
+            AND CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(EDUC_NO) AS APPLY_NO,
+            'EDUCATION' AS APPLY_TABLE_TYPE,
+            PERSON_ID,
+            TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            ACTIVITY,
+            APPLY_TYPE,
+            CREATED_BY  AS MANAGER_INFO,
+            CALLBACK,
+            EARROR
+        FROM HR_EDUCATION_APPLY
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          <if test="fromDate != null and fromDate != ''">
+            AND CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(QUAL_NO) AS APPLY_NO,
+            'QUALIFICATION' AS APPLY_TABLE_TYPE,
+            PERSON_ID,
+            TO_CHAR(CREATE_DATE, 'YYYY/MM/DD') AS CREATE_DATE,
+            ACTIVITY,
+            APPLY_TYPE,
+            CREATED_BY      AS MANAGER_INFO,
+            CALLBACK,
+            EARROR
+        FROM HR_QUALIFICATION_APPLY
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          <if test="fromDate != null and fromDate != ''">
+            AND CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+    </sql>
+
+    <select id="countMyApplyList" parameterType="com.ait.ess.empinfo.dto.EssApplyInfoDto" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="applyUnionAll"/>
+        )
+    </select>
+
+    <select id="selectMyApplyListPage" parameterType="com.ait.ess.empinfo.dto.EssApplyInfoDto" resultMap="EssApplyInfoResultMap">
+        SELECT * FROM (
+            SELECT A.*, ROWNUM AS RN FROM (
+                SELECT * FROM (
+                    <include refid="applyUnionAll"/>
+                ) ORDER BY CREATE_DATE DESC, APPLY_NO DESC
+            ) A WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        ) WHERE RN > #{start, jdbcType=NUMERIC}
+    </select>
+
     <select id="findMyInfo" resultType="com.ait.ess.empinfo.dto.EssPersonalInfoDto">
-        SELECT 
+        SELECT
             HE.EMPID AS empId,
             HE.PERSON_ID AS personId,
             HE.LOCAL_NAME AS localName,
+            HE.ENGLISH_NAME AS englishName,
             HE.POST_FAMILY AS postFamily,
             HE.POST_GRADE_NO AS postGradeNo,
             HE.POSITION_NO AS positionNo,
@@ -17,17 +202,29 @@
             GET_GLOBAL_NAME(HE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS postGradeName,
             GET_GLOBAL_NAME(HE.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS positionNoName,
             TO_CHAR(HE.DATE_STARTED, 'DD/MM/YYYY') AS dateStarted,
-            
+
             TO_CHAR(HP.DOB, 'YYYY-MM-DD') AS dob,
             HP.SEXCODE AS sexCode,
             GET_GLOBAL_NAME(HP.SEXCODE, #{lang, jdbcType=VARCHAR}) AS sexName,
             HP.MARITAL_STATUS_CODE AS maritalStatusCode,
             GET_GLOBAL_NAME(HP.MARITAL_STATUS_CODE, #{lang, jdbcType=VARCHAR}) AS maritalStatusName,
+            TO_CHAR(HP.WEDDING_DATE, 'YYYY-MM-DD') AS weddingDate,
             HP.NATION_CODE AS nationCode,
             GET_GLOBAL_NAME(HP.NATION_CODE, #{lang, jdbcType=VARCHAR}) AS nationName,
             HP.NATIONALITY_CODE AS nationalityCode,
             GET_GLOBAL_NAME(HP.NATIONALITY_CODE, #{lang, jdbcType=VARCHAR}) AS nationalityName,
-            
+            HP.FINAL_DEGREE_CODE AS finalDegreeCode,
+            GET_GLOBAL_NAME(HP.FINAL_DEGREE_CODE, #{lang, jdbcType=VARCHAR}) AS finalDegreeName,
+            HP.RELIGION AS religion,
+            HP.POLITICAL_STATUS AS politicalStatus,
+            HP.CV_UPDATE_STATUS AS cvUpdateStatus,
+            HP.ARMY_OR_NOT AS armyOrNot,
+            HP.OBSTACLE_OR_NOT AS obstacleOrNot,
+            HP.IDCARD_NO AS idcardNo,
+            HP.IDCARD_START_DATE AS idcardStartDate,
+            HP.ISSUING_AUTHORITY AS issuingAuthority,
+            HP.REG_PLACE AS regPlace,
+
             HP.HOUSE_TP AS houseTp,
             HP.HOME_PHONE AS homePhone,
             HP.COMPANY_PHONE AS companyPhone,
@@ -38,12 +235,11 @@
             HP.EMAIL_SECOND AS emailSecond,
             HP.SING_ID AS singId,
             HP.HOME_ADDRESS AS homeAddress,
-            HP.OFFICE_PHONE AS officePhone,
-            HP.IDCARD_NO AS idcardNo
+            HP.OFFICE_PHONE AS officePhone
         FROM HR_EMPLOYEE HE
         LEFT JOIN HR_PERSONAL_INFO HP ON HE.PERSON_ID = HP.PERSON_ID AND HP.ACTIVITY = 1
         LEFT JOIN HR_DEPARTMENT D ON HE.DEPTNO = D.DEPTNO
-        WHERE HE.PERSON_ID = #{personId, jdbcType=VARCHAR} 
+        WHERE HE.PERSON_ID = #{personId, jdbcType=VARCHAR}
           AND HE.ACTIVITY = 1
     </select>
 

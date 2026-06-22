@@ -94,7 +94,7 @@
                T.BANK_NAME AS BANK_NAME,
                T.ACCOUNT_NO AS BANK_ACCOUNT_NO,
                T.SOCIAL_INSURANCE_NO AS SOCIAL_INSURANCE_NO
-          FROM PA_SUMMARY_HTSV T
+          FROM PA_SUMMARY_HAE T
         <include refid="whereEmployeeCondition"/>
         ORDER BY T.DEPT_ORDERNO, T.EMPID
     </select>
@@ -128,7 +128,7 @@
                T.BANK_NAME                 AS BANK_NAME,
                T.ACCOUNT_NO               AS BANK_ACCOUNT_NO,
                T.SOCIAL_INSURANCE_NO      AS SOCIAL_INSURANCE_NO
-          FROM PA_SUMMARY_HTSV T
+          FROM PA_SUMMARY_HAE T
          WHERE T.CPNY_ID         = #{cpnyId,        jdbcType=VARCHAR}
            AND T.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
            AND T.PERSON_ID       = #{adminID,        jdbcType=VARCHAR}
@@ -167,7 +167,7 @@
                C.REMARK
           FROM PA_PARAM_ITEM_PARAM B,
                PA_PARAM_DATA       C,
-               PA_SUMMARY_HTSV    PA
+               PA_SUMMARY_HAE    PA
          WHERE B.PARAM_NO  = C.PARAM_NO
            AND C.PERSON_ID = PA.PERSON_ID
            AND B.PARAM_ITEM_NO IN ('540099', '90000496', '90000495', '90000494', '90000493')

@@ -337,13 +337,13 @@
         ORDER BY a.DDATE
     </select>
 
-    <select id="countScheduleHtsv" resultType="int">
-        SELECT COUNT(1) FROM AR_SCHEDULE_HTSV
+    <select id="countScheduleHae" resultType="int">
+        SELECT COUNT(1) FROM AR_SCHEDULE_HAE
         WHERE PERSON_ID = #{personId}
           AND AR_DATE_STR = #{arDateStr}
     </select>
 
-    <!-- Lấy thông tin lịch cá nhân 1 ngày: ưu tiên AR_SCHEDULE_HTSV, kết hợp AR_CALENDER -->
+    <!-- Lấy thông tin lịch cá nhân 1 ngày: ưu tiên AR_SCHEDULE_HAE, kết hợp AR_CALENDER -->
     <select id="selectEmpScheduleDetail" resultMap="EmpCalenderDtoResultMap">
         SELECT
             c.DDATE_STR,
@@ -355,7 +355,7 @@
             GET_AR_DATETYPE_DETAIL(#{personId}, c.DDATE_STR, c.CPNY_ID) as TYPEID,
             s.REMARK
         FROM AR_CALENDER c
-        LEFT JOIN AR_SCHEDULE_HTSV s
+        LEFT JOIN AR_SCHEDULE_HAE s
                ON s.PERSON_ID   = #{personId}
               AND s.AR_DATE_STR = #{arDateStr}
         WHERE c.DDATE_STR = #{arDateStr}
@@ -363,8 +363,8 @@
         AND ROWNUM = 1
     </select>
 
-    <insert id="insertScheduleHtsv">
-        INSERT INTO AR_SCHEDULE_HTSV (
+    <insert id="insertScheduleHae">
+        INSERT INTO AR_SCHEDULE_HAE (
             PK_NO, PERSON_ID, SHIFT_NO, AR_DATE_STR, LOCK_YN,
             CREATE_DATE, CREATED_BY, CREATED_IP,
             ACTIVITY, ORDERNO, ADD_FLAG, TYPEID, REMARK
@@ -377,8 +377,8 @@
         )
     </insert>
 
-    <update id="updateScheduleHtsv">
-        UPDATE AR_SCHEDULE_HTSV SET
+    <update id="updateScheduleHae">
+        UPDATE AR_SCHEDULE_HAE SET
             SHIFT_NO     = #{shiftNo, jdbcType=VARCHAR},
             TYPEID       = #{typeid, jdbcType=NUMERIC},
             REMARK       = #{remark, jdbcType=VARCHAR},

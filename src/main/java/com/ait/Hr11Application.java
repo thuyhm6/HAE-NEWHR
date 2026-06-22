@@ -1,7 +1,7 @@
 package com.ait;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;

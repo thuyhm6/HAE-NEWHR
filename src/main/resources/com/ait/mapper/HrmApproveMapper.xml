@@ -1,0 +1,855 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.hrm.approve.mapper.HrmApproveMapper">
+
+    <resultMap id="HrmApproveApplyResultMap" type="com.ait.hrm.approve.dto.HrmApproveApplyDto">
+        <result property="applyNo"        column="APPLY_NO"/>
+        <result property="applyTableType" column="APPLY_TABLE_TYPE"/>
+        <result property="personId"       column="PERSON_ID"/>
+        <result property="createDate"     column="CREATE_DATE"/>
+        <result property="activity"       column="ACTIVITY"/>
+        <result property="applyType"      column="APPLY_TYPE"/>
+        <result property="managerInfo"    column="MANAGER_INFO"/>
+        <result property="callback"       column="CALLBACK"/>
+        <result property="earror"         column="EARROR"/>
+        <result property="empName"        column="EMP_NAME"/>
+        <result property="empCode"        column="EMP_CODE"/>
+        <result property="deptName"       column="DEPT_NAME"/>
+    </resultMap>
+
+    <!-- ===================================================================
+         UNION ALL tất cả 7 bảng apply cho manager (không lọc theo PERSON_ID)
+         =================================================================== -->
+    <sql id="managerApplyUnionAll">
+        SELECT
+            A.PERSON_NO                                   AS APPLY_NO,
+            'PERSONAL'                                    AS APPLY_TABLE_TYPE,
+            A.PERSON_ID,
+            TO_CHAR(A.CREATE_DATE, 'YYYY/MM/DD')          AS CREATE_DATE,
+            A.ACTIVITY,
+            A.APPLY_TYPE,
+            A.CREATED_BY                                  AS MANAGER_INFO,
+            NULL                                          AS CALLBACK,
+            NULL                                          AS EARROR,
+            E.LOCAL_NAME                                  AS EMP_NAME,
+            E.EMPID                                       AS EMP_CODE,
+            D.ORG_NAME_LOCAL                              AS DEPT_NAME
+        FROM HR_PERSONAL_INFO_APPLY A
+        LEFT JOIN HR_EMPLOYEE    E ON A.PERSON_ID = E.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT  D ON E.DEPTNO    = D.DEPTNO
+        WHERE 1 = 1
+          <if test="fromDate != null and fromDate != ''">
+            AND A.CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND A.CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND A.ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(A.ADDRESS_NO)                         AS APPLY_NO,
+            'ADDRESS'                                     AS APPLY_TABLE_TYPE,
+            A.PERSON_ID,
+            TO_CHAR(A.CREATE_DATE, 'YYYY/MM/DD')          AS CREATE_DATE,
+            A.ACTIVITY,
+            A.APPLY_TYPE,
+            A.CREATED_BY                                  AS MANAGER_INFO,
+            A.CALLBACK,
+            A.EARROR,
+            E.LOCAL_NAME                                  AS EMP_NAME,
+            E.EMPID                                       AS EMP_CODE,
+            D.ORG_NAME_LOCAL                              AS DEPT_NAME
+        FROM HR_ADDRESS_MATTERS_APPLY A
+        LEFT JOIN HR_EMPLOYEE    E ON A.PERSON_ID = E.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT  D ON E.DEPTNO    = D.DEPTNO
+        WHERE 1 = 1
+          <if test="fromDate != null and fromDate != ''">
+            AND A.CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND A.CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND A.ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(A.FAMILY_NO)                          AS APPLY_NO,
+            'FAMILY'                                      AS APPLY_TABLE_TYPE,
+            A.PERSON_ID,
+            TO_CHAR(A.CREATE_DATE, 'YYYY/MM/DD')          AS CREATE_DATE,
+            A.ACTIVITY,
+            A.APPLY_TYPE,
+            A.CREATED_BY                                  AS MANAGER_INFO,
+            A.CALLBACK,
+            A.EARROR,
+            E.LOCAL_NAME                                  AS EMP_NAME,
+            E.EMPID                                       AS EMP_CODE,
+            D.ORG_NAME_LOCAL                              AS DEPT_NAME
+        FROM HR_FAMILY_APPLY A
+        LEFT JOIN HR_EMPLOYEE    E ON A.PERSON_ID = E.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT  D ON E.DEPTNO    = D.DEPTNO
+        WHERE 1 = 1
+          <if test="fromDate != null and fromDate != ''">
+            AND A.CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND A.CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND A.ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(A.EMERGENCY_NO)                       AS APPLY_NO,
+            'EMERGENCY'                                   AS APPLY_TABLE_TYPE,
+            A.PERSON_ID,
+            TO_CHAR(A.CREATE_DATE, 'YYYY/MM/DD')          AS CREATE_DATE,
+            A.ACTIVITY,
+            A.APPLY_TYPE,
+            A.CREATED_BY                                  AS MANAGER_INFO,
+            A.CALLBACK,
+            A.EARROR,
+            E.LOCAL_NAME                                  AS EMP_NAME,
+            E.EMPID                                       AS EMP_CODE,
+            D.ORG_NAME_LOCAL                              AS DEPT_NAME
+        FROM HR_EMERGENCY_ADDRESS_APPLY A
+        LEFT JOIN HR_EMPLOYEE    E ON A.PERSON_ID = E.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT  D ON E.DEPTNO    = D.DEPTNO
+        WHERE 1 = 1
+          <if test="fromDate != null and fromDate != ''">
+            AND A.CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND A.CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND A.ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(A.WORK_EXPER_NO)                      AS APPLY_NO,
+            'WORK_EXP'                                    AS APPLY_TABLE_TYPE,
+            A.PERSON_ID,
+            TO_CHAR(A.CREATE_DATE, 'YYYY/MM/DD')          AS CREATE_DATE,
+            A.ACTIVITY,
+            A.APPLY_TYPE,
+            A.CREATED_BY                                  AS MANAGER_INFO,
+            A.CALLBACK,
+            A.EARROR,
+            E.LOCAL_NAME                                  AS EMP_NAME,
+            E.EMPID                                       AS EMP_CODE,
+            D.ORG_NAME_LOCAL                              AS DEPT_NAME
+        FROM HR_WORK_EXPERIENCE_APPLY A
+        LEFT JOIN HR_EMPLOYEE    E ON A.PERSON_ID = E.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT  D ON E.DEPTNO    = D.DEPTNO
+        WHERE 1 = 1
+          <if test="fromDate != null and fromDate != ''">
+            AND A.CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND A.CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND A.ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(A.EDUC_NO)                            AS APPLY_NO,
+            'EDUCATION'                                   AS APPLY_TABLE_TYPE,
+            A.PERSON_ID,
+            TO_CHAR(A.CREATE_DATE, 'YYYY/MM/DD')          AS CREATE_DATE,
+            A.ACTIVITY,
+            A.APPLY_TYPE,
+            A.CREATED_BY                                  AS MANAGER_INFO,
+            A.CALLBACK,
+            A.EARROR,
+            E.LOCAL_NAME                                  AS EMP_NAME,
+            E.EMPID                                       AS EMP_CODE,
+            D.ORG_NAME_LOCAL                              AS DEPT_NAME
+        FROM HR_EDUCATION_APPLY A
+        LEFT JOIN HR_EMPLOYEE    E ON A.PERSON_ID = E.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT  D ON E.DEPTNO    = D.DEPTNO
+        WHERE 1 = 1
+          <if test="fromDate != null and fromDate != ''">
+            AND A.CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND A.CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND A.ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+        UNION ALL
+        SELECT
+            TO_CHAR(A.QUAL_NO)                            AS APPLY_NO,
+            'QUALIFICATION'                               AS APPLY_TABLE_TYPE,
+            A.PERSON_ID,
+            TO_CHAR(A.CREATE_DATE, 'YYYY/MM/DD')          AS CREATE_DATE,
+            A.ACTIVITY,
+            A.APPLY_TYPE,
+            A.CREATED_BY                                  AS MANAGER_INFO,
+            A.CALLBACK,
+            A.EARROR,
+            E.LOCAL_NAME                                  AS EMP_NAME,
+            E.EMPID                                       AS EMP_CODE,
+            D.ORG_NAME_LOCAL                              AS DEPT_NAME
+        FROM HR_QUALIFICATION_APPLY A
+        LEFT JOIN HR_EMPLOYEE    E ON A.PERSON_ID = E.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT  D ON E.DEPTNO    = D.DEPTNO
+        WHERE 1 = 1
+          <if test="fromDate != null and fromDate != ''">
+            AND A.CREATE_DATE >= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+          </if>
+          <if test="toDate != null and toDate != ''">
+            AND A.CREATE_DATE &lt;= TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+          </if>
+          <if test="activitySearch != null">
+            AND A.ACTIVITY = #{activitySearch, jdbcType=NUMERIC}
+          </if>
+    </sql>
+
+    <!-- ===================================================================
+         PHÂN TRANG: đếm và lấy danh sách
+         =================================================================== -->
+    <select id="countApplyList" parameterType="com.ait.hrm.approve.dto.HrmApproveApplyDto" resultType="int">
+        SELECT COUNT(*) FROM (
+            SELECT T.* FROM (
+                <include refid="managerApplyUnionAll"/>
+            ) T
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    (CONVERTTOUNSIGN(UPPER(T.EMP_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                    OR T.EMP_CODE LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%')
+                </if>
+            </where>
+        )
+    </select>
+
+    <select id="selectApplyListPage" parameterType="com.ait.hrm.approve.dto.HrmApproveApplyDto"
+            resultMap="HrmApproveApplyResultMap">
+        SELECT * FROM (
+            SELECT A.*, ROWNUM AS RN FROM (
+                SELECT * FROM (
+                    SELECT T.* FROM (
+                        <include refid="managerApplyUnionAll"/>
+                    ) T
+                    <where>
+                        <if test="keyword != null and keyword != ''">
+                            (CONVERTTOUNSIGN(UPPER(T.EMP_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                            OR T.EMP_CODE LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%')
+                        </if>
+                    </where>
+                ) ORDER BY CREATE_DATE DESC, APPLY_NO DESC
+            ) A WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+        ) WHERE RN > #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ===================================================================
+         CẬP NHẬT ACTIVITY TRONG CÁC BẢNG APPLY
+         =================================================================== -->
+    <update id="updatePersonalApplyActivity">
+        UPDATE HR_PERSONAL_INFO_APPLY
+        SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR}
+        WHERE PERSON_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateAddressApplyActivity">
+        UPDATE HR_ADDRESS_MATTERS_APPLY
+        SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATE_BY   = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR}
+        WHERE TO_CHAR(ADDRESS_NO) = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateFamilyApplyActivity">
+        UPDATE HR_FAMILY_APPLY
+        SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR}
+        WHERE TO_CHAR(FAMILY_NO) = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateEmergencyApplyActivity">
+        UPDATE HR_EMERGENCY_ADDRESS_APPLY
+        SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR}
+        WHERE TO_CHAR(EMERGENCY_NO) = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateWorkExpApplyActivity">
+        UPDATE HR_WORK_EXPERIENCE_APPLY
+        SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR}
+        WHERE TO_CHAR(WORK_EXPER_NO) = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateEducationApplyActivity">
+        UPDATE HR_EDUCATION_APPLY
+        SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR}
+        WHERE TO_CHAR(EDUC_NO) = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateQualificationApplyActivity">
+        UPDATE HR_QUALIFICATION_APPLY
+        SET ACTIVITY    = #{activity, jdbcType=NUMERIC},
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID,  jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP,  jdbcType=VARCHAR}
+        WHERE TO_CHAR(QUAL_NO) = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ===================================================================
+         PHÊ DUYỆT: Sao chép dữ liệu từ bảng APPLY sang bảng CHÍNH
+         =================================================================== -->
+
+    <!-- 1. Thông tin cá nhân (1:1 per person → MERGE để xử lý cả INSERT lẫn UPDATE) -->
+    <update id="approvePersonalInfo">
+        MERGE INTO HR_PERSONAL_INFO T
+        USING (
+            SELECT PERSON_ID, FINAL_DEGREE_CODE, SEXCODE, DOB, NATION_CODE, NATIONALITY_CODE,
+                   MARITAL_STATUS_CODE, WEDDING_DATE, IDCARD_NO, IDCARD_START_DATE, ISSUING_AUTHORITY,
+                   HOME_ADDRESS, EMAIL, EMAIL_SECOND, REG_PLACE, OFFICE_PHONE, HOME_PHONE, CELLPHONE,
+                   COMPANY_PHONE, HOUSE_TP, RESIDENTIAL_DISTINCTION, EXIST_SINGLE, SING_ID, RELIGION,
+                   POLITICAL_OUTLOOK, CV_UPDATE_STATUS, ARMY_OR_NOT, OBSTACLE_OR_NOT
+            FROM HR_PERSONAL_INFO_APPLY
+            WHERE PERSON_NO = #{applyNo, jdbcType=VARCHAR}
+        ) S
+        ON (T.PERSON_ID = S.PERSON_ID)
+        WHEN MATCHED THEN UPDATE SET
+            T.FINAL_DEGREE_CODE         = S.FINAL_DEGREE_CODE,
+            T.SEXCODE                   = S.SEXCODE,
+            T.DOB                       = S.DOB,
+            T.NATION_CODE               = S.NATION_CODE,
+            T.NATIONALITY_CODE          = S.NATIONALITY_CODE,
+            T.MARITAL_STATUS_CODE       = S.MARITAL_STATUS_CODE,
+            T.WEDDING_DATE              = S.WEDDING_DATE,
+            T.IDCARD_NO                 = S.IDCARD_NO,
+            T.IDCARD_START_DATE         = S.IDCARD_START_DATE,
+            T.ISSUING_AUTHORITY         = S.ISSUING_AUTHORITY,
+            T.HOME_ADDRESS              = S.HOME_ADDRESS,
+            T.EMAIL                     = S.EMAIL,
+            T.EMAIL_SECOND              = S.EMAIL_SECOND,
+            T.REG_PLACE                 = S.REG_PLACE,
+            T.OFFICE_PHONE              = S.OFFICE_PHONE,
+            T.HOME_PHONE                = S.HOME_PHONE,
+            T.CELLPHONE                 = S.CELLPHONE,
+            T.COMPANY_PHONE             = S.COMPANY_PHONE,
+            T.HOUSE_TP                  = S.HOUSE_TP,
+            T.RESIDENTIAL_DISTINCTION   = S.RESIDENTIAL_DISTINCTION,
+            T.EXIST_SINGLE              = S.EXIST_SINGLE,
+            T.SING_ID                   = S.SING_ID,
+            T.RELIGION                  = S.RELIGION,
+            T.POLITICAL_OUTLOOK         = S.POLITICAL_OUTLOOK,
+            T.CV_UPDATE_STATUS          = S.CV_UPDATE_STATUS,
+            T.ARMY_OR_NOT               = S.ARMY_OR_NOT,
+            T.OBSTACLE_OR_NOT           = S.OBSTACLE_OR_NOT,
+            T.UPDATE_DATE               = SYSDATE,
+            T.UPDATED_BY                = #{adminID, jdbcType=VARCHAR},
+            T.UPDATED_IP                = #{adminIP, jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN INSERT (
+            PERSON_ID, FINAL_DEGREE_CODE, SEXCODE, DOB, NATION_CODE, NATIONALITY_CODE,
+            MARITAL_STATUS_CODE, WEDDING_DATE, IDCARD_NO, IDCARD_START_DATE, ISSUING_AUTHORITY,
+            HOME_ADDRESS, EMAIL, EMAIL_SECOND, REG_PLACE, OFFICE_PHONE, HOME_PHONE, CELLPHONE,
+            COMPANY_PHONE, HOUSE_TP, RESIDENTIAL_DISTINCTION, EXIST_SINGLE, SING_ID, RELIGION,
+            POLITICAL_OUTLOOK, CV_UPDATE_STATUS, ARMY_OR_NOT, OBSTACLE_OR_NOT,
+            CREATE_DATE, CREATED_BY, CREATED_IP, ACTIVITY
+        ) VALUES (
+            S.PERSON_ID, S.FINAL_DEGREE_CODE, S.SEXCODE, S.DOB, S.NATION_CODE, S.NATIONALITY_CODE,
+            S.MARITAL_STATUS_CODE, S.WEDDING_DATE, S.IDCARD_NO, S.IDCARD_START_DATE, S.ISSUING_AUTHORITY,
+            S.HOME_ADDRESS, S.EMAIL, S.EMAIL_SECOND, S.REG_PLACE, S.OFFICE_PHONE, S.HOME_PHONE,
+            S.CELLPHONE, S.COMPANY_PHONE, S.HOUSE_TP, S.RESIDENTIAL_DISTINCTION, S.EXIST_SINGLE,
+            S.SING_ID, S.RELIGION, S.POLITICAL_OUTLOOK, S.CV_UPDATE_STATUS, S.ARMY_OR_NOT,
+            S.OBSTACLE_OR_NOT, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, 1
+        )
+    </update>
+
+    <!-- 2. Địa chỉ (1:N → MERGE: UPDATE_ADDRESS_NO IS NULL thì INSERT mới) -->
+    <update id="approveAddress">
+        MERGE INTO HR_ADDRESS_MATTERS T
+        USING (
+            SELECT PERSON_ID, ADDRESS_TYPE, EFFECTIVE_START_DATE, ADDRESS_CONTENT,
+                   NATIONALITY, UPDATE_ADDRESS_NO
+            FROM HR_ADDRESS_MATTERS_APPLY
+            WHERE TO_CHAR(ADDRESS_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) S
+        ON (T.ADDRESS_NO = S.UPDATE_ADDRESS_NO)
+        WHEN MATCHED THEN UPDATE SET
+            T.ADDRESS_TYPE           = S.ADDRESS_TYPE,
+            T.EFFECTIVE_START_DATE   = S.EFFECTIVE_START_DATE,
+            T.ADDRESS_CONTENT        = S.ADDRESS_CONTENT,
+            T.NATIONALITY            = S.NATIONALITY,
+            T.ACTIVITY               = 1,
+            T.UPDATE_DATE            = SYSDATE,
+            T.UPDATED_BY             = #{adminID, jdbcType=VARCHAR},
+            T.UPDATED_IP             = #{adminIP, jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN INSERT (
+            ADDRESS_NO, PERSON_ID, ADDRESS_TYPE, EFFECTIVE_START_DATE, ADDRESS_CONTENT,
+            ACTIVITY, NATIONALITY,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            HR_ADDRESS_MATTERS_SEQ.NEXTVAL, S.PERSON_ID, S.ADDRESS_TYPE, S.EFFECTIVE_START_DATE,
+            S.ADDRESS_CONTENT, 1, S.NATIONALITY,
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </update>
+
+    <!-- 3. Gia đình (1:N → MERGE: UPDATE_FAMILY_NO IS NULL thì INSERT mới) -->
+    <!-- Lưu ý: FAM_FAMILY_PHONE (apply) → FAM_PHONE (main); NOTE (apply) → NOTE (main) -->
+    <update id="approveFamily">
+        MERGE INTO HR_FAMILY T
+        USING (
+            SELECT PERSON_ID, FAM_TYPE_CODE, FAM_NAME, FAM_BORNDATE, FAM_IDCARD,
+                   FAM_FAMILY_PHONE, FAM_COMPANY_NAME, LIVE_YN, EMERGENCY_CONTACT_YN,
+                   FAM_PERSON_ID, FAM_ADDRESS, GENDER, FAM_EMAIL, OCUPATION, NOTE,
+                   ISEMERGENCYADDRESS, NATIONALITY, WELFARE_TYPE, WORK_PHONE, AGE,
+                   EMERGENCY_LIAISON_OFFICE, UPDATE_FAMILY_NO
+            FROM HR_FAMILY_APPLY
+            WHERE TO_CHAR(FAMILY_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) S
+        ON (T.FAMILY_NO = S.UPDATE_FAMILY_NO)
+        WHEN MATCHED THEN UPDATE SET
+            T.FAM_TYPE_CODE           = S.FAM_TYPE_CODE,
+            T.FAM_NAME                = S.FAM_NAME,
+            T.FAM_BORNDATE            = S.FAM_BORNDATE,
+            T.FAM_IDCARD              = S.FAM_IDCARD,
+            T.FAM_PHONE               = S.FAM_FAMILY_PHONE,
+            T.FAM_COMPANY_NAME        = S.FAM_COMPANY_NAME,
+            T.LIVE_YN                 = S.LIVE_YN,
+            T.EMERGENCY_CONTACT_YN    = S.EMERGENCY_CONTACT_YN,
+            T.FAM_PERSON_ID           = S.FAM_PERSON_ID,
+            T.FAM_ADDRESS             = S.FAM_ADDRESS,
+            T.GENDER                  = S.GENDER,
+            T.FAM_EMAIL               = S.FAM_EMAIL,
+            T.OCUPATION               = S.OCUPATION,
+            T.NOTE                    = S.NOTE,
+            T.WELFARE_TYPE            = S.WELFARE_TYPE,
+            T.WORK_PHONE              = S.WORK_PHONE,
+            T.AGE                     = S.AGE,
+            T.EMERGENCY_LIAISON_OFFICE= S.EMERGENCY_LIAISON_OFFICE,
+            T.UPDATE_DATE             = SYSDATE,
+            T.UPDATED_BY              = #{adminID, jdbcType=VARCHAR},
+            T.UPDATED_IP              = #{adminIP, jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN INSERT (
+            FAMILY_NO, PERSON_ID, FAM_TYPE_CODE, FAM_NAME, FAM_BORNDATE, FAM_IDCARD,
+            FAM_PHONE, FAM_COMPANY_NAME, LIVE_YN, EMERGENCY_CONTACT_YN, FAM_PERSON_ID,
+            FAM_ADDRESS, GENDER, FAM_EMAIL, OCUPATION, NOTE, ACTIVITY,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            HR_FAMILY_SEQ.NEXTVAL, S.PERSON_ID, S.FAM_TYPE_CODE, S.FAM_NAME, S.FAM_BORNDATE,
+            S.FAM_IDCARD, S.FAM_FAMILY_PHONE, S.FAM_COMPANY_NAME, S.LIVE_YN, S.EMERGENCY_CONTACT_YN,
+            S.FAM_PERSON_ID, S.FAM_ADDRESS, S.GENDER, S.FAM_EMAIL, S.OCUPATION, S.NOTE, 1,
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </update>
+
+    <!-- 4. Địa chỉ khẩn cấp (1:N → MERGE: UPDATE_EMERGENCY_NO IS NULL thì INSERT mới) -->
+    <update id="approveEmergency">
+        MERGE INTO HR_EMERGENCY_ADDRESS T
+        USING (
+            SELECT PERSON_ID, EMER_NAME, EMER_PHONE, EMER_PHONE_SECOND, EMER_EMAIL,
+                   MAIN_LIAISON_OFFICE, EMER_ADDRESS, EMER_TYPE_CODE, ISEMERGENCYADDRESS,
+                   NATIONALITY, EMER_CELLPHONE, EMER_WORK_PHONE, UPDATE_EMERGENCY_NO
+            FROM HR_EMERGENCY_ADDRESS_APPLY
+            WHERE TO_CHAR(EMERGENCY_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) S
+        ON (T.EMERGENCY_NO = S.UPDATE_EMERGENCY_NO)
+        WHEN MATCHED THEN UPDATE SET
+            T.EMER_NAME            = S.EMER_NAME,
+            T.EMER_PHONE           = S.EMER_PHONE,
+            T.EMER_PHONE_SECOND    = S.EMER_PHONE_SECOND,
+            T.EMER_EMAIL           = S.EMER_EMAIL,
+            T.MAIN_LIAISON_OFFICE  = S.MAIN_LIAISON_OFFICE,
+            T.EMER_ADDRESS         = S.EMER_ADDRESS,
+            T.EMER_TYPE_CODE       = S.EMER_TYPE_CODE,
+            T.ISEMERGENCYADDRESS   = S.ISEMERGENCYADDRESS,
+            T.NATIONALITY          = S.NATIONALITY,
+            T.EMER_CELLPHONE       = S.EMER_CELLPHONE,
+            T.EMER_WORK_PHONE      = S.EMER_WORK_PHONE,
+            T.UPDATE_DATE          = SYSDATE,
+            T.UPDATED_BY           = #{adminID, jdbcType=VARCHAR},
+            T.UPDATED_IP           = #{adminIP, jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN INSERT (
+            EMERGENCY_NO, PERSON_ID, EMER_NAME, EMER_PHONE, EMER_PHONE_SECOND, EMER_EMAIL,
+            MAIN_LIAISON_OFFICE, EMER_ADDRESS, EMER_TYPE_CODE, ACTIVITY,
+            ISEMERGENCYADDRESS, NATIONALITY, EMER_CELLPHONE, EMER_WORK_PHONE,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            HR_EMERGENCY_ADDRESS_SEQ.NEXTVAL, S.PERSON_ID, S.EMER_NAME, S.EMER_PHONE,
+            S.EMER_PHONE_SECOND, S.EMER_EMAIL, S.MAIN_LIAISON_OFFICE, S.EMER_ADDRESS,
+            S.EMER_TYPE_CODE, 1, S.ISEMERGENCYADDRESS, S.NATIONALITY, S.EMER_CELLPHONE,
+            S.EMER_WORK_PHONE, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </update>
+
+    <!-- 5. Kinh nghiệm làm việc (1:N → MERGE; Lưu ý: TEL (apply) → CELLPHONE (main)) -->
+    <update id="approveWorkExp">
+        MERGE INTO HR_WORK_EXPERIENCE T
+        USING (
+            SELECT PERSON_ID, CPNY_NAME, DEPT_NAME, POSITION, DUTY, PAY_YEAR, RESIGN_REASON,
+                   WITNESS, TEL, AGE_LIMIT, WORK_ADDRESS, SENIORITY_RESPONSE, NATIONALITY,
+                   OVERSEAS, REMARK, START_MONTH, END_MONTH, START_DATE, END_DATE, ORDERNO,
+                   UPDATE_WORK_EXPER_NO
+            FROM HR_WORK_EXPERIENCE_APPLY
+            WHERE TO_CHAR(WORK_EXPER_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) S
+        ON (T.WORK_EXPER_NO = S.UPDATE_WORK_EXPER_NO)
+        WHEN MATCHED THEN UPDATE SET
+            T.CPNY_NAME           = S.CPNY_NAME,
+            T.DEPT_NAME           = S.DEPT_NAME,
+            T.POSITION            = S.POSITION,
+            T.DUTY                = S.DUTY,
+            T.PAY_YEAR            = S.PAY_YEAR,
+            T.RESIGN_REASON       = S.RESIGN_REASON,
+            T.WITNESS             = S.WITNESS,
+            T.CELLPHONE           = S.TEL,
+            T.AGE_LIMIT           = S.AGE_LIMIT,
+            T.WORK_ADDRESS        = S.WORK_ADDRESS,
+            T.SENIORITY_RESPONSE  = S.SENIORITY_RESPONSE,
+            T.NATIONALITY         = S.NATIONALITY,
+            T.OVERSEAS            = S.OVERSEAS,
+            T.REMARK              = S.REMARK,
+            T.START_MONTH         = S.START_MONTH,
+            T.END_MONTH           = S.END_MONTH,
+            T.START_DATE          = S.START_DATE,
+            T.END_DATE            = S.END_DATE,
+            T.ORDERNO             = S.ORDERNO,
+            T.UPDATE_DATE         = SYSDATE,
+            T.UPDATED_BY          = #{adminID, jdbcType=VARCHAR},
+            T.UPDATED_IP          = #{adminIP, jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN INSERT (
+            WORK_EXPER_NO, PERSON_ID, CPNY_NAME, DEPT_NAME, POSITION, DUTY, PAY_YEAR,
+            RESIGN_REASON, WITNESS, CELLPHONE, AGE_LIMIT, WORK_ADDRESS, SENIORITY_RESPONSE,
+            REMARK, OVERSEAS, NATIONALITY, START_MONTH, END_MONTH, START_DATE, END_DATE, ORDERNO,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATED_BY, UPDATED_IP, ACTIVITY
+        ) VALUES (
+            HR_W_EXP_SEQ.NEXTVAL, S.PERSON_ID, S.CPNY_NAME, S.DEPT_NAME, S.POSITION, S.DUTY,
+            S.PAY_YEAR, S.RESIGN_REASON, S.WITNESS, S.TEL, S.AGE_LIMIT, S.WORK_ADDRESS,
+            S.SENIORITY_RESPONSE, S.REMARK, S.OVERSEAS, S.NATIONALITY, S.START_MONTH, S.END_MONTH,
+            S.START_DATE, S.END_DATE, S.ORDERNO,
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, 1
+        )
+    </update>
+
+    <!-- 6. Trình độ học vấn (1:N → MERGE; REMARKS (apply) → REMARK (main); GPA bỏ qua) -->
+    <update id="approveEducation">
+        MERGE INTO HR_EDUCATION T
+        USING (
+            SELECT PERSON_ID, SUBJECT, DEGREE_CODE, SUBJECT_SECOND, FINAL_DEGREE_WHETHER,
+                   DEGREES_CODE, INSTITUTION_NAME, EDU_DEG_NUM, SITE_COUNTRY,
+                   REMARKS AS REMARK_VAL, ORDERNO, FILE_URL, FILE_NAME,
+                   PLACE, STUDY_EXPERIENCE, START_DATE, END_DATE, UPDATE_EDUC_NO
+            FROM HR_EDUCATION_APPLY
+            WHERE TO_CHAR(EDUC_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) S
+        ON (T.EDUC_NO = S.UPDATE_EDUC_NO)
+        WHEN MATCHED THEN UPDATE SET
+            T.SUBJECT             = S.SUBJECT,
+            T.DEGREE_CODE         = S.DEGREE_CODE,
+            T.SUBJECT_SECOND      = S.SUBJECT_SECOND,
+            T.FINAL_DEGREE_WHETHER= S.FINAL_DEGREE_WHETHER,
+            T.DEGREES_CODE        = S.DEGREES_CODE,
+            T.INSTITUTION_NAME    = S.INSTITUTION_NAME,
+            T.EDU_DEG_NUM         = S.EDU_DEG_NUM,
+            T.SITE_COUNTRY        = S.SITE_COUNTRY,
+            T.REMARK              = S.REMARK_VAL,
+            T.ORDERNO             = S.ORDERNO,
+            T.FILE_URL            = S.FILE_URL,
+            T.FILE_NAME           = S.FILE_NAME,
+            T.PLACE               = S.PLACE,
+            T.STUDY_EXPERIENCE    = S.STUDY_EXPERIENCE,
+            T.START_DATE          = S.START_DATE,
+            T.END_DATE            = S.END_DATE,
+            T.UPDATE_DATE         = SYSDATE,
+            T.UPDATED_BY          = #{adminID, jdbcType=VARCHAR},
+            T.UPDATED_IP          = #{adminIP, jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN INSERT (
+            EDUC_NO, PERSON_ID, DEGREE_CODE, FINAL_DEGREE_WHETHER, DEGREES_CODE, INSTITUTION_NAME,
+            SUBJECT, START_DATE, END_DATE, SUBJECT_SECOND, EDU_DEG_NUM, SITE_COUNTRY, REMARK,
+            ORDERNO, ACTIVITY, PLACE, STUDY_EXPERIENCE, FILE_NAME, FILE_URL,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        ) VALUES (
+            HR_EDU_SEQ.NEXTVAL, S.PERSON_ID, S.DEGREE_CODE, S.FINAL_DEGREE_WHETHER, S.DEGREES_CODE,
+            S.INSTITUTION_NAME, S.SUBJECT, S.START_DATE, S.END_DATE, S.SUBJECT_SECOND, S.EDU_DEG_NUM,
+            S.SITE_COUNTRY, S.REMARK_VAL, S.ORDERNO, 1, S.PLACE, S.STUDY_EXPERIENCE,
+            S.FILE_NAME, S.FILE_URL, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR},
+            SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </update>
+
+    <!-- 7. Chứng chỉ (1:N → MERGE; cùng sequence với apply table) -->
+    <update id="approveQualification">
+        MERGE INTO HR_QUALIFICATION T
+        USING (
+            SELECT PERSON_ID, QUAL_NAME, DATE_OBTAINED, QUAL_CARD_NO, QUAL_INSTITUTE,
+                   VALIDITY_DATE, ACQUISITION_MODES, QUAL_LEVEL, PAYMENTALLOWANCE_Y_N,
+                   QUAL_REMARK, QUAL_GRADE, FILE_URL, FILE_NAME, ORDERNO, UPDATE_QUAL_NO
+            FROM HR_QUALIFICATION_APPLY
+            WHERE TO_CHAR(QUAL_NO) = #{applyNo, jdbcType=VARCHAR}
+        ) S
+        ON (T.QUAL_NO = S.UPDATE_QUAL_NO)
+        WHEN MATCHED THEN UPDATE SET
+            T.QUAL_NAME             = S.QUAL_NAME,
+            T.DATE_OBTAINED         = S.DATE_OBTAINED,
+            T.QUAL_CARD_NO          = S.QUAL_CARD_NO,
+            T.QUAL_INSTITUTE        = S.QUAL_INSTITUTE,
+            T.VALIDITY_DATE         = S.VALIDITY_DATE,
+            T.ACQUISITION_MODES     = S.ACQUISITION_MODES,
+            T.QUAL_LEVEL            = S.QUAL_LEVEL,
+            T.PAYMENTALLOWANCE_Y_N  = S.PAYMENTALLOWANCE_Y_N,
+            T.QUAL_REMARK           = S.QUAL_REMARK,
+            T.QUAL_GRADE            = S.QUAL_GRADE,
+            T.FILE_URL              = S.FILE_URL,
+            T.FILE_NAME             = S.FILE_NAME,
+            T.ORDERNO               = S.ORDERNO,
+            T.UPDATE_DATE           = SYSDATE,
+            T.UPDATED_BY            = #{adminID, jdbcType=VARCHAR},
+            T.UPDATED_IP            = #{adminIP, jdbcType=VARCHAR}
+        WHEN NOT MATCHED THEN INSERT (
+            QUAL_NO, PERSON_ID, QUAL_NAME, DATE_OBTAINED, QUAL_CARD_NO, QUAL_INSTITUTE,
+            VALIDITY_DATE, ACQUISITION_MODES, QUAL_LEVEL, PAYMENTALLOWANCE_Y_N, QUAL_REMARK,
+            QUAL_GRADE, FILE_NAME, FILE_URL, ORDERNO, ACTIVITY,
+            CREATE_DATE, CREATED_BY, CREATED_IP
+        ) VALUES (
+            hr_qualification_apply_seq.NEXTVAL, S.PERSON_ID, S.QUAL_NAME, S.DATE_OBTAINED,
+            S.QUAL_CARD_NO, S.QUAL_INSTITUTE, S.VALIDITY_DATE, S.ACQUISITION_MODES, S.QUAL_LEVEL,
+            S.PAYMENTALLOWANCE_Y_N, S.QUAL_REMARK, S.QUAL_GRADE, S.FILE_NAME, S.FILE_URL,
+            S.ORDERNO, 1, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}
+        )
+    </update>
+
+    <!-- ===================================================================
+         LẤY DỮ LIỆU GỐC (trước khi thay đổi) từ bảng chính để so sánh
+         Dùng quoted lowercase alias để JS có thể đọc key dạng camelCase
+         =================================================================== -->
+
+    <select id="getOriginalPersonal" resultType="map">
+        SELECT
+            TO_CHAR(P.FINAL_DEGREE_CODE)                         AS "finalDegreeCode",
+            GET_GLOBAL_NAME(P.FINAL_DEGREE_CODE, #{lang, jdbcType=VARCHAR})  AS "finalDegreeName",
+            TO_CHAR(P.SEXCODE)                                   AS "sexCode",
+            GET_GLOBAL_NAME(P.SEXCODE, #{lang, jdbcType=VARCHAR})  AS "sexName",
+            TO_CHAR(P.DOB, 'YYYY/MM/DD')                         AS "dob",
+            TO_CHAR(P.NATION_CODE)                               AS "nationCode",
+            GET_GLOBAL_NAME(P.NATION_CODE, #{lang, jdbcType=VARCHAR})  AS "nationName",
+            TO_CHAR(P.NATIONALITY_CODE)                          AS "nationalityCode",
+            GET_GLOBAL_NAME(P.NATIONALITY_CODE, #{lang, jdbcType=VARCHAR})  AS "nationalityName",
+            TO_CHAR(P.MARITAL_STATUS_CODE)                       AS "maritalStatusCode",
+            GET_GLOBAL_NAME(P.MARITAL_STATUS_CODE, #{lang, jdbcType=VARCHAR})  AS "maritalStatusName",
+            TO_CHAR(P.WEDDING_DATE, 'YYYY/MM/DD')                AS "weddingDate",
+            P.IDCARD_NO                                          AS "idcardNo",
+            P.IDCARD_START_DATE                                  AS "idcardStartDate",
+            P.ISSUING_AUTHORITY                                  AS "issuingAuthority",
+            P.HOME_ADDRESS                                       AS "homeAddress",
+            P.EMAIL                                              AS "email",
+            P.EMAIL_SECOND                                       AS "emailSecond",
+            P.REG_PLACE                                          AS "regPlace",
+            P.OFFICE_PHONE                                       AS "officePhone",
+            P.HOME_PHONE                                         AS "homePhone",
+            P.CELLPHONE                                          AS "cellphone",
+            P.COMPANY_PHONE                                      AS "companyPhone",
+            P.HOUSE_TP                                           AS "houseTp",
+            P.RESIDENTIAL_DISTINCTION                            AS "residentialDistinction",
+            GET_GLOBAL_NAME(P.RESIDENTIAL_DISTINCTION, #{lang, jdbcType=VARCHAR})  AS "residentialDistinctionName",
+            P.EXIST_SINGLE                                       AS "existSingle",
+            P.SING_ID                                            AS "singId",
+            P.RELIGION                                           AS "religion",
+            P.POLITICAL_OUTLOOK                                  AS "politicalOutlook",
+            P.CV_UPDATE_STATUS                                   AS "cvUpdateStatus",
+            P.ARMY_OR_NOT                                        AS "armyOrNot",
+            P.OBSTACLE_OR_NOT                                    AS "obstacleOrNot"
+        FROM HR_PERSONAL_INFO P
+        INNER JOIN HR_PERSONAL_INFO_APPLY A ON P.PERSON_ID = A.PERSON_ID
+        WHERE A.PERSON_NO = #{applyNo, jdbcType=VARCHAR}
+          AND P.ACTIVITY = 1
+    </select>
+
+    <select id="getOriginalAddress" resultType="map">
+        SELECT
+            TO_CHAR(M.ADDRESS_NO)                                AS "addressNo",
+            TO_CHAR(M.ADDRESS_TYPE)                              AS "addressType",
+            GET_GLOBAL_NAME(M.ADDRESS_TYPE, #{lang, jdbcType=VARCHAR})  AS "addressTypeName",
+            M.EFFECTIVE_START_DATE                               AS "effectiveStartDate",
+            M.ADDRESS_CONTENT                                    AS "addressContent",
+            M.NATIONALITY                                        AS "nationality"
+        FROM HR_ADDRESS_MATTERS M
+        INNER JOIN HR_ADDRESS_MATTERS_APPLY A ON M.ADDRESS_NO = A.UPDATE_ADDRESS_NO
+        WHERE TO_CHAR(A.ADDRESS_NO) = #{applyNo, jdbcType=VARCHAR}
+          AND A.UPDATE_ADDRESS_NO IS NOT NULL
+          AND M.ACTIVITY = 1
+    </select>
+
+    <select id="getOriginalFamily" resultType="map">
+        SELECT
+            TO_CHAR(F.FAMILY_NO)                                 AS "familyNo",
+            TO_CHAR(F.FAM_TYPE_CODE)                             AS "famTypeCode",
+            GET_GLOBAL_NAME(F.FAM_TYPE_CODE, #{lang, jdbcType=VARCHAR})  AS "famTypeName",
+            F.FAM_NAME                                           AS "famName",
+            TO_CHAR(F.FAM_BORNDATE, 'YYYY/MM/DD')               AS "famBorndate",
+            F.FAM_IDCARD                                         AS "famIdcard",
+            F.FAM_PHONE                                          AS "famFamilyPhone",
+            F.FAM_COMPANY_NAME                                   AS "famCompanyName",
+            F.LIVE_YN                                            AS "liveYn",
+            F.EMERGENCY_CONTACT_YN                               AS "emergencyContactYn",
+            F.FAM_PERSON_ID                                      AS "famPersonId",
+            F.FAM_ADDRESS                                        AS "famAddress",
+            F.GENDER                                             AS "gender",
+            F.FAM_EMAIL                                          AS "famEmail",
+            F.OCUPATION                                          AS "ocupation",
+            F.NOTE                                               AS "note",
+            F.NATIONALITY                                        AS "nationality"
+        FROM HR_FAMILY F
+        INNER JOIN HR_FAMILY_APPLY A ON F.FAMILY_NO = A.UPDATE_FAMILY_NO
+        WHERE TO_CHAR(A.FAMILY_NO) = #{applyNo, jdbcType=VARCHAR}
+          AND A.UPDATE_FAMILY_NO IS NOT NULL
+          AND (F.ACTIVITY = 1 OR F.ACTIVITY IS NULL)
+    </select>
+
+    <select id="getOriginalEmergency" resultType="map">
+        SELECT
+            TO_CHAR(E.EMERGENCY_NO)                              AS "emergencyNo",
+            E.EMER_NAME                                          AS "emerName",
+            E.EMER_PHONE                                         AS "emerPhone",
+            E.EMER_PHONE_SECOND                                  AS "emerPhoneSecond",
+            E.EMER_EMAIL                                         AS "emerEmail",
+            E.MAIN_LIAISON_OFFICE                                AS "mainLiaisonOffice",
+            E.EMER_ADDRESS                                       AS "emerAddress",
+            TO_CHAR(E.EMER_TYPE_CODE)                            AS "emerTypeCode",
+            GET_GLOBAL_NAME(E.EMER_TYPE_CODE, #{lang, jdbcType=VARCHAR})  AS "emerTypeName",
+            E.ISEMERGENCYADDRESS                                 AS "isEmergencyAddress",
+            E.NATIONALITY                                        AS "nationality",
+            E.EMER_CELLPHONE                                     AS "emerCellphone",
+            E.EMER_WORK_PHONE                                    AS "emerWorkPhone"
+        FROM HR_EMERGENCY_ADDRESS E
+        INNER JOIN HR_EMERGENCY_ADDRESS_APPLY A ON E.EMERGENCY_NO = A.UPDATE_EMERGENCY_NO
+        WHERE TO_CHAR(A.EMERGENCY_NO) = #{applyNo, jdbcType=VARCHAR}
+          AND A.UPDATE_EMERGENCY_NO IS NOT NULL
+          AND (E.ACTIVITY = 1 OR E.ACTIVITY IS NULL)
+    </select>
+
+    <select id="getOriginalWorkExp" resultType="map">
+        SELECT
+            TO_CHAR(W.WORK_EXPER_NO)                             AS "workExperNo",
+            W.CPNY_NAME                                          AS "cpnyName",
+            W.DEPT_NAME                                          AS "deptName",
+            W.POSITION                                           AS "position",
+            W.DUTY                                               AS "duty",
+            W.PAY_YEAR                                           AS "payYear",
+            W.RESIGN_REASON                                      AS "resignReason",
+            W.WITNESS                                            AS "witness",
+            W.CELLPHONE                                          AS "tel",
+            W.AGE_LIMIT                                          AS "ageLimit",
+            W.WORK_ADDRESS                                       AS "workAddress",
+            W.SENIORITY_RESPONSE                                 AS "seniorityResponse",
+            W.NATIONALITY                                        AS "nationality",
+            W.OVERSEAS                                           AS "overseas",
+            W.REMARK                                             AS "remark",
+            W.START_MONTH                                        AS "startMonth",
+            W.END_MONTH                                          AS "endMonth",
+            W.START_DATE                                         AS "startDate",
+            W.END_DATE                                           AS "endDate"
+        FROM HR_WORK_EXPERIENCE W
+        INNER JOIN HR_WORK_EXPERIENCE_APPLY A ON W.WORK_EXPER_NO = A.UPDATE_WORK_EXPER_NO
+        WHERE TO_CHAR(A.WORK_EXPER_NO) = #{applyNo, jdbcType=VARCHAR}
+          AND A.UPDATE_WORK_EXPER_NO IS NOT NULL
+          AND W.ACTIVITY = 1
+    </select>
+
+    <select id="getOriginalEducation" resultType="map">
+        SELECT
+            TO_CHAR(E.EDUC_NO)                                   AS "educNo",
+            E.SUBJECT                                            AS "subject",
+            TO_CHAR(E.DEGREE_CODE)                               AS "degreeCode",
+            GET_GLOBAL_NAME(E.DEGREE_CODE, #{lang, jdbcType=VARCHAR})  AS "degreeName",
+            E.SUBJECT_SECOND                                     AS "subjectSecond",
+            E.FINAL_DEGREE_WHETHER                               AS "finalDegreeWhether",
+            E.DEGREES_CODE                                       AS "degreesCode",
+            E.INSTITUTION_NAME                                   AS "institutionName",
+            E.EDU_DEG_NUM                                        AS "eduDegNum",
+            E.SITE_COUNTRY                                       AS "siteCountry",
+            E.REMARK                                             AS "remarks",
+            E.ORDERNO                                            AS "orderno",
+            E.FILE_URL                                           AS "fileUrl",
+            E.FILE_NAME                                          AS "fileName",
+            E.PLACE                                              AS "place",
+            E.STUDY_EXPERIENCE                                   AS "studyExperience",
+            E.START_DATE                                         AS "startDate",
+            E.END_DATE                                           AS "endDate"
+        FROM HR_EDUCATION E
+        INNER JOIN HR_EDUCATION_APPLY A ON E.EDUC_NO = A.UPDATE_EDUC_NO
+        WHERE TO_CHAR(A.EDUC_NO) = #{applyNo, jdbcType=VARCHAR}
+          AND A.UPDATE_EDUC_NO IS NOT NULL
+          AND E.ACTIVITY = 1
+    </select>
+
+    <select id="getOriginalQualification" resultType="map">
+        SELECT
+            TO_CHAR(Q.QUAL_NO)                                   AS "qualNo",
+            Q.QUAL_NAME                                          AS "qualName",
+            Q.DATE_OBTAINED                                      AS "dateObtained",
+            Q.QUAL_CARD_NO                                       AS "qualCardNo",
+            Q.QUAL_INSTITUTE                                     AS "qualInstitute",
+            Q.VALIDITY_DATE                                      AS "validityDate",
+            Q.ACQUISITION_MODES                                  AS "acquisitionModes",
+            Q.QUAL_LEVEL                                         AS "qualLevel",
+            Q.PAYMENTALLOWANCE_Y_N                               AS "paymentAllowanceYN",
+            Q.QUAL_REMARK                                        AS "qualRemark",
+            Q.QUAL_GRADE                                         AS "qualGrade",
+            Q.FILE_URL                                           AS "fileUrl",
+            Q.FILE_NAME                                          AS "fileName",
+            Q.ORDERNO                                            AS "orderno"
+        FROM HR_QUALIFICATION Q
+        INNER JOIN HR_QUALIFICATION_APPLY A ON Q.QUAL_NO = A.UPDATE_QUAL_NO
+        WHERE TO_CHAR(A.QUAL_NO) = #{applyNo, jdbcType=VARCHAR}
+          AND A.UPDATE_QUAL_NO IS NOT NULL
+          AND Q.ACTIVITY = 1
+    </select>
+
+    <!-- ===================================================================
+         Đếm tổng số yêu cầu thay đổi thông tin cá nhân đang chờ duyệt (ACTIVITY=1)
+         Dùng cho topbar notification badge
+         =================================================================== -->
+    <select id="countPendingPersonalChanges" resultType="int">
+        SELECT COUNT(1) FROM (
+            SELECT 1 FROM HR_PERSONAL_INFO_APPLY
+             WHERE ACTIVITY = 1
+            UNION ALL
+            SELECT 1 FROM HR_ADDRESS_MATTERS_APPLY
+             WHERE ACTIVITY = 1
+            UNION ALL
+            SELECT 1 FROM HR_FAMILY_APPLY
+             WHERE ACTIVITY = 1
+            UNION ALL
+            SELECT 1 FROM HR_EMERGENCY_ADDRESS_APPLY
+             WHERE ACTIVITY = 1
+            UNION ALL
+            SELECT 1 FROM HR_WORK_EXPERIENCE_APPLY
+             WHERE ACTIVITY = 1
+            UNION ALL
+            SELECT 1 FROM HR_EDUCATION_APPLY
+             WHERE ACTIVITY = 1
+            UNION ALL
+            SELECT 1 FROM HR_QUALIFICATION_APPLY
+             WHERE ACTIVITY = 1
+        )
+    </select>
+
+</mapper>

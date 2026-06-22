@@ -1,11 +1,11 @@
 package com.ait.config;
 
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,48 +42,49 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(
+                .authorizeRequests(authz -> authz
+                        .antMatchers(
                                 "/", "/login", "/auth/login", "/logout",
                                 "/assets/**", "/static/**", "/webjars/**",
                                 "/error/**", "/favicon.ico",
                                 "/actuator/health", "/api/health", "/api/csrf-token",
                                 "/change-language", "/api/current-language", "/api/supported-languages")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/sys/api/code/list", "/sys/api/menu/list")
+                        .antMatchers(HttpMethod.GET, "/sys/api/code/list", "/sys/api/menu/list")
                         .authenticated()
-                        .requestMatchers("/sy/excel/api/**")
+                        .antMatchers("/sy/excel/api/**")
                         .authenticated()
-                        .requestMatchers(
+                        .antMatchers("/sys/syRole/viewLoginUser", "/sys/api/user/**")
+                        .hasAnyRole("ADMIN", "SYS", "HRM")
+                        .antMatchers(
                                 "/api/admin/**",
                                 "/api/monitoring/**",
                                 "/api/performance/**",
                                 "/api/database/**",
                                 "/multilingual/**",
-                                "/sys/api/**",
-                                "/sys/api/user/**",
-                                "/sys/syRole/viewLoginUser")
+                                "/sys/api/**")
                         .hasAnyRole("ADMIN", "SYS")
-                        .requestMatchers(HttpMethod.POST, "/api/multilingual/content", "/api/multilingual/code-param/link")
+                        .antMatchers(HttpMethod.POST, "/api/multilingual/content", "/api/multilingual/code-param/link")
                         .hasAnyRole("ADMIN", "SYS")
-                        .requestMatchers(HttpMethod.PUT, "/api/multilingual/content")
+                        .antMatchers(HttpMethod.PUT, "/api/multilingual/content")
                         .hasAnyRole("ADMIN", "SYS")
-                        .requestMatchers(HttpMethod.DELETE, "/api/multilingual/code-param/unlink")
+                        .antMatchers(HttpMethod.DELETE, "/api/multilingual/code-param/unlink")
                         .hasAnyRole("ADMIN", "SYS")
-                        .requestMatchers(HttpMethod.POST, "/org/api/process/execute", "/org/api/resume/add", "/org/api/resume/update")
+                        .antMatchers(HttpMethod.POST, "/org/api/process/execute", "/org/api/resume/add", "/org/api/resume/update")
                         .hasAnyRole("ADMIN", "SYS")
-                        .requestMatchers(HttpMethod.DELETE, "/org/api/resume/delete/**")
+                        .antMatchers(HttpMethod.DELETE, "/org/api/resume/delete/**")
                         .hasAnyRole("ADMIN", "SYS")
                         .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers(
+                        .ignoringAntMatchers(
                                 "/auth/login", "/logout",
                                 "/api/change-first-password",
                                 "/api/csrf-token",
-                                "/password/api/verify-old-password"))
+                                "/password/api/verify-old-password",
+                                "/password/api/change-password"))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login")))
                 .addFilterBefore(new SessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

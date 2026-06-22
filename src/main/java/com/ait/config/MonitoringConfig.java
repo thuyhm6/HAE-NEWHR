@@ -2,7 +2,6 @@ package com.ait.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -25,23 +24,18 @@ public class MonitoringConfig implements WebMvcConfigurer {
 
     private final LoggingService loggingService;
     private final MetricsService metricsService;
+    private final MonitoringInterceptor monitoringInterceptor;
 
-    public MonitoringConfig(LoggingService loggingService, MetricsService metricsService) {
+    public MonitoringConfig(LoggingService loggingService, MetricsService metricsService,
+            MonitoringInterceptor monitoringInterceptor) {
         this.loggingService = loggingService;
         this.metricsService = metricsService;
-    }
-
-    /**
-     * Monitoring interceptor để track requests
-     */
-    @Bean
-    public MonitoringInterceptor monitoringInterceptor() {
-        return new MonitoringInterceptor(loggingService, metricsService);
+        this.monitoringInterceptor = monitoringInterceptor;
     }
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
-        registry.addInterceptor(monitoringInterceptor())
+        registry.addInterceptor(monitoringInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/static/**",

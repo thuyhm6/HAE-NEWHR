@@ -5,6 +5,8 @@ import com.ait.ess.viewDept.dto.ArPersonalListDto;
 import com.ait.ess.viewDept.dto.ArPersonalSelfDetailDto;
 import com.ait.ess.viewDept.dto.ArPersonalSelfDto;
 import com.ait.ess.viewDept.dto.EssEntryInfoListDto;
+import com.ait.ess.viewDept.dto.ManageCountInfoEmpDto;
+import com.ait.ess.viewDept.dto.ManageCountInfoSummaryDto;
 import com.ait.ess.viewDept.dto.ManageEvsResultEmpDto;
 import com.ait.ess.viewDept.dto.ManageEmpPositionInfoDto;
 import com.ait.ess.viewDept.dto.ManageEmpPositionInsideDto;
@@ -15,6 +17,7 @@ import com.ait.ess.viewDept.dto.YearUseVacationDto;
 import com.ait.ess.viewDept.service.ArPersonalListService;
 import com.ait.ess.viewDept.service.ArPersonalSelfService;
 import com.ait.ess.viewDept.service.EssEntryInfoListService;
+import com.ait.ess.viewDept.service.ManageCountInfoService;
 import com.ait.ess.viewDept.service.ManageEvsResultEmpService;
 import com.ait.ess.viewDept.service.ManageEmpPositionInfoService;
 import com.ait.ess.viewDept.service.OtApplyPersonalSelfService;
@@ -55,6 +58,9 @@ public class EssViewDeptController {
 
     @Autowired
     private EssEntryInfoListService essEntryInfoListService;
+
+    @Autowired
+    private ManageCountInfoService manageCountInfoService;
 
     @GetMapping("/viewEmpCalendar")
     public String viewEmpCalendar() {
@@ -255,6 +261,23 @@ public class EssViewDeptController {
         params.setStartDate(startDate);
         params.setEndDate(endDate);
         return ResponseEntity.ok(arPersonalListService.getDetailList(params));
+    }
+
+    @GetMapping("/ManageCountInfoList")
+    public String viewManageCountInfoList() {
+        return "ess/viewDept/ManageCountInfoList";
+    }
+
+    @GetMapping("/api/manageCountInfo/summary")
+    @ResponseBody
+    public ResponseEntity<ManageCountInfoSummaryDto> getManageCountInfoSummary(ManageCountInfoEmpDto params) {
+        return ResponseEntity.ok(manageCountInfoService.getSummary(params));
+    }
+
+    @GetMapping("/api/manageCountInfo/list")
+    @ResponseBody
+    public DataTablesResponse<ManageCountInfoEmpDto> getManageCountInfoList(ManageCountInfoEmpDto params) {
+        return manageCountInfoService.getPageList(params);
     }
 
     @GetMapping("/viewEntryInfoList")

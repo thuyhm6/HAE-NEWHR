@@ -132,7 +132,7 @@ public class ArMacRecordEatServiceImpl implements ArMacRecordEatService {
                             continue;
                         }
 
-                        // Lưu vào AR_MAC_RECORDS_HTSV_EAT với INSERT_BY='M'
+                        // Lưu vào AR_MAC_RECORDS_HAE_EAT với INSERT_BY='M'
                         ArMacRecordEatDto insertDto = new ArMacRecordEatDto();
                         insertDto.setEmpId(empId.trim());
                         insertDto.setEmployeeName(firstName);

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ess.empinfo.mapper.HrQualificationApplyMapper">
+
+    <resultMap id="HrQualificationApplyResultMap" type="com.ait.ess.empinfo.dto.HrQualificationApplyDto">
+        <id     property="qualNo"               column="QUAL_NO"/>
+        <result property="personId"             column="PERSON_ID"/>
+        <result property="qualName"             column="QUAL_NAME"/>
+        <result property="dateObtained"         column="DATE_OBTAINED"/>
+        <result property="qualCardNo"           column="QUAL_CARD_NO"/>
+        <result property="qualInstitute"        column="QUAL_INSTITUTE"/>
+        <result property="orderno"              column="ORDERNO"/>
+        <result property="activity"             column="ACTIVITY"/>
+        <result property="validityDate"         column="VALIDITY_DATE"/>
+        <result property="acquisitionModes"     column="ACQUISITION_MODES"/>
+        <result property="qualLevel"            column="QUAL_LEVEL"/>
+        <result property="paymentallowanceYN"   column="PAYMENTALLOWANCE_Y_N"/>
+        <result property="qualGrade"            column="QUAL_GRADE"/>
+        <result property="qualRemark"           column="QUAL_REMARK"/>
+        <result property="updateQualNo"         column="UPDATE_QUAL_NO"/>
+        <result property="applyType"            column="APPLY_TYPE"/>
+        <result property="essTypeCode"          column="ESS_TYPE_CODE"/>
+        <result property="fileUrl"              column="FILE_URL"/>
+        <result property="fileName"             column="FILE_NAME"/>
+        <result property="filenosstr"           column="FILENOSSTR"/>
+        <result property="earror"               column="EARROR"/>
+        <result property="callback"             column="CALLBACK"/>
+    </resultMap>
+
+    <select id="selectQualNextval" resultType="java.lang.Long">
+        SELECT HR_QUALIFICATION_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <insert id="insertQualificationApply" parameterType="com.ait.ess.empinfo.dto.HrQualificationApplyDto">
+        INSERT INTO HR_QUALIFICATION_APPLY (
+            QUAL_NO,
+            PERSON_ID,
+            QUAL_NAME,
+            DATE_OBTAINED,
+            QUAL_CARD_NO,
+            QUAL_INSTITUTE,
+            ORDERNO,
+            ACTIVITY,
+            VALIDITY_DATE,
+            ACQUISITION_MODES,
+            QUAL_LEVEL,
+            PAYMENTALLOWANCE_Y_N,
+            QUAL_GRADE,
+            QUAL_REMARK,
+            UPDATE_QUAL_NO,
+            APPLY_TYPE,
+            ESS_TYPE_CODE,
+            FILE_URL,
+            FILE_NAME,
+            FILENOSSTR,
+            EARROR,
+            CALLBACK,
+            CREATE_DATE,
+            CREATED_BY,
+            CREATED_IP,
+            UPDATE_DATE,
+            UPDATED_BY,
+            UPDATED_IP
+        ) VALUES (
+            #{qualNo,               jdbcType=NUMERIC},
+            #{personId,             jdbcType=VARCHAR},
+            #{qualName,             jdbcType=VARCHAR},
+            TO_DATE(#{dateObtained, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+            #{qualCardNo,           jdbcType=VARCHAR},
+            #{qualInstitute,        jdbcType=VARCHAR},
+            #{orderno,              jdbcType=NUMERIC},
+            #{activity,             jdbcType=NUMERIC},
+            TO_DATE(#{validityDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+            #{acquisitionModes,     jdbcType=VARCHAR},
+            #{qualLevel,            jdbcType=VARCHAR},
+            #{paymentallowanceYN,   jdbcType=VARCHAR},
+            #{qualGrade,            jdbcType=VARCHAR},
+            #{qualRemark,           jdbcType=VARCHAR},
+            #{updateQualNo,         jdbcType=NUMERIC},
+            #{applyType,            jdbcType=NUMERIC},
+            #{essTypeCode,          jdbcType=VARCHAR},
+            #{fileUrl,              jdbcType=VARCHAR},
+            #{fileName,             jdbcType=VARCHAR},
+            #{filenosstr,           jdbcType=VARCHAR},
+            #{earror,               jdbcType=VARCHAR},
+            #{callback,             jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,              jdbcType=VARCHAR},
+            #{adminIP,              jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,              jdbcType=VARCHAR},
+            #{adminIP,              jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="selectByQualNo" resultMap="HrQualificationApplyResultMap">
+        SELECT
+            QUAL_NO, PERSON_ID, QUAL_NAME,
+            TO_CHAR(DATE_OBTAINED,'YYYY/MM/DD') AS DATE_OBTAINED,
+            QUAL_CARD_NO, QUAL_INSTITUTE, ORDERNO, ACTIVITY,
+            TO_CHAR(VALIDITY_DATE,'YYYY/MM/DD') AS VALIDITY_DATE,
+            ACQUISITION_MODES, QUAL_LEVEL, PAYMENTALLOWANCE_Y_N, QUAL_GRADE,
+            QUAL_REMARK, UPDATE_QUAL_NO, APPLY_TYPE, ESS_TYPE_CODE,
+            FILE_URL, FILE_NAME, FILENOSSTR, EARROR, CALLBACK
+        FROM HR_QUALIFICATION_APPLY
+        WHERE QUAL_NO = #{qualNo, jdbcType=NUMERIC}
+    </select>
+
+</mapper>

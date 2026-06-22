@@ -1,0 +1,514 @@
+<div th:fragment="content">
+    <!-- ===== Thanh tìm kiếm ===== -->
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <form id="veai_searchForm" class="row g-2 align-items-end">
+                <div class="col-auto d-flex align-items-center gap-2 flex-wrap">
+                    <label class="form-label mb-0 fw-semibold" th:text="#{common.time}">Thời gian</label>
+                    <input type="text" class="form-control form-control-sm js-daterangepicker" id="veai_fromDate"
+                        style="width:130px;" data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
+                    <span>~</span>
+                    <input type="text" class="form-control form-control-sm js-daterangepicker" id="veai_toDate"
+                        style="width:130px;" data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
+                </div>
+                <div class="col-auto d-flex align-items-center gap-3">
+                    <label class="form-label mb-0 fw-semibold" th:text="#{common.status}">Trạng thái</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="veai_activity" id="veai_actAll" value="">
+                            <label class="form-check-label" for="veai_actAll" th:text="#{veai.filter.all}">Tất cả</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="veai_activity" id="veai_actSubmit" value="1" checked>
+                            <label class="form-check-label" for="veai_actSubmit" th:text="#{veai.status.submitted}">Gửi</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="veai_activity" id="veai_actApproved" value="2">
+                            <label class="form-check-label" for="veai_actApproved" th:text="#{veai.status.approved}">Duyệt</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="veai_activity" id="veai_actRejected" value="3">
+                            <label class="form-check-label" for="veai_actRejected" th:text="#{veai.status.rejected}">Từ chối</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto ms-auto">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="veaiSearch()">
+                        <i class="bx bx-search"></i> <span th:text="#{common.search}">Tra cứu</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary ms-1" onclick="veaiClear()">
+                        <i class="bx bx-x"></i> <span th:text="#{common.reset}">Đặt lại</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== Split panel: Danh sách | Chi tiết ===== -->
+    <div class="row g-3">
+
+        <!-- == CỘT TRÁI: Danh sách == -->
+        <div class="col-xl-5 col-lg-6">
+            <div class="card h-100">
+                <div class="card-body p-0">
+                    <div class="p-2 border-bottom d-flex align-items-center gap-2">
+                        <label class="mb-0 text-muted small" th:text="#{veai.filter.quickFilter}">Lọc nhanh</label>
+                        <input type="text" id="veai_quickFilter" class="form-control form-control-sm"
+                            style="max-width:200px;" oninput="veaiQuickFilter(this.value)">
+                        <span class="ms-auto text-muted small">
+                            <span th:text="#{veai.perPage}">Mỗi trang</span>
+                            <select id="veai_pageLen" class="form-select form-select-sm d-inline-block ms-1"
+                                style="width:65px;" onchange="veaiChangePageLen(this.value)">
+                                <option value="25">25</option>
+                                <option value="50" selected>50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span th:text="#{veai.dataUnit}">dữ liệu</span>
+                        </span>
+                    </div>
+                    <div class="table-responsive" style="max-height:calc(100vh - 260px); overflow-y:auto;">
+                        <table id="veai_dataTable" class="table table-striped table-bordered table-hover table-sm align-middle mb-0">
+                            <thead class="table-light text-center align-middle" style="position:sticky;top:0;z-index:1;">
+                                <tr>
+                                    <th th:text="#{veai.col.content}">Nội dung</th>
+                                    <th th:text="#{common.time}">Thời gian</th>
+                                    <th th:text="#{veai.col.distinction}">Phân biệt</th>
+                                    <th th:text="#{common.status}">Trạng thái</th>
+                                    <th th:text="#{veai.col.manager}">Người quản lý</th>
+                                    <th th:text="#{veai.col.feedback}">Phản hồi</th>
+                                    <th th:text="#{veai.col.error}">Nội dung lỗi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="veai_tableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted" th:text="#{common.loading}">Đang tải...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang -->
+                    <div class="d-flex justify-content-between align-items-center px-2 py-1 border-top">
+                        <span id="veai_pageInfo" class="text-muted small"></span>
+                        <nav>
+                            <ul id="veai_pagination" class="pagination pagination-sm mb-0"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- == CỘT PHẢI: Chi tiết == -->
+        <div class="col-xl-7 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header py-2 d-flex align-items-center gap-2">
+                    <i class="bx bx-info-circle text-primary"></i>
+                    <strong th:text="#{veai.detail.title}">Chi tiết thay đổi</strong>
+                    <span id="veai_detailBadge" class="badge bg-secondary ms-auto d-none"></span>
+                </div>
+                <div class="card-body" id="veai_detailBody" style="min-height:300px; overflow-y:auto; max-height:calc(100vh - 220px);">
+                    <div class="text-center text-muted py-5" id="veai_detailPlaceholder">
+                        <i class="bx bx-select-multiple fs-1 d-block mb-2"></i>
+                        <span th:text="#{veai.detail.placeholder}">Chọn một thay đổi để xem chi tiết</span>
+                    </div>
+                    <!-- Tabs loại thay đổi -->
+                    <div id="veai_detailTabs" class="d-none">
+                        <ul class="nav nav-tabs nav-sm mb-3" id="veai_tabList" role="tablist"></ul>
+                        <div class="tab-content" id="veai_tabContent"></div>
+
+                        <!-- File đính kèm -->
+                        <div class="mt-3">
+                            <h6 class="fw-bold text-secondary border-bottom pb-1">
+                                <i class="bx bx-paperclip me-1"></i>
+                                <span th:text="#{epi.field.attachFiles}">File đính kèm</span>
+                            </h6>
+                            <ul id="veai_fileList" class="list-group list-group-flush"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        /* =====================================================================
+           viewEssApplyInfo — Tra cứu chi tiết thay đổi thông tin cá nhân (ESS)
+           Prefix ID: veai_
+        ===================================================================== */
+        var _veai_pageBooted  = false;
+        var _veai_allData     = [];   // full result set from server
+        var _veai_filtered    = [];   // after quick-filter
+        var _veai_page        = 1;
+        var _veai_pageLen     = 50;
+        var _veai_selectedRow = null;
+
+        var _veai_msg = {
+            noData:      /*[[#{common.noData}]]*/ 'Không có dữ liệu',
+            loading:     /*[[#{common.loading}]]*/ 'Đang tải...',
+            loadFailed:  /*[[#{veai.msg.loadFailed}]]*/ 'Tải dữ liệu thất bại',
+            placeholder: /*[[#{veai.detail.placeholder}]]*/ 'Chọn một thay đổi để xem chi tiết',
+            noFile:      /*[[#{veai.msg.noFile}]]*/ 'Không có file đính kèm'
+        };
+
+        var _veai_typeLabel = {
+            PERSONAL:      /*[[#{veai.type.personal}]]*/ 'Thông tin cá nhân',
+            ADDRESS:       /*[[#{veai.type.address}]]*/ 'Loại địa chỉ',
+            FAMILY:        /*[[#{veai.type.family}]]*/ 'Thông tin gia đình',
+            EMERGENCY:     /*[[#{veai.type.emergency}]]*/ 'Người liên hệ khẩn cấp',
+            WORK_EXP:      /*[[#{veai.type.workExp}]]*/ 'Kinh nghiệm làm việc',
+            EDUCATION:     /*[[#{veai.type.education}]]*/ 'Trình độ học vấn',
+            QUALIFICATION: /*[[#{veai.type.qualification}]]*/ 'Chứng chỉ'
+        };
+
+        var _veai_actLabel = {
+            1: /*[[#{veai.status.submitted}]]*/ 'Gửi',
+            2: /*[[#{veai.status.approved}]]*/ 'Duyệt',
+            3: /*[[#{veai.status.rejected}]]*/ 'Từ chối'
+        };
+
+        var _veai_actClass = { 1: 'secondary', 2: 'success', 3: 'danger' };
+
+        var _veai_distinc = {
+            1: /*[[#{veai.distinction.new}]]*/ 'Thêm mới',
+            2: /*[[#{veai.distinction.update}]]*/ 'Sửa'
+        };
+
+        // ------------------------------------------------------------------ //
+        // Utility
+        // ------------------------------------------------------------------ //
+        function veaiEsc(v) {
+            if (v == null) return '';
+            return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function veaiRow(label, value) {
+            return '<tr><th class="table-light text-nowrap" style="width:38%;">' + label + '</th>'
+                 + '<td>' + veaiEsc(value) + '</td></tr>';
+        }
+
+        // ------------------------------------------------------------------ //
+        // Tải danh sách từ server (không server-side paging — tải toàn bộ 1 lần)
+        // ------------------------------------------------------------------ //
+        function veaiLoadData() {
+            var body = $('#veai_tableBody');
+            body.html('<tr><td colspan="7" class="text-center text-muted">' + veaiEsc(_veai_msg.loading) + '</td></tr>');
+            veaiResetDetail();
+
+            var actVal = $('input[name="veai_activity"]:checked').val();
+            var params = {
+                fromDate:       $('#veai_fromDate').val(),
+                toDate:         $('#veai_toDate').val(),
+                activitySearch: actVal || '',
+                draw:   1,
+                start:  0,
+                length: 9999
+            };
+
+            $.ajax({
+                url:  '/ess/empinfo/api/apply/myApplyList',
+                type: 'GET',
+                data: params,
+                success: function (res) {
+                    _veai_allData  = res.data || [];
+                    _veai_filtered = _veai_allData.slice();
+                    _veai_page     = 1;
+                    veaiApplyQuickFilter($('#veai_quickFilter').val()); // gọi veaiRender() bên trong
+                },
+                error: function () {
+                    body.html('<tr><td colspan="7" class="text-center text-danger">' + veaiEsc(_veai_msg.loadFailed) + '</td></tr>');
+                    if (typeof toastr !== 'undefined') toastr.error(_veai_msg.loadFailed);
+                }
+            });
+        }
+
+        // ------------------------------------------------------------------ //
+        // Quick filter
+        // ------------------------------------------------------------------ //
+        function veaiApplyQuickFilter(kw) {
+            kw = (kw || '').toLowerCase().trim();
+            if (!kw) {
+                _veai_filtered = _veai_allData.slice();
+            } else {
+                _veai_filtered = _veai_allData.filter(function (r) {
+                    var label = (_veai_typeLabel[r.applyTableType] || r.applyTableType || '').toLowerCase();
+                    var mgr   = (r.managerInfo || '').toLowerCase();
+                    var cb    = (r.callback    || '').toLowerCase();
+                    var err   = (r.earror      || '').toLowerCase();
+                    return label.includes(kw) || mgr.includes(kw) || cb.includes(kw) || err.includes(kw);
+                });
+            }
+            _veai_page = 1;
+            veaiRender();
+        }
+
+        window.veaiQuickFilter = function (v) { veaiApplyQuickFilter(v); };
+
+        // ------------------------------------------------------------------ //
+        // Render bảng + phân trang
+        // ------------------------------------------------------------------ //
+        function veaiRender() {
+            var total = _veai_filtered.length;
+            var start = (_veai_page - 1) * _veai_pageLen;
+            var end   = Math.min(start + _veai_pageLen, total);
+            var page  = _veai_filtered.slice(start, end);
+
+            var body = $('#veai_tableBody');
+            if (!page.length) {
+                body.html('<tr><td colspan="7" class="text-center text-muted">' + veaiEsc(_veai_msg.noData) + '</td></tr>');
+            } else {
+                var html = '';
+                page.forEach(function (r) {
+                    var typeLabel = veaiEsc(_veai_typeLabel[r.applyTableType] || r.applyTableType);
+                    var actBadge  = '<span class="badge bg-' + (_veai_actClass[r.activity] || 'secondary') + '">'
+                                  + veaiEsc(_veai_actLabel[r.activity] || r.activity) + '</span>';
+                    var distinc   = veaiEsc(_veai_distinc[r.applyType] || '');
+                    html += '<tr class="veai-row" data-apply-no="' + veaiEsc(r.applyNo)
+                          + '" data-apply-type="' + veaiEsc(r.applyTableType) + '"'
+                          + ' style="cursor:pointer;" onclick="veaiClickRow(this)">'
+                          + '<td class="text-primary fw-medium">' + typeLabel + '</td>'
+                          + '<td class="text-center text-nowrap">' + veaiEsc(r.createDate) + '</td>'
+                          + '<td class="text-center">' + distinc + '</td>'
+                          + '<td class="text-center">' + actBadge + '</td>'
+                          + '<td class="text-nowrap">' + veaiEsc(r.managerInfo) + '</td>'
+                          + '<td>' + veaiEsc(r.callback) + '</td>'
+                          + '<td>' + veaiEsc(r.earror) + '</td>'
+                          + '</tr>';
+                });
+                body.html(html);
+            }
+            veaiRenderPagination(total);
+            veaiUpdatePageInfo(start, end, total);
+        }
+
+        function veaiRenderPagination(total) {
+            var pages = Math.ceil(total / _veai_pageLen) || 1;
+            var html  = '';
+            html += '<li class="page-item' + (_veai_page <= 1 ? ' disabled' : '') + '">'
+                  + '<a class="page-link" href="#" onclick="veaiGoPage(' + (_veai_page - 1) + ');return false;">&laquo;</a></li>';
+            var s = Math.max(1, _veai_page - 2), e = Math.min(pages, s + 4);
+            for (var i = s; i <= e; i++) {
+                html += '<li class="page-item' + (i === _veai_page ? ' active' : '') + '">'
+                      + '<a class="page-link" href="#" onclick="veaiGoPage(' + i + ');return false;">' + i + '</a></li>';
+            }
+            html += '<li class="page-item' + (_veai_page >= pages ? ' disabled' : '') + '">'
+                  + '<a class="page-link" href="#" onclick="veaiGoPage(' + (_veai_page + 1) + ');return false;">&raquo;</a></li>';
+            $('#veai_pagination').html(html);
+        }
+
+        function veaiUpdatePageInfo(start, end, total) {
+            $('#veai_pageInfo').text(total ? (start + 1) + ' - ' + end + ' / ' + total : '0');
+        }
+
+        window.veaiGoPage = function (p) {
+            var pages = Math.ceil(_veai_filtered.length / _veai_pageLen) || 1;
+            if (p < 1 || p > pages) return;
+            _veai_page = p;
+            veaiRender();
+        };
+
+        window.veaiChangePageLen = function (v) {
+            _veai_pageLen = parseInt(v) || 50;
+            _veai_page = 1;
+            veaiRender();
+        };
+
+        // ------------------------------------------------------------------ //
+        // Xử lý click vào hàng — gọi trực tiếp từ onclick="" trong HTML
+        // ------------------------------------------------------------------ //
+        window.veaiClickRow = function (tr) {
+            $('#veai_tableBody .veai-row').removeClass('table-active');
+            $(tr).addClass('table-active');
+            var applyNo   = $(tr).attr('data-apply-no');
+            var applyType = $(tr).attr('data-apply-type');
+            veaiLoadDetail(applyNo, applyType);
+        };
+
+        // ------------------------------------------------------------------ //
+        // Tải và render chi tiết
+        // ------------------------------------------------------------------ //
+        function veaiResetDetail() {
+            $('#veai_detailPlaceholder').removeClass('d-none');
+            $('#veai_detailTabs').addClass('d-none');
+            $('#veai_detailBadge').addClass('d-none').text('');
+        }
+
+        function veaiLoadDetail(applyNo, applyTableType) {
+            $('#veai_detailPlaceholder').addClass('d-none');
+            $('#veai_detailTabs').removeClass('d-none');
+            $('#veai_tabList').html('');
+            $('#veai_tabContent').html('<div class="text-center text-muted py-3">' + veaiEsc(_veai_msg.loading) + '</div>');
+            $('#veai_fileList').html('');
+            $('#veai_detailBadge').removeClass('d-none')
+                .text(_veai_typeLabel[applyTableType] || applyTableType);
+
+            $.ajax({
+                url:  '/ess/empinfo/api/apply/detail',
+                type: 'GET',
+                data: { applyNo: applyNo, applyTableType: applyTableType },
+                success: function (res) {
+                    var detail = res.detail || {};
+                    var files  = res.files  || [];
+                    veaiRenderDetailContent(applyTableType, detail);
+                    veaiRenderFiles(files);
+                },
+                error: function () {
+                    $('#veai_tabContent').html('<div class="text-center text-danger">' + veaiEsc(_veai_msg.loadFailed) + '</div>');
+                }
+            });
+        }
+
+        function veaiRenderDetailContent(type, d) {
+            var tabId   = 'veai-tab-' + type.toLowerCase().replace(/_/g, '-');
+            var paneId  = 'veai-pane-' + type.toLowerCase().replace(/_/g, '-');
+            var label   = _veai_typeLabel[type] || type;
+
+            var tabHtml = '<li class="nav-item" role="presentation">'
+                        + '<button class="nav-link active" id="' + tabId + '-btn" data-bs-toggle="tab"'
+                        + ' data-bs-target="#' + paneId + '" type="button" role="tab">' + veaiEsc(label) + '</button></li>';
+            $('#veai_tabList').html(tabHtml);
+
+            var rows = veaiBuildRows(type, d);
+            var table = '<div class="table-responsive"><table class="table table-bordered table-sm">'
+                      + '<tbody>' + rows + '</tbody></table></div>';
+
+            var paneHtml = '<div class="tab-pane fade show active" id="' + paneId + '" role="tabpanel">' + table + '</div>';
+            $('#veai_tabContent').html(paneHtml);
+        }
+
+        function veaiBuildRows(type, d) {
+            if (!d || Object.keys(d).length === 0) {
+                return '<tr><td class="text-muted text-center">' + veaiEsc(_veai_msg.noData) + '</td></tr>';
+            }
+            var rows = '';
+            switch (type) {
+                case 'PERSONAL':
+                    rows += veaiRow('Họ tên', d.name || d.lastname);
+                    rows += veaiRow('Giới tính', d.sexName);
+                    rows += veaiRow('Ngày sinh', d.dob);
+                    rows += veaiRow('Dân tộc', d.nationName);
+                    rows += veaiRow('Quốc tịch', d.nationalityName);
+                    rows += veaiRow('Tình trạng hôn nhân', d.maritalStatusName);
+                    rows += veaiRow('Ngày kết hôn', d.weddingDate);
+                    rows += veaiRow('CMND/CCCD', d.idcardNo);
+                    rows += veaiRow('Ngày cấp', d.idcardStartDate);
+                    rows += veaiRow('Nơi cấp', d.issuingAuthority);
+                    rows += veaiRow('Email', d.email);
+                    rows += veaiRow('Điện thoại', d.cellphone);
+                    rows += veaiRow('Tôn giáo', d.religion);
+                    rows += veaiRow('Trình độ học vấn', d.finalDegreeName);
+                    break;
+                case 'ADDRESS':
+                    rows += veaiRow('Loại địa chỉ', d.addressTypeName);
+                    rows += veaiRow('Ngày hiệu lực', d.effectiveStartDate);
+                    rows += veaiRow('Nội dung địa chỉ', d.addressContent);
+                    rows += veaiRow('Quốc tịch', d.nationalityName);
+                    break;
+                case 'FAMILY':
+                    rows += veaiRow('Họ tên', d.famName);
+                    rows += veaiRow('Quan hệ', d.famTypeName);
+                    rows += veaiRow('Ngày sinh', d.famBorndate);
+                    rows += veaiRow('CMND', d.famIdcard);
+                    rows += veaiRow('Điện thoại', d.famFamilyPhone);
+                    rows += veaiRow('Điện thoại di động', d.mobilePhone);
+                    rows += veaiRow('Công ty', d.famCompanyName);
+                    rows += veaiRow('Địa chỉ', d.famAddress);
+                    rows += veaiRow('Email', d.famEmail);
+                    rows += veaiRow('Giới tính', d.gender);
+                    break;
+                case 'EMERGENCY':
+                    rows += veaiRow('Họ tên', d.emerName);
+                    rows += veaiRow('Loại liên hệ', d.emerTypeName);
+                    rows += veaiRow('Điện thoại', d.emerPhone);
+                    rows += veaiRow('Di động', d.emerCellphone);
+                    rows += veaiRow('Điện thoại cơ quan', d.emerWorkPhone);
+                    rows += veaiRow('Email', d.emerEmail);
+                    rows += veaiRow('Địa chỉ', d.emerAddress);
+                    break;
+                case 'WORK_EXP':
+                    rows += veaiRow('Tên công ty', d.cpnyName);
+                    rows += veaiRow('Phòng ban', d.deptName);
+                    rows += veaiRow('Vị trí', d.position);
+                    rows += veaiRow('Ngày bắt đầu', d.startDate || d.startMonth);
+                    rows += veaiRow('Ngày kết thúc', d.endDate || d.endMonth);
+                    rows += veaiRow('Lý do nghỉ', d.resignReason);
+                    rows += veaiRow('Ghi chú', d.remark);
+                    break;
+                case 'EDUCATION':
+                    rows += veaiRow('Chuyên ngành', d.subject);
+                    rows += veaiRow('Trình độ', d.degreeName);
+                    rows += veaiRow('Trường', d.institutionName);
+                    rows += veaiRow('Ngày bắt đầu', d.startDate || d.startDatess);
+                    rows += veaiRow('Ngày kết thúc', d.endDate || d.endDatess);
+                    rows += veaiRow('GPA', d.gpa);
+                    rows += veaiRow('Ghi chú', d.remark || d.remarks);
+                    break;
+                case 'QUALIFICATION':
+                    rows += veaiRow('Tên chứng chỉ', d.qualName);
+                    rows += veaiRow('Ngày cấp', d.dateObtained);
+                    rows += veaiRow('Số chứng chỉ', d.qualCardNo);
+                    rows += veaiRow('Nơi cấp', d.qualInstitute);
+                    rows += veaiRow('Ngày hết hạn', d.validityDate);
+                    rows += veaiRow('Cấp độ', d.qualLevel);
+                    rows += veaiRow('Ghi chú', d.qualRemark);
+                    break;
+                default:
+                    rows += '<tr><td class="text-muted text-center">' + veaiEsc(_veai_msg.noData) + '</td></tr>';
+            }
+            return rows;
+        }
+
+        function veaiRenderFiles(files) {
+            var ul = $('#veai_fileList');
+            if (!files || !files.length) {
+                ul.html('<li class="list-group-item text-muted small">' + veaiEsc(_veai_msg.noFile) + '</li>');
+                return;
+            }
+            var html = '';
+            files.forEach(function (f) {
+                html += '<li class="list-group-item py-1 px-2 d-flex align-items-center gap-2">'
+                      + '<i class="bx bx-file text-primary"></i>'
+                      + '<a href="/ess/empinfo/api/files/download/' + veaiEsc(f.fileNo) + '" target="_blank" class="text-truncate">'
+                      + veaiEsc(f.fileName) + '</a></li>';
+            });
+            ul.html(html);
+        }
+
+        // ------------------------------------------------------------------ //
+        // Nút tìm kiếm / đặt lại
+        // ------------------------------------------------------------------ //
+        window.veaiSearch = function () {
+            _veai_page = 1;
+            veaiLoadData();
+        };
+
+        window.veaiClear = function () {
+            $('#veai_fromDate').val('');
+            $('#veai_toDate').val('');
+            $('input[name="veai_activity"][value="1"]').prop('checked', true);
+            $('#veai_quickFilter').val('');
+            _veai_page = 1;
+            veaiLoadData();
+        };
+
+        // ------------------------------------------------------------------ //
+        // Khởi động trang
+        // ------------------------------------------------------------------ //
+        function veaiBootPage() {
+            if (_veai_pageBooted) return;
+            if (!document.getElementById('veai_dataTable')) { setTimeout(veaiBootPage, 30); return; }
+            _veai_pageBooted = true;
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#veai_searchForm');
+            veaiLoadData();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', veaiBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(veaiBootPage);
+        } else {
+            veaiBootPage();
+        }
+    </script>
+</template>

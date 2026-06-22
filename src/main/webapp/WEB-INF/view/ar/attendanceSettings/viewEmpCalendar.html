@@ -377,7 +377,7 @@
                 data: { arDateStr: dateStr, personId: personId || '' },
                 success: function (data) {
                     if (data) {
-                        // Điền ca làm việc từ AR_SCHEDULE_HTSV (nếu đã có)
+                        // Điền ca làm việc từ AR_SCHEDULE_HAE (nếu đã có)
                         if (data.shiftNo) $('#ecal_shiftNo').val(data.shiftNo);
                         if (data.typeid) $('#ecal_typeid').val(data.typeid);
                         if (data.remark) $('#ecal_remark').val(data.remark);

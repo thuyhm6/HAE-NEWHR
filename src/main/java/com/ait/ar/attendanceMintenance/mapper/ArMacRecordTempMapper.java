@@ -19,9 +19,9 @@ public interface ArMacRecordTempMapper {
 
     String findPersonIdByEmpId(@Param("empId") String empId);
 
-    int countDuplicateInHtsv(@Param("cardNo") String cardNo,
+    int countDuplicateInHae(@Param("cardNo") String cardNo,
                              @Param("combinedDatetime") String combinedDatetime,
                              @Param("doorType") String doorType);
 
-    int insertIntoHtsv(ArMacRecordTempDto dto);
+    int insertIntoHae(ArMacRecordTempDto dto);
 }

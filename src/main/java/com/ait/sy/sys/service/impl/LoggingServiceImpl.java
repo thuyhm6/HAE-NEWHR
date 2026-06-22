@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.ait.sy.sys.service.LoggingService;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

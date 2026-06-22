@@ -83,8 +83,8 @@ public class ExcelServiceImpl implements ExcelService {
             throw new IllegalArgumentException("templateName is required.");
         }
 
-        if ("AR_SCHEDULE_HTSV_Template".equalsIgnoreCase(normalizedTemplateName)) {
-            return importScheduleHtsvTemplate(file);
+        if ("AR_SCHEDULE_HAE_Template".equalsIgnoreCase(normalizedTemplateName)) {
+            return importScheduleHaeTemplate(file);
         } else if ("AttendanceApply_add_Template".equalsIgnoreCase(normalizedTemplateName)) {
             return importAttendanceApplyTemplate(file);
         } else if ("OvertimeApply_add_Template".equalsIgnoreCase(normalizedTemplateName)) {
@@ -94,7 +94,7 @@ public class ExcelServiceImpl implements ExcelService {
         throw new IllegalArgumentException("Template import not supported: " + normalizedTemplateName);
     }
 
-    private List<String> importScheduleHtsvTemplate(MultipartFile file) throws IOException {
+    private List<String> importScheduleHaeTemplate(MultipartFile file) throws IOException {
         List<String> errors = new ArrayList<>();
 
         try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
@@ -160,7 +160,7 @@ public class ExcelServiceImpl implements ExcelService {
                 rowData.put("typeid", typeid);
                 rowData.put("remark", remark.isBlank() ? null : remark);
 
-                mapper.insertScheduleHtsv(rowData);
+                mapper.insertScheduleHae(rowData);
             }
         }
         return errors;
@@ -341,25 +341,26 @@ public class ExcelServiceImpl implements ExcelService {
         if (cell == null) {
             return "";
         }
-        return switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue().trim();
-            case NUMERIC -> {
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
                 if (DateUtil.isCellDateFormatted(cell)) {
-                    yield new SimpleDateFormat("dd/MM/yyyy").format(cell.getDateCellValue());
+                    return new SimpleDateFormat("dd/MM/yyyy").format(cell.getDateCellValue());
                 }
                 double d = cell.getNumericCellValue();
-                yield (d == Math.floor(d)) ? String.valueOf((long) d) : String.valueOf(d);
-            }
-            case FORMULA -> {
+                return (d == Math.floor(d)) ? String.valueOf((long) d) : String.valueOf(d);
+            case FORMULA:
                 try {
-                    yield String.valueOf((long) cell.getNumericCellValue());
+                    return String.valueOf((long) cell.getNumericCellValue());
                 } catch (Exception e) {
-                    yield cell.getStringCellValue();
+                    return cell.getStringCellValue();
                 }
-            }
-            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-            default -> "";
-        };
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
+        }
     }
 
     private String formatDateStr(String raw) {

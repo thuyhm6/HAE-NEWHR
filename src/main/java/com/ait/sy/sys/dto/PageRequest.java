@@ -1,7 +1,7 @@
 package com.ait.sy.sys.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 /**
  * PageRequest - Request object for pagination

@@ -45,7 +45,7 @@
         <result column="RECRUIT_TYPE" property="recruitType"/>
         <result column="INSURANCE_TYPE" property="insuranceType"/>
         <result column="INSURANCE_AREA" property="insuranceArea"/>
-        <result column="FILENUMBER" property="filenumber"/>
+        <result column="FILENUMBER" property="fileNumber"/>
         <result column="EMPLOYEE_OWNED" property="employeeOwned"/>
         <result column="WAGE_TYPE" property="wageType"/>
         <result column="POSITION" property="position"/>
@@ -549,7 +549,7 @@
             #{statusCode}, #{dateLeft}, #{idCardNo}, #{shiftNo}, #{empOffice}, #{incumbency},
             #{promotionDay}, #{postFamily}, #{affirmWorkAge}, #{workHourType},
             #{directIndirectDistinction}, #{recruitType}, #{insuranceType}, #{insuranceArea},
-            #{filenumber}, #{employeeOwned}, #{wageType}, #{position}, #{dateLastUp}, #{recommend},
+            #{fileNumber}, #{employeeOwned}, #{wageType}, #{position}, #{dateLastUp}, #{recommend},
             #{dateGroupEntry}, #{lastHaofengDate}, #{assignmentInformation}, #{costCenter},
             #{payStepNo}, #{phoneCardNo}, #{lizhireason}, #{socialDifferentiation},
             #{isProbation}, #{personSupplierCompany}, #{otLimit}, #{otLimit100},
@@ -651,8 +651,8 @@
             <if test="insuranceArea != null">
                 INSURANCE_AREA = #{insuranceArea},
             </if>
-            <if test="filenumber != null">
-                FILENUMBER = #{filenumber},
+            <if test="fileNumber != null">
+                FILENUMBER = #{fileNumber},
             </if>
             <if test="employeeOwned != null">
                 EMPLOYEE_OWNED = #{employeeOwned},

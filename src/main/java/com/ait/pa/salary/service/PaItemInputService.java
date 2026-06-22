@@ -14,5 +14,5 @@ public interface PaItemInputService {
 
     void saveItems(PaItemInputSaveReqDto req);
 
-    byte[] exportSummaryHtsv(String payScheduleNo, List<String> deptNos, List<String> itemIds);
+    byte[] exportSummaryHae(String payScheduleNo, List<String> deptNos, List<String> itemIds);
 }

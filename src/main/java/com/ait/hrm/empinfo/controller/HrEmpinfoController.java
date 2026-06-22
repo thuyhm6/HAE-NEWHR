@@ -26,7 +26,7 @@ import com.ait.sy.sys.dto.DataTablesRequest;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse;
 import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -1220,12 +1220,12 @@ public class HrEmpinfoController {
     /**
      * Trang Thẻ nhân sự
      */
-    @GetMapping("/viewHTSVCardInfoList")
-    public String viewHTSVCardInfoList(Model model, HttpSession session) {
+    @GetMapping("/viewHAECardInfoList")
+    public String viewHAECardInfoList(Model model, HttpSession session) {
         HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
         model.addAttribute("currentHrUser", currentHrUser);
         model.addAttribute("title", "Thẻ nhân sự");
-        return "hrm/empinfo/viewHTSVCardInfoList";
+        return "hrm/empinfo/viewHAECardInfoList";
     }
 
     /**

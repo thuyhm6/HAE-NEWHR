@@ -1,0 +1,586 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="soat_pageWrapper">
+
+            <!-- Thông tin nhân viên -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
+
+            <!-- Form xin tăng ca vượt -->
+            <div class="card mb-3">
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                        <colgroup>
+                            <col style="width:15%;">
+                            <col style="width:35%;">
+                            <col style="width:15%;">
+                            <col style="width:35%;">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.applyDate}">Ngày</th>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm js-daterangepicker"
+                                        id="soat_applyDate"
+                                        data-drp-format="YYYY-MM-DD"
+                                        data-drp-auto-update-input="false"
+                                        data-drp-on-apply="soatOnDateApply"
+                                        autocomplete="off"
+                                        style="width:140px;">
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.otStatus}">Tình hình tăng ca</th>
+                                <td>
+                                    <div id="soat_otStats" class="small text-muted">--</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.otStartTimeLabel}">Thời gian bắt đầu tăng ca</th>
+                                <td class="d-flex align-items-center gap-2">
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="soat_otFromTime" style="width:200px;"
+                                        data-drp-trigger-change="true" onchange="soatCalcDuration()">
+                                    ~
+                                    <input type="datetime-local" class="form-control form-control-sm"
+                                        id="soat_otToTime" style="width:200px;"
+                                        data-drp-trigger-change="true" onchange="soatCalcDuration()">
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.otType}">Hình thức tăng ca</th>
+                                <td>
+                                    <span id="soat_dateTypeName" class="form-control-plaintext form-control-sm">--</span>
+                                    <input type="hidden" id="soat_dateTypeCode" value="">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.inOutTime}">Thời gian vào ra</th>
+                                <td>
+                                    <span class="small" th:text="#{essOt.inTime}">Thời gian vào: </span><span id="soat_indoorTime" class="fw-semibold">**:**</span><br>
+                                    <span class="small" th:text="#{essOt.outTime}">Thời gian ra: </span><span id="soat_outdoorTime" class="fw-semibold">**:**</span>
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.shift}">Ca</th>
+                                <td>
+                                    <span id="soat_shiftName" class="small text-muted">--</span>
+                                    <span id="soat_workTime" class="small text-muted">--</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.duration}">Thời lượng</th>
+                                <td id="soat_duration">--</td>
+                                <th class="table-light text-center" th:text="#{essOt.mealBreak}">Bảo cơm / Nghỉ ngơi (30')</th>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="soat_mealCheck" onchange="soatCalcDuration()">
+                                        <label class="form-check-label" for="soat_mealCheck" th:text="#{essOt.yes}">Có</label>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.usecarYn}">Đặt xe</th>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="soat_usecarYn" onchange="soatOnUsecarChange()">
+                                        <label class="form-check-label" for="soat_usecarYn" th:text="#{essOt.yes}">Có</label>
+                                    </div>
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.carAddress}">Tuyến xe</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="soat_carAddress"
+                                        data-parent-code="90000578"
+                                        onchange="soatOnCarAddressChange()"
+                                        disabled></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.carAddressDetail}">Chi tiết điểm đón</th>
+                                <td colspan="3">
+                                    <select class="form-select form-select-sm" id="soat_carAddressDetail" disabled></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center">Lý do</th>
+                                <td colspan="3">
+                                    <textarea class="form-control form-control-sm" id="soat_reason"
+                                        rows="3" style="resize:vertical;"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Danh sách người phê duyệt -->
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered table-sm align-middle mb-0">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th style="width:50px;" th:text="#{sa.col.stt}">STT</th>
+                            <th th:text="#{sa.col.approver}">Người duyệt</th>
+                            <th style="width:130px;" th:text="#{sa.col.empId}">Mã nhân viên</th>
+                            <th th:text="#{sa.col.dept}">Phòng ban</th>
+                            <th th:text="#{sa.col.position}">Chức danh</th>
+                            <th style="width:60px;">
+                                <button type="button" class="btn btn-sm btn-success" onclick="soatAddApproverRow()"
+                                    th:title="#{sa.btn.addApprover}" title="Thêm người phê duyệt">
+                                    <i class="bx bx-plus"></i>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="soat_approvalBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted" th:text="#{sa.msg.noApprover}">Chưa có người phê duyệt</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Nút xin phép -->
+            <div class="text-end mb-3">
+                <button type="button" class="btn btn-primary" id="soat_submitBtn" onclick="soatSubmit()">Xin phép</button>
+            </div>
+
+        </div><!-- /#soat_pageWrapper -->
+    </div><!-- /.row -->
+</div>
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{fragments/essEmpInfoCard :: script}"></th:block>
+    <script th:inline="javascript">
+        var _soat_personId  = '';
+        var _soat_localName = '';
+        var _soat_empId     = '';
+        var _soat_pageBooted = false;
+        var _soat_approverList = [];
+
+        var _soat_i18n = {
+            noApprover          : /*[[#{sa.msg.noApprover}]]*/ 'Chưa có người phê duyệt',
+            approverPlaceholder : /*[[#{sa.placeholder.approverName}]]*/ 'Nhập tên người phê duyệt...',
+            addApprover         : /*[[#{sa.btn.addApprover}]]*/ 'Thêm người phê duyệt',
+            requireApprover     : /*[[#{sa.msg.requireApprover}]]*/ 'Vui lòng thêm ít nhất một người phê duyệt!'
+        };
+
+        var _soat_otTotalMonth     = 0;
+        var _soat_otTotalYear      = 0;
+        var _soat_otLimitMonth     = 40;
+        var _soat_otLimitYear      = 300;
+        var _soat_otLimitEnabled   = false;
+        var _soat_otLimit100Enabled = false;
+        var _soat_otLength         = 0;
+
+        function soatEscHtml(v) {
+            if (v == null) return '';
+            return String(v)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function soatExtractTime(dtStr) {
+            if (!dtStr) return '';
+            var idx = dtStr.indexOf(' ');
+            return idx > -1 ? dtStr.substring(idx + 1) : dtStr;
+        }
+
+        function soatSetPickerVal(selector, value) {
+            var $input = $(selector);
+            $input.val(value || '');
+            var picker = $input.data('daterangepicker');
+            if (!picker || !value) return;
+            var m = moment(value, 'YYYY-MM-DD HH:mm');
+            if (m.isValid()) {
+                picker.setStartDate(m);
+                picker.setEndDate(m);
+            }
+        }
+
+        function soatCalcDuration() {
+            var dateApi = $('#soat_applyDate').val();
+            var fromVal = $('#soat_otFromTime').val();
+            var toVal   = $('#soat_otToTime').val();
+            if (!dateApi || !fromVal || !toVal) {
+                _soat_otLength = 0;
+                $('#soat_duration').text('--');
+                return;
+            }
+            var deductYn = $('#soat_mealCheck').prop('checked') ? '1' : '0';
+            $.ajax({
+                url : '/ess/infoApply/api/otDuration',
+                type: 'GET',
+                data: {
+                    applyOtDate: dateApi,
+                    otFromTime : fromVal,
+                    otToTime   : toVal,
+                    deductYn   : deductYn
+                },
+                success: function(d) {
+                    var len = d && d.OT_LENGTH != null ? parseFloat(d.OT_LENGTH) : 0;
+                    _soat_otLength = isNaN(len) ? 0 : len;
+                    $('#soat_duration').text(_soat_otLength > 0 ? _soat_otLength + ' h' : '--');
+                },
+                error: function() {
+                    _soat_otLength = 0;
+                    $('#soat_duration').text('--');
+                }
+            });
+        }
+
+        window.soatOnDateApply = function() {
+            var dateApi = $('#soat_applyDate').val();
+            if (!dateApi) return;
+            soatLoadDateInfo(dateApi);
+        };
+
+        function soatLoadDateInfo(dateApi) {
+            $('#soat_shiftName'   ).text('Đang tải...');
+            $('#soat_workTime'    ).text('');
+            $('#soat_indoorTime'  ).text('**:**');
+            $('#soat_outdoorTime' ).text('**:**');
+            $('#soat_dateTypeName').text('...');
+            $('#soat_otStats'     ).text('...');
+            $('#soat_dateTypeCode').val('');
+
+            $.ajax({
+                url : '/ess/infoApply/api/otDateInfo',
+                type: 'GET',
+                data: { applyDate: dateApi },
+                success: function(d) {
+                    if (!d) { soatClearDateInfo(); return; }
+
+                    $('#soat_shiftName').text(d.SHIFT_NAME || '--');
+                    var shiftStartDisp = soatExtractTime(d.SHIFT_START_TIME || '');
+                    var shiftEndDisp   = soatExtractTime(d.SHIFT_END_TIME   || '');
+                    $('#soat_workTime').text(shiftStartDisp && shiftEndDisp ? shiftStartDisp + '~' + shiftEndDisp : '--');
+
+                    $('#soat_indoorTime' ).text(d.INDOOR_TIME  || '**:**');
+                    $('#soat_outdoorTime').text(d.OUTDOOR_TIME || '**:**');
+
+                    var otTypeCode = String(d.OT_TYPE_CODE || '');
+                    $('#soat_dateTypeName').text(d.OT_TYPE_NAME || '--');
+                    $('#soat_dateTypeCode').val(otTypeCode);
+
+                    if (otTypeCode === '32') {
+                        if (d.SHIFT_END_TIME) {
+                            soatSetPickerVal('#soat_otFromTime', d.SHIFT_END_TIME);
+                            var fromDt = new Date(d.SHIFT_END_TIME);
+                            if (!isNaN(fromDt)) {
+                                fromDt.setHours(fromDt.getHours() + 2);
+                                var toStr = fromDt.getFullYear() + '-'
+                                    + String(fromDt.getMonth() + 1).padStart(2, '0') + '-'
+                                    + String(fromDt.getDate()).padStart(2, '0') + ' '
+                                    + String(fromDt.getHours()).padStart(2, '0') + ':'
+                                    + String(fromDt.getMinutes()).padStart(2, '0');
+                                soatSetPickerVal('#soat_otToTime', toStr);
+                            }
+                        }
+                    } else {
+                        if (d.SHIFT_START_TIME) soatSetPickerVal('#soat_otFromTime', d.SHIFT_START_TIME);
+                        if (d.SHIFT_END_TIME)   soatSetPickerVal('#soat_otToTime',   d.SHIFT_END_TIME);
+                    }
+
+                    _soat_otTotalMonth      = parseFloat(d.OT_TOTAIL_MONTH) || 0;
+                    _soat_otTotalYear       = parseFloat(d.OT_TOTAIL)       || 0;
+                    _soat_otLimitEnabled    = String(d.OT_LIMIT)     === '1';
+                    _soat_otLimit100Enabled = String(d.OT_LIMIT_100) === '1';
+
+                    var monthInfo = 'Tháng này: ' + soatFmt(d.OT_TOTAIL_MONTH) + 'h'
+                        + '&nbsp;&nbsp;Ngày thường: ' + soatFmt(d.WEEKDAY_OT_TOTAIL) + 'h'
+                        + (_soat_otLimitEnabled
+                            ? '&nbsp;&nbsp;Tối đa: ' + _soat_otLimitMonth + 'h <span class="text-danger">(có giới hạn)</span>'
+                            : '&nbsp;&nbsp;<span class="text-success">(không giới hạn tháng)</span>');
+                    var yearInfo = 'Năm nay: ' + soatFmt(d.OT_TOTAIL) + 'h'
+                        + (_soat_otLimit100Enabled
+                            ? '&nbsp;&nbsp;Tối đa: ' + _soat_otLimitYear + 'h <span class="text-danger">(có giới hạn)</span>'
+                            : '&nbsp;&nbsp;<span class="text-success">(không giới hạn năm)</span>');
+                    $('#soat_otStats').html(monthInfo + '<br>' + yearInfo);
+
+                    soatCalcDuration();
+                },
+                error: function() { soatClearDateInfo(); }
+            });
+        }
+
+        function soatFmt(v) { return (v == null || v === '') ? '0' : v; }
+
+        function soatClearDateInfo() {
+            $('#soat_shiftName'   ).text('--');
+            $('#soat_workTime'    ).text('--');
+            $('#soat_indoorTime'  ).text('**:**');
+            $('#soat_outdoorTime' ).text('**:**');
+            $('#soat_dateTypeName').text('--');
+            $('#soat_dateTypeCode').val('');
+            $('#soat_otStats'     ).text('--');
+            _soat_otTotalMonth      = 0;
+            _soat_otTotalYear       = 0;
+            _soat_otLimitEnabled    = false;
+            _soat_otLimit100Enabled = false;
+            _soat_otLength          = 0;
+        }
+
+        function soatRenderApprovers() {
+            var $tbody = $('#soat_approvalBody');
+            if (!_soat_approverList.length) {
+                $tbody.html('<tr><td colspan="6" class="text-center text-muted">' + soatEscHtml(_soat_i18n.noApprover) + '</td></tr>');
+                return;
+            }
+            var html = '';
+            _soat_approverList.forEach(function(item, idx) {
+                html += '<tr>'
+                    + '<td class="text-center">' + (idx + 1) + '</td>'
+                    + '<td>' + soatEscHtml(item.localName || '') + '</td>'
+                    + '<td class="text-center">' + soatEscHtml(item.empId || '') + '</td>'
+                    + '<td>' + soatEscHtml(item.deptName || '') + '</td>'
+                    + '<td>' + soatEscHtml(item.positionName || '') + '</td>'
+                    + '<td class="text-center">'
+                    +   '<button type="button" class="btn btn-sm btn-danger" onclick="soatRemoveApprover(' + idx + ')">'
+                    +     '<i class="bx bx-trash"></i>'
+                    +   '</button>'
+                    + '</td>'
+                    + '</tr>';
+            });
+            $tbody.html(html);
+        }
+
+        window.soatAddApproverRow = function() {
+            if ($('#soat_approverInputRow').length) {
+                $('#soat_approverInput').focus();
+                return;
+            }
+            var placeholder = soatEscHtml(_soat_i18n.approverPlaceholder);
+            var inputRowHtml = '<tr id="soat_approverInputRow">'
+                + '<td class="text-center text-muted">-</td>'
+                + '<td colspan="3">'
+                +   '<div class="input-group input-group-sm">'
+                +     '<input type="text" class="form-control" id="soat_approverInput" placeholder="' + placeholder + '"'
+                +           ' onkeydown="soatApproverInputKeydown(event, this)">'
+                +     '<button class="btn btn-outline-secondary" type="button" onclick="soatPickApprover(this)">'
+                +       '<i class="bx bx-search"></i>'
+                +     '</button>'
+                +   '</div>'
+                + '</td>'
+                + '<td></td>'
+                + '<td class="text-center">'
+                +   '<button type="button" class="btn btn-sm btn-secondary" onclick="soatCancelApproverInput()">'
+                +     '<i class="bx bx-x"></i>'
+                +   '</button>'
+                + '</td>'
+                + '</tr>';
+            $('#soat_approvalBody').append(inputRowHtml);
+            $('#soat_approverInput').focus();
+        };
+
+        window.soatApproverInputKeydown = function(e, input) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                var $input = $(input);
+                var keyword = $input.val().trim();
+                $input.closest('.input-group').find('button').each(function() {
+                    soatPickApprover(this, keyword);
+                    return false;
+                });
+            }
+        };
+
+        window.soatPickApprover = function(btn, keyword) {
+            if (typeof EmployeeSearchModal !== 'undefined') {
+                EmployeeSearchModal.open(function(emp) {
+                    _soat_approverList.push({
+                        personId:     emp.personId || '',
+                        localName:    emp.localName || '',
+                        empId:        emp.empId    || '',
+                        deptName:     emp.deptNo   || emp.deptName || '',
+                        positionName: emp.position || emp.positionName || ''
+                    });
+                    soatRenderApprovers();
+                }, keyword || '');
+            } else {
+                alert(_soat_i18n.addApprover + ': EmployeeSearchModal not found.');
+            }
+        };
+
+        window.soatRemoveApprover = function(idx) {
+            _soat_approverList.splice(idx, 1);
+            soatRenderApprovers();
+        };
+
+        window.soatCancelApproverInput = function() {
+            $('#soat_approverInputRow').remove();
+            if (!_soat_approverList.length) {
+                soatRenderApprovers();
+            }
+        };
+
+        window.soatOnUsecarChange = function() {
+            var checked = $('#soat_usecarYn').prop('checked');
+            if (checked) {
+                $('#soat_carAddress').prop('disabled', false);
+                initCodeSelects('#soat_carAddress');
+            } else {
+                $('#soat_carAddress').prop('disabled', true).val('').empty();
+                $('#soat_carAddressDetail').prop('disabled', true).val('').empty();
+            }
+        };
+
+        window.soatOnCarAddressChange = function() {
+            var parentCode = $('#soat_carAddress').val();
+            var $detail = $('#soat_carAddressDetail');
+            if (parentCode) {
+                $detail.prop('disabled', false);
+                reloadCodeSelect($detail[0], parentCode, null);
+            } else {
+                $detail.prop('disabled', true).val('').empty();
+            }
+        };
+
+        window.soatSubmit = function() {
+            var dateApi  = $('#soat_applyDate').val();
+            var fromVal  = $('#soat_otFromTime').val();
+            var toVal    = $('#soat_otToTime').val();
+            if (!dateApi)           { toastr && toastr.warning('Vui lòng chọn ngày tăng ca.'); return; }
+            if (!_soat_personId)    { toastr && toastr.warning('Chưa tải thông tin nhân viên.'); return; }
+            if (!fromVal || !toVal) { toastr && toastr.warning('Vui lòng nhập thời gian tăng ca.'); return; }
+
+            var fromDt = new Date(fromVal);
+            var toDt   = new Date(toVal);
+            if (isNaN(fromDt) || isNaN(toDt) || toDt <= fromDt) {
+                toastr && toastr.warning('Thời gian kết thúc phải sau thời gian bắt đầu.');
+                return;
+            }
+
+            var durationText = $('#soat_duration').text();
+            if (!durationText || durationText === '--') { toastr && toastr.warning('Thời lượng không hợp lệ.'); return; }
+
+            var otTypeCode = $('#soat_dateTypeCode').val() || '';
+            if (!otTypeCode) { toastr && toastr.warning('Chưa xác định loại tăng ca. Vui lòng chọn lại ngày tăng ca.'); return; }
+
+            var otApplyHour = _soat_otLength > 0 ? String(_soat_otLength) : '0';
+            if (!otApplyHour || parseFloat(otApplyHour) <= 0) {
+                toastr && toastr.warning('Số giờ tăng ca phải lớn hơn 0.');
+                return;
+            }
+
+            if (!_soat_approverList.length) {
+                toastr && toastr.warning(_soat_i18n.requireApprover);
+                return;
+            }
+
+            var applyHourNum = parseFloat(otApplyHour) || 0;
+            if (_soat_otLimitEnabled && (applyHourNum + _soat_otTotalMonth > _soat_otLimitMonth)) {
+                toastr && toastr.warning(
+                    'Tổng tăng ca tháng này sẽ là ' + (applyHourNum + _soat_otTotalMonth).toFixed(1) + 'h, vượt quá giới hạn ' + _soat_otLimitMonth + 'h!'
+                );
+                return;
+            }
+            if (_soat_otLimit100Enabled && (applyHourNum + _soat_otTotalYear > _soat_otLimitYear)) {
+                toastr && toastr.warning(
+                    'Tổng tăng ca năm nay sẽ là ' + (applyHourNum + _soat_otTotalYear).toFixed(1) + 'h, vượt quá giới hạn ' + _soat_otLimitYear + 'h!'
+                );
+                return;
+            }
+
+            var payload = {
+                applyNo      : '',
+                personId     : _soat_personId,
+                localName    : _soat_localName,
+                empId        : _soat_empId,
+                otTypeNo     : '310',
+                otTypeCode   : $('#soat_dateTypeCode').val() || '',
+                applyOtDate  : dateApi,
+                otFromTime   : fromVal,
+                otToTime     : toVal,
+                otApplyHour  : otApplyHour,
+                applyOtRemark    : $('#soat_reason').val() || '',
+                deductYn         : $('#soat_mealCheck').prop('checked') ? '1' : '0',
+                usecarYn         : $('#soat_usecarYn').prop('checked') ? '1' : '0',
+                carAddress       : $('#soat_carAddress').val() || '',
+                carAddressDetail : $('#soat_carAddressDetail').val() || '',
+                approvers    : _soat_approverList.map(function(a) {
+                    return { personId: a.personId, localName: a.localName, empId: a.empId };
+                })
+            };
+
+            var $btn  = $('#soat_submitBtn');
+            var oHtml = $btn.html();
+            $btn.html('<span class="spinner-border spinner-border-sm"></span>').prop('disabled', true);
+
+            $.ajax({
+                url        : '/ar/attendanceMintenance/api/overtime/saveOver',
+                type       : 'POST',
+                contentType: 'application/json',
+                data       : JSON.stringify(payload),
+                success: function(res) {
+                    $btn.html(oHtml).prop('disabled', false);
+                    if (res && res.success) {
+                        toastr && toastr.success(res.message || 'Xin tăng ca vượt thành công!');
+                        soatResetForm();
+                    } else {
+                        toastr && toastr.error(res && res.error ? res.error : 'Lỗi khi gửi đơn!');
+                    }
+                },
+                error: function() {
+                    $btn.html(oHtml).prop('disabled', false);
+                    toastr && toastr.error('Lỗi kết nối khi gửi đơn!');
+                }
+            });
+        };
+
+        function soatResetForm() {
+            $('#soat_applyDate').val('');
+            $('#soat_otFromTime').val('');
+            $('#soat_otToTime').val('');
+            $('#soat_reason').val('');
+            $('#soat_mealCheck').prop('checked', false);
+            $('#soat_usecarYn').prop('checked', false);
+            $('#soat_carAddress').prop('disabled', true).val('').empty();
+            $('#soat_carAddressDetail').prop('disabled', true).val('').empty();
+            soatClearDateInfo();
+            soatCalcDuration();
+            _soat_approverList = [];
+            soatRenderApprovers();
+        }
+
+        function soatBootPage() {
+            if (_soat_pageBooted) return;
+            if (!document.getElementById('soat_applyDate')) { setTimeout(soatBootPage, 30); return; }
+            _soat_pageBooted = true;
+
+            loadEssEmpInfoCard();
+
+            if (typeof initDateRangePickers === 'function') {
+                initDateRangePickers('#soat_pageWrapper');
+            }
+
+            var now  = new Date();
+            var dd   = String(now.getDate()).padStart(2, '0');
+            var mm   = String(now.getMonth() + 1).padStart(2, '0');
+            var yyyy = now.getFullYear();
+            var todayApi = yyyy + '-' + mm + '-' + dd;
+            $('#soat_applyDate').val(todayApi);
+
+            $.ajax({
+                url: '/ess/empinfo/api/personalInfo/myInfo',
+                type: 'GET',
+                success: function(data) {
+                    if (!data) return;
+                    _soat_personId  = data.personId  || '';
+                    _soat_localName = data.localName  || '';
+                    _soat_empId     = data.empId      || '';
+                    soatLoadDateInfo(todayApi);
+                }
+            });
+
+            soatCalcDuration();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', soatBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(soatBootPage);
+        } else {
+            soatBootPage();
+        }
+    </script>
+</template>

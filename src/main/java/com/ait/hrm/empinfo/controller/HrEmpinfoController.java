@@ -94,6 +94,12 @@ public class HrEmpinfoController {
     @Autowired
     private HrExpInsideService hrExpInsideService;
 
+    @Autowired
+    private com.ait.ess.empinfo.service.EssPersonalInfoService essPersonalInfoService;
+
+    @Autowired
+    private com.ait.ess.viewDept.service.ManageEmpPositionInfoService manageEmpPositionInfoService;
+
     /**
      * Trang xem thông tin cá nhân nhân viên
      */
@@ -1138,6 +1144,113 @@ public class HrEmpinfoController {
         } catch (Exception e) {
             log.error("Lỗi xóa quyết định seq={}: ", seq, e);
             return ResponseEntity.status(500).body(java.util.Collections.singletonMap("success", false));
+        }
+    }
+
+    // ── API Hồ sơ nhân viên (dùng cho viewPersonalInfo) ──────────────────────
+
+    @GetMapping("/api/empProfile/currentUser")
+    @ResponseBody
+    public ResponseEntity<java.util.Map<String, String>> getEmpProfileCurrentUser(HttpSession session) {
+        java.util.Map<String, String> result = new java.util.HashMap<>();
+        Object adminID = session.getAttribute("adminID");
+        result.put("personId", adminID != null ? adminID.toString() : "");
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/api/empProfile/info")
+    @ResponseBody
+    public ResponseEntity<com.ait.ess.empinfo.dto.EssPersonalInfoDto> getEmpProfileInfo(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(essPersonalInfoService.getMyInfo(personId));
+        } catch (Exception e) {
+            log.error("Lỗi lấy thông tin nhân viên personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/api/empProfile/emergency")
+    @ResponseBody
+    public ResponseEntity<List<HrEmergencyAddress>> getEmpProfileEmergency(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(essPersonalInfoService.getMyEmergencies(personId));
+        } catch (Exception e) {
+            log.error("Lỗi lấy liên hệ khẩn cấp personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/api/empProfile/address")
+    @ResponseBody
+    public ResponseEntity<List<com.ait.hrm.empinfo.model.HrAddressMatters>> getEmpProfileAddress(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(essPersonalInfoService.getMyAddresses(personId));
+        } catch (Exception e) {
+            log.error("Lỗi lấy địa chỉ personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/api/empProfile/family")
+    @ResponseBody
+    public ResponseEntity<List<HrFamily>> getEmpProfileFamily(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(essPersonalInfoService.getMyFamilies(personId));
+        } catch (Exception e) {
+            log.error("Lỗi lấy thông tin gia đình personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/api/empProfile/education")
+    @ResponseBody
+    public ResponseEntity<List<HrEducation>> getEmpProfileEducation(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(hrEducationService.searchEducation(null, personId, null, null));
+        } catch (Exception e) {
+            log.error("Lỗi lấy quá trình học tập personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/api/empProfile/insideExperience")
+    @ResponseBody
+    public ResponseEntity<List<com.ait.ess.viewDept.dto.ManageEmpPositionInsideDto>> getEmpProfileInsideExperience(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(manageEmpPositionInfoService.getInsideExperienceList(personId));
+        } catch (Exception e) {
+            log.error("Lỗi lấy quá trình công tác personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/api/empProfile/reward")
+    @ResponseBody
+    public ResponseEntity<List<HrReward>> getEmpProfileReward(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(hrRewardService.getByPersonId(personId));
+        } catch (Exception e) {
+            log.error("Lỗi lấy khen thưởng personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/api/empProfile/punishment")
+    @ResponseBody
+    public ResponseEntity<List<HrPunishment>> getEmpProfilePunishment(
+            @RequestParam String personId) {
+        try {
+            return ResponseEntity.ok(hrPunishmentService.getByPersonId(personId));
+        } catch (Exception e) {
+            log.error("Lỗi lấy kỷ luật personId={}: ", personId, e);
+            return ResponseEntity.status(500).body(null);
         }
     }
 

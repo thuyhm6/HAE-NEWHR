@@ -10,4 +10,8 @@ public interface EssOtApplyService {
     Map<String, Object> getOtDuration(String applyOtDate, String otFromTime, String otToTime, String deductYn);
     List<EssOtApplyListDto> getMyOtApplyList(EssOtApplyListDto dto);
     int cancelMyOtApplyList(List<String> applyNos);
+
+    List<EssOtApplyListDto> getMyOtApplyOverList(EssOtApplyListDto dto);
+    int cancelMyOtApplyOverList(List<String> applyNos);
+    Map<String, Object> getHrDeptManager();
 }

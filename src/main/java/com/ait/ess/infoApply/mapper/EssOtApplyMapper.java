@@ -23,4 +23,10 @@ public interface EssOtApplyMapper {
     int countLockedOtApply(@Param("applyNos") List<String> applyNos);
 
     int cancelMyOtApplyList(@Param("applyNos") List<String> applyNos);
+
+    List<EssOtApplyListDto> selectMyOtApplyOverList(EssOtApplyListDto dto);
+
+    int cancelMyOtApplyOverList(@Param("applyNos") List<String> applyNos);
+
+    Map<String, Object> selectHrDeptManager();
 }

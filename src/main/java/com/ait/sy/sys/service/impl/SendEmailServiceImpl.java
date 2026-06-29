@@ -34,7 +34,6 @@ import com.ait.sy.syAffirm.mapper.SyAffirmEmailMapper;
 import com.ait.sy.sys.mapper.SendEmailMapper;
 import com.ait.sy.sys.service.SendEmailService;
 import com.ait.util.MailManager;
-import com.ait.util.MailSendApprovalManager;
 
 /**
  * 发送审批邮件
@@ -53,8 +52,6 @@ public class SendEmailServiceImpl implements SendEmailService{
     private EssLeaveApplyMapper essLeaveApplymapper;
 	@Autowired
 	MailManager mailManger;
-	@Autowired
-	MailSendApprovalManager mailSendApprovalManager;
 	@Autowired
     private SendEmailMapper sendEmailMapper;
 	@Autowired
@@ -317,7 +314,7 @@ public class SendEmailServiceImpl implements SendEmailService{
 	 */
 	public List getAffirmInfoEmailApproval(HttpServletRequest request, String applyNo){
 		/*获得web service服务*/
-		NeoOrgWsProxy neoOrgWsProxy = mailSendApprovalManager.getNeoOrgWsProxy();
+		NeoOrgWsProxy neoOrgWsProxy = mailManger.getNeoOrgWsProxy();
 		List applyList = new ArrayList();
 		try {
 			OrgUserVO[] orgUser = neoOrgWsProxy.searchUserByEmpolyeeNo("20100196");
@@ -465,7 +462,7 @@ public class SendEmailServiceImpl implements SendEmailService{
 	 */
 	public void synchronizationApprovalStatus(){
 		/*获得web service服务*/
-		NeoOrgWsProxy neoOrgWsProxy = mailSendApprovalManager.getNeoOrgWsProxy();
+		NeoOrgWsProxy neoOrgWsProxy = mailManger.getNeoOrgWsProxy();
 		
 		List approvalList = this.sendEmailMapper.getSynchronizationApprovalList();
 		
@@ -481,7 +478,7 @@ public class SendEmailServiceImpl implements SendEmailService{
 				misKeys[i] = misKey;
 			}
 		
-			ApprovalDocumentStatus[] appDocStus = this.mailSendApprovalManager.getMailApprovalInfo(misKeys);
+			ApprovalDocumentStatus[] appDocStus = mailManger.getMailApprovalInfo(misKeys);
 			
 			for(int i=0;i<appDocStus.length;i++){
 				for(int j = 0;j<approvalList.size();j++){

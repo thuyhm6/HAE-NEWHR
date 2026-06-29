@@ -256,13 +256,11 @@
             var year = now.getFullYear();
             var mon  = now.getMonth() + 1;
 
-            // Bảng thống kê: từ ngày 25 tháng trước đến 24 tháng này
-            var toMM       = String(mon).padStart(2, '0');
-            var initToDMY  = '24/' + toMM + '/' + year;
-            var fromYear   = (mon === 1) ? year - 1 : year;
-            var fromMon    = (mon === 1) ? 12 : mon - 1;
-            var fromMM     = String(fromMon).padStart(2, '0');
-            var initFromDMY = '25/' + fromMM + '/' + fromYear;
+            // Bảng thống kê: từ ngày đầu đến ngày cuối tháng hiện tại
+            var toMM        = String(mon).padStart(2, '0');
+            var lastDay     = new Date(year, mon, 0).getDate();
+            var initFromDMY = '01/' + toMM + '/' + year;
+            var initToDMY   = String(lastDay).padStart(2, '0') + '/' + toMM + '/' + year;
 
             // ── Helpers ────────────────────────────────────────────────
             function dbDmyToYmd(dmy) {

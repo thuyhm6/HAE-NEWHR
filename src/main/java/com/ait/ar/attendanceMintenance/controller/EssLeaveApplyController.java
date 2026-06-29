@@ -33,9 +33,9 @@ public class EssLeaveApplyController {
     @Autowired
     private MailSendApprovalManager mailSendApprovalManager;
 
-    @GetMapping("/viewApplyAttenanceManagentInfoList_new")
+    @GetMapping("/viewApplyAttManagentByAnyApproverList")
     public String view() {
-        return "ar/attendanceMintenance/viewApplyAttenanceManagentInfoList_new";
+        return "ar/attendanceMintenance/viewApplyAttManagentByAnyApproverList";
     }
 
     @GetMapping("/viewImportAttendanceTempList")

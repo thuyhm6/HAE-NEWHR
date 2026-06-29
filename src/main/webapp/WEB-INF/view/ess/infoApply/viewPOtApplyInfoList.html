@@ -80,13 +80,16 @@
                                     <th class="text-center" style="min-width:100px;" th:text="#{common.duration}">Thời lượng</th>
                                     <th class="text-center" style="min-width:130px;" th:text="#{poi.col.mealRest}">Bảo cơm / Nghỉ ngơi (30')</th>
                                     <th class="text-center" style="min-width:180px;" th:text="#{common.reason}">Lý do</th>
+                                    <th class="text-center" style="min-width:80px;"  th:text="#{essOt.usecarYn}">Đặt xe</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{essOt.carAddress}">Tuyến xe</th>
+                                    <th class="text-center" style="min-width:150px;" th:text="#{essOt.carAddressDetail}">Chi tiết điểm đón</th>
                                     <th class="text-center" style="min-width:110px;" th:text="#{common.approvalStatus}">Trạng thái duyệt</th>
                                     <th class="text-center" style="min-width:110px;" th:text="#{common.status}">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody id="poi_tableBody">
                                 <tr>
-                                    <td colspan="11" class="text-center text-muted py-3" th:text="#{poi.msg.loading}">Đang tải dữ liệu...</td>
+                                    <td colspan="14" class="text-center text-muted py-3" th:text="#{poi.msg.loading}">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -189,6 +192,7 @@
                         </tbody>
                     </table>
                 </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
@@ -274,7 +278,7 @@
                 fromDate  : poiConvertDrpDate($('#poi_fromDate').val()),
                 toDate    : poiConvertDrpDate($('#poi_toDate').val())
             };
-            $('#poi_tableBody').html('<tr><td colspan="11" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgLoading) + '</td></tr>');
+            $('#poi_tableBody').html('<tr><td colspan="14" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgLoading) + '</td></tr>');
             $('#poi_checkAll').prop('checked', false);
 
             $.ajax({
@@ -305,7 +309,7 @@
 
             var $tbody = $('#poi_tableBody');
             if (!page.length) {
-                $tbody.html('<tr><td colspan="11" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgNoData) + '</td></tr>');
+                $tbody.html('<tr><td colspan="14" class="text-center text-muted py-3">' + poiEscHtml(_poi_msgNoData) + '</td></tr>');
             } else {
                 var html = '';
                 page.forEach(function(r, idx) {
@@ -324,6 +328,9 @@
                         + '<td class="text-center">' + poiFormatHour(r.otApplyHour) + '</td>'
                         + '<td class="text-center">' + poiEscHtml(deduct) + '</td>'
                         + '<td>' + poiEscHtml(r.applyOtRemark || '') + '</td>'
+                        + '<td class="text-center">' + (r.usecarYn === '1' ? _poi_valYes : _poi_valNo) + '</td>'
+                        + '<td>' + poiEscHtml(r.carAddress       || '') + '</td>'
+                        + '<td>' + poiEscHtml(r.carAddressDetail || '') + '</td>'
                         + '<td class="text-center">' + poiEscHtml(r.affirmFlagName  || r.affirmFlag  || '') + '</td>'
                         + '<td class="text-center">' + poiEscHtml(r.confirmFlagName || '') + '</td>'
                         + '</tr>';
@@ -422,18 +429,18 @@
         }
 
         function poiResetDetailModal() {
-            poiSetText('#poi_modalApplyTitle', '');
-            poiSetText('#poi_modalApplicant',  '');
-            poiSetText('#poi_modalEmpName',    '');
-            poiSetText('#poi_modalEmpId',      '');
-            poiSetText('#poi_modalEmpDept',    '');
-            poiSetText('#poi_modalEmpPost',    '');
-            poiSetText('#poi_modalType',       '');
-            poiSetText('#poi_modalDate',       '');
-            poiSetText('#poi_modalFrom',       '');
-            poiSetText('#poi_modalTo',         '');
-            poiSetText('#poi_modalHour',       '');
-            poiSetText('#poi_modalRemark',     '');
+            poiSetText('#poi_modalApplyTitle',  '');
+            poiSetText('#poi_modalApplicant',   '');
+            poiSetText('#poi_modalEmpName',     '');
+            poiSetText('#poi_modalEmpId',       '');
+            poiSetText('#poi_modalEmpDept',     '');
+            poiSetText('#poi_modalEmpPost',     '');
+            poiSetText('#poi_modalType',        '');
+            poiSetText('#poi_modalDate',        '');
+            poiSetText('#poi_modalFrom',        '');
+            poiSetText('#poi_modalTo',          '');
+            poiSetText('#poi_modalHour',        '');
+            poiSetText('#poi_modalRemark',      '');
             $('#poi_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + poiEscHtml(_poi_msgLoading) + '</td></tr>');
         }
 

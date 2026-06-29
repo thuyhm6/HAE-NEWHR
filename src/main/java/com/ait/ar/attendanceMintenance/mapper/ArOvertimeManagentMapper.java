@@ -19,6 +19,11 @@ public interface ArOvertimeManagentMapper {
     List<SyAffirmEmailDto> selectApprovalInfo(@Param("applyNo") String applyNo,
             @Param("applyType") String applyType);
 
+    ArOvertimeManagentDto selectDetailOver(@Param("applyNo") String applyNo);
+
+    List<SyAffirmEmailDto> selectApprovalInfoOver(@Param("applyNo") String applyNo,
+            @Param("applyType") String applyType);
+
     ArOvertimeManagentDto selectDefaultOtInfo(ArOvertimeManagentDto dto);
 
     ArOvertimeManagentDto selectAutoFillOtInfo(ArOvertimeManagentDto dto);
@@ -30,6 +35,10 @@ public interface ArOvertimeManagentMapper {
     Long getNextApplySeq();
 
     void insertOvertimeApply(ArOvertimeManagentDto dto);
+
+    void insertOvertimeApplyOver(ArOvertimeManagentDto dto);
+
+    int countOverlapOtOver(ArOvertimeManagentDto dto);
 
     void updateOvertimeApply(ArOvertimeManagentDto dto);
 

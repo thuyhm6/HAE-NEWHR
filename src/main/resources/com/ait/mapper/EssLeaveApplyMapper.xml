@@ -70,6 +70,7 @@
         <result property="hrComment" column="HR_COMMENT" />
         <result property="annualLeaveCount" column="ANNUAL_LEAVE_COUNT" />
         <result property="affirmStr" column="AFFIRM_STR" />
+        <result property="sexCode" column="SEX_CODE" />
     </resultMap>
 
     <resultMap id="EssLeaveApplyDetailResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto" extends="DtoResultMap">
@@ -163,6 +164,7 @@
             TO_CHAR(A.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
             GET_UPDATED_INFO(A.UPDATED_BY) AS UPDATED_BY,
             A.UPDATED_IP,
+            HPI.SEX_CODE,
             (
                 SELECT LISTAGG('&lt;p&gt;' || S.AFFIRM_LEVEL || '. ' || NVL(HE.EMPID, '') || ' - ' || NVL(HE.LOCAL_NAME, '') || '&lt;/p&gt;', '')
                            WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL)
@@ -173,6 +175,7 @@
             ) AS AFFIRM_STR
         FROM ESS_LEAVE_APPLY_TB A
         LEFT JOIN HR_EMPLOYEE E ON E.PERSON_ID = A.PERSON_ID
+        LEFT JOIN HR_PERSONAL_INFO HPI ON HPI.PERSON_ID = A.PERSON_ID
         WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         <if test="empId != null and empId != ''">
             AND UPPER(E.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
@@ -623,8 +626,10 @@
                 GET_AR_SHIFTNO(#{personId, jdbcType=VARCHAR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD'), #{cpnyId, jdbcType=VARCHAR}),
                 #{lang, jdbcType=VARCHAR}
             ) AS SHIFT_NAME,
-            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME
+            GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            HPI.SEX_CODE
         FROM SHIFT_DATA SD, HR_EMPLOYEE HE
+        LEFT JOIN HR_PERSONAL_INFO HPI ON HPI.PERSON_ID = HE.PERSON_ID
         WHERE HE.PERSON_ID = #{personId, jdbcType=VARCHAR}
     </select>
 

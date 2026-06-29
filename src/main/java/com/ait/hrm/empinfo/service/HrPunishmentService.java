@@ -7,6 +7,8 @@ import com.ait.hrm.empinfo.model.HrPunishment;
 public interface HrPunishmentService {
     List<HrPunishment> searchPunishment(String empId, String localName, String punishCode);
 
+    List<HrPunishment> getByPersonId(String personId);
+
     HrPunishment getById(Long punishNo);
 
     boolean savePunishment(HrPunishment info, boolean isNew);

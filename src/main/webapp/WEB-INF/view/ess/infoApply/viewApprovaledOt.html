@@ -248,8 +248,9 @@
             $('#vaot_approveSection').hide();
             if (_vaot_detailModal) _vaot_detailModal.show();
 
+            var _vaot_detailUrl = (ctx && ctx.detailApiUrl) ? ctx.detailApiUrl : '/ar/attendanceMintenance/api/overtime/detail';
             $.ajax({
-                url: '/ar/attendanceMintenance/api/overtime/detail',
+                url: _vaot_detailUrl,
                 type: 'GET',
                 data: { applyNo: applyNo, applyType: applyType || '' },
                 success: function (res) { vaotRenderData(res || {}); },

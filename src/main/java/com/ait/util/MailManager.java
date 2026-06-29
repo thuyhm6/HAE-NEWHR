@@ -1,9 +1,15 @@
 package com.ait.util;
 
+import hanwha.neo.branch.common.sso.service.NeoSloWsProxy;
+import hanwha.neo.branch.ss.approval.axisws.ApprovalServiceProxy;
+import hanwha.neo.branch.ss.approval.vo.ApprovalDocumentStatus;
+import hanwha.neo.branch.ss.approval.vo.MisKey;
 import hanwha.neo.branch.ss.common.vo.WsAttachFile;
+import hanwha.neo.branch.ss.common.vo.WsException;
 import hanwha.neo.branch.ss.mail.service.MailServiceProxy;
 import hanwha.neo.branch.ss.mail.service.WsMailInfo;
 import hanwha.neo.branch.ss.mail.service.WsRecipient;
+import hanwha.neo.branch.ss.org.service.NeoOrgWsProxy;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -15,6 +21,9 @@ import java.io.Reader;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import java.rmi.RemoteException;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +49,127 @@ public class MailManager {
 
     @Value("${webservice.url}")
     private String WEBSERVICE_URL;
+
+
+	/**
+	 * 是否验证
+	 * 	1：发送
+	 *  0：不发送
+	 */
+    //@Value("${approval.send.flag}")
+	private String APPROVAL_SEND_FLAG = "1";
+
+	/**
+     * approval web service url
+     */
+    //@Value("${approval.webservice.url}")
+	//http://ci.eagleoffice.co.kr/api/services/ApprovalService
+	//EagleOffice:  http://hanwha.eagleoffice.co.kr/api/services/ApprovalService
+	//Circle: http://ep.circle.hanwha.com/api/axis/services/ApprovalService
+    private String APPROVAL_WEBSERVICE_URL = "https://ep.cleverse.hanwha.com/soap/approval/axis/services/ApprovalService";
+    
+    /**
+     * org web service url
+     */
+    //@Value("${org.webservice.url}")
+    //http://ci.eagleoffice.co.kr/api/ss/org/service/NeoOrgWs
+    //http://ep.circle.hanwha.com/api/ss/org?wsdl
+    private String ORG_WEBSERVICE_URL = "https://ep.cleverse.hanwha.com/soap/org/neoOrgWs?wsdl";
+    
+    /**
+     * slo web service url
+     */
+    //@Value("${slo.webservice.url}")
+    //http://ci.eagleoffice.co.kr/api/ss/neoslo
+    //http://ep.circle.hanwha.com/api/ss/neoslo
+    private String SLO_WEBSERVICE_URL = "https://ep.cleverse.hanwha.com/soap/auth/neoslo";
+
+    	/**
+	 * 获取eagleoffice发送审批信息的代理
+	 * @return result   ApprovalServiceProxy
+	 * @throws Exception 
+	 */
+	public ApprovalServiceProxy getApprovalServiceProxy() {
+		
+		String END_POINT_URL = APPROVAL_WEBSERVICE_URL;
+		ApprovalServiceProxy approvalServiceProxy = new ApprovalServiceProxy();
+		approvalServiceProxy.setEndpoint(END_POINT_URL);
+		
+		return approvalServiceProxy;
+	}
+	
+	/**
+	 * 获取eagleoffice的组织查询代理
+	 * @return result   NeoOrgWsProxy
+	 * @throws Exception 
+	 */
+	public NeoOrgWsProxy getNeoOrgWsProxy() {
+		
+		String END_POINT_URL = ORG_WEBSERVICE_URL;
+		NeoOrgWsProxy neoOrgWsProxy = new NeoOrgWsProxy();
+		neoOrgWsProxy.setEndpoint(END_POINT_URL);
+		
+		return neoOrgWsProxy;
+	}
+	
+	/**
+	 * 获取eagleoffice的slo登陆代理
+	 * @return result   NeoSloWsProxy
+	 * @throws Exception
+	 */
+	public NeoSloWsProxy getNeoSloWsProxy() {
+
+		String END_POINT_URL = SLO_WEBSERVICE_URL;
+		NeoSloWsProxy neoSloWsProxy = new NeoSloWsProxy();
+		neoSloWsProxy.setEndpoint(END_POINT_URL);
+
+		return neoSloWsProxy;
+	}
+
+    	/**
+	 *  获取需要到eagleoffice取消的待审批信息
+	 * @param MisKey[]
+	 * @return ApprovalDocumentStatus[]
+	 */
+	@SuppressWarnings("unchecked")
+	public ApprovalDocumentStatus[] getMailApprovalInfo(MisKey[] misKeys){
+		
+		ApprovalDocumentStatus[] appDocStus = new ApprovalDocumentStatus[misKeys == null ? 0:misKeys.length];
+		
+		if("1".equals(APPROVAL_SEND_FLAG)){
+			for(int i = 0;i < misKeys.length;i++){
+				appDocStus[i] = this.getApprovalStatusByMisId(misKeys[i]);
+			}
+		}
+		return appDocStus;
+	}
+
+    
+	
+	/**
+	 *  获取申请的审批状态信息
+	 * @param MisKey
+	 * @return ApprovalDocumentStatus
+	 */
+	@SuppressWarnings("unchecked")
+	public ApprovalDocumentStatus getApprovalStatusByMisId(MisKey misKey){
+		
+		ApprovalDocumentStatus appDocStu = new ApprovalDocumentStatus();
+		
+		ApprovalServiceProxy approvalServiceProxy = this.getApprovalServiceProxy();
+		misKey.setSystemId("HAE_VHR");
+		
+		try {
+			appDocStu = approvalServiceProxy.getStatusByMisId(misKey);
+		} catch (WsException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		return appDocStu;
+	}
+    
 
     public boolean sendMail(String title, String content, String address) {
         boolean result = false;

@@ -174,7 +174,7 @@
             CPNY_ID,
             ACTIVITY,
             CREATED_BY,
-            CREATE_DATE
+            CREATE_DATE,
             CREATED_IP
         ) VALUES (
             PA_PARAM_DATA_SEQ.NEXTVAL,

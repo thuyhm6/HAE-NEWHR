@@ -1,9 +1,11 @@
 package com.ait.ess.infoApply.controller;
 
+import com.ait.ess.infoApply.dto.EssApplyOtBatchHAEDto;
 import com.ait.ess.infoApply.dto.EssCwaAbnormalDto;
 import com.ait.ess.infoApply.dto.EssCoordApplyOtInfoDto;
 import com.ait.ess.infoApply.dto.EssOtApplyListDto;
 import com.ait.ess.infoApply.dto.EssPersonOtInfoDto;
+import com.ait.ess.infoApply.service.EssApplyOtBatchHAEService;
 import com.ait.ess.infoApply.service.EssCwaAbnormalService;
 import com.ait.ess.infoApply.service.EssCoordApplyOtInfoService;
 import com.ait.ess.infoApply.service.EssOtApplyService;
@@ -43,6 +45,9 @@ public class EssInfoApplyController {
     private EssCoordApplyOtInfoService essCoordApplyOtInfoService;
 
     @Autowired
+    private EssApplyOtBatchHAEService essApplyOtBatchHAEService;
+
+    @Autowired
     private SyAffirmEmailService syAffirmEmailService;
 
     @Autowired
@@ -53,9 +58,59 @@ public class EssInfoApplyController {
         return "ess/infoApply/viewSSTOtApplyInfo";
     }
 
+    @GetMapping("/viewSSTOtApplyInfoTx")
+    public String viewSSTOtApplyInfoTx() {
+        return "ess/infoApply/viewSSTOtApplyInfoTx";
+    }
+
+    @GetMapping("/viewPiciOtAffirmPBatchList")
+    public String viewPiciOtAffirmPBatchList() {
+        return "ess/infoApply/viewPiciOtAffirmPBatchList";
+    }
+
+    @GetMapping("/api/myOtApplyOver/list")
+    @ResponseBody
+    public ResponseEntity<List<EssOtApplyListDto>> getMyOtApplyOverList(
+            @RequestParam(required = false) String otTypeCode,
+            @RequestParam(required = false) String affirmFlag,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate) {
+        EssOtApplyListDto dto = new EssOtApplyListDto();
+        dto.setOtTypeCodeSearch(otTypeCode);
+        dto.setAffirmFlagSearch(affirmFlag);
+        dto.setFromDate(fromDate);
+        dto.setToDate(toDate);
+        return ResponseEntity.ok(essOtApplyService.getMyOtApplyOverList(dto));
+    }
+
+    @PostMapping("/api/myOtApplyOver/cancel")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cancelMyOtApplyOverList(
+            @RequestBody List<String> applyNos) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            int count = essOtApplyService.cancelMyOtApplyOverList(applyNos);
+            response.put("success", true);
+            response.put("count", count);
+            response.put("message", "Hủy bỏ thành công " + count + " dòng.");
+        } catch (Exception e) {
+            log.error("Failed to cancel OT over applications", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Hủy bỏ thất bại." : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/viewPOtApplyInfoList")
     public String viewPOtApplyInfoList() {
         return "ess/infoApply/viewPOtApplyInfoList";
+    }
+
+    @GetMapping("/api/hrDeptManager")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getHrDeptManager() {
+        return ResponseEntity.ok(essOtApplyService.getHrDeptManager());
     }
 
     @GetMapping("/api/otDateInfo")
@@ -135,9 +190,9 @@ public class EssInfoApplyController {
         return ResponseEntity.ok(essPersonOtInfoService.getOtItemList());
     }
 
-    @GetMapping("/viewPiciOtAffirmLBatchList")
-    public String viewPiciOtAffirmLBatchList() {
-        return "ess/infoApply/viewPiciOtAffirmLBatchList";
+    @GetMapping("/viewApplyOtLBatchByAnyApproverList")
+    public String viewApplyOtLBatchByAnyApproverList() {
+        return "ess/infoApply/viewApplyOtLBatchByAnyApproverList";
     }
 
     @GetMapping("/viewApprovalEmail")
@@ -255,6 +310,46 @@ public class EssInfoApplyController {
     @ResponseBody
     public ResponseEntity<List<EssCoordApplyOtInfoDto>> getCoordOtItemList() {
         return ResponseEntity.ok(essCoordApplyOtInfoService.getOtItemList());
+    }
+
+    @GetMapping("/viewApplyOTBatchInfoHAEList")
+    public String viewApplyOTBatchInfoHAEList() {
+        return "ess/infoApply/viewApplyOTBatchInfoHAEList";
+    }
+
+    @GetMapping("/api/otBatchHAE/list")
+    @ResponseBody
+    public ResponseEntity<DataTablesResponse<EssApplyOtBatchHAEDto>> getApplyOtBatchHAEList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNos,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String shiftNo,
+            @RequestParam(required = false) String itemNoSearch,
+            @RequestParam(required = false) String statusCode,
+            @RequestParam(required = false) String postFamily,
+            @RequestParam(defaultValue = "1") int draw,
+            @RequestParam(defaultValue = "0") int start,
+            @RequestParam(defaultValue = "25") int length) {
+        EssApplyOtBatchHAEDto dto = new EssApplyOtBatchHAEDto();
+        dto.setKeyword(keyword);
+        dto.setDeptNos(deptNos);
+        dto.setStartDate(startDate);
+        dto.setEndDate(endDate);
+        dto.setShiftNo(shiftNo);
+        dto.setItemNoSearch(itemNoSearch);
+        dto.setStatusCode(statusCode);
+        dto.setPostFamily(postFamily);
+        dto.setDraw(draw);
+        dto.setStart(start);
+        dto.setLength(length);
+        return ResponseEntity.ok(essApplyOtBatchHAEService.getPageList(dto));
+    }
+
+    @GetMapping("/api/otBatchHAE/items")
+    @ResponseBody
+    public ResponseEntity<List<EssApplyOtBatchHAEDto>> getApplyOtBatchHAEItemList() {
+        return ResponseEntity.ok(essApplyOtBatchHAEService.getOtItemList());
     }
 
     @GetMapping("/viewShowCwaAbnormalApply")

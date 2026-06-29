@@ -14,6 +14,8 @@ import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDetailDto;
 import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto;
 import com.ait.ess.viewDept.dto.YearUseLeaveUsageDto;
 import com.ait.ess.viewDept.dto.YearUseVacationDto;
+import com.ait.ess.empinfo.dto.EssPersonalInfoDto;
+import com.ait.ess.empinfo.service.EssPersonalInfoService;
 import com.ait.ess.viewDept.service.ArPersonalListService;
 import com.ait.ess.viewDept.service.ArPersonalSelfService;
 import com.ait.ess.viewDept.service.EssEntryInfoListService;
@@ -22,6 +24,11 @@ import com.ait.ess.viewDept.service.ManageEvsResultEmpService;
 import com.ait.ess.viewDept.service.ManageEmpPositionInfoService;
 import com.ait.ess.viewDept.service.OtApplyPersonalSelfService;
 import com.ait.ess.viewDept.service.YearUseInfoService;
+import com.ait.hrm.empinfo.model.HrAddressMatters;
+import com.ait.hrm.empinfo.model.HrEducation;
+import com.ait.hrm.empinfo.model.HrEmergencyAddress;
+import com.ait.hrm.empinfo.model.HrFamily;
+import com.ait.hrm.empinfo.service.HrEducationService;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +70,12 @@ public class EssViewDeptController {
 
     @Autowired
     private ManageCountInfoService manageCountInfoService;
+
+    @Autowired
+    private EssPersonalInfoService essPersonalInfoService;
+
+    @Autowired
+    private HrEducationService hrEducationService;
 
     @GetMapping("/viewEmpCalendar")
     public String viewEmpCalendar() {
@@ -289,6 +304,52 @@ public class EssViewDeptController {
     @ResponseBody
     public DataTablesResponse<EssEntryInfoListDto> getEntryInfoList(EssEntryInfoListDto dto) {
         return essEntryInfoListService.getPageList(dto);
+    }
+
+    // ==================== Hồ sơ nhân viên (viewPersonalInfoEss) ====================
+
+    @GetMapping("/viewPersonalInfoEss")
+    public String viewPersonalInfoEss() {
+        return "ess/viewDept/viewPersonalInfoEss";
+    }
+
+    @GetMapping("/api/empProfile/currentUser")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> getCurrentUserPersonId(HttpSession session) {
+        String personId = session.getAttribute("adminID") != null ? session.getAttribute("adminID").toString() : "";
+        Map<String, String> result = new HashMap<>();
+        result.put("personId", personId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/api/empProfile/info")
+    @ResponseBody
+    public ResponseEntity<EssPersonalInfoDto> getEmpProfileInfo(@RequestParam String personId) {
+        return ResponseEntity.ok(essPersonalInfoService.getMyInfo(personId));
+    }
+
+    @GetMapping("/api/empProfile/education")
+    @ResponseBody
+    public ResponseEntity<List<HrEducation>> getEmpProfileEducation(@RequestParam String personId) {
+        return ResponseEntity.ok(hrEducationService.searchEducation(null, personId, null, null));
+    }
+
+    @GetMapping("/api/empProfile/address")
+    @ResponseBody
+    public ResponseEntity<List<HrAddressMatters>> getEmpProfileAddress(@RequestParam String personId) {
+        return ResponseEntity.ok(essPersonalInfoService.getMyAddresses(personId));
+    }
+
+    @GetMapping("/api/empProfile/family")
+    @ResponseBody
+    public ResponseEntity<List<HrFamily>> getEmpProfileFamily(@RequestParam String personId) {
+        return ResponseEntity.ok(essPersonalInfoService.getMyFamilies(personId));
+    }
+
+    @GetMapping("/api/empProfile/emergency")
+    @ResponseBody
+    public ResponseEntity<List<HrEmergencyAddress>> getEmpProfileEmergency(@RequestParam String personId) {
+        return ResponseEntity.ok(essPersonalInfoService.getMyEmergencies(personId));
     }
 
     @GetMapping("/api/arPersonalList/summary")

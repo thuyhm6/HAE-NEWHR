@@ -124,6 +124,7 @@
         var _ex_pageBooted = false;
         var _ex_selectedDeptCodes = [];
         var _ex_selectedRowKeys = {};
+        var _ex_rowApprovers = {};
 
         /* i18n */
         var _ex_i18n = {
@@ -139,7 +140,8 @@
             submitError       : /*[[#{ex.msg.submitError}]]*/ 'Lỗi khi gửi dữ liệu xin phép.',
             selectMinOneBatch : /*[[#{ex.msg.selectMinOneBatch}]]*/ 'Vui lòng chọn ít nhất một dòng để thực hiện.',
             enterBatchTime    : /*[[#{ex.msg.enterBatchTime}]]*/ 'Vui lòng nhập thời gian vào hoặc thời gian ra.',
-            batchApplied      : /*[[#{ex.msg.batchApplied}]]*/ 'Đã áp dụng thời gian cho các dòng đã chọn.'
+            batchApplied      : /*[[#{ex.msg.batchApplied}]]*/ 'Đã áp dụng thời gian cho các dòng đã chọn.',
+            missingApprovers  : /*[[#{ex.msg.missingApprovers}]]*/ 'Vui lòng thêm người phê duyệt cho tất cả dòng đã chọn.'
         };
 
         function exFormatDate(dateObj) {
@@ -562,7 +564,19 @@
                                 + 'value="' + exEscapeAttr(data || '') + '" placeholder="' + exEscapeAttr(_ex_i18n.placeholderRemark) + '">';
                         }
                     },
-                    { data: 'updatedBy', render: function (data) { return data || ''; } }
+                    {
+                        data: null,
+                        width: '200px',
+                        render: function (data, type, row) {
+                            var keyToken = exGetRowToken(row);
+                            var approvers = _ex_rowApprovers[keyToken] || [];
+                            return '<div class="ex-approver-list" data-row-key="' + exEscapeAttr(keyToken) + '">'
+                                + exRenderApproverListHtml(keyToken, approvers)
+                                + '</div>'
+                                + '<button class="btn btn-sm btn-outline-primary mt-1" onclick="exAddApprover(this,\'' + exEscapeAttr(keyToken) + '\')">'
+                                + '<i class="bx bx-plus"></i></button>';
+                        }
+                    }
                 ]
             });
         }
@@ -587,9 +601,34 @@
             });
         }
 
+        function exRenderApproverListHtml(keyToken, approvers) {
+            return (approvers || []).map(function (a, i) {
+                return '<div class="d-flex align-items-center gap-1 mb-1">'
+                    + '<small class="text-truncate">' + exEscapeAttr((a.empId || '') + ' - ' + (a.localName || '')) + '</small>'
+                    + '<button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="exRemoveApprover(\'' + exEscapeAttr(keyToken) + '\',' + i + ')" title="Xóa"><i class="bx bx-x"></i></button>'
+                    + '</div>';
+            }).join('');
+        }
+
+        window.exAddApprover = function (btn, keyToken) {
+            if (typeof EmployeeSearchModal === 'undefined') { alert('EmployeeSearchModal not found'); return; }
+            if (!_ex_rowApprovers[keyToken]) _ex_rowApprovers[keyToken] = [];
+            EmployeeSearchModal.open(function (emp) {
+                _ex_rowApprovers[keyToken].push({ personId: emp.personId || '', localName: emp.localName || '', empId: emp.empId || '' });
+                $('.ex-approver-list[data-row-key="' + exEscapeAttr(keyToken) + '"]').html(exRenderApproverListHtml(keyToken, _ex_rowApprovers[keyToken]));
+            });
+        };
+
+        window.exRemoveApprover = function (keyToken, idx) {
+            if (!_ex_rowApprovers[keyToken]) return;
+            _ex_rowApprovers[keyToken].splice(idx, 1);
+            $('.ex-approver-list[data-row-key="' + exEscapeAttr(keyToken) + '"]').html(exRenderApproverListHtml(keyToken, _ex_rowApprovers[keyToken]));
+        };
+
         window.exSearchData = function () {
             if (_ex_table) {
                 _ex_selectedRowKeys = {};
+                _ex_rowApprovers = {};
                 $('.ex-select-all-rows').prop('checked', false);
                 _ex_table.ajax.reload();
             }
@@ -611,6 +650,7 @@
                     rowData.fromDateTime = exNormalizeDateTimeValue(rowData.fromDateTime || '');
                     rowData.toDateTime = exNormalizeDateTimeValue(rowData.toDateTime || '');
                     selectedRows.push({
+                        keyToken: keyToken,
                         applyNo: rowData.applyNo || '',
                         personId: rowData.personId || '',
                         empId: rowData.empId || '',
@@ -640,13 +680,35 @@
                     toastr && toastr.warning(_ex_i18n.fillTimeRequired);
                     return;
                 }
+                if (!(_ex_rowApprovers[row.keyToken] || []).length) {
+                    toastr && toastr.warning(_ex_i18n.missingApprovers);
+                    return;
+                }
             }
+
+            var payload = selectedRows.map(function (r) {
+                return {
+                    applyNo: r.applyNo,
+                    personId: r.personId,
+                    empId: r.empId,
+                    localName: r.localName,
+                    itemNo: r.itemNo,
+                    arDateStr: r.arDateStr,
+                    fromDateTime: r.fromDateTime,
+                    toDateTime: r.toDateTime,
+                    workHour: r.workHour,
+                    remark: r.remark,
+                    approvers: (_ex_rowApprovers[r.keyToken] || []).map(function (a) {
+                        return { personId: a.personId, localName: a.localName, empId: a.empId };
+                    })
+                };
+            });
 
             $.ajax({
                 url: '/ess/infoApplyAttendance/api/attendanceEx/apply',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify(selectedRows),
+                data: JSON.stringify(payload),
                 success: function (res) {
                     if (res && res.success) {
                         toastr && toastr.success(res.message || _ex_i18n.submitSuccess);

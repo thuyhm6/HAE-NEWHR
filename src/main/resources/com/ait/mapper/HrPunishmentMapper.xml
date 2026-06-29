@@ -52,8 +52,8 @@
         ORDER BY t1.PUNISH_DATE DESC
     </select>
 
-    <select id="getById" resultMap="HrPunishmentResultMap">
-        SELECT 
+    <select id="getByPersonId" resultMap="HrPunishmentResultMap">
+        SELECT
             t1.*,
             t2.EMPID,
             t2.LOCAL_NAME,
@@ -61,7 +61,21 @@
         FROM HR_PUNISHMENT t1
         LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
         LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
-        WHERE t1.PUNISH_NO = #{punishNo}
+        WHERE t1.PERSON_ID = #{personId,jdbcType=VARCHAR}
+          AND (t1.ACTIVITY = 1 OR t1.ACTIVITY IS NULL)
+        ORDER BY t1.PUNISH_DATE DESC
+    </select>
+
+    <select id="getById" resultMap="HrPunishmentResultMap">
+        SELECT
+            t1.*,
+            t2.EMPID,
+            t2.LOCAL_NAME,
+            t3.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_PUNISHMENT t1
+        LEFT JOIN HR_EMPLOYEE t2 ON t1.PERSON_ID = t2.PERSON_ID
+        LEFT JOIN HR_DEPARTMENT t3 ON t2.DEPTNO = t3.DEPTNO
+        WHERE t1.PUNISH_NO = #{punishNo,jdbcType=NUMERIC}
     </select>
 
     <insert id="insert" parameterType="com.ait.hrm.empinfo.model.HrPunishment">

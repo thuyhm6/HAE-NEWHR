@@ -17,6 +17,7 @@ public class EssPersonalInfoDto {
     private String deptName;
     private String dutyName;
     private String positionNoName;
+    private String postFamily;
     private String postFamilyName;
     private String postGradeName;
     private String headDepartment;

@@ -32,9 +32,9 @@ public class ArCardRecordForSelfServiceImpl implements ArCardRecordForSelfServic
     private static final DateTimeFormatter AR_DATE_FMT  = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
     private static final String DEVICE_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static final String DEVICE_URL    = "jdbc:sqlserver://10.43.7.249\\WISENETACS:1433;databaseName=WACS;encrypt=false";
-    private static final String DEVICE_USER   = "hrsystem";
-    private static final String DEVICE_PASS   = "5tkatjd!";
+    private static final String DEVICE_URL    = "jdbc:sqlserver://10.44.7.241\\WISENETACS:1433;databaseName=WACS;encrypt=false";
+    private static final String DEVICE_USER   = "sa";
+    private static final String DEVICE_PASS   = "Hae@2018";
 
     @Autowired
     private ArCardRecordForSelfMapper mapper;

@@ -129,9 +129,9 @@ public class EssInfoApplyAttendanceController {
         return "ess/infoApplyAttendance/viewApplyAttendanceInfoList";
     }
 
-    @GetMapping("/viewApplyAttenanceBatchInfoList")
-    public String viewApplyAttenanceBatchInfoList() {
-        return "ess/infoApplyAttendance/viewApplyAttenanceBatchInfoList";
+    @GetMapping("/viewApplyAttBatchByAnyApproverList")
+    public String viewApplyAttBatchByAnyApproverList() {
+        return "ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList";
     }
 
     @GetMapping("/api/myLeaveApply/list")

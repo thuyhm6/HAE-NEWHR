@@ -99,6 +99,56 @@
         </foreach>
     </update>
 
+    <select id="selectMyOtApplyOverList" resultMap="EssOtApplyListResultMap">
+        SELECT
+            A.APPLY_NO,
+            A.PERSON_ID,
+            A.OT_TYPE_CODE,
+            GET_GLOBAL_NAME(A.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS OT_TYPE_NAME,
+            TO_CHAR(A.APPLY_OT_DATE, 'DD/MM/YYYY') AS APPLY_OT_DATE,
+            A.OT_FROM_TIME,
+            A.OT_TO_TIME,
+            A.OT_APPLY_HOUR,
+            A.DEDUCT_YN,
+            A.APPLY_OT_REMARK,
+            A.AFFIRM_FLAG,
+            GET_GLOBAL_NAME(A.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            A.CONFIRM_FLAG,
+            GET_GLOBAL_NAME(TO_CHAR(A.CONFIRM_FLAG), #{lang, jdbcType=VARCHAR}) AS CONFIRM_FLAG_NAME,
+            A.CREATED_BY,
+            A.CREATED_IP
+        FROM ESS_APPLY_OT_OVER A
+        WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND A.ACTIVITY  = 1
+        <if test="otTypeCodeSearch != null and otTypeCodeSearch != ''">
+            AND A.OT_TYPE_CODE = #{otTypeCodeSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="affirmFlagSearch != null and affirmFlagSearch != ''">
+            AND A.AFFIRM_FLAG = #{affirmFlagSearch, jdbcType=VARCHAR}
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND A.APPLY_OT_DATE &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND A.APPLY_OT_DATE &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+        ORDER BY A.APPLY_OT_DATE DESC, A.CREATE_DATE DESC
+    </select>
+
+    <update id="cancelMyOtApplyOverList">
+        UPDATE ESS_APPLY_OT_OVER
+        SET ACTIVITY    = 0,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP  = #{adminIP, jdbcType=VARCHAR}
+        WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}
+          AND AFFIRM_FLAG = '14014306'
+          AND APPLY_NO IN
+        <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+            #{no, jdbcType=VARCHAR}
+        </foreach>
+    </update>
+
     <select id="selectOtDateInfo" resultType="map">
         SELECT
             GET_OT_TYPE_CODE(#{adminID, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, 0, 0) AS OT_TYPE_CODE,
@@ -122,6 +172,24 @@
             (SELECT OT_LIMIT     FROM HR_EMPLOYEE WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}) AS OT_LIMIT,
             (SELECT OT_LIMIT_100 FROM HR_EMPLOYEE WHERE PERSON_ID = #{adminID, jdbcType=VARCHAR}) AS OT_LIMIT_100
         FROM DUAL
+    </select>
+
+    <select id="selectHrDeptManager" resultType="map">
+        SELECT
+            HE.PERSON_ID  AS PERSON_ID,
+            HE.LOCAL_NAME AS LOCAL_NAME,
+            HE.EMP_ID     AS EMP_ID,
+            GET_GLOBAL_NAME(HE.DUTY_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME,
+            D.ORG_NAME_LOCAL AS DEPT_NAME
+        FROM HR_DEPARTMENT HD
+        JOIN HR_EMPLOYEE HE
+          ON HE.PERSON_ID = HD.MANAGER_EMP_ID
+         AND HE.ACTIVITY  = 1
+        LEFT JOIN HR_DEPARTMENT D
+          ON D.DEPTNO   = HE.DEPTNO
+         AND D.ACTIVITY = 1
+        WHERE HD.DEPTNO   = 'D11BV602'
+          AND HD.ACTIVITY = 1
     </select>
 
     <select id="selectOtDuration" resultType="map">

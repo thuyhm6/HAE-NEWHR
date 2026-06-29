@@ -29,7 +29,7 @@ public class ArDetailCalculateServiceImpl implements ArDetailCalculateService {
             safeParams.setPersonId(safeString(safeParams.getPersonId()));
         } else {
             safeParams.setDeptId(safeString(safeParams.getDeptId()));
-            safeParams.setSonDeptFlag("Y".equalsIgnoreCase(safeString(safeParams.getSonDeptFlag())) ? "Y" : "N");
+            safeParams.setSonDeptFlag("YES".equalsIgnoreCase(safeString(safeParams.getSonDeptFlag())) ? "YES" : "NO");
             safeParams.setPersonId(safeString(safeParams.getPersonId()));
         }
 

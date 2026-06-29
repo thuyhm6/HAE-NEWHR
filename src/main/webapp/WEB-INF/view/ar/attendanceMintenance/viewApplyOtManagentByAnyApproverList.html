@@ -72,7 +72,7 @@
 
                     <div class="table-responsive">
                         <table id="otf_dataTable" class="table table-striped table-bordered table-hover"
-                            style="min-width: 2120px;">
+                            style="min-width: 2600px;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th><input type="checkbox" id="otf_checkAll" onclick="otfToggleCheckAll(this)"></th>
@@ -88,6 +88,9 @@
                                     <th th:text="#{common.hours}">Số giờ</th>
                                     <th th:text="#{impOt.deductYn}">Báo cơm / Nghỉ ngơi (30')</th>
                                     <th style="width:250px;min-width:250px;max-width:250px;" th:text="#{common.reason}">Lý do</th>
+                                    <th th:text="#{essOt.usecarYn}">Đặt xe</th>
+                                    <th style="width:150px;" th:text="#{essOt.carAddress}">Tuyến xe</th>
+                                    <th style="width:200px;" th:text="#{essOt.carAddressDetail}">Chi tiết điểm đón</th>
                                     <th th:text="#{arOtf.otTotalMonth}">Tổng tăng ca tháng này</th>
                                     <th th:text="#{arOtf.otTotalYear}">Tổng tăng ca năm này</th>
                                     <th th:text="#{common.status}">Trạng thái</th>
@@ -137,6 +140,7 @@
         var _otf_addedRows = [];
         var _otf_pageBooted = false;
         var _otf_rowEventsBound = false;
+        var _otf_hrDeptManager = null;
 
         // Basic helpers
         function otfFormatDate(dateObj) {
@@ -341,6 +345,9 @@
             rowData.otApplyHour = $tr.find('.otf-apply-hour').text() || '';
             rowData.deductYn = $tr.find('.otf-in-deduct').is(':checked') ? '1' : '0';
             rowData.applyOtRemark = $tr.find('.otf-in-remark').val() || '';
+            rowData.usecarYn = $tr.find('.otf-in-usecar').is(':checked') ? '1' : '0';
+            rowData.carAddress = $tr.find('.otf-in-car-address').val() || rowData.carAddress || '';
+            rowData.carAddressDetail = $tr.find('.otf-in-car-detail').val() || rowData.carAddressDetail || '';
             return rowData;
         }
 
@@ -379,8 +386,10 @@
                         rowData.deptName = data.deptName;
                         $tr.find('td').eq(3).text(data.deptName);
                     }
-                    rowData.otTypeCode = data.otTypeCode || '';
-                    rowData.otTypeName = data.otTypeName || '';
+                    rowData.otTypeCode   = data.otTypeCode   || '';
+                    rowData.otTypeName   = data.otTypeName   || '';
+                    rowData.postFamily   = data.postFamily   || '';
+                    rowData.shiftEndTime = data.shiftEndTime || '';
                     $tr.find('.otf-in-type-code').val(data.otTypeCode || '');
                     $tr.find('.otf-in-type-name').text(data.otTypeName || '');
                     var fromVal = otfNormalizeDateTimeValue(data.otFromTime || '');
@@ -529,6 +538,18 @@
                 otfSyncRowData($tr);
                 otfResolveDefaultOtInfo($tr);
             });
+            $('#otf_dataTable tbody').on('change.otf', '.otf-in-car-address', function () {
+                var $tr = $(this).closest('tr');
+                var parentCode = $(this).val();
+                var $detail = $tr.find('.otf-in-car-detail');
+                otfSyncRowData($tr);
+                if (parentCode) {
+                    $detail.prop('disabled', false);
+                    if (typeof reloadCodeSelect === 'function') reloadCodeSelect($detail[0], parentCode, null);
+                } else {
+                    $detail.empty().prop('disabled', true);
+                }
+            });
         }
 
         function otfGetSearchParams() {
@@ -570,22 +591,27 @@
                     { targets: 10, width: '60px' },
                     { targets: 11, width: '80px', orderable: false },
                     { targets: 12, width: '320px' },
-                    { targets: 13, width: '110px', orderable: false },
-                    { targets: 14, width: '110px', orderable: false },
-                    { targets: 15, width: '120px' },
-                    { targets: 16, width: '100px' },
-                    { targets: 17, width: '100px' },
-                    { targets: 18, width: '180px' },
-                    { targets: 19, width: '130px' }
+                    { targets: 13, width: '70px',  orderable: false },
+                    { targets: 14, width: '150px', orderable: false },
+                    { targets: 15, width: '200px', orderable: false },
+                    { targets: 16, width: '110px', orderable: false },
+                    { targets: 17, width: '110px', orderable: false },
+                    { targets: 18, width: '120px' },
+                    { targets: 19, width: '100px' },
+                    { targets: 20, width: '100px' },
+                    { targets: 21, width: '200px' },
+                    { targets: 22, width: '130px' }
                 ],
                 fixedColumns: hasFixedColumns ? { leftColumns: 3 } : false,
                 initComplete: function () {
                     this.api().columns.adjust();
                     otfBindRowEvents();
                     otfInitInputPlugins('#otf_dataTable_wrapper');
+                    if (typeof initCodeSelects === 'function') initCodeSelects('#otf_dataTable_wrapper');
                 },
                 drawCallback: function () {
                     otfInitInputPlugins('#otf_dataTable_wrapper');
+                    if (typeof initCodeSelects === 'function') initCodeSelects('#otf_dataTable_wrapper');
                 },
                 ajax: {
                     url: '/ar/attendanceMintenance/api/overtime/list',
@@ -717,6 +743,37 @@
                         }
                     },
                     {
+                        data: 'usecarYn', className: 'text-center align-middle',
+                        render: function (data, type, row) {
+                            if (row.isNew) {
+                                return '<input type="checkbox" class="otf-in-usecar"' + (data === '1' ? ' checked' : '') + '>';
+                            }
+                            return data === '1' ? 'Có' : 'Không';
+                        }
+                    },
+                    {
+                        data: 'carAddress',
+                        render: function (data, type, row) {
+                            if (row.isNew) {
+                                return '<select class="form-select form-select-sm otf-in-car-address" data-parent-code="90000578">'
+                                    + (data ? '<option value="' + otfEscHtml(data) + '" selected>' + otfEscHtml(data) + '</option>' : '')
+                                    + '</select>';
+                            }
+                            return otfEscHtml(data || '');
+                        }
+                    },
+                    {
+                        data: 'carAddressDetail',
+                        render: function (data, type, row) {
+                            if (row.isNew) {
+                                return '<select class="form-select form-select-sm otf-in-car-detail">'
+                                    + (data ? '<option value="' + otfEscHtml(data) + '" selected>' + otfEscHtml(data) + '</option>' : '')
+                                    + '</select>';
+                            }
+                            return otfEscHtml(data || '');
+                        }
+                    },
+                    {
                         data: 'otTotalMonth',
                         className: 'text-center align-middle',
                         render: function (data) {
@@ -758,7 +815,20 @@
                     },
                     {
                         data: 'affirmStr',
-                        render: function (data) { return data || ''; }
+                        render: function (data, type, row) {
+                            if (row.isNew) {
+                                var list = (row.approvers || []).map(function (a, i) {
+                                    return '<div class="d-flex align-items-center gap-1 mb-1">'
+                                        + '<small class="text-truncate">' + otfEscHtml((a.empId || '') + ' - ' + (a.localName || '')) + '</small>'
+                                        + '<button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="otfRemoveApprover(this,' + i + ')" title="Xóa"><i class="bx bx-x"></i></button>'
+                                        + '</div>';
+                                }).join('');
+                                return '<div class="otf-approver-list">' + list + '</div>'
+                                    + '<button class="btn btn-sm btn-outline-primary mt-1" onclick="otfAddApprover(this)">'
+                                    + '<i class="bx bx-plus"></i></button>';
+                            }
+                            return data || '';
+                        }
                     },
                     {
                         data: null,
@@ -794,6 +864,21 @@
             _otf_pageBooted = true;
             otfInitDate();
             otfInitTable();
+            $.ajax({
+                url: '/ess/infoApply/api/hrDeptManager',
+                type: 'GET',
+                success: function (d) {
+                    if (d && d.PERSON_ID) {
+                        _otf_hrDeptManager = {
+                            personId:     d.PERSON_ID     || '',
+                            localName:    d.LOCAL_NAME    || '',
+                            empId:        d.EMP_ID        || '',
+                            deptName:     d.DEPT_NAME     || '',
+                            positionName: d.POSITION_NAME || ''
+                        };
+                    }
+                }
+            });
         }
 
         function otfBuildSaveContext($tr, applyNo, rowPersonId) {
@@ -826,7 +911,64 @@
             if (!saveContext.applyOtDate) { toastr && toastr.warning(_otf_i18n.msgNotSelectDate); return false; }
             if (!saveContext.otFromTime || !saveContext.otToTime) { toastr && toastr.warning(_otf_i18n.msgNotEnterTime); return false; }
             if (!saveContext.otApplyHour) { toastr && toastr.warning(_otf_i18n.msgNoHour); return false; }
+
+            // Điều kiện 1: Bắt buộc nhập Lý do
+            if (!saveContext.applyOtRemark || !saveContext.applyOtRemark.trim()) {
+                toastr && toastr.warning('Vui lòng nhập lý do tăng ca.');
+                return false;
+            }
+
+            // Điều kiện 2: Thời lượng tối thiểu theo nhóm nhân viên (POST_FAMILY)
+            var postFam = saveContext.rowData.postFamily || '';
+            var applyHourNum = parseFloat(saveContext.otApplyHour) || 0;
+            if (postFam === '14015813' || postFam === '14015814') {
+                if (applyHourNum < 1) {
+                    toastr && toastr.warning('Nhóm nhân viên này yêu cầu thời lượng tăng ca tối thiểu là 1 tiếng (60 phút).');
+                    return false;
+                }
+            } else if (postFam === '14015815') {
+                if (applyHourNum < 0.5) {
+                    toastr && toastr.warning('Nhóm nhân viên này yêu cầu thời lượng tăng ca tối thiểu là 30 phút.');
+                    return false;
+                }
+            }
+
+            // Điều kiện 3: Thời lượng tối đa theo hình thức tăng ca
+            var otTypeCode = saveContext.otTypeCode || '';
+            if (otTypeCode === '32') {
+                if (applyHourNum > 3) {
+                    toastr && toastr.warning('Ngày thường không được tăng ca quá 3 tiếng (180 phút).');
+                    return false;
+                }
+            } else if (otTypeCode) {
+                if (applyHourNum > 12) {
+                    toastr && toastr.warning('Thời lượng tăng ca không được quá 12 tiếng (720 phút).');
+                    return false;
+                }
+            }
+
+            if (!saveContext.rowData.approvers || !saveContext.rowData.approvers.length) {
+                toastr && toastr.warning('Vui lòng thêm ít nhất một người phê duyệt');
+                return false;
+            }
             return true;
+        }
+
+        function otfMaybeAddHrManager(rowData, $tr) {
+            if (!_otf_hrDeptManager || !_otf_hrDeptManager.personId) return;
+            var shiftEnd = rowData.shiftEndTime || '';
+            if (!shiftEnd) return;
+            var shiftEndDt = new Date(shiftEnd.replace(' ', 'T'));
+            if (isNaN(shiftEndDt) || new Date() <= shiftEndDt) return;
+            if (!rowData.approvers) rowData.approvers = [];
+            var alreadyIn = rowData.approvers.some(function (a) {
+                return a.personId === _otf_hrDeptManager.personId;
+            });
+            if (!alreadyIn) {
+                rowData.approvers.push(_otf_hrDeptManager);
+                if ($tr) $tr.find('.otf-approver-list').html(otfRenderApproverListHtml(rowData.approvers));
+                toastr && toastr.info('Đã tự động thêm Trưởng bộ phận nhân sự vào danh sách phê duyệt do nộp đơn sau giờ làm.');
+            }
         }
 
         function otfBuildSavePayload(applyNo, saveContext) {
@@ -842,7 +984,13 @@
                 otToTime: saveContext.otToTime,
                 otApplyHour: saveContext.otApplyHour,
                 applyOtRemark: saveContext.applyOtRemark,
-                deductYn: saveContext.rowData.deductYn || '0'
+                deductYn: saveContext.rowData.deductYn || '0',
+                usecarYn: saveContext.rowData.usecarYn || '0',
+                carAddress: saveContext.rowData.carAddress || '',
+                carAddressDetail: saveContext.rowData.carAddressDetail || '',
+                approvers: (saveContext.rowData.approvers || []).map(function (a) {
+                    return { personId: a.personId, localName: a.localName, empId: a.empId };
+                })
             };
         }
 
@@ -885,7 +1033,11 @@
                 affirmStr: '',
                 createdBy: '',
                 updatedBy: '',
-                deductYn: '0'
+                deductYn: '0',
+                usecarYn: '0',
+                carAddress: '',
+                carAddressDetail: '',
+                approvers: []
             };
             _otf_addedRows.unshift(newRow);
             if (_otf_table) {
@@ -950,6 +1102,7 @@
         window.otfSaveLine = function (btn, applyNo, rowPersonId) {
             var $tr = $(btn).closest('tr');
             var saveContext = otfBuildSaveContext($tr, applyNo, rowPersonId);
+            otfMaybeAddHrManager(saveContext.rowData, $tr);
             if (!otfValidateSaveContext(saveContext)) {
                 return;
             }
@@ -990,6 +1143,7 @@
             }
             var $tr = $(btn).closest('tr');
             var saveContext = otfBuildSaveContext($tr, applyNo, rowPersonId);
+            otfMaybeAddHrManager(saveContext.rowData, $tr);
             if (!otfValidateSaveContext(saveContext)) {
                 return;
             }
@@ -1067,6 +1221,35 @@
             });
         };
 
+        function otfRenderApproverListHtml(approvers) {
+            return (approvers || []).map(function (a, i) {
+                return '<div class="d-flex align-items-center gap-1 mb-1">'
+                    + '<small class="text-truncate">' + otfEscHtml((a.empId || '') + ' - ' + (a.localName || '')) + '</small>'
+                    + '<button class="btn btn-sm btn-outline-danger py-0 px-1" onclick="otfRemoveApprover(this,' + i + ')" title="Xóa"><i class="bx bx-x"></i></button>'
+                    + '</div>';
+            }).join('');
+        }
+
+        window.otfAddApprover = function (btn) {
+            if (typeof EmployeeSearchModal === 'undefined') { alert('EmployeeSearchModal not found'); return; }
+            var $tr = $(btn).closest('tr');
+            var rowData = _otf_table ? _otf_table.row($tr).data() : null;
+            if (!rowData) return;
+            if (!rowData.approvers) rowData.approvers = [];
+            EmployeeSearchModal.open(function (emp) {
+                rowData.approvers.push({ personId: emp.personId || '', localName: emp.localName || '', empId: emp.empId || '' });
+                $tr.find('.otf-approver-list').html(otfRenderApproverListHtml(rowData.approvers));
+            });
+        };
+
+        window.otfRemoveApprover = function (btn, idx) {
+            var $tr = $(btn).closest('tr');
+            var rowData = _otf_table ? _otf_table.row($tr).data() : null;
+            if (!rowData || !rowData.approvers) return;
+            rowData.approvers.splice(idx, 1);
+            $tr.find('.otf-approver-list').html(otfRenderApproverListHtml(rowData.approvers));
+        };
+
         window.otfRemoveNewRow = function (btn, newRowId) {
             _otf_addedRows = _otf_addedRows.filter(function (r) {
                 return r._newRowId !== newRowId;
@@ -1119,6 +1302,7 @@
             for (var i = 0; i < rows.length; i++) {
                 var item = rows[i];
                 var saveContext = otfBuildSaveContext(item.$tr, item.rowData.applyNo || '', item.rowData.personId || '');
+                otfMaybeAddHrManager(saveContext.rowData, item.$tr);
                 if (!otfValidateSaveContext(saveContext)) {
                     return;
                 }

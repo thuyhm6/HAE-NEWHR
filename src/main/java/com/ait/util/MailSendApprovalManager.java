@@ -1,19 +1,13 @@
 package com.ait.util;
 
-import hanwha.neo.branch.common.sso.service.NeoSloWsProxy;
 import hanwha.neo.branch.ss.approval.axisws.ApprovalServiceProxy;
 import hanwha.neo.branch.ss.approval.vo.ApprovalDocument;
-import hanwha.neo.branch.ss.approval.vo.ApprovalDocumentStatus;
 import hanwha.neo.branch.ss.approval.vo.CancelApprovalDocument;
-import hanwha.neo.branch.ss.approval.vo.MisKey;
 import hanwha.neo.branch.ss.approval.vo.ReceiverInfo;
 import hanwha.neo.branch.ss.approval.vo.SignerInfo;
 import hanwha.neo.branch.ss.approval.vo.WsApAttachFile;
-import hanwha.neo.branch.ss.common.vo.WsException;
-import hanwha.neo.branch.ss.org.service.NeoOrgWsProxy;
 
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
@@ -42,10 +36,14 @@ public class MailSendApprovalManager {
 	
 	private String REJECT = "否决";
 
+	@Autowired
+	private MailManager mailManger;
     @Autowired
     private SendEmailMapper sendEmailMapper;
+	@Autowired
+    private SendEmailService sendEmailService;
 
-	
+    	
 	/**
 	 * 是否验证
 	 * 	1：发送
@@ -53,35 +51,7 @@ public class MailSendApprovalManager {
 	 */
     //@Value("${approval.send.flag}")
 	private String APPROVAL_SEND_FLAG = "1";
-	
 
-	/**
-     * approval web service url
-     */
-    //@Value("${approval.webservice.url}")
-	//http://ci.eagleoffice.co.kr/api/services/ApprovalService
-	//EagleOffice:  http://hanwha.eagleoffice.co.kr/api/services/ApprovalService
-	//Circle: http://ep.circle.hanwha.com/api/axis/services/ApprovalService
-    private String APPROVAL_WEBSERVICE_URL = "https://ep.cleverse.hanwha.com/soap/approval/axis/services/ApprovalService";
-    
-    /**
-     * org web service url
-     */
-    //@Value("${org.webservice.url}")
-    //http://ci.eagleoffice.co.kr/api/ss/org/service/NeoOrgWs
-    //http://ep.circle.hanwha.com/api/ss/org?wsdl
-    private String ORG_WEBSERVICE_URL = "https://ep.cleverse.hanwha.com/soap/org/neoOrgWs?wsdl";
-    
-    /**
-     * slo web service url
-     */
-    //@Value("${slo.webservice.url}")
-    //http://ci.eagleoffice.co.kr/api/ss/neoslo
-    //http://ep.circle.hanwha.com/api/ss/neoslo
-    private String SLO_WEBSERVICE_URL = "https://ep.cleverse.hanwha.com/soap/auth/neoslo";
-    
-    @Autowired
-    private SendEmailService sendEmailService;
 	
 	/**
 	 *  获取需要发送待审批信息的审批者，发送到eagleoffice
@@ -115,47 +85,7 @@ public class MailSendApprovalManager {
 		return resultBool;
 	}
 	
-	/**
-	 *  获取需要到eagleoffice取消的待审批信息
-	 * @param MisKey[]
-	 * @return ApprovalDocumentStatus[]
-	 */
-	@SuppressWarnings("unchecked")
-	public ApprovalDocumentStatus[] getMailApprovalInfo(MisKey[] misKeys){
-		
-		ApprovalDocumentStatus[] appDocStus = new ApprovalDocumentStatus[misKeys == null ? 0:misKeys.length];
-		
-		if("1".equals(APPROVAL_SEND_FLAG)){
-			for(int i = 0;i < misKeys.length;i++){
-				appDocStus[i] = this.getApprovalStatusByMisId(misKeys[i]);
-			}
-		}
-		return appDocStus;
-	}
-	
-	/**
-	 *  获取申请的审批状态信息
-	 * @param MisKey
-	 * @return ApprovalDocumentStatus
-	 */
-	@SuppressWarnings("unchecked")
-	public ApprovalDocumentStatus getApprovalStatusByMisId(MisKey misKey){
-		
-		ApprovalDocumentStatus appDocStu = new ApprovalDocumentStatus();
-		
-		ApprovalServiceProxy approvalServiceProxy = this.getApprovalServiceProxy();
-		misKey.setSystemId("HAE_VHR");
-		
-		try {
-			appDocStu = approvalServiceProxy.getStatusByMisId(misKey);
-		} catch (WsException e) {
-			e.printStackTrace();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-		
-		return appDocStu;
-	}
+
 	
 	/**
 	 *  获取需要到eagleoffice取消的待审批信息
@@ -212,14 +142,13 @@ public class MailSendApprovalManager {
 	 * @return result   true(成功)/false(失败)
 	 * @throws Exception 
 	 */
-	@SuppressWarnings("unchecked")
 	public boolean cancelApproval(String misDocId,String comment) {
 		boolean result = false;
 		if("1".equals(APPROVAL_SEND_FLAG)){
 			try{
 	            String message = "";
 				
-				ApprovalServiceProxy approvalServiceProxy = this.getApprovalServiceProxy();
+				ApprovalServiceProxy approvalServiceProxy = mailManger.getApprovalServiceProxy();
 				
 				CancelApprovalDocument celDoc = new CancelApprovalDocument();
 				
@@ -253,7 +182,7 @@ public class MailSendApprovalManager {
 		try{
             String message = "";
 			
-			ApprovalServiceProxy approvalServiceProxy = this.getApprovalServiceProxy();
+			ApprovalServiceProxy approvalServiceProxy = mailManger.getApprovalServiceProxy();
 			
 			ApprovalDocument apprDoc =	new ApprovalDocument();
 			apprDoc.setTitle(title);         //裁决题目
@@ -327,46 +256,6 @@ public class MailSendApprovalManager {
 		return result;
 	}
 	
-	/**
-	 * 获取eagleoffice发送审批信息的代理
-	 * @return result   ApprovalServiceProxy
-	 * @throws Exception 
-	 */
-	public ApprovalServiceProxy getApprovalServiceProxy() {
-		
-		String END_POINT_URL = APPROVAL_WEBSERVICE_URL;
-		ApprovalServiceProxy approvalServiceProxy = new ApprovalServiceProxy();
-		approvalServiceProxy.setEndpoint(END_POINT_URL);
-		
-		return approvalServiceProxy;
-	}
-	
-	/**
-	 * 获取eagleoffice的组织查询代理
-	 * @return result   NeoOrgWsProxy
-	 * @throws Exception 
-	 */
-	public NeoOrgWsProxy getNeoOrgWsProxy() {
-		
-		String END_POINT_URL = ORG_WEBSERVICE_URL;
-		NeoOrgWsProxy neoOrgWsProxy = new NeoOrgWsProxy();
-		neoOrgWsProxy.setEndpoint(END_POINT_URL);
-		
-		return neoOrgWsProxy;
-	}
-	
-	/**
-	 * 获取eagleoffice的slo登陆代理
-	 * @return result   NeoSloWsProxy
-	 * @throws Exception
-	 */
-	public NeoSloWsProxy getNeoSloWsProxy() {
 
-		String END_POINT_URL = SLO_WEBSERVICE_URL;
-		NeoSloWsProxy neoSloWsProxy = new NeoSloWsProxy();
-		neoSloWsProxy.setEndpoint(END_POINT_URL);
-
-		return neoSloWsProxy;
-	}
 
 }

@@ -103,6 +103,8 @@
         var _sa_pageBooted = false;
         var _sa_vacData = null;
         var _sa_durationDays = null;
+        var _sa_durationHours = null;
+        var _sa_sexCode = '';
 
         var _sa_i18n = {
             calculating         : /*[[#{sa.msg.calculating}]]*/ 'Đang tính...',
@@ -131,7 +133,11 @@
             endTimeBeforeStart      : /*[[#{sa.msg.endTimeBeforeStart}]]*/ 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu!',
             durationExceedsRemain   : /*[[#{sa.msg.durationExceedsRemain}]]*/ 'Thời lượng vượt quá số ngày phép còn lại!',
             enterReason             : /*[[#{sa.msg.enterReason}]]*/ 'Vui lòng nhập lý do!',
-            requireApprover         : /*[[#{sa.msg.requireApprover}]]*/ 'Vui lòng thêm ít nhất một người phê duyệt!'
+            requireApprover         : /*[[#{sa.msg.requireApprover}]]*/ 'Vui lòng thêm ít nhất một người phê duyệt!',
+            durationZero            : /*[[#{sa.msg.durationZero}]]*/ 'Thời lượng phải lớn hơn 0!',
+            womenLeaveMax3h         : /*[[#{sa.msg.womenLeaveMax3h}]]*/ 'Nghỉ phụ nữ không được vượt quá 3 tiếng (180 phút)!',
+            annualLeaveHalfDay      : /*[[#{sa.msg.annualLeaveHalfDay}]]*/ 'Thời lượng nghỉ phép năm phải là bội số của nửa ngày (0.5, 1, 1.5, ...)!',
+            womenOnlyLeave          : /*[[#{sa.msg.womenOnlyLeave}]]*/ 'Chỉ nhân viên nữ mới được chọn loại nghỉ phép này!'
         };
 
         function saEscHtml(v) {
@@ -179,6 +185,7 @@
                 if (!fromDt || !toDt || !leaveTypeCode) {
                     $('#sa_duration').text('-');
                     _sa_durationDays = null;
+                    _sa_durationHours = null;
                     return;
                 }
 
@@ -193,8 +200,10 @@
                         if (isNaN(leaveLen) || isNaN(dayHour) || dayHour === 0) {
                             $('#sa_duration').text('-');
                             _sa_durationDays = null;
+                            _sa_durationHours = null;
                             return;
                         }
+                        _sa_durationHours = leaveLen;
                         _sa_durationDays = leaveLen / dayHour;
                         var days  = Math.floor(leaveLen / dayHour);
                         var hours = leaveLen - days * dayHour;
@@ -203,7 +212,7 @@
                         if (hours > 0) text += (text ? ' ' : '') + hours + ' ' + _sa_i18n.unitHours;
                         $('#sa_duration').text(text || '0');
                     },
-                    error: function() { $('#sa_duration').text('-'); _sa_durationDays = null; }
+                    error: function() { $('#sa_duration').text('-'); _sa_durationDays = null; _sa_durationHours = null; }
                 });
             }, 300);
         };
@@ -318,6 +327,13 @@
             saCalcDuration();
         };
 
+        function saFilterLeaveTypeByGender() {
+            if (_sa_sexCode !== '1325') {
+                $('#sa_leaveType option[value="141474"]').remove();
+                $('#sa_leaveType option[value="27"]').remove();
+            }
+        }
+
         window.saInsertFile = function() {
             document.getElementById('sa_fileInput').click();
         };
@@ -373,12 +389,47 @@
                 return;
             }
 
+            // Điều kiện 3: Thời lượng phải > 0
+            if (_sa_durationDays === null) {
+                toastr && toastr.warning(_sa_i18n.calculating);
+                return;
+            }
+            if (_sa_durationDays <= 0) {
+                toastr && toastr.warning(_sa_i18n.durationZero);
+                return;
+            }
+
+            // Điều kiện 4: Chỉ nhân viên nữ (SEXCODE=1325) mới được chọn Nghỉ phụ nữ (141474) và Nghỉ thai sản (27)
+            if (leaveTypeCode === '141474' || leaveTypeCode === '27') {
+                if (_sa_sexCode !== '1325') {
+                    toastr && toastr.warning(_sa_i18n.womenOnlyLeave);
+                    return;
+                }
+            }
+
+            // Điều kiện 1: Nghỉ phụ nữ (141474) - thời lượng phải < 3 tiếng
+            if (leaveTypeCode === '141474') {
+                if (_sa_durationHours !== null && _sa_durationHours >= 3) {
+                    toastr && toastr.warning(_sa_i18n.womenLeaveMax3h);
+                    return;
+                }
+            }
+
             if (leaveTypeCode === '26') {
                 var remainVac    = _sa_vacData ? parseFloat(_sa_vacData.REMAIN_VAC) : NaN;
                 var durationDays = (_sa_durationDays !== null) ? _sa_durationDays : NaN;
+                // Điều kiện 2a: Thời lượng không vượt số ngày còn lại
                 if (!isNaN(remainVac) && !isNaN(durationDays) && durationDays > remainVac) {
                     toastr && toastr.warning(_sa_i18n.durationExceedsRemain);
                     return;
+                }
+                // Điều kiện 2b: Thời lượng phải là bội số của nửa ngày
+                if (!isNaN(durationDays)) {
+                    var halfDayRemainder = (durationDays * 2) % 1;
+                    if (halfDayRemainder > 0.01 && halfDayRemainder < 0.99) {
+                        toastr && toastr.warning(_sa_i18n.annualLeaveHalfDay);
+                        return;
+                    }
                 }
             }
 
@@ -436,6 +487,7 @@
             $('#sa_vacInfo').text('');
             _sa_vacData = null;
             _sa_durationDays = null;
+            _sa_durationHours = null;
             var now = new Date();
             var ryyyy = now.getFullYear();
             var rmm = String(now.getMonth() + 1).padStart(2, '0');
@@ -475,8 +527,10 @@
                     if (!data) return;
                     _sa_personId = data.personId || '';
                     _sa_localName = data.localName || '';
+                    _sa_sexCode = data.sexCode || '';
 
                     var onReady = function() {
+                        saFilterLeaveTypeByGender();
                         $('#sa_leaveType').on('change', window.saOnLeaveTypeChange);
                         saLoadVacationInfo();
                     };

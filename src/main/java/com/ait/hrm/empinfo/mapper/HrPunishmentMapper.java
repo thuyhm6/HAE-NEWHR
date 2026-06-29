@@ -13,6 +13,8 @@ public interface HrPunishmentMapper {
             @Param("localName") String localName,
             @Param("punishCode") String punishCode);
 
+    List<HrPunishment> getByPersonId(@Param("personId") String personId);
+
     HrPunishment getById(@Param("punishNo") Long punishNo);
 
     int insert(HrPunishment info);

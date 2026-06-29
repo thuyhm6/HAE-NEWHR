@@ -1,0 +1,538 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12" id="pipb_pageWrapper">
+
+            <!-- Thông tin nhân viên -->
+            <div th:replace="~{fragments/essEmpInfoCard :: card}"></div>
+
+            <!-- Điều kiện tìm kiếm -->
+            <div class="card mb-2">
+                <div class="card-body py-2 px-3">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <span class="fw-semibold small" th:text="#{poi.field.otType}">Tăng ca</span>
+                        <select class="form-select form-select-sm" id="pipb_otTypeCode"
+                            data-parent-code="31"
+                            th:attr="data-default-text=#{common.selectOne}"
+                            style="width:150px;">
+                        </select>
+                        <span class="fw-semibold small" th:text="#{common.approvalStatus}">Trạng thái duyệt</span>
+                        <select class="form-select form-select-sm" id="pipb_affirmFlag"
+                            data-parent-code="14014304"
+                            th:attr="data-default-text=#{common.selectOne}"
+                            style="width:150px;">
+                        </select>
+                        <span class="fw-semibold small" th:text="#{poi.field.dateRange}">Thời gian</span>
+                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                            id="pipb_fromDate"
+                            data-drp-format="DD/MM/YYYY"
+                            data-drp-auto-update-input="false"
+                            autocomplete="off"
+                            style="width:130px;">
+                        <span>~</span>
+                        <input type="text" class="form-control form-control-sm js-daterangepicker"
+                            id="pipb_toDate"
+                            data-drp-format="DD/MM/YYYY"
+                            data-drp-auto-update-input="false"
+                            autocomplete="off"
+                            style="width:130px;">
+                        <button class="btn btn-primary btn-sm ms-1" onclick="pipbSearch()"
+                            th:text="#{common.search}">Tra cứu</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="small" th:text="#{common.quickFilter}">Lọc nhanh</span>
+                <input type="text" class="form-control form-control-sm" id="pipb_filterInput"
+                    style="max-width:160px;" oninput="pipbQuickFilter(this.value)">
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <button class="btn btn-danger btn-sm" onclick="pipbCancel()"
+                        th:text="#{common.cancel}">Hủy bỏ</button>
+                    <button class="btn btn-success btn-sm" onclick="pipbGoApply()"
+                        th:text="#{poi.btn.applyOt}">Xin tăng ca vượt</button>
+                    <span class="small" th:text="#{common.perPage}">Mỗi trang</span>
+                    <select class="form-select form-select-sm" id="pipb_pageSize" style="width:70px;"
+                        onchange="pipbChangePageSize(this.value)">
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="small" th:text="#{poi.label.rows}">Dữ liệu</span>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="pipb_table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:36px;" th:text="#{common.no.serial}">NO</th>
+                                    <th class="text-center" style="width:40px;">
+                                        <input type="checkbox" id="pipb_checkAll" onclick="pipbToggleAll(this)">
+                                    </th>
+                                    <th class="text-center" style="min-width:120px;" th:text="#{poi.field.otType}">Tăng ca</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{poi.col.otDate}">Ngày tăng ca</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.startTime}">Thời gian bắt đầu</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.endTime}">Thời gian kết thúc</th>
+                                    <th class="text-center" style="min-width:100px;" th:text="#{common.duration}">Thời lượng</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{poi.col.mealRest}">Bảo cơm / Nghỉ ngơi (30')</th>
+                                    <th class="text-center" style="min-width:180px;" th:text="#{common.reason}">Lý do</th>
+                                    <th class="text-center" style="min-width:80px;"  th:text="#{essOt.usecarYn}">Đặt xe</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{essOt.carAddress}">Tuyến xe</th>
+                                    <th class="text-center" style="min-width:150px;" th:text="#{essOt.carAddressDetail}">Chi tiết điểm đón</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{common.approvalStatus}">Trạng thái duyệt</th>
+                                    <th class="text-center" style="min-width:110px;" th:text="#{common.status}">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipb_tableBody">
+                                <tr>
+                                    <td colspan="14" class="text-center text-muted py-3" th:text="#{poi.msg.loading}">Đang tải dữ liệu...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang -->
+                    <div class="d-flex justify-content-between align-items-center px-3 py-2" id="pipb_paginationBar">
+                        <span id="pipb_pageInfo" class="small text-muted"></span>
+                        <div id="pipb_pagination" class="d-flex gap-1"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /#pipb_pageWrapper -->
+    </div><!-- /.row -->
+</div>
+
+<!-- Modal chi tiết phê duyệt -->
+<div class="modal fade" id="pipb_applyDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pipb_applyDetailTitle" th:text="#{poi.modal.title}">[Xin tăng ca]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:160px;" th:text="#{poi.modal.subject}">Tiêu đề</th>
+                                <td id="pipb_modalApplyTitle"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{poi.modal.applicant}">Người đăng ký</th>
+                                <td id="pipb_modalApplicant"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:50px;" th:text="#{common.no.serial}">STT</th>
+                                <th style="width:90px;" th:text="#{poi.col.approvalSeq}">Trình tự duyệt</th>
+                                <th style="width:110px;" th:text="#{common.approvalStatus}">Trạng thái duyệt</th>
+                                <th th:text="#{common.name}">Họ tên</th>
+                                <th th:text="#{poi.modal.opinion}">Ý kiến</th>
+                                <th style="width:170px;" th:text="#{poi.col.actionTime}">Thời gian thực hiện</th>
+                                <th style="width:120px;" th:text="#{common.deptName}">Phòng ban</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pipb_modalApprovalBody"></tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2" th:text="#{poi.modal.empInfo}">Thông tin nhân viên</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{common.name}">Họ tên</th>
+                                <td id="pipb_modalEmpName"></td>
+                                <th class="table-light text-center" style="width:100px;" th:text="#{common.empId}">Mã nhân viên</th>
+                                <td id="pipb_modalEmpId"></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{common.deptName}">Phòng ban</th>
+                                <td id="pipb_modalEmpDept"></td>
+                                <th class="table-light text-center" th:text="#{common.position}">Chức vụ</th>
+                                <td id="pipb_modalEmpPost"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="fw-bold mb-2" th:text="#{poi.modal.otInfo}">Thông tin tăng ca</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th th:text="#{poi.field.otType}">Loại tăng ca</th>
+                                <th style="width:130px;" th:text="#{poi.col.otDate}">Ngày tăng ca</th>
+                                <th style="width:130px;" th:text="#{common.startTime}">Bắt đầu</th>
+                                <th style="width:130px;" th:text="#{common.endTime}">Kết thúc</th>
+                                <th style="width:110px;" th:text="#{poi.col.hours}">Số giờ</th>
+                                <th th:text="#{common.reason}">Lý do</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="pipb_modalType"   class="text-center"></td>
+                                <td id="pipb_modalDate"   class="text-center"></td>
+                                <td id="pipb_modalFrom"   class="text-center"></td>
+                                <td id="pipb_modalTo"     class="text-center"></td>
+                                <td id="pipb_modalHour"   class="text-center"></td>
+                                <td id="pipb_modalRemark"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    th:text="#{common.close}">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <th:block th:replace="~{fragments/essEmpInfoCard :: script}"></th:block>
+    <script th:inline="javascript">
+        var _pipb_data        = [];
+        var _pipb_filtered    = [];
+        var _pipb_pageBooted  = false;
+        var _pipb_detailModal = null;
+        var _pipb_pageSize    = 50;
+        var _pipb_currentPage = 1;
+
+        var _pipb_msgLoading          = /*[[#{poi.msg.loading}]]*/'Đang tải...';
+        var _pipb_msgNoData           = /*[[#{poi.msg.noData}]]*/'Không có dữ liệu';
+        var _pipb_msgLoadErr          = /*[[#{poi.msg.loadError}]]*/'Lỗi tải dữ liệu';
+        var _pipb_msgNoApproval       = /*[[#{poi.msg.noApprovalData}]]*/'Không có dữ liệu phê duyệt';
+        var _pipb_msgSelectMin        = /*[[#{poi.msg.selectMinOne}]]*/'Vui lòng chọn ít nhất một dòng để hủy bỏ.';
+        var _pipb_msgConfirmCancel1   = /*[[#{poi.msg.confirmCancel1}]]*/'Bạn có chắc muốn hủy bỏ';
+        var _pipb_msgConfirmCancel2   = /*[[#{poi.msg.confirmCancel2}]]*/'đơn xin tăng ca đã chọn?';
+        var _pipb_msgCancelSuccess    = /*[[#{poi.msg.cancelSuccess}]]*/'Hủy bỏ thành công.';
+        var _pipb_msgCancelFailed     = /*[[#{poi.msg.cancelFailed}]]*/'Hủy bỏ thất bại.';
+        var _pipb_msgCancelError      = /*[[#{poi.msg.cancelError}]]*/'Lỗi khi hủy bỏ đơn.';
+        var _pipb_msgLoadApprovalFail = /*[[#{poi.msg.loadApprovalFailed}]]*/'Không tải được thông tin phê duyệt';
+        var _pipb_msgLoadDetailFail   = /*[[#{poi.msg.loadDetailFailed}]]*/'Tải dữ liệu thất bại';
+        var _pipb_msgPageInfo         = /*[[#{poi.msg.pageInfo}]]*/'Hiển thị {0} - {1} / {2} dòng';
+        var _pipb_valYes              = /*[[#{poi.val.yes}]]*/'Có';
+        var _pipb_valNo               = /*[[#{poi.val.no}]]*/'Không';
+        var _pipb_unitHour            = /*[[#{poi.unit.hour}]]*/'Tiếng';
+        var _pipb_unitMin             = /*[[#{poi.unit.minute}]]*/'Phút';
+        var _pipb_titleApplyOt        = /*[[#{poi.btn.applyOt}]]*/'Xin tăng ca vượt';
+
+        function pipbEscHtml(s) {
+            if (s == null) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function pipbFormatHour(h) {
+            var v = parseFloat(h);
+            if (isNaN(v)) return pipbEscHtml(h || '');
+            var hrs  = Math.floor(v);
+            var mins = Math.round((v - hrs) * 60);
+            var text = '';
+            if (hrs  > 0) text += hrs  + ' ' + _pipb_unitHour;
+            if (mins > 0) text += (text ? ' ' : '') + mins + ' ' + _pipb_unitMin;
+            return text || String(v);
+        }
+
+        function pipbConvertDrpDate(val) {
+            if (!val) return '';
+            var p = val.split('/');
+            return p.length === 3 ? p[2] + '-' + p[1] + '-' + p[0] : '';
+        }
+
+        function pipbGetDefaultDateRange() {
+            var now  = new Date();
+            var year = now.getFullYear();
+            var mon  = now.getMonth() + 1;
+            var mm   = String(mon).padStart(2, '0');
+            var last = new Date(year, mon, 0).getDate();
+            return {
+                from: '01/' + mm + '/' + year,
+                to  : String(last).padStart(2, '0') + '/' + mm + '/' + year
+            };
+        }
+
+        // ── Search ───────────────────────────────────────────────────────────
+        window.pipbSearch = function() {
+            var params = {
+                otTypeCode: $('#pipb_otTypeCode').val() || '',
+                affirmFlag: $('#pipb_affirmFlag').val() || '',
+                fromDate  : pipbConvertDrpDate($('#pipb_fromDate').val()),
+                toDate    : pipbConvertDrpDate($('#pipb_toDate').val())
+            };
+            $('#pipb_tableBody').html('<tr><td colspan="14" class="text-center text-muted py-3">' + pipbEscHtml(_pipb_msgLoading) + '</td></tr>');
+            $('#pipb_checkAll').prop('checked', false);
+
+            $.ajax({
+                url : '/ess/infoApply/api/myOtApplyOver/list',
+                type: 'GET',
+                data: params,
+                success: function(rows) {
+                    _pipb_data     = rows || [];
+                    _pipb_filtered = _pipb_data.slice();
+                    _pipb_currentPage = 1;
+                    pipbRenderPage();
+                },
+                error: function() {
+                    $('#pipb_tableBody').html('<tr><td colspan="14" class="text-center text-danger py-3">' + pipbEscHtml(_pipb_msgLoadErr) + '</td></tr>');
+                }
+            });
+        };
+
+        // ── Render bảng ──────────────────────────────────────────────────────
+        function pipbRenderPage() {
+            var rows    = _pipb_filtered;
+            var total   = rows.length;
+            var totalPg = Math.max(1, Math.ceil(total / _pipb_pageSize));
+            if (_pipb_currentPage > totalPg) _pipb_currentPage = totalPg;
+            var start = (_pipb_currentPage - 1) * _pipb_pageSize;
+            var end   = Math.min(start + _pipb_pageSize, total);
+            var page  = rows.slice(start, end);
+
+            var $tbody = $('#pipb_tableBody');
+            if (!page.length) {
+                $tbody.html('<tr><td colspan="14" class="text-center text-muted py-3">' + pipbEscHtml(_pipb_msgNoData) + '</td></tr>');
+            } else {
+                var html = '';
+                page.forEach(function(r, idx) {
+                    var rowNo   = start + idx + 1;
+                    var deduct  = r.deductYn === '1' ? _pipb_valYes : _pipb_valNo;
+                    var applyNo = pipbEscHtml(r.applyNo);
+                    var otType  = pipbEscHtml(r.otTypeCode || '');
+                    html += '<tr style="cursor:pointer;" onclick="pipbOpenDetail(event,\'' + applyNo + '\',\'' + otType + '\')">'
+                        + '<td class="text-center">' + rowNo + '</td>'
+                        + '<td class="text-center" onclick="event.stopPropagation()">' + (['14014306','14014307','14014308'].indexOf(r.affirmFlag) >= 0 ? '<input type="checkbox" class="pipb_rowCheck" value="' + applyNo + '">' : '') + '</td>'
+                        + '<td><a href="javascript:void(0)" onclick="event.stopPropagation();pipbOpenDetail(event,\'' + applyNo + '\',\'' + otType + '\')">'
+                            + pipbEscHtml(r.otTypeName || r.otTypeCode || '') + '</a></td>'
+                        + '<td class="text-center">' + pipbEscHtml(r.applyOtDate || '') + '</td>'
+                        + '<td class="text-center">' + pipbEscHtml(r.otFromTime  || '') + '</td>'
+                        + '<td class="text-center">' + pipbEscHtml(r.otToTime    || '') + '</td>'
+                        + '<td class="text-center">' + pipbFormatHour(r.otApplyHour) + '</td>'
+                        + '<td class="text-center">' + pipbEscHtml(deduct) + '</td>'
+                        + '<td>' + pipbEscHtml(r.applyOtRemark || '') + '</td>'
+                        + '<td class="text-center">' + (r.usecarYn === '1' ? _pipb_valYes : _pipb_valNo) + '</td>'
+                        + '<td>' + pipbEscHtml(r.carAddress       || '') + '</td>'
+                        + '<td>' + pipbEscHtml(r.carAddressDetail || '') + '</td>'
+                        + '<td class="text-center">' + pipbEscHtml(r.affirmFlagName  || r.affirmFlag  || '') + '</td>'
+                        + '<td class="text-center">' + pipbEscHtml(r.confirmFlagName || '') + '</td>'
+                        + '</tr>';
+                });
+                $tbody.html(html);
+            }
+
+            var pageInfoText = _pipb_msgPageInfo
+                .replace('{0}', total ? start + 1 : 0)
+                .replace('{1}', end)
+                .replace('{2}', total);
+            $('#pipb_pageInfo').text(pageInfoText);
+            pipbRenderPagination(totalPg);
+        }
+
+        function pipbRenderPagination(totalPg) {
+            var cur  = _pipb_currentPage;
+            var html = '';
+            var prev = cur > 1 ? cur - 1 : 1;
+            var next = cur < totalPg ? cur + 1 : totalPg;
+            html += '<button class="btn btn-outline-secondary btn-sm px-2 py-0" ' + (cur === 1 ? 'disabled' : '') + ' onclick="pipbGoPage(' + prev + ')">‹</button>';
+            var s = Math.max(1, cur - 2), e = Math.min(totalPg, s + 4);
+            s = Math.max(1, e - 4);
+            for (var i = s; i <= e; i++) {
+                html += '<button class="btn btn-sm px-2 py-0 ' + (i === cur ? 'btn-primary' : 'btn-outline-secondary') + '" onclick="pipbGoPage(' + i + ')">' + i + '</button>';
+            }
+            html += '<button class="btn btn-outline-secondary btn-sm px-2 py-0" ' + (cur === totalPg ? 'disabled' : '') + ' onclick="pipbGoPage(' + next + ')">›</button>';
+            $('#pipb_pagination').html(html);
+        }
+
+        window.pipbGoPage = function(p) {
+            _pipb_currentPage = p;
+            pipbRenderPage();
+        };
+
+        window.pipbChangePageSize = function(val) {
+            _pipb_pageSize    = parseInt(val, 10) || 50;
+            _pipb_currentPage = 1;
+            pipbRenderPage();
+        };
+
+        // ── Lọc nhanh ────────────────────────────────────────────────────────
+        window.pipbQuickFilter = function(kw) {
+            if (!kw || !kw.trim()) {
+                _pipb_filtered = _pipb_data.slice();
+            } else {
+                var k = kw.trim().toLowerCase();
+                _pipb_filtered = _pipb_data.filter(function(r) {
+                    return [r.otTypeName, r.otTypeCode, r.applyOtDate, r.otFromTime,
+                            r.otToTime, r.applyOtRemark, r.affirmFlagName, r.confirmFlagName]
+                        .some(function(v) { return v && String(v).toLowerCase().indexOf(k) !== -1; });
+                });
+            }
+            _pipb_currentPage = 1;
+            pipbRenderPage();
+        };
+
+        window.pipbToggleAll = function(cb) {
+            $('.pipb_rowCheck').prop('checked', cb.checked);
+        };
+
+        // ── Hủy bỏ ───────────────────────────────────────────────────────────
+        window.pipbCancel = function() {
+            var selected = $('.pipb_rowCheck:checked').map(function() { return this.value; }).get();
+            if (!selected.length) { alert(_pipb_msgSelectMin); return; }
+            if (!confirm(_pipb_msgConfirmCancel1 + ' ' + selected.length + ' ' + _pipb_msgConfirmCancel2)) return;
+
+            $.ajax({
+                url        : '/ess/infoApply/api/myOtApplyOver/cancel',
+                type       : 'POST',
+                contentType: 'application/json',
+                data       : JSON.stringify(selected),
+                success    : function(res) {
+                    if (res && res.success) { alert(res.message || _pipb_msgCancelSuccess); pipbSearch(); }
+                    else { alert(res && res.error ? res.error : _pipb_msgCancelFailed); }
+                },
+                error: function() { alert(_pipb_msgCancelError); }
+            });
+        };
+
+        window.pipbGoApply = function() {
+            if (typeof tabSystem !== 'undefined') {
+                tabSystem.openTab('/ess/infoApply/viewSSTOtApplyInfoTx', _pipb_titleApplyOt);
+            } else {
+                location.href = '/ess/infoApply/viewSSTOtApplyInfoTx';
+            }
+        };
+
+        // ── Modal phê duyệt ──────────────────────────────────────────────────
+        function pipbSetText(sel, val) { $(sel).text(val || ''); }
+
+        function pipbBuildApplyTitle(info) {
+            if (!info) return '';
+            return (info.otTypeName || '') + '/Apply(' + (info.localName || '') + ')[Date: '
+                + (info.detailFromDateTime || '') + ' ~ ' + (info.detailToDateTime || '') + ']';
+        }
+
+        function pipbResetDetailModal() {
+            pipbSetText('#pipb_modalApplyTitle',  '');
+            pipbSetText('#pipb_modalApplicant',   '');
+            pipbSetText('#pipb_modalEmpName',     '');
+            pipbSetText('#pipb_modalEmpId',       '');
+            pipbSetText('#pipb_modalEmpDept',     '');
+            pipbSetText('#pipb_modalEmpPost',     '');
+            pipbSetText('#pipb_modalType',        '');
+            pipbSetText('#pipb_modalDate',        '');
+            pipbSetText('#pipb_modalFrom',        '');
+            pipbSetText('#pipb_modalTo',          '');
+            pipbSetText('#pipb_modalHour',        '');
+            pipbSetText('#pipb_modalRemark',      '');
+            $('#pipb_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + pipbEscHtml(_pipb_msgLoading) + '</td></tr>');
+        }
+
+        function pipbRenderApprovalRows(approvalList) {
+            if (!approvalList || !approvalList.length) {
+                $('#pipb_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-muted">' + pipbEscHtml(_pipb_msgNoApproval) + '</td></tr>');
+                return;
+            }
+            var html = '';
+            approvalList.forEach(function(item, idx) {
+                var stt = item.affirmLevel || (idx + 1);
+                if (String(stt) === '100') stt = 'HR';
+                html += '<tr>'
+                    + '<td class="text-center">' + pipbEscHtml(stt) + '</td>'
+                    + '<td class="text-center">' + pipbEscHtml(item.affirmTypeName || '') + '</td>'
+                    + '<td class="text-center">' + pipbEscHtml(item.affirmFlagName || '') + '</td>'
+                    + '<td>'                      + pipbEscHtml(item.affirmName    || '') + '</td>'
+                    + '<td>'                      + pipbEscHtml(item.affirmContent || '') + '</td>'
+                    + '<td class="text-center">' + pipbEscHtml(item.updateDate    || '') + '</td>'
+                    + '<td class="text-center">' + pipbEscHtml(item.deptName      || '') + '</td>'
+                    + '</tr>';
+            });
+            $('#pipb_modalApprovalBody').html(html);
+        }
+
+        function pipbRenderDetailData(data) {
+            var otInfo       = (data && data.otInfo)       ? data.otInfo       : {};
+            var employeeInfo = (data && data.employeeInfo) ? data.employeeInfo : otInfo;
+            var approvalList = (data && data.approvalList) ? data.approvalList : [];
+
+            $('#pipb_applyDetailTitle').text('[' + (otInfo.otTypeName || _pipb_titleApplyOt) + ']');
+            pipbSetText('#pipb_modalApplyTitle', pipbBuildApplyTitle(otInfo));
+            pipbSetText('#pipb_modalApplicant',  (employeeInfo.localName || '') + '/' + (employeeInfo.postGradeName || '') + '/' + (employeeInfo.deptName || ''));
+            pipbSetText('#pipb_modalEmpName',    employeeInfo.localName    || '');
+            pipbSetText('#pipb_modalEmpId',      employeeInfo.empId        || '');
+            pipbSetText('#pipb_modalEmpDept',    employeeInfo.deptName     || '');
+            pipbSetText('#pipb_modalEmpPost',    employeeInfo.postGradeName || '');
+            pipbSetText('#pipb_modalType',       otInfo.otTypeName         || '');
+            pipbSetText('#pipb_modalDate',       otInfo.applyOtDate        || '');
+            pipbSetText('#pipb_modalFrom',       otInfo.detailFromDateTime || '');
+            pipbSetText('#pipb_modalTo',         otInfo.detailToDateTime   || '');
+            pipbSetText('#pipb_modalHour',       otInfo.otApplyHour        || '');
+            pipbSetText('#pipb_modalRemark',     otInfo.applyOtRemark      || '');
+            pipbRenderApprovalRows(approvalList);
+        }
+
+        window.pipbOpenDetail = function(event, applyNo, applyType) {
+            if (!applyNo) return;
+            if (!_pipb_detailModal && window.bootstrap) {
+                var el = document.getElementById('pipb_applyDetailModal');
+                if (el) _pipb_detailModal = new bootstrap.Modal(el);
+            }
+            pipbResetDetailModal();
+            if (_pipb_detailModal) _pipb_detailModal.show();
+
+            $.ajax({
+                url : '/ar/attendanceMintenance/api/overtime/detailOver',
+                type: 'GET',
+                data: { applyNo: applyNo, applyType: applyType || '' },
+                success: function(res) { pipbRenderDetailData(res || {}); },
+                error  : function() {
+                    $('#pipb_modalApprovalBody').html('<tr><td colspan="7" class="text-center text-danger">' + pipbEscHtml(_pipb_msgLoadDetailFail) + '</td></tr>');
+                    toastr && toastr.error(_pipb_msgLoadApprovalFail);
+                }
+            });
+        };
+
+        // ── Boot ─────────────────────────────────────────────────────────────
+        function pipbBootPage() {
+            if (_pipb_pageBooted) return;
+            if (!document.getElementById('pipb_fromDate')) { setTimeout(pipbBootPage, 30); return; }
+            _pipb_pageBooted = true;
+
+            loadEssEmpInfoCard();
+
+            if (typeof initCodeSelects      === 'function') initCodeSelects('#pipb_pageWrapper');
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#pipb_pageWrapper');
+
+            var dr = pipbGetDefaultDateRange();
+            $('#pipb_fromDate').val(dr.from);
+            $('#pipb_toDate'  ).val(dr.to);
+
+            pipbSearch();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', pipbBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(pipbBootPage);
+        } else {
+            pipbBootPage();
+        }
+    </script>
+</template>

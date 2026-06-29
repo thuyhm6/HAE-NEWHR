@@ -12,6 +12,8 @@ public interface ArOvertimeManagentService {
 
     Map<String, Object> getDetail(String applyNo, String applyType);
 
+    Map<String, Object> getDetailOver(String applyNo, String applyType);
+
     ArOvertimeManagentDto getDefaultOtInfo(ArOvertimeManagentDto dto);
 
     ArOvertimeManagentDto getAutoFillOtInfo(ArOvertimeManagentDto dto);
@@ -21,6 +23,8 @@ public interface ArOvertimeManagentService {
     String importTempToOfficial();
 
     void save(ArOvertimeManagentDto dto);
+
+    void saveOver(ArOvertimeManagentDto dto);
 
     void saveBatch(List<ArOvertimeManagentDto> dtos);
 

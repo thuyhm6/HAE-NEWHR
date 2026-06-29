@@ -139,8 +139,9 @@
                             </label>
                             <div class="input-group">
                                 <input type="hidden" id="vpid_personId">
-                                <input type="text" class="form-control" id="vpid_personName" readonly
-                                       th:placeholder="#{pa.inputItemData.personIdPlaceholder}">
+                                <input type="text" class="form-control" id="vpid_personName"
+                                       th:placeholder="#{pa.inputItemData.personIdPlaceholder}"
+                                       onkeydown="if(event.key==='Enter'){document.getElementById('vpid_empSearchBtn').click();}">
                                 <button type="button" class="btn btn-outline-secondary" id="vpid_empSearchBtn"
                                         onclick="vpidModalOpenEmpSearch()">
                                     <i class="bi bi-search"></i>

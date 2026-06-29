@@ -33,9 +33,9 @@ public class ArOvertimeManagentController {
     @Autowired
     private SyAffirmEmailService affirmorService;
 
-    @GetMapping("/viewArOvertimeManagent_fast")
+    @GetMapping("/viewApplyOtManagentByAnyApproverList")
     public String view() {
-        return "ar/attendanceMintenance/viewArOvertimeManagent_fast";
+        return "ar/attendanceMintenance/viewApplyOtManagentByAnyApproverList";
     }
 
     @GetMapping("/viewImportOtTempList")
@@ -64,6 +64,14 @@ public class ArOvertimeManagentController {
             @RequestParam(name = "applyNo") String applyNo,
             @RequestParam(name = "applyType", required = false) String applyType) {
         return ResponseEntity.ok(service.getDetail(applyNo, applyType));
+    }
+
+    @GetMapping("/api/overtime/detailOver")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getDetailOver(
+            @RequestParam(name = "applyNo") String applyNo,
+            @RequestParam(name = "applyType", required = false) String applyType) {
+        return ResponseEntity.ok(service.getDetailOver(applyNo, applyType));
     }
 
     @GetMapping("/api/overtime/auto-fill-by-emp")
@@ -158,6 +166,24 @@ public class ArOvertimeManagentController {
             response.put("success", false);
             response.put("error", e.getMessage() == null || e.getMessage().isBlank()
                     ? "Lỗi hệ thống khi lưu tăng ca."
+                    : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/overtime/saveOver")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveOver(@RequestBody ArOvertimeManagentDto dto) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            service.saveOver(dto);
+            response.put("success", true);
+            response.put("message", "Lưu thành công");
+        } catch (Exception e) {
+            log.error("Failed to save overtime over data", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Lỗi hệ thống khi lưu tăng ca vượt."
                     : e.getMessage());
         }
         return ResponseEntity.ok(response);

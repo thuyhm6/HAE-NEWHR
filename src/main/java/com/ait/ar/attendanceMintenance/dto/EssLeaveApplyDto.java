@@ -44,6 +44,7 @@ public class EssLeaveApplyDto extends com.ait.hrm.empinfo.dto.EmployeeNameDto {
 
     private String annualLeaveCount;
     private String affirmStr;
+    private String sexCode;
     private String leaveTypeName;
     private String dayHours;
     private String affirmFlagName;

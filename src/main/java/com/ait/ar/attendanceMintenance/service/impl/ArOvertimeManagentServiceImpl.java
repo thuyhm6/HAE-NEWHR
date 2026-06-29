@@ -27,6 +27,7 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
 
     private static final Logger log = LoggerFactory.getLogger(ArOvertimeManagentServiceImpl.class);
     private static final String OT_TYPE_NO = "31";
+    private static final String OT_TYPE_NO_OVER = "310";
     private static final String APPLY_AFFIRM_FLAG = "14014306";
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -63,6 +64,32 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         }
 
         List<SyAffirmEmailDto> approvalList = mapper.selectApprovalInfo(resolvedApplyNo, resolvedApplyType);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("otInfo", otInfo);
+        result.put("employeeInfo", otInfo);
+        result.put("approvalList", approvalList == null ? Collections.emptyList() : approvalList);
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getDetailOver(String applyNo, String applyType) {
+        String resolvedApplyNo = safeString(applyNo);
+        if (resolvedApplyNo.isEmpty()) {
+            Map<String, Object> empty = new HashMap<>();
+            empty.put("otInfo", null);
+            empty.put("employeeInfo", null);
+            empty.put("approvalList", Collections.emptyList());
+            return empty;
+        }
+
+        ArOvertimeManagentDto otInfo = mapper.selectDetailOver(resolvedApplyNo);
+        String resolvedApplyType = safeString(applyType);
+        if (resolvedApplyType.isEmpty() && otInfo != null) {
+            resolvedApplyType = safeString(otInfo.getOtTypeCode());
+        }
+
+        List<SyAffirmEmailDto> approvalList = mapper.selectApprovalInfoOver(resolvedApplyNo, resolvedApplyType);
 
         Map<String, Object> result = new HashMap<>();
         result.put("otInfo", otInfo);
@@ -225,6 +252,11 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
             applyPersonInfo = safeString(dto.getLocalName()) + " (" + safeString(dto.getEmpId()) + ")";
         }
 
+        List<Map<String, Object>> manualApprovers = dto.getApprovers();
+        if (manualApprovers == null || manualApprovers.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng thêm ít nhất một người phê duyệt.");
+        }
+
         // 3. Insert duyệt mức 0 (Người tạo)
         SyAffirmEmailDto affirmor0 = new SyAffirmEmailDto();
         affirmor0.setAffirmType("4");
@@ -240,40 +272,136 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         affirmEmailMapper.delete(applyNo);
         affirmEmailMapper.insert(affirmor0);
 
-        // Insert các mức duyệt tiếp theo
-        // 1. Chuẩn bị tham số truyền vào Mapper
-        Map<String, Object> affirmorParams = new HashMap<>();
-        affirmorParams.put("applyTypeNo", OT_TYPE_NO);
-        affirmorParams.put("personId", personId);
-        affirmorParams.put("applyTypeCode", otTypeCode);
-        affirmorParams.put("applyLength", dto.getOtApplyHour());
-        affirmorParams.put("lang", "vi");
-        // 2. Thực thi gọi hàm Oracle qua MyBatis.
-        // Sau khi chạy xong, MyBatis tự động đẩy kết quả vào key "resultList" trong
-        // params.
-        affirmEmailMapper.getAffirmorList(affirmorParams);
-
-        // 3. Ép kiểu an toàn và lấy danh sách kết quả từ tham số OUT
-        // các trường lấy ra lần lượt là empId, localName, positionNo, positionName,
-        // deptName, postionname, affirmorId, affirmLevel
-        @SuppressWarnings("unchecked")
-        List<SyAffirmEmailDto> affirmorList = (List<SyAffirmEmailDto>) affirmorParams.get("resultList");
-        if (affirmorList == null || affirmorList.isEmpty()) {
-            return;
-        }
-        for (SyAffirmEmailDto affirmor : affirmorList) {
-            if (affirmor == null) {
-                continue;
-            }
+        // 4. Insert danh sách người phê duyệt do người dùng chọn
+        log.info("save overtime: using {} manual approvers for applyNo={}", manualApprovers.size(), applyNo);
+        int level = 1;
+        for (Map<String, Object> approver : manualApprovers) {
+            String approverPersonId = safeString(approver.get("personId"));
+            if (approverPersonId.isEmpty()) continue;
+            SyAffirmEmailDto affirmor = new SyAffirmEmailDto();
             affirmor.setAffirmType("1");
             affirmor.setApplyNo(applyNo);
             affirmor.setApplyType(otTypeCode);
             affirmor.setApplyTypeCode(OT_TYPE_NO);
             affirmor.setApplyAffirmFlag(APPLY_AFFIRM_FLAG);
             affirmor.setApplyFlag("0");
-            affirmor.setAffirmPersonId(affirmor.getAffirmorId());
+            affirmor.setAffirmPersonId(approverPersonId);
+            affirmor.setAffirmLevel(String.valueOf(level++));
             affirmor.setLastName(lastName);
             affirmor.setApplyPersonInfo(applyPersonInfo);
+            affirmor.setLocalName(safeString(approver.get("localName")));
+            affirmor.setEmpId(safeString(approver.get("empId")));
+            affirmEmailMapper.insert(affirmor);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void saveOver(ArOvertimeManagentDto dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Dữ liệu tăng ca vượt không hợp lệ.");
+        }
+
+        String personId    = safeString(dto.getPersonId());
+        String applyOtDate = normalizeDate(dto.getApplyOtDate());
+        String otFromTime  = safeString(dto.getOtFromTime());
+        String otToTime    = safeString(dto.getOtToTime());
+        dto.setDeductYn(defaultString(dto.getDeductYn(), "0"));
+        ArOvertimeManagentDto defaultOtInfo = getDefaultOtInfo(dto);
+        String otTypeCode = safeString(dto.getOtTypeCode());
+        if (otTypeCode.isEmpty()) {
+            otTypeCode = safeString(defaultOtInfo.getOtTypeCode());
+        }
+
+        if (personId.isEmpty())              throw new IllegalArgumentException("Chưa chọn nhân viên.");
+        if (applyOtDate.isEmpty())           throw new IllegalArgumentException("Chưa chọn ngày tăng ca.");
+        if (otFromTime.isEmpty() || otToTime.isEmpty()) throw new IllegalArgumentException("Chưa nhập giờ tăng ca.");
+        if (otTypeCode.isEmpty())            throw new IllegalArgumentException("Chưa chọn loại tăng ca.");
+
+        dto.setPersonId(personId);
+        dto.setApplyOtDate(applyOtDate);
+        dto.setOtFromTime(otFromTime);
+        dto.setOtToTime(otToTime);
+        dto.setOtTypeCode(otTypeCode);
+        if (safeString(dto.getOtApplyHour()).isEmpty() && !safeString(defaultOtInfo.getOtApplyHour()).isEmpty()) {
+            dto.setOtApplyHour(defaultOtInfo.getOtApplyHour());
+        }
+        dto.setOtTypeNo(OT_TYPE_NO_OVER);
+        dto.setAffirmFlag(APPLY_AFFIRM_FLAG);
+
+        // Kiểm tra trùng/chồng chéo trong bảng ess_apply_ot_over
+        int overlapCount = mapper.countOverlapOtOver(dto);
+        if (overlapCount > 0) {
+            throw new IllegalArgumentException("Trùng với đơn tăng ca vượt khác của nhân viên này vào cùng ngày, xin kiểm tra lại!");
+        }
+
+        // Kiểm tra điều kiện tăng ca qua hàm AR_GET_OT_CLASH
+        int clashResult = mapper.checkOtClash(dto);
+        if (clashResult == -1) {
+            throw new IllegalArgumentException("Ngày công đã chốt, xin kiểm tra lại!");
+        } else if (clashResult == -2) {
+            throw new IllegalArgumentException("Thời gian đã khóa, xin kiểm tra lại!");
+        } else if (clashResult == -4) {
+            throw new IllegalArgumentException("Đang trong thời gian mang thai hoặc nuôi con nhỏ. Không thể tăng ca!");
+        }
+
+        String applyNo = String.valueOf(mapper.getNextApplySeq());
+        dto.setApplyNo(applyNo);
+        mapper.insertOvertimeApplyOver(dto);
+
+        Map<String, Object> deleteParams = new HashMap<>();
+        deleteParams.put("applyNo", applyNo);
+        deleteParams.put("message", "");
+        mapper.callDeleteOtConfirm(deleteParams);
+
+        String lastName = buildLastName(dto);
+        EssPersonalInfoDto empInfo = essPersonalInfoMapper.findMyInfo(personId);
+        String applyPersonInfo;
+        if (empInfo != null) {
+            applyPersonInfo = safeString(empInfo.getLocalName()) + " / "
+                    + safeString(empInfo.getPostGradeName()) + " / "
+                    + safeString(empInfo.getDeptName());
+        } else {
+            applyPersonInfo = safeString(dto.getLocalName()) + " (" + safeString(dto.getEmpId()) + ")";
+        }
+
+        List<Map<String, Object>> manualApprovers = dto.getApprovers();
+        if (manualApprovers == null || manualApprovers.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng thêm ít nhất một người phê duyệt.");
+        }
+
+        SyAffirmEmailDto affirmor0 = new SyAffirmEmailDto();
+        affirmor0.setAffirmType("4");
+        affirmor0.setAffirmLevel("0");
+        affirmor0.setAffirmPersonId(personId);
+        affirmor0.setApplyNo(applyNo);
+        affirmor0.setApplyType(otTypeCode);
+        affirmor0.setApplyTypeCode(OT_TYPE_NO_OVER);
+        affirmor0.setApplyAffirmFlag(APPLY_AFFIRM_FLAG);
+        affirmor0.setApplyFlag("0");
+        affirmor0.setLastName(lastName);
+        affirmor0.setApplyPersonInfo(applyPersonInfo);
+        affirmEmailMapper.delete(applyNo);
+        affirmEmailMapper.insert(affirmor0);
+
+        log.info("saveOver: using {} manual approvers for applyNo={}", manualApprovers.size(), applyNo);
+        int level = 1;
+        for (Map<String, Object> approver : manualApprovers) {
+            String approverPersonId = safeString(approver.get("personId"));
+            if (approverPersonId.isEmpty()) continue;
+            SyAffirmEmailDto affirmor = new SyAffirmEmailDto();
+            affirmor.setAffirmType("1");
+            affirmor.setApplyNo(applyNo);
+            affirmor.setApplyType(otTypeCode);
+            affirmor.setApplyTypeCode(OT_TYPE_NO_OVER);
+            affirmor.setApplyAffirmFlag(APPLY_AFFIRM_FLAG);
+            affirmor.setApplyFlag("0");
+            affirmor.setAffirmPersonId(approverPersonId);
+            affirmor.setAffirmLevel(String.valueOf(level++));
+            affirmor.setLastName(lastName);
+            affirmor.setApplyPersonInfo(applyPersonInfo);
+            affirmor.setLocalName(safeString(approver.get("localName")));
+            affirmor.setEmpId(safeString(approver.get("empId")));
             affirmEmailMapper.insert(affirmor);
         }
     }

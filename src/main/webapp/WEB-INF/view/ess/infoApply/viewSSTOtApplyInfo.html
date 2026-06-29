@@ -73,6 +73,30 @@
                                     </div>
                                 </td>
                             </tr>
+                            
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.usecarYn}">Đặt xe</th>
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="soa_usecarYn" onchange="soaOnUsecarChange()">
+                                        <label class="form-check-label" for="soa_usecarYn" th:text="#{essOt.yes}">Có</label>
+                                    </div>
+                                </td>
+                                <th class="table-light text-center" th:text="#{essOt.carAddress}">Tuyến xe</th>
+                                <td>
+                                    <select class="form-select form-select-sm" id="soa_carAddress"
+                                        data-parent-code="90000578"
+                                        onchange="soaOnCarAddressChange()"
+                                        disabled></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="table-light text-center" th:text="#{essOt.carAddressDetail}">Chi tiết điểm đón</th>
+                                <td colspan="3">
+                                    <select class="form-select form-select-sm" id="soa_carAddressDetail" disabled></select>
+                                </td>
+                            </tr>
                             <tr>
                                 <th class="table-light text-center">Lý do</th>
                                 <td colspan="3">
@@ -86,24 +110,29 @@
             </div>
 
             <!-- Danh sách người phê duyệt -->
-            <div class="card mb-3">
-                <div class="card-header py-2 fw-bold">Danh sách người phê duyệt</div>
-                <div class="card-body p-0">
-                    <table class="table table-bordered table-sm align-middle mb-0">
-                        <thead class="table-light text-center">
-                            <tr>
-                                <th style="width:60px;">STT</th>
-                                <th>Người duyệt</th>
-                                <th style="width:120px;">Mã nhân viên</th>
-                                <th>Phòng ban</th>
-                                <th>Chức danh</th>
-                            </tr>
-                        </thead>
-                        <tbody id="soa_approvalBody">
-                            <tr><td colspan="5" class="text-center text-muted">Chọn ngày tăng ca để xem người phê duyệt</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered table-sm align-middle mb-0">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th style="width:50px;" th:text="#{sa.col.stt}">STT</th>
+                            <th th:text="#{sa.col.approver}">Người duyệt</th>
+                            <th style="width:130px;" th:text="#{sa.col.empId}">Mã nhân viên</th>
+                            <th th:text="#{sa.col.dept}">Phòng ban</th>
+                            <th th:text="#{sa.col.position}">Chức danh</th>
+                            <th style="width:60px;">
+                                <button type="button" class="btn btn-sm btn-success" onclick="soaAddApproverRow()"
+                                    th:title="#{sa.btn.addApprover}" title="Thêm người phê duyệt">
+                                    <i class="bx bx-plus"></i>
+                                </button>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="soa_approvalBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted" th:text="#{sa.msg.noApprover}">Chưa có người phê duyệt</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Nút xin phép -->
@@ -122,6 +151,17 @@
         var _soa_localName = '';
         var _soa_empId     = '';
         var _soa_pageBooted = false;
+        var _soa_approverList = [];
+        var _soa_postFamily    = '';
+        var _soa_shiftEndTime  = '';
+        var _soa_hrDeptManager = null;
+
+        var _soa_i18n = {
+            noApprover          : /*[[#{sa.msg.noApprover}]]*/ 'Chưa có người phê duyệt',
+            approverPlaceholder : /*[[#{sa.placeholder.approverName}]]*/ 'Nhập tên người phê duyệt...',
+            addApprover         : /*[[#{sa.btn.addApprover}]]*/ 'Thêm người phê duyệt',
+            requireApprover     : /*[[#{sa.msg.requireApprover}]]*/ 'Vui lòng thêm ít nhất một người phê duyệt!'
+        };
 
         var _soa_otTotalMonth     = 0;
         var _soa_otTotalYear      = 0;
@@ -198,7 +238,6 @@
             var dateApi = $('#soa_applyDate').val();
             if (!dateApi) return;
             soaLoadDateInfo(dateApi);
-            soaLoadApprovers(dateApi);
         };
 
         // ── Load thông tin ngày tăng ca ──────────────────────────────────────
@@ -217,6 +256,9 @@
                 data: { applyDate: dateApi },
                 success: function(d) {
                     if (!d) { soaClearDateInfo(); return; }
+
+                    // Lưu SHIFT_END_TIME để kiểm tra điều kiện nộp đơn sau giờ làm
+                    _soa_shiftEndTime = d.SHIFT_END_TIME || '';
 
                     // Ca làm việc
                     $('#soa_shiftName').text(d.SHIFT_NAME || '--');
@@ -293,49 +335,126 @@
             _soa_otLimitEnabled    = false;
             _soa_otLimit100Enabled = false;
             _soa_otLength          = 0;
+            _soa_shiftEndTime      = '';
         }
 
-        // ── Load người phê duyệt ─────────────────────────────────────────────
-        function soaLoadApprovers(dateApi) {
-            if (!_soa_personId) return;
-            var otTypeCode = $('#soa_dateTypeCode').val() || '';
+        // ── Quản lý danh sách người phê duyệt (manual) ──────────────────────
+        function soaRenderApprovers() {
             var $tbody = $('#soa_approvalBody');
-            $tbody.html('<tr><td colspan="5" class="text-center text-muted">Đang tải...</td></tr>');
-
-            // Tính số giờ xin tăng ca để truyền vào approvers
-            var fromDt = new Date($('#soa_otFromTime').val());
-            var toDt   = new Date($('#soa_otToTime').val());
-            var diff = (!isNaN(fromDt) && !isNaN(toDt) && toDt > fromDt)
-                ? (toDt - fromDt) / 3600000 : 0;
-
-            $.post('/ar/attendanceMintenance/api/leaveApply/approvers', {
-                applyTypeNo  : '31',
-                personId     : _soa_personId,
-                applyTypeCode: otTypeCode,
-                applyLength  : String(diff)
-            }, function(data) {
-                if (!data || !data.length) {
-                    $tbody.html('<tr><td colspan="5" class="text-center text-muted">Không có người phê duyệt</td></tr>');
-                    return;
-                }
-                var html = '';
-                var stt  = 0;
-                data.forEach(function(item) {
-                    if (String(item.affirmLevel) === '0') return;
-                    stt++;
-                    html += '<tr>'
-                        + '<td class="text-center">' + soaEscHtml(item.affirmLevel || stt) + '</td>'
-                        + '<td>' + soaEscHtml(item.localName || '') + '</td>'
-                        + '<td class="text-center">' + soaEscHtml(item.empId || '') + '</td>'
-                        + '<td>' + soaEscHtml(item.deptName || '') + '</td>'
-                        + '<td>' + soaEscHtml(item.postionName || item.positionName || '') + '</td>'
-                        + '</tr>';
-                });
-                $tbody.html(html || '<tr><td colspan="5" class="text-center text-muted">Không có người phê duyệt</td></tr>');
-            }).fail(function() {
-                $tbody.html('<tr><td colspan="5" class="text-center text-danger">Lỗi tải người phê duyệt</td></tr>');
+            if (!_soa_approverList.length) {
+                $tbody.html('<tr><td colspan="6" class="text-center text-muted">' + soaEscHtml(_soa_i18n.noApprover) + '</td></tr>');
+                return;
+            }
+            var html = '';
+            _soa_approverList.forEach(function(item, idx) {
+                html += '<tr>'
+                    + '<td class="text-center">' + (idx + 1) + '</td>'
+                    + '<td>' + soaEscHtml(item.localName || '') + '</td>'
+                    + '<td class="text-center">' + soaEscHtml(item.empId || '') + '</td>'
+                    + '<td>' + soaEscHtml(item.deptName || '') + '</td>'
+                    + '<td>' + soaEscHtml(item.positionName || '') + '</td>'
+                    + '<td class="text-center">'
+                    +   '<button type="button" class="btn btn-sm btn-danger" onclick="soaRemoveApprover(' + idx + ')">'
+                    +     '<i class="bx bx-trash"></i>'
+                    +   '</button>'
+                    + '</td>'
+                    + '</tr>';
             });
+            $tbody.html(html);
         }
+
+        window.soaAddApproverRow = function() {
+            if ($('#soa_approverInputRow').length) {
+                $('#soa_approverInput').focus();
+                return;
+            }
+            var placeholder = soaEscHtml(_soa_i18n.approverPlaceholder);
+            var inputRowHtml = '<tr id="soa_approverInputRow">'
+                + '<td class="text-center text-muted">-</td>'
+                + '<td colspan="3">'
+                +   '<div class="input-group input-group-sm">'
+                +     '<input type="text" class="form-control" id="soa_approverInput" placeholder="' + placeholder + '"'
+                +           ' onkeydown="soaApproverInputKeydown(event, this)">'
+                +     '<button class="btn btn-outline-secondary" type="button" onclick="soaPickApprover(this)">'
+                +       '<i class="bx bx-search"></i>'
+                +     '</button>'
+                +   '</div>'
+                + '</td>'
+                + '<td></td>'
+                + '<td class="text-center">'
+                +   '<button type="button" class="btn btn-sm btn-secondary" onclick="soaCancelApproverInput()">'
+                +     '<i class="bx bx-x"></i>'
+                +   '</button>'
+                + '</td>'
+                + '</tr>';
+            $('#soa_approvalBody').append(inputRowHtml);
+            $('#soa_approverInput').focus();
+        };
+
+        window.soaApproverInputKeydown = function(e, input) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault();
+                var $input = $(input);
+                var keyword = $input.val().trim();
+                $input.closest('.input-group').find('button').each(function() {
+                    soaPickApprover(this, keyword);
+                    return false;
+                });
+            }
+        };
+
+        window.soaPickApprover = function(btn, keyword) {
+            if (typeof EmployeeSearchModal !== 'undefined') {
+                EmployeeSearchModal.open(function(emp) {
+                    _soa_approverList.push({
+                        personId:     emp.personId || '',
+                        localName:    emp.localName || '',
+                        empId:        emp.empId    || '',
+                        deptName:     emp.deptNo   || emp.deptName || '',
+                        positionName: emp.position || emp.positionName || ''
+                    });
+                    soaRenderApprovers();
+                }, keyword || '');
+            } else {
+                alert(_soa_i18n.addApprover + ': EmployeeSearchModal not found.');
+            }
+        };
+
+        window.soaRemoveApprover = function(idx) {
+            _soa_approverList.splice(idx, 1);
+            soaRenderApprovers();
+        };
+
+        window.soaCancelApproverInput = function() {
+            $('#soa_approverInputRow').remove();
+            if (!_soa_approverList.length) {
+                soaRenderApprovers();
+            }
+        };
+
+        // ── Đặt xe: toggle enable/disable select tuyến xe ───────────────────
+        window.soaOnUsecarChange = function() {
+            var checked = $('#soa_usecarYn').prop('checked');
+            if (checked) {
+                $('#soa_carAddress').prop('disabled', false);
+                initCodeSelects('#soa_carAddress');
+            } else {
+                $('#soa_carAddress').prop('disabled', true).val('').empty();
+                $('#soa_carAddressDetail').prop('disabled', true).val('').empty();
+            }
+        };
+
+        // ── Khi chọn tuyến xe → reload chi tiết điểm đón ────────────────────
+        window.soaOnCarAddressChange = function() {
+            var parentCode = $('#soa_carAddress').val();
+            var $detail = $('#soa_carAddressDetail');
+            if (parentCode) {
+                $detail.prop('disabled', false);
+                reloadCodeSelect($detail[0], parentCode, null);
+            } else {
+                $detail.prop('disabled', true).val('').empty();
+            }
+        };
 
         // ── Submit ───────────────────────────────────────────────────────────
         window.soaSubmit = function() {
@@ -368,6 +487,62 @@
                 toastr && toastr.warning('Số giờ tăng ca phải lớn hơn 0.');
                 return;
             }
+
+            // ── Điều kiện 1: Bắt buộc nhập Lý do ───────────────────────────
+            var reason = $('#soa_reason').val().trim();
+            if (!reason) {
+                toastr && toastr.warning('Vui lòng nhập lý do tăng ca.');
+                return;
+            }
+
+            // ── Điều kiện 2: Thời lượng tối thiểu theo nhóm nhân viên ───────
+            if (_soa_postFamily === '14015813' || _soa_postFamily === '14015814') {
+                if (_soa_otLength < 1) {
+                    toastr && toastr.warning('Nhóm nhân viên của bạn yêu cầu thời lượng tăng ca tối thiểu là 1 tiếng (60 phút).');
+                    return;
+                }
+            } else if (_soa_postFamily === '14015815') {
+                if (_soa_otLength < 0.5) {
+                    toastr && toastr.warning('Nhóm nhân viên của bạn yêu cầu thời lượng tăng ca tối thiểu là 30 phút.');
+                    return;
+                }
+            }
+
+            // ── Điều kiện 3: Thời lượng tối đa theo hình thức tăng ca ───────
+            if (otTypeCode === '32') {
+                // Ngày thường: không quá 3 tiếng (180 phút)
+                if (_soa_otLength > 3) {
+                    toastr && toastr.warning('Ngày thường không được tăng ca quá 3 tiếng (180 phút).');
+                    return;
+                }
+            } else {
+                // Ngoài ngày thường: không quá 12 tiếng (720 phút)
+                if (_soa_otLength > 12) {
+                    toastr && toastr.warning('Thời lượng tăng ca không được quá 12 tiếng (720 phút).');
+                    return;
+                }
+            }
+
+            // ── Điều kiện 4: Nộp sau giờ làm → tự động thêm Trưởng BP nhân sự
+            if (_soa_shiftEndTime && _soa_hrDeptManager && _soa_hrDeptManager.personId) {
+                var shiftEndDt = new Date(_soa_shiftEndTime.replace(' ', 'T'));
+                if (!isNaN(shiftEndDt) && new Date() > shiftEndDt) {
+                    var alreadyIn = _soa_approverList.some(function(a) {
+                        return a.personId === _soa_hrDeptManager.personId;
+                    });
+                    if (!alreadyIn) {
+                        _soa_approverList.push(_soa_hrDeptManager);
+                        soaRenderApprovers();
+                        toastr && toastr.info('Đã tự động thêm Trưởng bộ phận nhân sự vào danh sách phê duyệt do nộp đơn sau giờ làm.');
+                    }
+                }
+            }
+
+            if (!_soa_approverList.length) {
+                toastr && toastr.warning(_soa_i18n.requireApprover);
+                return;
+            }
+
             var applyHourNum = parseFloat(otApplyHour) || 0;
             if (_soa_otLimitEnabled && (applyHourNum + _soa_otTotalMonth > _soa_otLimitMonth)) {
                 toastr && toastr.warning(
@@ -393,8 +568,14 @@
                 otFromTime   : fromTime,
                 otToTime     : toTime,
                 otApplyHour  : otApplyHour,
-                applyOtRemark: $('#soa_reason').val() || '',
-                deductYn     : $('#soa_mealCheck').prop('checked') ? '1' : '0'
+                applyOtRemark    : $('#soa_reason').val() || '',
+                deductYn         : $('#soa_mealCheck').prop('checked') ? '1' : '0',
+                usecarYn         : $('#soa_usecarYn').prop('checked') ? '1' : '0',
+                carAddress       : $('#soa_carAddress').val() || '',
+                carAddressDetail : $('#soa_carAddressDetail').val() || '',
+                approvers    : _soa_approverList.map(function(a) {
+                    return { personId: a.personId, localName: a.localName, empId: a.empId };
+                })
             };
 
             var $btn  = $('#soa_submitBtn');
@@ -428,9 +609,13 @@
             $('#soa_otToTime').val('');
             $('#soa_reason').val('');
             $('#soa_mealCheck').prop('checked', false);
+            $('#soa_usecarYn').prop('checked', false);
+            $('#soa_carAddress').prop('disabled', true).val('').empty();
+            $('#soa_carAddressDetail').prop('disabled', true).val('').empty();
             soaClearDateInfo();
             soaCalcDuration();
-            $('#soa_approvalBody').html('<tr><td colspan="5" class="text-center text-muted">Chọn ngày tăng ca để xem người phê duyệt</td></tr>');
+            _soa_approverList = [];
+            soaRenderApprovers();
         }
 
         // ── Boot ─────────────────────────────────────────────────────────────
@@ -453,7 +638,7 @@
             var todayApi = yyyy + '-' + mm + '-' + dd;
             $('#soa_applyDate').val(todayApi);
 
-            // Load thông tin nhân viên để lấy personId
+            // Load thông tin nhân viên để lấy personId và postFamily
             $.ajax({
                 url: '/ess/empinfo/api/personalInfo/myInfo',
                 type: 'GET',
@@ -462,8 +647,25 @@
                     _soa_personId  = data.personId  || '';
                     _soa_localName = data.localName  || '';
                     _soa_empId     = data.empId      || '';
+                    _soa_postFamily = data.postFamily || '';
                     soaLoadDateInfo(todayApi);
-                    soaLoadApprovers(todayApi);
+                }
+            });
+
+            // Load thông tin Trưởng bộ phận nhân sự (D11BV602) để dùng khi submit sau giờ làm
+            $.ajax({
+                url: '/ess/infoApply/api/hrDeptManager',
+                type: 'GET',
+                success: function(d) {
+                    if (d && d.PERSON_ID) {
+                        _soa_hrDeptManager = {
+                            personId:     d.PERSON_ID     || '',
+                            localName:    d.LOCAL_NAME    || '',
+                            empId:        d.EMP_ID        || '',
+                            deptName:     d.DEPT_NAME     || '',
+                            positionName: d.POSITION_NAME || ''
+                        };
+                    }
                 }
             });
 

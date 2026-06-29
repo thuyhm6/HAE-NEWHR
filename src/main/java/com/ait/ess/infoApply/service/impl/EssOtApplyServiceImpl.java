@@ -70,4 +70,28 @@ public class EssOtApplyServiceImpl implements EssOtApplyService {
         }
         return mapper.cancelMyOtApplyList(applyNos);
     }
+
+    @Override
+    public List<EssOtApplyListDto> getMyOtApplyOverList(EssOtApplyListDto dto) {
+        List<EssOtApplyListDto> result = mapper.selectMyOtApplyOverList(dto);
+        return result != null ? result : Collections.emptyList();
+    }
+
+    @Override
+    @Transactional
+    public int cancelMyOtApplyOverList(List<String> applyNos) {
+        if (applyNos == null || applyNos.isEmpty()) return 0;
+        return mapper.cancelMyOtApplyOverList(applyNos);
+    }
+
+    @Override
+    public Map<String, Object> getHrDeptManager() {
+        try {
+            Map<String, Object> result = mapper.selectHrDeptManager();
+            return result != null ? result : new HashMap<>();
+        } catch (Exception e) {
+            log.error("Failed to get HR department manager info", e);
+            return new HashMap<>();
+        }
+    }
 }

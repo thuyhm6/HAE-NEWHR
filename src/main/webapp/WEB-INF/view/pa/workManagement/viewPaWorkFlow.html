@@ -305,9 +305,12 @@
 
     <template id="fragmentScripts">
         <script th:inline="javascript">
-            var vpwf_msgSelectSchedule = /*[[#{pa.workFlow.msgSelectSchedule}]]*/ 'Vui lòng chọn kế hoạch trả lương!';
-            var vpwf_msgNoData = /*[[#{pa.workFlow.msgNoData}]]*/ 'Không có dữ liệu quy trình cho kế hoạch này!';
-            var vpwf_msgSelectStep = /*[[#{pa.workFlow.msgSelectStep}]]*/ 'Vui lòng chọn ít nhất một bước cần thực hiện!';
+            var vpwf_msgSelectSchedule  = /*[[#{pa.workFlow.msgSelectSchedule}]]*/ 'Vui lòng chọn kế hoạch trả lương!';
+            var vpwf_msgNoData          = /*[[#{pa.workFlow.msgNoData}]]*/ 'Không có dữ liệu quy trình cho kế hoạch này!';
+            var vpwf_msgSelectStep      = /*[[#{pa.workFlow.msgSelectStep}]]*/ 'Vui lòng chọn ít nhất một bước cần thực hiện!';
+            var vpwf_msgObjCreateAlready = /*[[#{pa.workFlow.msgObjCreateAlready}]]*/ 'Đã tạo đối tượng nhận lương, không thể tạo lại!';
+            var vpwf_msgSalaryClosed    = /*[[#{pa.workFlow.msgSalaryClosed}]]*/ 'Lương tháng này đã chốt, không thể tính công!';
+            var vpwf_currentWorkFlow    = null;
             var vpwf_msgRecordsNoData = /*[[#{pa.workFlow.records.noData}]]*/ 'Không có dữ liệu lịch sử';
             var vpwf_msgExecuting = /*[[#{pa.workFlow.msgExecuting}]]*/ 'Đang thực hiện...';
             var vpwf_msgExecuteSuccess = /*[[#{pa.workFlow.msgExecuteSuccess}]]*/ 'Tất cả các bước đã hoàn thành thành công!';
@@ -394,6 +397,7 @@
             };
 
             function vpwfRender(data) {
+                vpwf_currentWorkFlow = data;
                 $('#vpwf_hrPeriod').text(data.hrStartDate || '--');
                 $('#vpwf_hrPeriodEnd').text(data.hrEndDate || '--');
                 $('#vpwf_arPeriod').text(data.arStartDate || '--');
@@ -419,6 +423,19 @@
                 var payScheduleNo = $('#vpwf_payScheduleNo').val();
                 if (!payScheduleNo) {
                     toastr ? toastr.warning(vpwf_msgSelectSchedule) : alert(vpwf_msgSelectSchedule);
+                    return;
+                }
+                var wf = vpwf_currentWorkFlow;
+                if ($('#vpwf_chkObjCreate').prop('checked') && wf && wf.objCreateFlag === 1) {
+                    toastr ? toastr.warning(vpwf_msgObjCreateAlready) : alert(vpwf_msgObjCreateAlready);
+                    return;
+                }
+                if ($('#vpwf_chkArMonthCal').prop('checked') && wf && wf.paConfirmFlag === 1) {
+                    toastr ? toastr.warning(vpwf_msgSalaryClosed) : alert(vpwf_msgSalaryClosed);
+                    return;
+                }
+                if ($('#vpwf_chkPaCal').prop('checked') && wf && wf.paConfirmFlag === 1) {
+                    toastr ? toastr.warning(vpwf_msgSalaryClosed) : alert(vpwf_msgSalaryClosed);
                     return;
                 }
                 var tasks = [];

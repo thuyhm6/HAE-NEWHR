@@ -89,6 +89,23 @@ public class PaPayStubServiceImpl implements PaPayStubService {
     }
 
     @Override
+    public List<PaPayStubDto> getEmployeeList(PaPayStubDto params) {
+        try {
+            if (StringUtils.hasText(params.getDeptNos())) {
+                List<String> deptNoList = Arrays.stream(params.getDeptNos().split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList());
+                params.setDeptNoList(deptNoList);
+            }
+            return mapper.selectEmployeeList(params);
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy danh sách nhân viên payScheduleNo={}: {}", params.getPayScheduleNo(), e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
     @Transactional
     public List<PaPayStubDto> loadSelfPayStub(PaPayStubDto params, String lang) {
         log.info("Bắt đầu tải phiếu lương cá nhân payScheduleNo={}", params.getPayScheduleNo());

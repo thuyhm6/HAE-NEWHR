@@ -85,6 +85,27 @@
         )}
     </select>
 
+    <!-- Kiểm tra trạng thái chốt lương -->
+    <select id="selectConfirmFlag" resultType="java.lang.Integer">
+        SELECT PA_CONFIRM_FLAG
+          FROM PA_WORK_FLOW
+         WHERE PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+           AND ACTIVITY        = 1
+    </select>
+
+    <!-- Gọi stored procedure tính lại lương cho từng nhân viên -->
+    <select id="callMonthCalForEmp" statementType="CALLABLE"
+            parameterType="com.ait.pa.workManagement.dto.PaWorkFlowDto">
+        {CALL PA_MONTH_CAL_FOR_EMP_P(
+            #{payScheduleNo, jdbcType=VARCHAR, mode=IN},
+            #{adminID,       jdbcType=VARCHAR, mode=IN},
+            #{cpnyId,        jdbcType=VARCHAR, mode=IN},
+            #{personId,      jdbcType=VARCHAR, mode=IN},
+            #{type,          jdbcType=VARCHAR, mode=IN},
+            #{message,       jdbcType=VARCHAR, mode=OUT}
+        )}
+    </select>
+
     <!-- Thêm mới -->
     <insert id="insert" parameterType="com.ait.pa.workManagement.dto.PaWorkFlowDto">
         INSERT INTO PA_WORK_FLOW (

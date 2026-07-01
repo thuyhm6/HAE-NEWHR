@@ -18,4 +18,8 @@ public interface PaWorkFlowMapper {
     void insert(PaWorkFlowDto dto);
 
     void callModifyWorkFlow(PaWorkFlowDto dto);
+
+    Integer selectConfirmFlag(@Param("payScheduleNo") String payScheduleNo);
+
+    void callMonthCalForEmp(PaWorkFlowDto dto);
 }

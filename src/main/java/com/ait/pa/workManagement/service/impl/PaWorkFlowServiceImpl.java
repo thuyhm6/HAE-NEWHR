@@ -41,6 +41,33 @@ public class PaWorkFlowServiceImpl implements PaWorkFlowService {
     }
 
     @Override
+    public Integer getConfirmFlag(String payScheduleNo) {
+        try {
+            return mapper.selectConfirmFlag(payScheduleNo);
+        } catch (Exception e) {
+            log.error("Lỗi khi kiểm tra trạng thái chốt lương payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void recalcSalaryForEmp(String payScheduleNo, String personId) {
+        try {
+            log.info("Tính lại lương payScheduleNo={}, personId={}", payScheduleNo, personId);
+            PaWorkFlowDto dto = new PaWorkFlowDto();
+            dto.setPayScheduleNo(payScheduleNo);
+            dto.setPersonId(personId);
+            dto.setType("NONE");
+            mapper.callMonthCalForEmp(dto);
+            log.info("Tính lại lương xong payScheduleNo={}, personId={}, message={}", payScheduleNo, personId, dto.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi khi tính lại lương payScheduleNo={}, personId={}: {}", payScheduleNo, personId, e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Override
     @org.springframework.transaction.annotation.Transactional
     public String modifyWorkFlow(String payScheduleNo, String type) {
         try {

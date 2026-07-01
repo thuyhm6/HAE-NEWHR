@@ -26,4 +26,5 @@ public class PaWorkFlowDto {
     // Tham số gọi stored procedure
     private String type;
     private String message;
+    private String personId;
 }

@@ -9,4 +9,6 @@ public interface PaPayStubService {
     List<PaPayStubDto> loadPayStubs(PaPayStubDto params, String lang);
 
     List<PaPayStubDto> loadSelfPayStub(PaPayStubDto params, String lang);
+
+    List<PaPayStubDto> getEmployeeList(PaPayStubDto params);
 }

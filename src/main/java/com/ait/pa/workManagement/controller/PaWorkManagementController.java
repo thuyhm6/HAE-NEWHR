@@ -70,6 +70,32 @@ public class PaWorkManagementController {
 
     // ── API Phiếu lương ────────────────────────────────────────────────────────
 
+    @PostMapping("/api/payStub/recalc")
+    @ResponseBody
+    public ResponseEntity<?> recalcSalary(@RequestBody PaPayStubDto params) {
+        try {
+            if (params.getPayScheduleNo() == null || params.getPayScheduleNo().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn kế hoạch trả lương!"));
+            }
+            Integer confirmFlag = paWorkFlowService.getConfirmFlag(params.getPayScheduleNo());
+            if (Integer.valueOf(1).equals(confirmFlag)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Lương tháng này đã chốt, không thể tính lại!"));
+            }
+            List<PaPayStubDto> employees = paPayStubService.getEmployeeList(params);
+            if (employees == null || employees.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Không tìm thấy nhân viên nào để tính lại!"));
+            }
+            for (PaPayStubDto emp : employees) {
+                paWorkFlowService.recalcSalaryForEmp(params.getPayScheduleNo(), emp.getPersonId());
+            }
+            return ResponseEntity.ok(Map.of("success", true, "message",
+                    "Tính lại lương thành công cho " + employees.size() + " nhân viên"));
+        } catch (Exception e) {
+            log.error("Lỗi khi tính lại lương payScheduleNo={}: {}", params.getPayScheduleNo(), e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/api/payStub/load")
     @ResponseBody
     public ResponseEntity<?> loadPayStubs(

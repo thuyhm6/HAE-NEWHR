@@ -12,4 +12,8 @@ public interface PaWorkFlowService {
     List<PaWorkFlowRecordsDto> getRecordList(String payScheduleNo, Integer flowStep);
 
     String modifyWorkFlow(String payScheduleNo, String type);
+
+    Integer getConfirmFlag(String payScheduleNo);
+
+    void recalcSalaryForEmp(String payScheduleNo, String personId);
 }

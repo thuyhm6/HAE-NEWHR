@@ -43,6 +43,11 @@
                         <i class="bi bi-printer"></i>
                         <span th:text="#{pa.payStub.print}">In</span>
                     </button>
+                    <button type="button" class="btn btn-warning btn-sm" id="vps_btnRecalc"
+                            onclick="vpsRecalcSalary()" style="display:none;">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span th:text="#{pa.payStub.recalcSalary}">Tính lại lương</span>
+                    </button>
                 </div>
 
             </div>
@@ -69,7 +74,8 @@
 <!-- ── Scripts ──────────────────────────────────────────────────────────────── -->
 <template id="fragmentScripts">
     <script th:inline="javascript">
-        var vps_msgSelectSchedule = /*[[#{pa.payStub.msgSelectSchedule}]]*/  'Vui lòng chọn kế hoạch trả lương!';
+        var vps_msgSelectSchedule  = /*[[#{pa.payStub.msgSelectSchedule}]]*/   'Vui lòng chọn kế hoạch trả lương!';
+        var vps_msgConfirmRecalc   = /*[[#{pa.payStub.msgConfirmRecalc}]]*/    'Bạn có chắc muốn tính lại lương cho tất cả nhân viên trong kết quả tìm kiếm?';
         var vps_msgNoData         = /*[[#{pa.payStub.noData}]]*/             'Không có dữ liệu';
         var vps_msgLoading        = /*[[#{pa.payStub.loading}]]*/            'Đang tải phiếu lương...';
         var vps_labelEmpName      = /*[[#{pa.payStub.empName}]]*/            'Họ tên';
@@ -334,6 +340,7 @@
             $('#vps_noData').hide();
             $('#vps_printArea').empty();
             $('#vps_btnPrint').hide();
+            $('#vps_btnRecalc').hide();
 
             $.ajax({
                 url: '/pa/workManagement/api/payStub/load',
@@ -358,11 +365,47 @@
                     });
                     $('#vps_printArea').html(html);
                     $('#vps_btnPrint').show();
+                    $('#vps_btnRecalc').show();
                 },
                 error: function (err) {
                     $('#vps_loadingArea').hide();
                     var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : err.responseText;
                     toastr ? toastr.error(msg) : alert(msg);
+                }
+            });
+        };
+
+        /* ── Tính lại lương ────────────────────────────────────────────────── */
+        window.vpsRecalcSalary = function () {
+            var payScheduleNo = $('#vps_payScheduleNo').val();
+            if (!payScheduleNo) {
+                toastr ? toastr.warning(vps_msgSelectSchedule) : alert(vps_msgSelectSchedule);
+                return;
+            }
+            if (!confirm(vps_msgConfirmRecalc)) return;
+
+            var $btn = $('#vps_btnRecalc').prop('disabled', true);
+
+            $.ajax({
+                url: '/pa/workManagement/api/payStub/recalc',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    payScheduleNo: payScheduleNo,
+                    deptNos:       vps_selectedDeptCodes.join(','),
+                    empSearch:     $('#vps_empSearch').val(),
+                    empOfficeCond: $('#vps_empOffice').val()
+                }),
+                success: function (res) {
+                    toastr ? toastr.success(res.message) : alert(res.message);
+                    vpsSearch();
+                },
+                error: function (err) {
+                    var msg = (err.responseJSON && err.responseJSON.error) ? err.responseJSON.error : err.responseText;
+                    toastr ? toastr.error(msg) : alert(msg);
+                },
+                complete: function () {
+                    $btn.prop('disabled', false);
                 }
             });
         };

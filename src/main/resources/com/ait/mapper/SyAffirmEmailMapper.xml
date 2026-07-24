@@ -176,7 +176,7 @@
                  WHERE OT.APPLY_NO = EM.APPLY_NO
                    AND OT.BATCH_YN = 2)
         <if test="titleSearch != null and titleSearch != ''">
-           AND UPPER(TITLE) LIKE '%' || UPPER(#{titleSearch, jdbcType=VARCHAR}) || '%'
+           AND CONVERTTOUNSIGN(UPPER(TITLE)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{titleSearch, jdbcType=VARCHAR})) || '%'
         </if>
         <if test="applyTypeCodeSearch != null and applyTypeCodeSearch != ''">
            AND APPLY_TYPE_CODE = #{applyTypeCodeSearch, jdbcType=VARCHAR}
@@ -219,7 +219,7 @@
                    AND OT.BATCH_YN = 2)
            AND CREATE_DATE &gt;= TO_DATE(TO_CHAR(SYSDATE, 'YYYY.MM') || '.01', 'YYYY.MM.DD')
         <if test="titleSearch != null and titleSearch != ''">
-           AND UPPER(TITLE) LIKE '%' || UPPER(#{titleSearch, jdbcType=VARCHAR}) || '%'
+           AND CONVERTTOUNSIGN(UPPER(TITLE)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{titleSearch, jdbcType=VARCHAR})) || '%'
         </if>
         <if test="applyTypeCodeSearch != null and applyTypeCodeSearch != ''">
            AND APPLY_TYPE_CODE = #{applyTypeCodeSearch, jdbcType=VARCHAR}
@@ -307,7 +307,7 @@
            AND CREATE_DATE &gt;=
                ADD_MONTHS(TO_DATE(TO_CHAR(SYSDATE, 'YYYY.MM') || '.01', 'YYYY.MM.DD'), -1)
         <if test="titleSearch != null and titleSearch != ''">
-           AND UPPER(TITLE) LIKE '%' || UPPER(#{titleSearch, jdbcType=VARCHAR}) || '%'
+           AND CONVERTTOUNSIGN(UPPER(TITLE)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{titleSearch, jdbcType=VARCHAR})) || '%'
         </if>
         <if test="applyTypeCodeSearch != null and applyTypeCodeSearch != ''">
            AND APPLY_TYPE_CODE = #{applyTypeCodeSearch, jdbcType=VARCHAR}

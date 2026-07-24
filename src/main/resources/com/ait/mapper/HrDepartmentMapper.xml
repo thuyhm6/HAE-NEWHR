@@ -40,6 +40,7 @@
         <result column="ORG_NAME_VI" property="orgNameVi"/>
         <result column="COST_CENTER_NAME" property="costCenterName"/>
         <result column="MANAGER_EMP_NAME" property="managerEmpName"/>
+        <result column="DEPT_TYPE_NAME" property="deptTypeName"/>
     </resultMap>
 
     <!-- ============================================ -->
@@ -372,8 +373,42 @@
     </select>
 
     <select id="getDepartmentTree" resultMap="HrDepartmentResultMap">
-        SELECT 
-            hd.*,
+        SELECT
+            hd.DEPTID,
+            hd.CPNY_ID,
+            hd.DATE_CREATED,
+            hd.DATE_ENDED,
+            hd.DEPT_LEVEL,
+            GET_EMPID(hd.MANAGER_EMP_ID) AS MANAGER_EMP_ID,
+            hd.DEPTNO,
+            hd.PARENT_DEPT_NO,
+            hd.WORK_AREA,
+            hd.DEPT_TYPE,
+            GET_GLOBAL_NAME(hd.DEPT_TYPE, #{lang, jdbcType=VARCHAR}) AS DEPT_TYPE_NAME,
+            hd.ORG_NAME_ENG,
+            hd.ORG_NAME_LOCAL,
+            hd.ORG_LEVEL,
+            hd.COST_CENTER,
+            hd.USE_YN,
+            hd.CREATE_DATE,
+            hd.CREATED_BY,
+            hd.UPDATE_DATE,
+            hd.UPDATED_BY,
+            hd.ORDERNO,
+            hd.ACTIVITY,
+            hd.IS_DEPT,
+            hd.IS_PART_TIME,
+            hd.PRODUCT_TYPE,
+            hd.CREATED_IP,
+            hd.UPDATED_IP,
+            hd.RESUME_NO,
+            hd.REMARK,
+            hd.FEE_STANDARD,
+            hd.DEPT_DISTINGUISH_STANDARD,
+            hd.PREP_MANAGER_EMP_ID,
+            hd.ORDER_NO,
+            hd.ORG_NAME_KO,
+            hd.ORG_NAME_VI,
             occ.CODE_NAME as COST_CENTER_NAME,
             he.LOCAL_NAME as MANAGER_EMP_NAME
         FROM hr_department hd

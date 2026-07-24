@@ -5,6 +5,7 @@ import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
 import com.ait.ar.attendanceMintenance.service.ArOvertimeManagentService;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import com.ait.util.MailSendApprovalManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +36,9 @@ public class ArOvertimeManagentController {
 
     @Autowired
     private SyAffirmEmailService affirmorService;
+
+    @Autowired
+    private MailSendApprovalManager mailSendApprovalManager;
 
     @GetMapping("/viewApplyOtManagentByAnyApproverList")
     public String view() {
@@ -56,6 +63,21 @@ public class ArOvertimeManagentController {
         dto.setFromDate(fromDate);
         dto.setToDate(toDate);
         return ResponseEntity.ok(service.getList(dto));
+    }
+
+    @GetMapping("/api/overtime/over/list")
+    @ResponseBody
+    public ResponseEntity<List<ArOvertimeManagentDto>> getListOver(
+            @RequestParam(required = false) String empId,
+            @RequestParam(required = false) String localName,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate) {
+        ArOvertimeManagentDto dto = new ArOvertimeManagentDto();
+        dto.setEmpId(empId);
+        dto.setLocalName(localName);
+        dto.setFromDate(fromDate);
+        dto.setToDate(toDate);
+        return ResponseEntity.ok(service.getListOver(dto));
     }
 
     @GetMapping("/api/overtime/detail")
@@ -155,12 +177,22 @@ public class ArOvertimeManagentController {
 
     @PostMapping("/api/overtime/saveBatch")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> saveBatch(@RequestBody List<ArOvertimeManagentDto> dtos) {
+    public ResponseEntity<Map<String, Object>> saveBatch(@RequestBody List<ArOvertimeManagentDto> dtos, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
             service.saveBatch(dtos);
             response.put("success", true);
             response.put("message", "Lưu thành công");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            for (ArOvertimeManagentDto dto : dtos) {
+                String savedApplyNo = dto.getApplyNo() != null ? dto.getApplyNo() : "";
+                try {
+                    mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+                } catch (Exception eagleEx) {
+                    log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+                }
+            }
         } catch (Exception e) {
             log.error("Failed to save batch overtime data", e);
             response.put("success", false);
@@ -171,14 +203,100 @@ public class ArOvertimeManagentController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/api/overtime/over/saveBatch")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveBatchOver(@RequestBody List<ArOvertimeManagentDto> dtos, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            service.saveBatchOver(dtos);
+            response.put("success", true);
+            response.put("message", "Lưu thành công");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            for (ArOvertimeManagentDto dto : dtos) {
+                String savedApplyNo = dto.getApplyNo() != null ? dto.getApplyNo() : "";
+                try {
+                    mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+                } catch (Exception eagleEx) {
+                    log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to save batch overtime-over data", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Lỗi hệ thống khi lưu tăng ca vượt."
+                    : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/overtime/over/resubmit")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> resubmitOver(@RequestBody ArOvertimeManagentDto dto, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            service.resubmitOvertimeApplyOver(dto);
+            response.put("success", true);
+            response.put("message", "Đã lưu lại đơn tăng ca vượt thành công");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            String savedApplyNo = dto.getApplyNo() != null ? dto.getApplyNo() : "";
+            try {
+                mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Failed to resubmit overtime-over apply", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Lỗi hệ thống khi lưu lại đơn tăng ca vượt."
+                    : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/overtime/over/cancel-batch")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> cancelBatchOver(@RequestBody ArOvertimeManagentDto dto, HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Map<String, Object> result = service.cancelBatchOvertimeApplyOver(dto.getApplyNos());
+            response.putAll(result);
+
+            // Gửi thông tin hủy lên EagleOffice chỉ cho đơn vừa hủy (best-effort)
+            try {
+                mailSendApprovalManager.cancelMailApprovaledInfo(dto.getApplyNos());
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", dto.getApplyNos(), eagleEx.getMessage());
+            }
+        } catch (Exception e) {
+            log.error("Failed to batch cancel overtime-over applies", e);
+            response.put("success", false);
+            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+                    ? "Lỗi hệ thống khi hủy đơn tăng ca vượt."
+                    : e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/api/overtime/saveOver")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> saveOver(@RequestBody ArOvertimeManagentDto dto) {
+    public ResponseEntity<Map<String, Object>> saveOver(@RequestBody ArOvertimeManagentDto dto, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
             service.saveOver(dto);
             response.put("success", true);
             response.put("message", "Lưu thành công");
+            
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            String savedApplyNo = dto.getApplyNo() != null ? dto.getApplyNo() : "";
+            try {
+                mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+            }
         } catch (Exception e) {
             log.error("Failed to save overtime over data", e);
             response.put("success", false);
@@ -191,12 +309,21 @@ public class ArOvertimeManagentController {
 
     @PostMapping("/api/overtime/save")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> save(@RequestBody ArOvertimeManagentDto dto) {
+    public ResponseEntity<Map<String, Object>> save(@RequestBody ArOvertimeManagentDto dto,
+                                                      HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
             service.save(dto);
             response.put("success", true);
             response.put("message", "Lưu thành công");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            String savedApplyNo = dto.getApplyNo() != null ? dto.getApplyNo() : "";
+            try {
+                mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+            }
         } catch (Exception e) {
             log.error("Failed to save overtime fast data", e);
             response.put("success", false);
@@ -209,12 +336,21 @@ public class ArOvertimeManagentController {
 
     @PostMapping("/api/overtime/resubmit")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> resubmit(@RequestBody ArOvertimeManagentDto dto) {
+    public ResponseEntity<Map<String, Object>> resubmit(@RequestBody ArOvertimeManagentDto dto,
+                                                          HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
             service.resubmitOvertimeApply(dto);
             response.put("success", true);
             response.put("message", "Đã lưu lại đơn tăng ca thành công");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            String savedApplyNo = dto.getApplyNo() != null ? dto.getApplyNo() : "";
+            try {
+                mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+            }
         } catch (Exception e) {
             log.error("Failed to resubmit overtime apply", e);
             response.put("success", false);
@@ -241,6 +377,14 @@ public class ArOvertimeManagentController {
             service.cancelOvertimeApply(dto.getApplyNo());
             response.put("success", true);
             response.put("message", "Hủy đơn thành công");
+
+            // Gửi thông tin hủy lên EagleOffice chỉ cho đơn vừa hủy (best-effort)
+            List<String> applyNos = Collections.singletonList(dto.getApplyNo());
+            try {
+                mailSendApprovalManager.cancelMailApprovaledInfo(applyNos);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", dto.getApplyNos(), eagleEx.getMessage());
+            }
         } catch (Exception e) {
             log.error("Failed to cancel overtime apply", e);
             response.put("success", false);
@@ -258,6 +402,13 @@ public class ArOvertimeManagentController {
         try {
             Map<String, Object> result = service.cancelBatchOvertimeApply(dto.getApplyNos());
             response.putAll(result);
+
+            // Gửi thông tin hủy lên EagleOffice chỉ cho đơn vừa hủy (best-effort)
+            try {
+                mailSendApprovalManager.cancelMailApprovaledInfo(dto.getApplyNos());
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", dto.getApplyNos(), eagleEx.getMessage());
+            }
         } catch (Exception e) {
             log.error("Failed to batch cancel overtime applies", e);
             response.put("success", false);

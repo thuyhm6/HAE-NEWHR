@@ -31,6 +31,12 @@
                                 th:attr="data-default-text=#{common.selectAll}" data-default-text="-- Tất cả --"
                                 data-default-value="15119"></select>
                         </div>
+                        <div class="col-md-2">
+                            <label for="mci_asOfDate" class="form-label" th:text="#{mci.field.asOfDate}">Ngày truy vấn</label>
+                            <input type="text" class="form-control js-daterangepicker" id="mci_asOfDate"
+                                data-drp-format="YYYY/MM/DD" autocomplete="off" placeholder="YYYY/MM/DD">
+                        </div>
+
                         <div class="col-12 d-flex gap-2 flex-wrap">
                             <button type="button" class="btn btn-primary" onclick="mciSearchData()">
                                 <i class="bx bx-search"></i> <span th:text="#{essDept.search}">Tra cứu</span>
@@ -176,7 +182,8 @@
                 deptNos:     (_mci_selectedDeptCodes || []).join(','),
                 postFamily:  $('#mci_postFamily').val(),
                 empTypeCode: $('#mci_empTypeCode').val(),
-                empOffice:   $('#mci_empOffice').val()
+                empOffice:   $('#mci_empOffice').val(),
+                asOfDate:    $('#mci_asOfDate').val()
             };
         }
 
@@ -307,6 +314,7 @@
                         d.postFamily  = p.postFamily;
                         d.empTypeCode = p.empTypeCode;
                         d.empOffice   = p.empOffice;
+                        d.asOfDate    = p.asOfDate;
                     }
                 },
                 initComplete: function () {
@@ -342,6 +350,10 @@
             }
             _mci_pageBooted = true;
             mciInitDeptSelector();
+            if (!$('#mci_asOfDate').val()) {
+                $('#mci_asOfDate').val(moment().format('YYYY/MM/DD'));
+            }
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#mci_searchForm');
             $.when(typeof initCodeSelects === 'function' ? initCodeSelects('#mci_searchForm') : null).always(function () {
                 mciInitTable();
                 mciLoadSummary();
@@ -356,6 +368,7 @@
         window.mciClearSearch = function () {
             $('#mci_keyword').val('');
             $('#mci_deptNo').val('');
+            $('#mci_asOfDate').val(moment().format('YYYY/MM/DD'));
             _mci_selectedDeptCodes = [];
             $('.auth-dept-chk-global').prop('checked', false).trigger('change');
             if (typeof resetCodeSelectDefaults === 'function') {

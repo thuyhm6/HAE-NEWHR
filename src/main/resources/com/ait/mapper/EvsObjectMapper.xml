@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.evs.manage.mapper.EvsObjectMapper">
+
+    <resultMap id="EvsObjectResultMap" type="com.ait.evs.manage.dto.EvsObjectDto">
+        <result property="seq" column="SEQ" jdbcType="VARCHAR"/>
+        <result property="resumeSeq" column="RESUME_SEQ" jdbcType="VARCHAR"/>
+        <result property="personId" column="PERSON_ID" jdbcType="VARCHAR"/>
+        <result property="empId" column="EMPID" jdbcType="VARCHAR"/>
+        <result property="localName" column="LOCAL_NAME" jdbcType="VARCHAR"/>
+        <result property="deptNo" column="DEPTNO" jdbcType="VARCHAR"/>
+        <result property="deptName" column="DEPTNAME" jdbcType="VARCHAR"/>
+        <result property="postGradeNo" column="POST_GRADE_NO" jdbcType="VARCHAR"/>
+        <result property="postGradeName" column="POST_GRADE_NAME" jdbcType="VARCHAR"/>
+        <result property="dateStarted" column="DATE_STARTED" jdbcType="DATE"/>
+        <result property="activity" column="ACTIVITY" jdbcType="VARCHAR"/>
+        <result property="objectType" column="OBJECT_TYPE" jdbcType="VARCHAR"/>
+        <result property="objectTypeName" column="OBJECT_TYPE_NAME" jdbcType="VARCHAR"/>
+        <result property="mainBusiness" column="MAIN_BUSINESS" jdbcType="VARCHAR"/>
+        <result property="mainBusinessName" column="MAIN_BUSINESS_NAME" jdbcType="VARCHAR"/>
+        <result property="listType" column="LIST_TYPE" jdbcType="VARCHAR"/>
+        <result property="listTypeName" column="LIST_TYPE_NAME" jdbcType="VARCHAR"/>
+        <result property="evsGroup" column="EVS_GROUP" jdbcType="VARCHAR"/>
+        <result property="evsGroupName" column="EVS_GROUP_NAME" jdbcType="VARCHAR"/>
+        <result property="evsOccGroup" column="EVS_OCC_GROUP" jdbcType="VARCHAR"/>
+        <result property="evsOccGroupName" column="EVS_OCC_GROUP_NAME" jdbcType="VARCHAR"/>
+        <result property="finalGrade" column="FINAL_GRADE" jdbcType="VARCHAR"/>
+        <result property="finalAffirmContent" column="FINAL_AFFIRM_CONTENT" jdbcType="VARCHAR"/>
+        <result property="ordernoDept" column="ORDERNO_DEPT" jdbcType="DECIMAL"/>
+        <result property="evsType" column="EVS_TYPE" jdbcType="VARCHAR"/>
+        <result property="evsTypeName" column="EVS_TYPE_NAME" jdbcType="VARCHAR"/>
+        <result property="evsYear" column="EVS_YEAR" jdbcType="VARCHAR"/>
+        <result property="evsMonth" column="EVS_MONTH" jdbcType="VARCHAR"/>
+        <result property="evsMonthName" column="EVS_MONTH_NAME" jdbcType="VARCHAR"/>
+        <result property="evsCycle" column="EVS_CYCLE" jdbcType="VARCHAR"/>
+        <result property="evsCycleName" column="EVS_CYCLE_NAME" jdbcType="VARCHAR"/>
+        <result property="orderno" column="ORDERNO" jdbcType="DECIMAL"/>
+        <result property="createDate" column="CREATE_DATE" jdbcType="TIMESTAMP"/>
+        <result property="createdBy" column="CREATED_BY" jdbcType="VARCHAR"/>
+        <result property="createdIp" column="CREATED_IP" jdbcType="VARCHAR"/>
+        <result property="updateDate" column="UPDATE_DATE" jdbcType="TIMESTAMP"/>
+        <result property="updatedBy" column="UPDATED_BY" jdbcType="VARCHAR"/>
+        <result property="updatedIp" column="UPDATED_IP" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getByPersonId" resultMap="EvsObjectResultMap">
+        SELECT
+            SEQ, RESUME_SEQ, PERSON_ID, EMPID, LOCAL_NAME, DEPTNO, DEPTNAME,
+            POST_GRADE_NO, POST_GRADE_NAME, DATE_STARTED, ACTIVITY,
+            OBJECT_TYPE, OBJECT_TYPE_NAME, MAIN_BUSINESS, MAIN_BUSINESS_NAME,
+            LIST_TYPE, LIST_TYPE_NAME, EVS_GROUP, EVS_GROUP_NAME,
+            EVS_OCC_GROUP, EVS_OCC_GROUP_NAME, FINAL_GRADE, FINAL_AFFIRM_CONTENT,
+            ORDERNO_DEPT, EVS_TYPE, get_global_name(EVS_TYPE, #{lang, jdbcType=VARCHAR}) AS EVS_TYPE_NAME,
+            EVS_YEAR,
+            EVS_MONTH, get_global_name(EVS_MONTH, #{lang, jdbcType=VARCHAR}) AS EVS_MONTH_NAME,
+            EVS_CYCLE, get_global_name(EVS_CYCLE, #{lang, jdbcType=VARCHAR}) AS EVS_CYCLE_NAME,
+            ORDERNO,
+            CREATE_DATE, CREATED_BY, CREATED_IP, UPDATE_DATE, UPDATED_BY, UPDATED_IP
+        FROM EVS_OBJECT
+        WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+        ORDER BY EVS_YEAR DESC, EVS_MONTH DESC, CREATE_DATE DESC
+    </select>
+
+</mapper>

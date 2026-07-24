@@ -179,14 +179,73 @@
         ORDER BY ORDERNO, CODE_NO
     </select>
 
-    <!-- Lấy danh sách code kèm theo tên đa ngôn ngữ theo parent hoặc tất cả nếu null -->
+    <!-- Lấy danh sách code kèm theo tên đa ngôn ngữ theo parent hoặc toàn bộ cây (bắt đầu từ node gốc PARENT_CODE_NO = '0') nếu null -->
     <select id="findCodeWithParentNo" resultMap="SyCodeDtoResultMap">
+        <choose>
+            <!-- Toàn bộ cây cho khung bên trái: chỉ lọc theo công ty (SY_CODE_PARAM) ngay tại node gốc,
+                 rồi CONNECT BY đi tiếp xuống các node con theo đúng chuỗi cha-con (không lọc lại SY_CODE_PARAM
+                 ở từng node con) để tránh bị đứt gãy chuỗi cha khiến node con bị hiểu nhầm thành node gốc -->
+            <when test="parentCodeNo == null or parentCodeNo == '' or parentCodeNo == 'ALL'">
+                SELECT c.CODE_NO, c.DESCRIPTION, c.DEPTH, c.PARENT_CODE_NO, c.OPERATION_ID, c.ORDERNO,
+                       gv.CONTENT AS CODE_NAME,
+                       gvi.CONTENT AS NAME_VI,
+                       gve.CONTENT AS NAME_EN,
+                       gvz.CONTENT AS NAME_ZH,
+                       gvk.CONTENT AS NAME_KO
+                FROM (
+                    SELECT sc.CODE_NO, sc.DESCRIPTION, sc.DEPTH, sc.PARENT_CODE_NO, sc.OPERATION_ID, sc.ORDERNO
+                    FROM SY_CODE sc
+                    START WITH sc.PARENT_CODE_NO = '0'
+                        AND sc.ACTIVITY = 1
+                        AND EXISTS (
+                            SELECT 1 FROM SY_CODE_PARAM p
+                            WHERE p.CODE_NO = sc.CODE_NO AND p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                        )
+                    CONNECT BY PRIOR sc.CODE_NO = sc.PARENT_CODE_NO AND sc.ACTIVITY = 1
+                ) c
+                LEFT JOIN SY_GLOBAL_NAME gv ON c.CODE_NO = gv.NO AND gv.LANGUAGE = #{lang, jdbcType=VARCHAR}
+                LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+                LEFT JOIN SY_GLOBAL_NAME gve ON c.CODE_NO = gve.NO AND gve.LANGUAGE = 'en'
+                LEFT JOIN SY_GLOBAL_NAME gvz ON c.CODE_NO = gvz.NO AND gvz.LANGUAGE = 'zh'
+                LEFT JOIN SY_GLOBAL_NAME gvk ON c.CODE_NO = gvk.NO AND gvk.LANGUAGE = 'ko'
+                ORDER BY c.ORDERNO, c.CODE_NO
+            </when>
+            <!-- Danh sách mã con của 1 node cụ thể (khung bên phải): 'ROOT' = các node gốc PARENT_CODE_NO = '0' -->
+            <otherwise>
+                SELECT c.CODE_NO, c.DESCRIPTION, c.DEPTH, c.PARENT_CODE_NO, c.OPERATION_ID, c.ORDERNO,
+                       gv.CONTENT AS CODE_NAME,
+                       gvi.CONTENT AS NAME_VI,
+                       gve.CONTENT AS NAME_EN,
+                       gvz.CONTENT AS NAME_ZH,
+                       gvk.CONTENT AS NAME_KO
+                FROM SY_CODE c
+                LEFT JOIN SY_CODE_PARAM SCP ON c.CODE_NO = scp.CODE_NO AND scp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                LEFT JOIN SY_GLOBAL_NAME gv ON c.CODE_NO = gv.NO AND gv.LANGUAGE = #{lang, jdbcType=VARCHAR}
+                LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
+                LEFT JOIN SY_GLOBAL_NAME gve ON c.CODE_NO = gve.NO AND gve.LANGUAGE = 'en'
+                LEFT JOIN SY_GLOBAL_NAME gvz ON c.CODE_NO = gvz.NO AND gvz.LANGUAGE = 'zh'
+                LEFT JOIN SY_GLOBAL_NAME gvk ON c.CODE_NO = gvk.NO AND gvk.LANGUAGE = 'ko'
+                WHERE c.ACTIVITY = 1
+                <choose>
+                    <when test="parentCodeNo == 'ROOT'">
+                        AND c.PARENT_CODE_NO = '0'
+                    </when>
+                    <otherwise>
+                        AND c.PARENT_CODE_NO = #{parentCodeNo, jdbcType=VARCHAR}
+                    </otherwise>
+                </choose>
+                ORDER BY c.ORDERNO, c.CODE_NO
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findUseCodeWithParentNo" resultMap="SyCodeDtoResultMap">
         SELECT c.CODE_NO, c.DESCRIPTION, c.DEPTH, c.PARENT_CODE_NO, c.OPERATION_ID, c.ORDERNO,
-               gv.CONTENT AS CODE_NAME,
-               gvi.CONTENT AS NAME_VI,
-               gve.CONTENT AS NAME_EN,
-               gvz.CONTENT AS NAME_ZH,
-               gvk.CONTENT AS NAME_KO
+                gv.CONTENT AS CODE_NAME,
+                gvi.CONTENT AS NAME_VI,
+                gve.CONTENT AS NAME_EN,
+                gvz.CONTENT AS NAME_ZH,
+                gvk.CONTENT AS NAME_KO
         FROM SY_CODE c
         JOIN SY_CODE_PARAM SCP ON c.CODE_NO = scp.CODE_NO AND scp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         LEFT JOIN SY_GLOBAL_NAME gv ON c.CODE_NO = gv.NO AND gv.LANGUAGE = #{lang, jdbcType=VARCHAR}
@@ -195,12 +254,14 @@
         LEFT JOIN SY_GLOBAL_NAME gvz ON c.CODE_NO = gvz.NO AND gvz.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gvk ON c.CODE_NO = gvk.NO AND gvk.LANGUAGE = 'ko'
         WHERE c.ACTIVITY = 1
-        <if test="parentCodeNo != null and parentCodeNo != '' and parentCodeNo != 'ALL' and parentCodeNo != 'ROOT'">
-             AND c.PARENT_CODE_NO = #{parentCodeNo}
-        </if>
-        <if test="parentCodeNo == 'ROOT'">
-             AND (c.PARENT_CODE_NO IS NULL OR c.PARENT_CODE_NO = '')
-        </if>
+        <choose>
+            <when test="parentCodeNo == 'ROOT'">
+                AND c.PARENT_CODE_NO = '0'
+            </when>
+            <otherwise>
+                AND c.PARENT_CODE_NO = #{parentCodeNo, jdbcType=VARCHAR}
+            </otherwise>
+        </choose>
         ORDER BY c.ORDERNO, c.CODE_NO
     </select>
 
@@ -212,7 +273,7 @@
                gvz.CONTENT AS NAME_ZH,
                gvk.CONTENT AS NAME_KO
         FROM SY_CODE c
-        JOIN SY_CODE_PARAM SCP ON c.CODE_NO = scp.CODE_NO AND scp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        LEFT JOIN SY_CODE_PARAM SCP ON c.CODE_NO = scp.CODE_NO AND scp.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         LEFT JOIN SY_GLOBAL_NAME gv ON c.CODE_NO = gv.NO AND gv.LANGUAGE = #{lang, jdbcType=VARCHAR}
         LEFT JOIN SY_GLOBAL_NAME gvi ON c.CODE_NO = gvi.NO AND gvi.LANGUAGE = 'vi'
         LEFT JOIN SY_GLOBAL_NAME gve ON c.CODE_NO = gve.NO AND gve.LANGUAGE = 'en'

@@ -162,12 +162,15 @@
                         var label = item.orgNameLocal || item.deptNo;
                         // if (item.orgNameEng) label += " (" + item.orgNameEng + ")";
 
+                        // Auto mở rộng cây đến cấp 3 (DEPT_LEVEL < 3), cấp 3 hiển thị nhưng đóng (+) nếu có con
+                        var isOpened = (item.deptLevel !== undefined && item.deptLevel !== null) ? (item.deptLevel < 3) : (parentId === '#');
+
                         return {
                             id: item.deptNo,
                             parent: parentId,
                             text: label,
                             icon: 'bx bxs-folder',
-                            state: { opened: (parentId === '#') },
+                            state: { opened: isOpened },
                             data: item // Pass full object
                         };
                     });
@@ -190,7 +193,7 @@
                                 $('#currOrg_lblDeptNo').text(dept.deptNo || '');
                                 // Use Name if available, else ID
                                 $('#currOrg_lblManagerEmpId').text(dept.managerEmpName ? dept.managerEmpName + ' (' + dept.managerEmpId + ')' : (dept.managerEmpId || ''));
-                                $('#currOrg_lblDeptType').text(dept.deptType || '');
+                                $('#currOrg_lblDeptType').text(dept.deptTypeName || dept.deptType || '');
                                 $('#currOrg_lblCostCenter').text(dept.costCenterName ? dept.costCenterName + ' (' + dept.costCenter + ')' : (dept.costCenter || ''));
                                 $('#currOrg_deptInfoPanel').show();
 

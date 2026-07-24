@@ -301,8 +301,13 @@
                     <!-- Objective Confirm -->
                     <div class="fw-semibold small mb-1 border-bottom pb-1"
                          th:text="#{evs.viewAffirmTarget2.modal.objectiveTitle}">Objective Confirm</div>
+
+                    <!-- Mục tiêu chiến lược (ITEM_TYPE = 1) -->
+                    <div class="mb-1">
+                        <span class="fw-semibold small" th:text="#{evs.viewAffirmTarget2.modal.strategicTarget}">Mục tiêu chiến lược</span>
+                    </div>
                     <div class="table-responsive mb-2">
-                        <table class="table table-bordered table-sm align-middle mb-0" id="vat2dm_itemTable">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="vat2dm_strategicTable">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th style="width:44px;" th:text="#{evs.viewAffirmTarget2.col.no}">No</th>
@@ -314,18 +319,65 @@
                                     <th style="width:120px;" th:text="#{evs.viewAffirmTarget2.modal.col.affirm2Score}">Đánh giá lần 2</th>
                                 </tr>
                             </thead>
-                            <tbody id="vat2dm_itemTbody">
+                            <tbody id="vat2dm_strategicTbody">
                                 <tr><td colspan="7" class="text-center text-muted">-</td></tr>
                             </tbody>
                             <tfoot>
                                 <tr class="table-light fw-semibold">
-                                    <td colspan="3" class="text-end small">Total</td>
-                                    <td class="text-center">100</td>
-                                    <td class="text-center" id="vat2dm_selfTotal">-</td>
-                                    <td class="text-center" id="vat2dm_affirm1Total">-</td>
-                                    <td class="text-center" id="vat2dm_affirm2Total">0</td>
+                                    <td colspan="3" class="text-end small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center" id="vat2dm_strategicItemScoreTotal">0</td>
+                                    <td class="text-center" id="vat2dm_strategicSelfTotal">-</td>
+                                    <td class="text-center" id="vat2dm_strategicAffirm1Total">-</td>
+                                    <td class="text-center" id="vat2dm_strategicAffirm2Total">0</td>
                                 </tr>
                             </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Mục tiêu vận hành (ITEM_TYPE IS NULL) -->
+                    <div class="mb-1">
+                        <span class="fw-semibold small" th:text="#{evs.viewAffirmTarget2.modal.operationTarget}">Mục tiêu vận hành</span>
+                    </div>
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="vat2dm_operationTable">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th style="width:44px;" th:text="#{evs.viewAffirmTarget2.col.no}">No</th>
+                                    <th style="width:180px;" th:text="#{evs.viewAffirmTarget2.modal.col.evalItem}">Hạng mục đánh giá</th>
+                                    <th th:text="#{evs.viewAffirmTarget2.modal.col.target}">Mục tiêu</th>
+                                    <th style="width:90px;" th:text="#{evs.viewAffirmTarget2.modal.col.targetScore}">Điểm chỉ tiêu</th>
+                                    <th style="width:110px;" th:text="#{evs.viewAffirmTarget2.modal.col.selfScore}">Tự đánh giá (%)</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2.modal.col.affirm1Score}">Đánh giá lần 1</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2.modal.col.affirm2Score}">Đánh giá lần 2</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vat2dm_operationTbody">
+                                <tr><td colspan="7" class="text-center text-muted">-</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-semibold">
+                                    <td colspan="3" class="text-end small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center" id="vat2dm_operationItemScoreTotal">0</td>
+                                    <td class="text-center" id="vat2dm_operationSelfTotal">-</td>
+                                    <td class="text-center" id="vat2dm_operationAffirm1Total">-</td>
+                                    <td class="text-center" id="vat2dm_operationAffirm2Total">0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Tổng cộng cả 2 phần -->
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm mb-0">
+                            <tbody>
+                                <tr class="table-light fw-semibold">
+                                    <td class="text-end small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center" style="width:90px;" id="vat2dm_itemScoreTotal">100</td>
+                                    <td class="text-center" style="width:110px;" id="vat2dm_selfTotal">-</td>
+                                    <td class="text-center" style="width:120px;" id="vat2dm_affirm1Total">-</td>
+                                    <td class="text-center" style="width:120px;" id="vat2dm_affirm2Total">0</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
 
@@ -800,10 +852,13 @@
                 var $modal = $('#' + _vat2_tabId).find('#vat2_detailModal');
                 $modal.find('#vat2dm_objectSeq').val(objectSeq);
                 $modal.find('#vat2dm_canInput').val('0');
-                $modal.find('#vat2dm_itemTbody').html('<tr><td colspan="7" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>');
-                $modal.find('#vat2dm_selfTotal').text('-');
-                $modal.find('#vat2dm_affirm1Total').text('-');
-                $modal.find('#vat2dm_affirm2Total').text('0');
+                var vat2dmSpinner = '<tr><td colspan="7" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>';
+                $modal.find('#vat2dm_strategicTbody').html(vat2dmSpinner);
+                $modal.find('#vat2dm_operationTbody').html(vat2dmSpinner);
+                $modal.find('#vat2dm_strategicItemScoreTotal, #vat2dm_operationItemScoreTotal, #vat2dm_itemScoreTotal').text('0');
+                $modal.find('#vat2dm_strategicSelfTotal, #vat2dm_operationSelfTotal, #vat2dm_selfTotal').text('-');
+                $modal.find('#vat2dm_strategicAffirm1Total, #vat2dm_operationAffirm1Total, #vat2dm_affirm1Total').text('-');
+                $modal.find('#vat2dm_strategicAffirm2Total, #vat2dm_operationAffirm2Total, #vat2dm_affirm2Total').text('0');
                 $modal.find('#vat2dm_affirm2Score').text('0');
                 $modal.find('#vat2dm_affirm2Grade').text('-');
                 $modal.find('#vat2dm_selfContent').html('');
@@ -827,7 +882,9 @@
                         vat2dmLoadItems(objectSeq, info, $modal);
                     },
                     error: function () {
-                        $modal.find('#vat2dm_itemTbody').html('<tr><td colspan="7" class="text-center text-danger">Error</td></tr>');
+                        var errHtml = '<tr><td colspan="7" class="text-center text-danger">Error</td></tr>';
+                        $modal.find('#vat2dm_strategicTbody').html(errHtml);
+                        $modal.find('#vat2dm_operationTbody').html(errHtml);
                     }
                 });
             };
@@ -878,15 +935,22 @@
                         vat2dmRenderItems(items, $modal);
                     },
                     error: function () {
-                        $modal.find('#vat2dm_itemTbody').html('<tr><td colspan="7" class="text-center text-danger">Error</td></tr>');
+                        var errHtml = '<tr><td colspan="7" class="text-center text-danger">Error</td></tr>';
+                        $modal.find('#vat2dm_strategicTbody').html(errHtml);
+                        $modal.find('#vat2dm_operationTbody').html(errHtml);
                     }
                 });
             }
 
-            function vat2dmRenderItems(items, $modal) {
-                var canInput = $modal.find('#vat2dm_canInput').val() === '1';
-                if (!items || !items.length) {
-                    $modal.find('#vat2dm_itemTbody').html('<tr><td colspan="7" class="text-center text-muted">-</td></tr>');
+            function vat2dmIsStrategic(itemType) {
+                return String(itemType) === '1';
+            }
+
+            /* ── Render 1 phần (strategic/operation) ─────────────────────────── */
+            function vat2dmRenderSection(section, items, canInput, $modal) {
+                var $tbody = $modal.find('#vat2dm_' + section + 'Tbody');
+                if (!items.length) {
+                    $tbody.html('<tr><td colspan="7" class="text-center text-muted">-</td></tr>');
                     return;
                 }
                 var html = '';
@@ -913,20 +977,35 @@
                         + '</td>';
                     html += '</tr>';
                 });
-                $modal.find('#vat2dm_itemTbody').html(html);
+                $tbody.html(html);
+            }
+
+            /* ── Render 2 bảng: Mục tiêu chiến lược / Mục tiêu vận hành ───────── */
+            function vat2dmRenderItems(items, $modal) {
+                var canInput = $modal.find('#vat2dm_canInput').val() === '1';
+                items = items || [];
+                var strategicItems = items.filter(function (r) { return vat2dmIsStrategic(r.itemType); });
+                var operationItems = items.filter(function (r) { return !vat2dmIsStrategic(r.itemType); });
+                vat2dmRenderSection('strategic', strategicItems, canInput, $modal);
+                vat2dmRenderSection('operation', operationItems, canInput, $modal);
                 vat2dmUpdateTotals($modal);
             }
 
-            function vat2dmUpdateTotals($modal) {
-                var selfTotal   = 0;
+            /* ── Tính tổng của 1 phần: item score / tự đánh giá / lần 1 / lần 2 ─── */
+            function vat2dmSectionTotals(section, $modal) {
+                var itemScoreTotal = 0;
+                var selfTotal = 0;
                 var affirm1Total = 0;
                 var affirm2Total = 0;
                 var hasAffirm2Input = false;
-                $modal.find('#vat2dm_itemTbody tr').each(function () {
-                    var itemScore  = parseFloat($(this).find('td').eq(3).data('itemscore')) || 0;
-                    var selfScore  = parseFloat($(this).find('td').eq(4).text()) || 0;
-                    var score1     = parseFloat($(this).find('td').eq(5).text()) || 0;
-                    selfTotal   += selfScore * itemScore / 100;
+                $modal.find('#vat2dm_' + section + 'Tbody tr').each(function () {
+                    var $tds = $(this).find('td');
+                    if ($tds.length < 6) return; // dòng "-" khi không có mục tiêu
+                    var itemScore  = parseFloat($tds.eq(3).data('itemscore')) || 0;
+                    var selfScore  = parseFloat($tds.eq(4).text()) || 0;
+                    var score1     = parseFloat($tds.eq(5).text()) || 0;
+                    itemScoreTotal += itemScore;
+                    selfTotal    += selfScore * itemScore / 100;
                     affirm1Total += score1 * itemScore / 100;
                     var score2 = parseFloat($(this).find('.vat2dm-score2-input').val());
                     if (!isNaN(score2)) {
@@ -934,9 +1013,36 @@
                         affirm2Total += score2 * itemScore / 100;
                     }
                 });
-                selfTotal    = Math.round(selfTotal    * 100) / 100;
-                affirm1Total = Math.round(affirm1Total * 100) / 100;
-                affirm2Total = Math.round(affirm2Total * 100) / 100;
+                return {
+                    itemScoreTotal: Math.round(itemScoreTotal * 100) / 100,
+                    selfTotal: Math.round(selfTotal * 100) / 100,
+                    affirm1Total: Math.round(affirm1Total * 100) / 100,
+                    affirm2Total: Math.round(affirm2Total * 100) / 100,
+                    hasAffirm2Input: hasAffirm2Input
+                };
+            }
+
+            function vat2dmUpdateTotals($modal) {
+                var strategic = vat2dmSectionTotals('strategic', $modal);
+                var operation = vat2dmSectionTotals('operation', $modal);
+
+                $modal.find('#vat2dm_strategicItemScoreTotal').text(strategic.itemScoreTotal);
+                $modal.find('#vat2dm_strategicSelfTotal').text(strategic.selfTotal > 0 ? strategic.selfTotal : '-');
+                $modal.find('#vat2dm_strategicAffirm1Total').text(strategic.affirm1Total > 0 ? strategic.affirm1Total : '-');
+                $modal.find('#vat2dm_strategicAffirm2Total').text(strategic.hasAffirm2Input ? strategic.affirm2Total : '-');
+
+                $modal.find('#vat2dm_operationItemScoreTotal').text(operation.itemScoreTotal);
+                $modal.find('#vat2dm_operationSelfTotal').text(operation.selfTotal > 0 ? operation.selfTotal : '-');
+                $modal.find('#vat2dm_operationAffirm1Total').text(operation.affirm1Total > 0 ? operation.affirm1Total : '-');
+                $modal.find('#vat2dm_operationAffirm2Total').text(operation.hasAffirm2Input ? operation.affirm2Total : '-');
+
+                var itemScoreTotal  = Math.round((strategic.itemScoreTotal + operation.itemScoreTotal) * 100) / 100;
+                var selfTotal       = Math.round((strategic.selfTotal      + operation.selfTotal)      * 100) / 100;
+                var affirm1Total    = Math.round((strategic.affirm1Total   + operation.affirm1Total)   * 100) / 100;
+                var affirm2Total    = Math.round((strategic.affirm2Total   + operation.affirm2Total)   * 100) / 100;
+                var hasAffirm2Input = strategic.hasAffirm2Input || operation.hasAffirm2Input;
+
+                $modal.find('#vat2dm_itemScoreTotal').text(itemScoreTotal);
                 $modal.find('#vat2dm_selfTotal').text(selfTotal > 0 ? selfTotal : '-');
                 $modal.find('#vat2dm_affirm1Total').text(affirm1Total > 0 ? affirm1Total : '-');
                 $modal.find('#vat2dm_affirm2Total').text(hasAffirm2Input ? affirm2Total : '-');

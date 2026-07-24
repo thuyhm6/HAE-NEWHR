@@ -647,10 +647,10 @@
                         render: function (data, type, row) {
                             if (row.isNew) {
                                 return '<select class="form-select form-select-sm pioab-in-car-address" data-parent-code="90000578">'
-                                    + (data ? '<option value="' + pioabEscHtml(data) + '" selected>' + pioabEscHtml(data) + '</option>' : '')
+                                    + (data ? '<option value="' + pioabEscHtml(data) + '" selected>' + pioabEscHtml(row.carAddressName || data) + '</option>' : '')
                                     + '</select>';
                             }
-                            return pioabEscHtml(data || '');
+                            return pioabEscHtml(row.carAddressName || data || '');
                         }
                     },
                     {
@@ -658,10 +658,10 @@
                         render: function (data, type, row) {
                             if (row.isNew) {
                                 return '<select class="form-select form-select-sm pioab-in-car-detail">'
-                                    + (data ? '<option value="' + pioabEscHtml(data) + '" selected>' + pioabEscHtml(data) + '</option>' : '')
+                                    + (data ? '<option value="' + pioabEscHtml(data) + '" selected>' + pioabEscHtml(row.carAddressDetailName || data) + '</option>' : '')
                                     + '</select>';
                             }
-                            return pioabEscHtml(data || '');
+                            return pioabEscHtml(row.carAddressDetailName || data || '');
                         }
                     },
                     {

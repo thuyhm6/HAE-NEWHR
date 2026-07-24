@@ -255,7 +255,7 @@
             //defaultText = defaultText || '-- Chọn --';
 
             var request = $.ajax({
-                url: '/sys/api/code/list?parentCodeNo=' + parentCodeNo,
+                url: '/sys/api/getCode/list?parentCodeNo=' + parentCodeNo,
                 type: 'GET',
                 success: function (data) {
                     select.empty();

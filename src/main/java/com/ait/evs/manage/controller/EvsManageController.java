@@ -49,7 +49,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -503,6 +505,46 @@ public class EvsManageController {
         }
     }
 
+    @PostMapping("/api/affirmorSetup/importExcel")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> importAffirmorSetupExcel(
+            @RequestParam("resumeSeq") String resumeSeq,
+            @RequestParam("file") MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            if (file == null || file.isEmpty()) {
+                result.put("success", false);
+                result.put("message", "Vui lòng chọn file Excel để import.");
+                return ResponseEntity.badRequest().body(result);
+            }
+            String filename = file.getOriginalFilename();
+            if (filename == null || (!filename.toLowerCase().endsWith(".xlsx") && !filename.toLowerCase().endsWith(".xls"))) {
+                result.put("success", false);
+                result.put("message", "Chỉ hỗ trợ file Excel .xlsx hoặc .xls.");
+                return ResponseEntity.badRequest().body(result);
+            }
+            if (resumeSeq == null || resumeSeq.isBlank()) {
+                result.put("success", false);
+                result.put("message", "Vui lòng chọn tên đánh giá trước khi import.");
+                return ResponseEntity.badRequest().body(result);
+            }
+
+            List<String> errors = evsAffirmorSetupService.importExcel(resumeSeq, file);
+            if (errors.isEmpty()) {
+                result.put("success", true);
+                result.put("message", "Import thành công!");
+            } else {
+                result.put("success", false);
+                result.put("errors", errors);
+                result.put("message", "Import hoàn tất nhưng có " + errors.size() + " lỗi.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "Lỗi hệ thống khi xử lý file import: " + e.getMessage());
+        }
+        return ResponseEntity.ok(result);
+    }
+
     // ── Kết quả đánh giá (EVS_OBJECT - viewEvsResult) ────────────────────────
 
     @GetMapping("/viewEvsResult")
@@ -770,9 +812,9 @@ public class EvsManageController {
 
     // ── Đánh giá bản thân HAE (EVS_OBJECT + EVS_ITEM_SST.EVS_SCORE) ─────────────
 
-    @GetMapping("/viewEvsBySelfHAE")
-    public String viewEvsBySelfHAE() {
-        return "evs/manage/viewEvsBySelfHAE";
+    @GetMapping("/viewEvsBySelfHTSV")
+    public String viewEvsBySelfHTSV() {
+        return "evs/manage/viewEvsBySelfHTSV";
     }
 
     @GetMapping("/api/evsBySelfHAE/objectList")

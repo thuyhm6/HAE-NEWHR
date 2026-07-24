@@ -47,7 +47,7 @@
               AND UPPER(e.EMPID) LIKE '%' || UPPER(#{empId}) || '%'
           </if>
           <if test="empName != null and empName != ''">
-              AND UPPER(e.LOCAL_NAME) LIKE '%' || UPPER(#{empName}) || '%'
+              AND CONVERTTOUNSIGN(UPPER(e.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{empName})) || '%'
           </if>
         ORDER BY s.START_DATE DESC, e.EMPID
     </select>

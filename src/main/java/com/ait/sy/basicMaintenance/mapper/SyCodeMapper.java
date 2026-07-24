@@ -88,6 +88,8 @@ public interface SyCodeMapper {
      */
     List<SyCodeDto> findCodeWithParentNo(@Param("parentCodeNo") String parentCodeNo);
 
+    List<SyCodeDto> findUseCodeWithParentNo(@Param("parentCodeNo") String parentCodeNo);
+
     List<SyCodeDto> searchCodeWithNames(@Param("keyword") String keyword);
 
     /**

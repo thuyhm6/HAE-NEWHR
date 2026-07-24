@@ -91,8 +91,8 @@
           AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         <if test="keyword != null and keyword != ''">
             AND (
-                UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                OR UPPER(HE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                CONVERTTOUNSIGN(UPPER(HE.EMPID) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+                OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
             )
         </if>
         <if test="deptNos != null and deptNos != ''">
@@ -172,8 +172,8 @@
           AND HE.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         <if test="keyword != null and keyword != ''">
             AND (
-                UPPER(HE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                OR UPPER(HE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                CONVERTTOUNSIGN(UPPER(HE.EMPID) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+                OR CONVERTTOUNSIGN(UPPER(HE.LOCAL_NAME) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
             )
         </if>
         <if test="deptNos != null and deptNos != ''">

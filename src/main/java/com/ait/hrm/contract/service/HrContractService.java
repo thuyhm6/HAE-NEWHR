@@ -37,6 +37,11 @@ public interface HrContractService {
     HrContract getContractByContractNo(String contractNo);
 
     /**
+     * Get contracts by personId
+     */
+    List<HrContract> getContractsByPersonId(String personId);
+
+    /**
      * Get contracts with search and pagination
      */
     List<HrContract> getContractsWithSearchAndPagination(String keyword, int page, int size);

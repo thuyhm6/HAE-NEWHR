@@ -34,7 +34,7 @@ public interface SendEmailMapper {
 
     void viewModifyApprovalInfo(Map<String, Object> paramMap);
 
-    String updateAttendace(Map<String, Object> paramMap);
+    int updateAttendace(Map<String, Object> paramMap);
 
     List<Map<String, Object>> getNeedCancelApprovaledInfo(@Param("applyNos") List<String> applyNos);
 }

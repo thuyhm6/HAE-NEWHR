@@ -12,13 +12,32 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
+            position: relative;
             min-height: 100vh;
             display: flex;
             align-items: stretch;
-            background:
-                radial-gradient(ellipse at 20% 30%, rgba(255,200,120,0.55) 0%, transparent 55%),
-                radial-gradient(ellipse at 80% 75%, rgba(140,40,0,0.45) 0%, transparent 55%),
-                radial-gradient(ellipse at 55% 50%, #f4731f 0%, #d05800 100%);
+            background: #d05800;
+        }
+
+        /* Ảnh nền làm mờ để làm nổi bật khung đăng nhập */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url('/assets/images/backgroud.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+            transform: scale(1.1); /* tránh lộ viền trắng khi blur */
+            z-index: -2;
+        }
+
+        /* Lớp phủ màu cam để đồng bộ tông màu thương hiệu */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
         }
 
         .login-wrapper {
@@ -47,7 +66,7 @@
             position: absolute;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+            /* background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%); */
             top: -100px;
             left: -150px;
             border-radius: 50%;
@@ -58,7 +77,7 @@
             position: absolute;
             width: 400px;
             height: 400px;
-            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            /* background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%); */
             bottom: -80px;
             right: -80px;
             border-radius: 50%;
@@ -89,7 +108,7 @@
         }
 
         .login-image-wrap img {
-            max-width: 70%;
+            /* max-width: 70%; */
             max-height: 65vh;
             object-fit: contain;
             filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
@@ -270,7 +289,7 @@
         <!-- LEFT: ảnh minh họa (8/12) -->
         <div class="login-left">
             <div class="login-brand">
-                <img src="/assets/images/HVV_logo_login.jpg" alt="VHR System" th:alt="#{login.title}">
+                <img src="/assets/images/Sign_logo.jpg" alt="VHR System" th:alt="#{login.title}">
             </div>
             <div class="login-image-wrap">
                 <img src="/assets/images/login-img-1.jpg" alt="VHR System" th:alt="#{login.title}">

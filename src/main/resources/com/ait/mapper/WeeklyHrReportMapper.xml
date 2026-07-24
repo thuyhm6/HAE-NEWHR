@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ait.ess.viewDept.mapper.WeeklyHrReportMapper">
+
+    <resultMap id="WeeklyDeptCountResultMap" type="com.ait.ess.viewDept.dto.WeeklyDeptCountDto">
+        <result column="DEPTNO"    property="deptNo"   jdbcType="VARCHAR"/>
+        <result column="DEPTNAME"  property="deptName" jdbcType="VARCHAR"/>
+        <result column="EMP_COUNT" property="empCount" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="JoinResignResultMap" type="com.ait.ess.viewDept.dto.WeeklyJoinResignDto">
+        <result column="TYPE_CODE"       property="typeCode"      jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NO"   property="postGradeNo"   jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="CNT"             property="cnt"           jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- ===== Điều kiện phân quyền phòng ban dùng chung: chỉ lấy nhân viên thuộc cây phòng ban mà adminID quản lý ===== -->
+    <sql id="deptAuthCondition">
+        EXISTS (
+            SELECT B1.DEPTID
+            FROM HR_DEPARTMENT B1
+            WHERE B1.DEPTNO = H.DEPTNO
+            START WITH B1.DEPTNO IN (
+                SELECT HRD.DEPTID
+                FROM HR_DEPARTMENT HRD
+                WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
+            )
+            CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+            UNION
+            SELECT ASI.DEPTNO
+            FROM AR_SUPERVISOR_INFO ASI
+            WHERE ASI.DEPTNO = H.DEPTNO
+              AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        )
+    </sql>
+
+    <!-- ===== Số nhân viên đang làm việc tính đến weekEndDate, theo từng phòng ban cấp 2 (DEPT_LEVEL = 2),
+         gồm cả nhân viên thuộc phòng ban con/cháu (đệ quy theo PARENT_DEPT_NO) ===== -->
+    <select id="selectDeptCounts" resultMap="WeeklyDeptCountResultMap">
+        SELECT
+            D2.DEPTNO                                            AS DEPTNO,
+            GET_DEPT_NAME(D2.DEPTNO, #{lang, jdbcType=VARCHAR})   AS DEPTNAME,
+            (
+                SELECT COUNT(*)
+                FROM HR_EMPLOYEE H
+                WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND H.EMPID NOT LIKE '111111%'
+                  AND H.DEPTNO IN (
+                      SELECT SUB.DEPTNO
+                      FROM HR_DEPARTMENT SUB
+                      WHERE SUB.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                      START WITH SUB.DEPTNO = D2.DEPTNO
+                      CONNECT BY NOCYCLE PRIOR SUB.DEPTNO = SUB.PARENT_DEPT_NO
+                  )
+                  AND TRUNC(H.DATE_STARTED) &lt;= TO_DATE(#{weekEndDate, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+                  AND (H.DATE_LEFT IS NULL
+                       OR TRUNC(H.DATE_LEFT) &gt;= TO_DATE(#{weekEndDate, jdbcType=VARCHAR}, 'YYYY/MM/DD'))
+                  AND <include refid="deptAuthCondition"/>
+            ) AS EMP_COUNT
+        FROM HR_DEPARTMENT D2
+        WHERE D2.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND D2.DEPT_LEVEL = 2
+        ORDER BY D2.DEPTNO
+    </select>
+
+    <!-- ===== Số nhân viên vào làm / nghỉ việc trong tuần [weekStart, weekEnd], nhóm theo Chức vụ (POST_GRADE_NO) ===== -->
+    <select id="selectJoinResignByPostGrade" resultMap="JoinResignResultMap">
+        SELECT
+            Q.TYPE_CODE                                                AS TYPE_CODE,
+            Q.POST_GRADE_NO                                            AS POST_GRADE_NO,
+            GET_GLOBAL_NAME(Q.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            COUNT(*)                                                   AS CNT
+        FROM (
+            SELECT 'JOIN' AS TYPE_CODE, H.POST_GRADE_NO AS POST_GRADE_NO
+            FROM HR_EMPLOYEE H
+            WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+              AND H.EMPID NOT LIKE '111111%'
+              AND TRUNC(H.DATE_STARTED) BETWEEN TO_DATE(#{weekStart, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+                                             AND TO_DATE(#{weekEnd, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+              AND <include refid="deptAuthCondition"/>
+            UNION ALL
+            SELECT 'RESIGN' AS TYPE_CODE, H.POST_GRADE_NO AS POST_GRADE_NO
+            FROM HR_EMPLOYEE H
+            WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+              AND H.EMPID NOT LIKE '111111%'
+              AND H.DATE_LEFT IS NOT NULL
+              AND TRUNC(H.DATE_LEFT) BETWEEN TO_DATE(#{weekStart, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+                                          AND TO_DATE(#{weekEnd, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+              AND <include refid="deptAuthCondition"/>
+        ) Q
+        LEFT JOIN SY_CODE SC ON SC.CODE_NO = Q.POST_GRADE_NO
+        GROUP BY Q.TYPE_CODE, Q.POST_GRADE_NO, SC.ORDERNO
+        ORDER BY NVL(SC.ORDERNO, 9999), Q.POST_GRADE_NO, Q.TYPE_CODE
+    </select>
+
+</mapper>

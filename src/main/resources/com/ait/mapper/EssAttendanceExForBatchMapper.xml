@@ -154,7 +154,7 @@
         <if test="keyword != null and keyword != ''">
             AND (
                 UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                OR UPPER(HR.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
             )
         </if>
         <if test="deptNos != null and deptNos != ''">
@@ -232,7 +232,7 @@
         <if test="keyword != null and keyword != ''">
             AND (
                 UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                OR UPPER(HR.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
             )
         </if>
         <if test="deptNos != null and deptNos != ''">
@@ -406,6 +406,7 @@
             CREATED_IP,
             SEQ,
             CONFIRM_FLAG,
+            MISDOCID,
             CPNY_ID
         ) VALUES (
             #{applyNo, jdbcType=VARCHAR},
@@ -428,6 +429,7 @@
             #{adminIP, jdbcType=VARCHAR},
             ESS_APPLY_SEQ.NEXTVAL,
             0,
+            TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
             #{cpnyId, jdbcType=VARCHAR}
         )
     </insert>

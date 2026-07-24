@@ -117,7 +117,7 @@
                 <if test="keyword != null and keyword != ''">
                   AND (
                       UPPER(HRE.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                      OR UPPER(HRE.LOCAL_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                      OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
                   )
                 </if>
                 <if test="deptNos != null and deptNos != ''">

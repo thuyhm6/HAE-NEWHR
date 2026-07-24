@@ -15,6 +15,7 @@ public class EvsItemSstDto {
     private String itemName;
     private String itemContent;
     private String itemContentText;
+    private String itemType;
     private String itemScore;
     private String evsScore;
     private String evsScore1;

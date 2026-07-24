@@ -2493,5 +2493,11 @@ Tương tự những điều kiện này hãy áp dụng cho 2 giao diện viewA
 
 Tương tự những điều kiện này hãy áp dụng cho 2 giao diện viewApplyOtManagentByAnyApproverList và viewApplyOtLBatchByAnyApproverList, đây là 2 giao diện dành cho người quản lý, xin tăng ca cho nhân viên của mình
 
-Tương tự những điều kiện này hãy áp dụng cho 2 giao diện viewApplyOTBatchInfoHAEList và viewApplyOTBatchInfoHAE, mặc dù là tăn ca vượt nhưng điều kiện cũng tương tư như tăng ca bình thường
+Tương tự những điều kiện này hãy áp dụng cho 2 giao diện viewApplyOTBatchInfoHAEList và viewApplyOTBatchInfoHAE, mặc dù là tăn ca vượt nhưng điều kiện cũng tương tư như tăng ca bình thường.
 
+Ở đây tôi đã có chức năng thêm mới đối tượng đánh giá, nhưng tôi muốn thêm chức năng thêm mới đối tượng đánh giá theo file excel tải lên, cụ thể là khi bấm vào nút Import Excel thì sẽ hiện ra modal để người dùng upload file excel lên, sau khi upload xong thì đọc dữ liệu từ file excel đó và lưu vào bảng evs_object_temp với các trường tham khảo hình ảnh (Tham khảo phương pháp upload file excel của vpidOpenImportModal trong viewPaInputItemData.html). Khi upload từ file excel thì cột A là EMPID, cột B là AFFIRM_ID_1, cột C là AFFIRM_NAME_1, cột D là AFFIRM_ID_2, cột E là AFFIRM_NAME_2 (file excel như hình ảnh). Khi upload xong thì thực hiện việc thêm mới giống với chức năng thêm mới hiện tại, chỉ là chức năng hiện tại thì nhập từng đối tượng từ giao diện, còn chức năng này là upload đối tượng từ file excel.
+
+Thay đổi lại giao diện của viewRegPersonalTarget.html. Objective Confirm chia thành 2 phần "Mục tiêu chiến lược" và "Mục tiêu vận hành", trong đó Mục tiêu chiến lược sẽ lấy ra những mục tiêu có ITEM_TYPE = 1, còn Mục tiêu vận hành sẽ lấy ra những mục tiêu có ITEM_TYPE IS NULL. Phần "Mục tiêu chiến lược" có thể có hoặc không, nhưng tổng số điểm không được vượt quá 40 điểm. và tổng của cả 2 phần không được vượt quá 100 điểm. khi lưu dữ liệu thì vẫn giữ lại logic cũ chỉ là những hạng mục liên quan đến "Mục tiêu chiến lược" thì lưu với ITEM_TYPE = 1 còn những hạng mục liên quan đến "Mục tiêu vận hành" thì lưu với ITEM_TYPE IS NULL, nhưng khi hiển thị ra giao diện thì sẽ hiển thị ra 2 phần riêng biệt.
+
+
+ở đây Loại tổ chức - deptType đang là code, hãy lấy theo name thông qua get_global_name(code, #{lang}).  ngoài ra chỗ Trưởng phòng thì managerEmpId đang hiển thị là personId, hãy chuyển sang empid thông qua get_empid(managerEmpId)

@@ -756,10 +756,10 @@
                         render: function (data, type, row) {
                             if (row.isNew) {
                                 return '<select class="form-select form-select-sm otf-in-car-address" data-parent-code="90000578">'
-                                    + (data ? '<option value="' + otfEscHtml(data) + '" selected>' + otfEscHtml(data) + '</option>' : '')
+                                    + (data ? '<option value="' + otfEscHtml(data) + '" selected>' + otfEscHtml(row.carAddressName || data) + '</option>' : '')
                                     + '</select>';
                             }
-                            return otfEscHtml(data || '');
+                            return otfEscHtml(row.carAddressName || data || '');
                         }
                     },
                     {
@@ -767,10 +767,10 @@
                         render: function (data, type, row) {
                             if (row.isNew) {
                                 return '<select class="form-select form-select-sm otf-in-car-detail">'
-                                    + (data ? '<option value="' + otfEscHtml(data) + '" selected>' + otfEscHtml(data) + '</option>' : '')
+                                    + (data ? '<option value="' + otfEscHtml(data) + '" selected>' + otfEscHtml(row.carAddressDetailName || data) + '</option>' : '')
                                     + '</select>';
                             }
-                            return otfEscHtml(data || '');
+                            return otfEscHtml(row.carAddressDetailName || data || '');
                         }
                     },
                     {

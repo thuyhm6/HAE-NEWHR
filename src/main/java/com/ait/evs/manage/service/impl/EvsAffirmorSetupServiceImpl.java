@@ -3,13 +3,23 @@ package com.ait.evs.manage.service.impl;
 import com.ait.evs.manage.dto.EvsAffirmorSetupDto;
 import com.ait.evs.manage.mapper.EvsAffirmorSetupMapper;
 import com.ait.evs.manage.service.EvsAffirmorSetupService;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
@@ -163,5 +173,103 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
             log.error("Lỗi khi xóa đối tượng đánh giá: seqList={}, {}", seqList, e.getMessage(), e);
             throw e;
         }
+    }
+
+    @Override
+    @Transactional
+    public List<String> importExcel(String resumeSeq, MultipartFile file) throws IOException {
+        List<String> errors = new ArrayList<>();
+        DataFormatter formatter = new DataFormatter();
+
+        try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = wb.getSheet("Template");
+            if (sheet == null) {
+                sheet = wb.getSheetAt(0);
+            }
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                String empId = getCellText(row.getCell(0), formatter);
+                String localName = getCellText(row.getCell(1), formatter);
+                String affirmId1 = getCellText(row.getCell(2), formatter);
+                String affirmName1 = getCellText(row.getCell(3), formatter);
+                String affirmId2 = getCellText(row.getCell(4), formatter);
+                String affirmName2 = getCellText(row.getCell(5), formatter);
+
+                if (empId.isBlank() && affirmId1.isBlank() && affirmId2.isBlank()) continue;
+
+                if (empId.isBlank()) {
+                    errors.add("Dòng " + (i + 1) + ": Thiếu Mã nhân viên");
+                    continue;
+                }
+
+                EvsAffirmorSetupDto empDto = mapper.selectEmployeeByEmpId(empId);
+                if (empDto == null) {
+                    errors.add("Dòng " + (i + 1) + ": Không tìm thấy nhân viên với Mã NV=" + empId);
+                    continue;
+                }
+
+                String personId1 = null;
+                if (!affirmId1.isBlank()) {
+                    EvsAffirmorSetupDto a1 = mapper.selectEmployeeByEmpId(affirmId1);
+                    if (a1 == null) {
+                        errors.add("Dòng " + (i + 1) + ": Không tìm thấy người đánh giá lần 1 với Mã NV=" + affirmId1);
+                        continue;
+                    }
+                    personId1 = a1.getPersonId();
+                }
+
+                String personId2 = null;
+                if (!affirmId2.isBlank()) {
+                    EvsAffirmorSetupDto a2 = mapper.selectEmployeeByEmpId(affirmId2);
+                    if (a2 == null) {
+                        errors.add("Dòng " + (i + 1) + ": Không tìm thấy người đánh giá lần 2 với Mã NV=" + affirmId2);
+                        continue;
+                    }
+                    personId2 = a2.getPersonId();
+                }
+
+                EvsAffirmorSetupDto addDto = new EvsAffirmorSetupDto();
+                addDto.setResumeSeq(resumeSeq);
+                addDto.setPersonId(empDto.getPersonId());
+                addDto.setPersonId1(personId1);
+                addDto.setPersonId2(personId2);
+
+                String objSeq = null;
+                try {
+                    addObject(addDto);
+                    objSeq = addDto.getSeq();
+                } catch (Exception ex) {
+                    log.error("Lỗi khi thêm đối tượng đánh giá từ Excel dòng {}, empId={}: {}", i + 1, empId, ex.getMessage(), ex);
+                    errors.add("Dòng " + (i + 1) + " (Mã NV " + empId + "): " + ex.getMessage());
+                }
+
+                Map<String, Object> tempRow = new HashMap<>();
+                tempRow.put("resumeSeq", resumeSeq);
+                tempRow.put("empid", empId);
+                tempRow.put("localName", localName.isBlank() ? empDto.getLocalName() : localName);
+                tempRow.put("affirmId1", affirmId1.isBlank() ? null : affirmId1);
+                tempRow.put("affirmName1", affirmName1.isBlank() ? null : affirmName1);
+                tempRow.put("affirmId2", affirmId2.isBlank() ? null : affirmId2);
+                tempRow.put("affirmName2", affirmName2.isBlank() ? null : affirmName2);
+                tempRow.put("evsObjectSeq", objSeq);
+
+                try {
+                    mapper.insertObjectTemp(tempRow);
+                } catch (Exception ex) {
+                    log.error("Lỗi khi lưu EVS_OBJECT_TEMP dòng {}, empId={}: {}", i + 1, empId, ex.getMessage(), ex);
+                }
+            }
+        }
+        log.info("Import Excel đối tượng đánh giá hoàn tất, resumeSeq={}, errors={}", resumeSeq, errors.size());
+        return errors;
+    }
+
+    private String getCellText(org.apache.poi.ss.usermodel.Cell cell, DataFormatter formatter) {
+        if (cell == null) return "";
+        String value = formatter.formatCellValue(cell);
+        return value == null ? "" : value.trim();
     }
 }

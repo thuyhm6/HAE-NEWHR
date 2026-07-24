@@ -58,6 +58,8 @@ public class ArOvertimeManagentDto extends EmployeeNameDto {
     private List<Map<String, Object>> approvers;
     private String usecarYn;
     private String carAddress;
+    private String carAddressName;
     private String carAddressDetail;
+    private String carAddressDetailName;
     private String shiftEndTime;
 }

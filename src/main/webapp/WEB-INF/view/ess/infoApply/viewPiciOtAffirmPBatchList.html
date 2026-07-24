@@ -78,7 +78,7 @@
                                     <th class="text-center" style="min-width:100px;" th:text="#{common.startTime}">Thời gian bắt đầu</th>
                                     <th class="text-center" style="min-width:100px;" th:text="#{common.endTime}">Thời gian kết thúc</th>
                                     <th class="text-center" style="min-width:100px;" th:text="#{common.duration}">Thời lượng</th>
-                                    <th class="text-center" style="min-width:130px;" th:text="#{poi.col.mealRest}">Bảo cơm / Nghỉ ngơi (30')</th>
+                                    <th class="text-center" style="min-width:130px;" th:text="#{poi.col.mealRest}">Báo cơm</th>
                                     <th class="text-center" style="min-width:180px;" th:text="#{common.reason}">Lý do</th>
                                     <th class="text-center" style="min-width:80px;"  th:text="#{essOt.usecarYn}">Đặt xe</th>
                                     <th class="text-center" style="min-width:130px;" th:text="#{essOt.carAddress}">Tuyến xe</th>
@@ -329,8 +329,8 @@
                         + '<td class="text-center">' + pipbEscHtml(deduct) + '</td>'
                         + '<td>' + pipbEscHtml(r.applyOtRemark || '') + '</td>'
                         + '<td class="text-center">' + (r.usecarYn === '1' ? _pipb_valYes : _pipb_valNo) + '</td>'
-                        + '<td>' + pipbEscHtml(r.carAddress       || '') + '</td>'
-                        + '<td>' + pipbEscHtml(r.carAddressDetail || '') + '</td>'
+                        + '<td>' + pipbEscHtml(r.carAddressName       || '') + '</td>'
+                        + '<td>' + pipbEscHtml(r.carAddressDetailName || '') + '</td>'
                         + '<td class="text-center">' + pipbEscHtml(r.affirmFlagName  || r.affirmFlag  || '') + '</td>'
                         + '<td class="text-center">' + pipbEscHtml(r.confirmFlagName || '') + '</td>'
                         + '</tr>';

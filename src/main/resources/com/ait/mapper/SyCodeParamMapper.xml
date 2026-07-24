@@ -150,7 +150,7 @@
         LEFT JOIN SY_GLOBAL_NAME gen ON c.CODE_NO = gen.NO AND gen.LANGUAGE = 'en'
         LEFT JOIN SY_GLOBAL_NAME gzh ON c.CODE_NO = gzh.NO AND gzh.LANGUAGE = 'zh'
         LEFT JOIN SY_GLOBAL_NAME gko ON c.CODE_NO = gko.NO AND gko.LANGUAGE = 'ko'
-        JOIN SY_CODE_PARAM p ON c.CODE_NO = p.CODE_NO AND p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        LEFT JOIN SY_CODE_PARAM p ON c.CODE_NO = p.CODE_NO AND p.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
         WHERE c.ACTIVITY = 1
         <if test="parentCode != null and parentCode != '' and parentCode != 'ROOT'">
             AND c.PARENT_CODE_NO = #{parentCode}

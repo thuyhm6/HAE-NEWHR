@@ -196,6 +196,7 @@
                ITEM_NAME,
                ITEM_CONTENT,
                ITEM_CONTENT ITEM_CONTENT_TEXT,
+               ITEM_TYPE,
                NVL(ITEM_SCORE,   0) ITEM_SCORE,
                NVL(EVS_SCORE,    0) EVS_SCORE,
                NVL(EVS_SCORE1,   0) EVS_SCORE1,

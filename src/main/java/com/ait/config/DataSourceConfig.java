@@ -52,6 +52,9 @@ public class DataSourceConfig {
     @Value("${spring.datasource.hikari.pool-name:HrAppPool}")
     private String poolName;
 
+    @Value("${spring.datasource.hikari.connection-init-sql:}")
+    private String connectionInitSql;
+
     @Bean
     @Primary
     public DataSource dataSource() {
@@ -71,6 +74,9 @@ public class DataSourceConfig {
         config.setMaxLifetime(maxLifetime);
         config.setLeakDetectionThreshold(leakDetectionThreshold);
         config.setPoolName(poolName);
+        if (connectionInitSql != null && !connectionInitSql.isBlank()) {
+            config.setConnectionInitSql(connectionInitSql);
+        }
 
         // Oracle-specific optimizations
         config.addDataSourceProperty("oracle.net.CONNECT_TIMEOUT", "10000");

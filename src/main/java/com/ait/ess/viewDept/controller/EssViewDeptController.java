@@ -15,6 +15,11 @@ import com.ait.ess.viewDept.dto.OtApplyPersonalSelfDto;
 import com.ait.ess.viewDept.dto.YearUseLeaveUsageDto;
 import com.ait.ess.viewDept.dto.YearUseVacationDto;
 import com.ait.ess.empinfo.dto.EssPersonalInfoDto;
+import com.ait.ess.empinfo.dto.HrAddressMattersApplyDto;
+import com.ait.ess.empinfo.dto.HrEducationApplyDto;
+import com.ait.ess.empinfo.dto.HrEmergencyAddressApplyDto;
+import com.ait.ess.empinfo.dto.HrFamilyApplyDto;
+import com.ait.ess.empinfo.dto.HrPersonalInfoApplyDto;
 import com.ait.ess.empinfo.service.EssPersonalInfoService;
 import com.ait.ess.viewDept.service.ArPersonalListService;
 import com.ait.ess.viewDept.service.ArPersonalSelfService;
@@ -23,22 +28,44 @@ import com.ait.ess.viewDept.service.ManageCountInfoService;
 import com.ait.ess.viewDept.service.ManageEvsResultEmpService;
 import com.ait.ess.viewDept.service.ManageEmpPositionInfoService;
 import com.ait.ess.viewDept.service.OtApplyPersonalSelfService;
+import com.ait.ess.viewDept.service.WeeklyHrReportService;
 import com.ait.ess.viewDept.service.YearUseInfoService;
+import com.ait.evs.manage.dto.EvsObjectDto;
+import com.ait.evs.manage.service.EvsObjectService;
+import com.ait.hrm.contract.model.HrContract;
+import com.ait.hrm.contract.service.HrContractService;
+import com.ait.hrm.empinfo.mapper.HrSpecialMatterMapper;
 import com.ait.hrm.empinfo.model.HrAddressMatters;
 import com.ait.hrm.empinfo.model.HrEducation;
 import com.ait.hrm.empinfo.model.HrEmergencyAddress;
 import com.ait.hrm.empinfo.model.HrFamily;
+import com.ait.hrm.empinfo.model.HrPunishment;
+import com.ait.hrm.empinfo.model.HrQualification;
+import com.ait.hrm.empinfo.model.HrReward;
+import com.ait.hrm.empinfo.model.HrSpecialMatter;
+import com.ait.hrm.empinfo.model.HrWorkExperience;
 import com.ait.hrm.empinfo.service.HrEducationService;
+import com.ait.hrm.empinfo.service.HrPunishmentService;
+import com.ait.hrm.empinfo.service.HrQualificationService;
+import com.ait.hrm.empinfo.service.HrRewardService;
+import com.ait.hrm.empinfo.service.HrSpecialMatterService;
+import com.ait.hrm.empinfo.service.HrWorkExperienceService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +74,22 @@ import java.util.Map;
 @RequestMapping("/ess/viewDept")
 public class EssViewDeptController {
 
+    private static final Logger log = LoggerFactory.getLogger(EssViewDeptController.class);
+
     @Autowired
     private ManageEmpPositionInfoService service;
+
+    @Autowired
+    private EssPersonalInfoService essPersonalInfoService;
+
+    @Autowired
+    private HrEducationService hrEducationService;
+
+    @Autowired
+    private HrSpecialMatterService hrSpecialMatterService;
+
+    @Autowired
+    private HrSpecialMatterMapper hrSpecialMatterMapper;
 
     @Autowired
     private ManageEvsResultEmpService manageEvsResultEmpService;
@@ -72,10 +113,25 @@ public class EssViewDeptController {
     private ManageCountInfoService manageCountInfoService;
 
     @Autowired
-    private EssPersonalInfoService essPersonalInfoService;
+    private WeeklyHrReportService weeklyHrReportService;
 
     @Autowired
-    private HrEducationService hrEducationService;
+    private HrContractService hrContractService;
+
+    @Autowired
+    private HrWorkExperienceService hrWorkExperienceService;
+
+    @Autowired
+    private HrQualificationService hrQualificationService;
+
+    @Autowired
+    private HrRewardService hrRewardService;
+
+    @Autowired
+    private HrPunishmentService hrPunishmentService;
+
+    @Autowired
+    private EvsObjectService evsObjectService;
 
     @GetMapping("/viewEmpCalendar")
     public String viewEmpCalendar() {
@@ -306,13 +362,6 @@ public class EssViewDeptController {
         return essEntryInfoListService.getPageList(dto);
     }
 
-    // ==================== Hồ sơ nhân viên (viewPersonalInfoEss) ====================
-
-    @GetMapping("/viewPersonalInfoEss")
-    public String viewPersonalInfoEss() {
-        return "ess/viewDept/viewPersonalInfoEss";
-    }
-
     @GetMapping("/api/empProfile/currentUser")
     @ResponseBody
     public ResponseEntity<Map<String, String>> getCurrentUserPersonId(HttpSession session) {
@@ -369,5 +418,208 @@ public class EssViewDeptController {
         params.setEndDate(endDate);
         params.setItemGroup(itemGroup);
         return ResponseEntity.ok(arPersonalListService.getSummaryList(params));
+    }
+
+    // ==================== Hồ sơ nhân viên (viewPersonalInfoEss) ====================
+
+    /**
+     * Mở giao diện Hồ sơ nhân viên (quản lý/HR xem và cập nhật hồ sơ của nhân viên khác)
+     */
+    @GetMapping("/viewPersonalInfoEss")
+    public String viewPersonalInfoEss() {
+        return "ess/viewDept/viewPersonalInfoEss";
+    }
+
+    /**
+     * API: Lấy thông tin hồ sơ. Nếu không truyền personId, mặc định lấy theo nhân viên đang đăng nhập
+     * (PERSON_ID lưu trong session, tham chiếu từ SY_USER khi đăng nhập).
+     */
+    @GetMapping("/api/personalInfoEss/profile")
+    @ResponseBody
+    public ResponseEntity<EssPersonalInfoDto> getPersonalInfoEssProfile(
+            @RequestParam(required = false) String personId, HttpSession session) {
+        String pid = (personId != null && !personId.trim().isEmpty())
+                ? personId
+                : (String) session.getAttribute("adminID");
+        return ResponseEntity.ok(essPersonalInfoService.getMyInfo(pid));
+    }
+
+    @GetMapping("/api/personalInfoEss/contract")
+    @ResponseBody
+    public ResponseEntity<List<HrContract>> getPersonalInfoEssContract(@RequestParam String personId) {
+        return ResponseEntity.ok(hrContractService.getContractsByPersonId(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/workExperience")
+    @ResponseBody
+    public ResponseEntity<List<HrWorkExperience>> getPersonalInfoEssWorkExperience(@RequestParam String personId) {
+        return ResponseEntity.ok(hrWorkExperienceService.getByPersonId(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/qualification")
+    @ResponseBody
+    public ResponseEntity<List<HrQualification>> getPersonalInfoEssQualification(@RequestParam String personId) {
+        return ResponseEntity.ok(hrQualificationService.getByPersonId(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/reward")
+    @ResponseBody
+    public ResponseEntity<List<HrReward>> getPersonalInfoEssReward(@RequestParam String personId) {
+        return ResponseEntity.ok(hrRewardService.getByPersonId(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/punishment")
+    @ResponseBody
+    public ResponseEntity<List<HrPunishment>> getPersonalInfoEssPunishment(@RequestParam String personId) {
+        return ResponseEntity.ok(hrPunishmentService.getByPersonId(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/evsObject")
+    @ResponseBody
+    public ResponseEntity<List<EvsObjectDto>> getPersonalInfoEssEvsObject(@RequestParam String personId) {
+        return ResponseEntity.ok(evsObjectService.getByPersonId(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/address")
+    @ResponseBody
+    public ResponseEntity<List<HrAddressMatters>> getPersonalInfoEssAddress(@RequestParam String personId) {
+        return ResponseEntity.ok(essPersonalInfoService.getMyAddresses(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/family")
+    @ResponseBody
+    public ResponseEntity<List<HrFamily>> getPersonalInfoEssFamily(@RequestParam String personId) {
+        return ResponseEntity.ok(essPersonalInfoService.getMyFamilies(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/emergency")
+    @ResponseBody
+    public ResponseEntity<List<HrEmergencyAddress>> getPersonalInfoEssEmergency(@RequestParam String personId) {
+        return ResponseEntity.ok(essPersonalInfoService.getMyEmergencies(personId));
+    }
+
+    @GetMapping("/api/personalInfoEss/education")
+    @ResponseBody
+    public ResponseEntity<List<HrEducation>> getPersonalInfoEssEducation(@RequestParam String personId) {
+        return ResponseEntity.ok(hrEducationService.searchEducation(null, personId, null, null));
+    }
+
+    @GetMapping("/api/personalInfoEss/specialMatter")
+    @ResponseBody
+    public ResponseEntity<List<HrSpecialMatter>> getPersonalInfoEssSpecialMatter(@RequestParam String personId) {
+        return ResponseEntity.ok(hrSpecialMatterMapper.searchByPersonId(personId));
+    }
+
+    /**
+     * API: Gửi yêu cầu thay đổi thông tin cá nhân của nhân viên được chọn (lưu vào HR_PERSONAL_INFO_APPLY, chờ duyệt)
+     */
+    @PostMapping("/api/personalInfoEss/savePersonal")
+    @ResponseBody
+    public ResponseEntity<?> savePersonalInfoEssPersonal(@RequestBody HrPersonalInfoApplyDto dto) {
+        try {
+            if (dto.getPersonId() == null || dto.getPersonId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Thiếu personId"));
+            }
+            String personNo = essPersonalInfoService.savePersonalApply(dto, null);
+            return ResponseEntity.ok(Collections.singletonMap("applyNo", personNo));
+        } catch (Exception e) {
+            log.error("Lỗi gửi yêu cầu thay đổi thông tin cá nhân (viewDept) personId={}", dto.getPersonId(), e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
+        }
+    }
+
+    /**
+     * API: Gửi yêu cầu thêm mới/cập nhật địa chỉ (lưu vào HR_ADDRESS_MATTERS_APPLY, chờ duyệt)
+     */
+    @PostMapping("/api/personalInfoEss/saveAddress")
+    @ResponseBody
+    public ResponseEntity<?> savePersonalInfoEssAddress(@RequestBody HrAddressMattersApplyDto dto) {
+        try {
+            if (dto.getPersonId() == null || dto.getPersonId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Thiếu personId"));
+            }
+            String addressNo = essPersonalInfoService.saveAddressApply(dto, null);
+            return ResponseEntity.ok(Collections.singletonMap("addressNo", addressNo));
+        } catch (Exception e) {
+            log.error("Lỗi lưu địa chỉ (viewDept) personId={}", dto.getPersonId(), e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
+        }
+    }
+
+    /**
+     * API: Gửi yêu cầu thêm mới/cập nhật thông tin gia đình (lưu vào HR_FAMILY_APPLY, chờ duyệt)
+     */
+    @PostMapping("/api/personalInfoEss/saveFamily")
+    @ResponseBody
+    public ResponseEntity<?> savePersonalInfoEssFamily(@RequestBody HrFamilyApplyDto dto) {
+        try {
+            if (dto.getPersonId() == null || dto.getPersonId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Thiếu personId"));
+            }
+            String applyNo = essPersonalInfoService.saveFamilyApply(dto, null);
+            return ResponseEntity.ok(Collections.singletonMap("applyNo", applyNo));
+        } catch (Exception e) {
+            log.error("Lỗi lưu thông tin gia đình (viewDept) personId={}", dto.getPersonId(), e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
+        }
+    }
+
+    /**
+     * API: Gửi yêu cầu thêm mới/cập nhật người liên hệ khẩn cấp (lưu vào HR_EMERGENCY_ADDRESS_APPLY, chờ duyệt)
+     */
+    @PostMapping("/api/personalInfoEss/saveEmergency")
+    @ResponseBody
+    public ResponseEntity<?> savePersonalInfoEssEmergency(@RequestBody HrEmergencyAddressApplyDto dto) {
+        try {
+            if (dto.getPersonId() == null || dto.getPersonId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Thiếu personId"));
+            }
+            String applyNo = essPersonalInfoService.saveEmergencyApply(dto, null);
+            return ResponseEntity.ok(Collections.singletonMap("applyNo", applyNo));
+        } catch (Exception e) {
+            log.error("Lỗi lưu liên hệ khẩn cấp (viewDept) personId={}", dto.getPersonId(), e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
+        }
+    }
+
+    /**
+     * API: Gửi yêu cầu thêm mới/cập nhật học vấn (lưu vào HR_EDUCATION_APPLY, chờ duyệt)
+     */
+    @PostMapping("/api/personalInfoEss/saveEducation")
+    @ResponseBody
+    public ResponseEntity<?> savePersonalInfoEssEducation(@RequestBody HrEducationApplyDto dto) {
+        try {
+            if (dto.getPersonId() == null || dto.getPersonId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Thiếu personId"));
+            }
+            String applyNo = essPersonalInfoService.saveEducationApply(dto, null);
+            return ResponseEntity.ok(Collections.singletonMap("applyNo", applyNo));
+        } catch (Exception e) {
+            log.error("Lỗi lưu học vấn (viewDept) personId={}", dto.getPersonId(), e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
+        }
+    }
+
+    /**
+     * API: Thêm mới hạng mục đặc biệt. Ghi trực tiếp vào HR_SPECIAL_MATTER (không qua workflow duyệt
+     * vì hệ thống chưa có bảng HR_SPECIAL_MATTER_APPLY).
+     */
+    @PostMapping("/api/personalInfoEss/saveSpecialMatter")
+    @ResponseBody
+    public ResponseEntity<?> savePersonalInfoEssSpecialMatter(@RequestBody HrSpecialMatter matter) {
+        try {
+            if (matter.getPersonId() == null || matter.getPersonId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Thiếu personId"));
+            }
+            matter.setActivity(1);
+            boolean success = hrSpecialMatterService.addSpecialMatter(matter);
+            if (success) {
+                return ResponseEntity.ok(Collections.singletonMap("message", "Thêm mới thành công"));
+            }
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Thêm mới thất bại"));
+        } catch (Exception e) {
+            log.error("Lỗi lưu hạng mục đặc biệt personId={}", matter.getPersonId(), e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
+        }
     }
 }

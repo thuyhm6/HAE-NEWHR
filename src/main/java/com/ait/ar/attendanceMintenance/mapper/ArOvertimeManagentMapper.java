@@ -14,6 +14,8 @@ public interface ArOvertimeManagentMapper {
 
     List<ArOvertimeManagentDto> selectList(ArOvertimeManagentDto dto);
 
+    List<ArOvertimeManagentDto> selectListOver(ArOvertimeManagentDto dto);
+
     ArOvertimeManagentDto selectDetail(@Param("applyNo") String applyNo);
 
     List<SyAffirmEmailDto> selectApprovalInfo(@Param("applyNo") String applyNo,
@@ -46,6 +48,8 @@ public interface ArOvertimeManagentMapper {
 
     void cancelOvertimeApply(@Param("applyNo") String applyNo);
 
+    void cancelOvertimeApplyOver(@Param("applyNo") String applyNo);
+
     SyAffirmEmailDto selectCancelAffirmEmail(@Param("applyNo") String applyNo);
 
     void callAffirmCancel(Map<String, Object> params);
@@ -53,6 +57,8 @@ public interface ArOvertimeManagentMapper {
     List<SyAffirmEmailDto> selectAffirmorListBySql(@Param("affirmSql") String affirmSql);
 
     void deleteOvertimeApplyByApplyNo(@Param("applyNo") String applyNo);
+
+    void deleteOvertimeApplyOverByApplyNo(@Param("applyNo") String applyNo);
 
     void deleteApplyResultByApplyNo(@Param("applyNo") String applyNo);
 

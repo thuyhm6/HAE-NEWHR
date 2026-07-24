@@ -24,6 +24,11 @@ public class EssOtApplyListDto {
     private String confirmFlagName;
     private String createdBy;
     private String createdIp;
+    private String usecarYn;
+    private String carAddress;
+    private String carAddressName;
+    private String carAddressDetail;
+    private String carAddressDetailName;
 
     // Search params
     private String otTypeCodeSearch;

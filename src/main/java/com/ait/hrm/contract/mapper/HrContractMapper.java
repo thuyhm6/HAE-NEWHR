@@ -46,6 +46,11 @@ public interface HrContractMapper {
     HrContract getContractByContractNo(@Param("contractNo") String contractNo);
 
     /**
+     * Get contracts by personId
+     */
+    List<HrContract> getContractsByPersonId(@Param("personId") String personId);
+
+    /**
      * Update contract
      */
     int updateContract(HrContract contract);

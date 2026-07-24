@@ -37,7 +37,21 @@
         <!-- JEUS exploded WAR properties -->
         <jeus.deploy.dir>C:\tmaxsoft\jeus7\resource</jeus.deploy.dir>
         <jeus.app.name>HR-11</jeus.app.name>
+
+        <!-- Pin toàn bộ họ Spring Security về cùng 1 version để tránh lệch version giữa các module (CVE fix) -->
+        <spring-security.version>5.8.15</spring-security.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-bom</artifactId>
+                <version>${spring-security.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -116,7 +130,7 @@
             <artifactId>aspectjrt</artifactId>
         </dependency>
         
-        <!-- Spring Security for password encoding and CSRF protection -->
+        <!-- Spring Security for password encoding and CSRF protection (version quản lý tập trung qua spring-security-bom) -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>

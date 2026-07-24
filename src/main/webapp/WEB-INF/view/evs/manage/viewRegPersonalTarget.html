@@ -98,7 +98,7 @@
             <!-- Objective Confirm -->
             <div class="card mb-2" id="vrpt_objectiveCard" style="display:none;">
                 <div class="card-body p-2">
-                    <div class="d-flex align-items-center justify-content-between mb-1">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="fw-bold"
                               th:text="#{evs.viewRegPersonalTarget.objectiveConfirm}">Objective Confirm</span>
                         <div class="d-flex gap-1">
@@ -108,14 +108,19 @@
                             <button type="button" id="vrpt_btnExecute" class="btn btn-primary btn-sm" onclick="vrptExecute()" style="display:none;">
                                 <span th:text="#{evs.viewRegPersonalTarget.btnExecute}">Thực hiện</span>
                             </button>
-                            <button type="button" id="vrpt_btnAddNew" class="btn btn-success btn-sm" onclick="vrptAddInlineRow()" style="display:none;">
-                                <span th:text="#{evs.viewRegPersonalTarget.btnAddNew}">Thêm mới(+)</span>
-                            </button>
                         </div>
                     </div>
-                    <div class="table-responsive">
+
+                    <!-- Mục tiêu chiến lược (ITEM_TYPE = 1) -->
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="fw-bold small" th:text="#{evs.viewRegPersonalTarget.strategicTarget}">Mục tiêu chiến lược</span>
+                        <button type="button" id="vrpt_btnAddStrategic" class="btn btn-success btn-sm" onclick="vrptAddInlineRow('strategic')" style="display:none;">
+                            <span th:text="#{evs.viewRegPersonalTarget.btnAddNew}">Thêm mới(+)</span>
+                        </button>
+                    </div>
+                    <div class="table-responsive mb-3">
                         <table class="table table-bordered table-hover table-sm align-middle mb-0"
-                               id="vrpt_itemTable" style="width:100%;">
+                               id="vrpt_strategicTable" style="width:100%;">
                             <thead class="table-light text-center align-middle">
                                 <tr>
                                     <th style="width:48px;" th:text="#{evs.viewRegPersonalTarget.col.no}">No</th>
@@ -125,19 +130,59 @@
                                     <th style="width:80px;" th:text="#{evs.viewRegPersonalTarget.col.action}">Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody id="vrpt_itemTbody">
-                                <tr id="vrpt_noDataRow">
+                            <tbody id="vrpt_strategicTbody">
+                                <tr class="vrpt-nodata-row">
                                     <td colspan="5" class="text-center text-muted">0</td>
                                 </tr>
                             </tbody>
                             <tfoot>
                                 <tr class="table-light">
-                                    <td colspan="3" class="text-end fw-bold small">Total</td>
-                                    <td class="text-center fw-bold" id="vrpt_totalScore">0</td>
+                                    <td colspan="3" class="text-end fw-bold small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center fw-bold" id="vrpt_strategicTotal">0</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+
+                    <!-- Mục tiêu vận hành (ITEM_TYPE IS NULL) -->
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="fw-bold small" th:text="#{evs.viewRegPersonalTarget.operationTarget}">Mục tiêu vận hành</span>
+                        <button type="button" id="vrpt_btnAddOperation" class="btn btn-success btn-sm" onclick="vrptAddInlineRow('operation')" style="display:none;">
+                            <span th:text="#{evs.viewRegPersonalTarget.btnAddNew}">Thêm mới(+)</span>
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-sm align-middle mb-0"
+                               id="vrpt_operationTable" style="width:100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th style="width:48px;" th:text="#{evs.viewRegPersonalTarget.col.no}">No</th>
+                                    <th style="width:220px;" th:text="#{evs.viewRegPersonalTarget.col.evalCategory}">Hạng mục đánh giá</th>
+                                    <th th:text="#{evs.viewRegPersonalTarget.col.target}">Mục tiêu</th>
+                                    <th style="width:90px;" th:text="#{evs.viewRegPersonalTarget.col.ratio}">Tỷ lệ(%)</th>
+                                    <th style="width:80px;" th:text="#{evs.viewRegPersonalTarget.col.action}">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vrpt_operationTbody">
+                                <tr class="vrpt-nodata-row">
+                                    <td colspan="5" class="text-center text-muted">0</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <td colspan="3" class="text-end fw-bold small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center fw-bold" id="vrpt_operationTotal">0</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Tổng cộng cả 2 phần -->
+                    <div class="d-flex justify-content-end align-items-center mt-2">
+                        <span class="fw-bold me-2" th:text="#{common.total}">Tổng</span>
+                        <span class="fw-bold" id="vrpt_totalScore">0</span>
                     </div>
                 </div>
             </div>
@@ -221,14 +266,17 @@
             color: #6c757d;
             font-size: 0.85rem;
         }
-        #vrpt_pageWrapper #vrpt_itemTable tbody tr {
+        #vrpt_pageWrapper #vrpt_strategicTable tbody tr,
+        #vrpt_pageWrapper #vrpt_operationTable tbody tr {
             cursor: pointer;
         }
-        #vrpt_pageWrapper #vrpt_itemTable tbody tr:hover {
+        #vrpt_pageWrapper #vrpt_strategicTable tbody tr:hover,
+        #vrpt_pageWrapper #vrpt_operationTable tbody tr:hover {
             background-color: #f0f4ff;
         }
         /* Dòng đang ở chế độ chỉnh sửa inline */
-        #vrpt_pageWrapper #vrpt_itemTable tbody tr.vrpt-edit-row {
+        #vrpt_pageWrapper #vrpt_strategicTable tbody tr.vrpt-edit-row,
+        #vrpt_pageWrapper #vrpt_operationTable tbody tr.vrpt-edit-row {
             background-color: #fff9e6 !important;
         }
         /* Quill editor inline trong bảng */
@@ -236,12 +284,15 @@
         .vrpt-inline-quill .ql-toolbar .ql-formats { margin-right: 6px; }
         .vrpt-inline-quill .ql-container { font-size: 0.8rem; }
         /* Nội dung rich-text trong ô bảng */
-        #vrpt_itemTable td.vrpt-rich-content p { margin: 0; }
-        #vrpt_itemTable td.vrpt-rich-content ul,
-        #vrpt_itemTable td.vrpt-rich-content ol { margin: 0; padding-left: 1.2em; }
+        #vrpt_strategicTable td.vrpt-rich-content p,
+        #vrpt_operationTable td.vrpt-rich-content p { margin: 0; }
+        #vrpt_strategicTable td.vrpt-rich-content ul,
+        #vrpt_strategicTable td.vrpt-rich-content ol,
+        #vrpt_operationTable td.vrpt-rich-content ul,
+        #vrpt_operationTable td.vrpt-rich-content ol { margin: 0; padding-left: 1.2em; }
         /* Màu Total theo trạng thái */
-        #vrpt_totalScore.vrpt-total-ok  { color: #198754 !important; font-weight: bold; }
-        #vrpt_totalScore.vrpt-total-err { color: #dc3545 !important; font-weight: bold; }
+        #vrpt_strategicTotal.vrpt-total-ok, #vrpt_operationTotal.vrpt-total-ok, #vrpt_totalScore.vrpt-total-ok  { color: #198754 !important; font-weight: bold; }
+        #vrpt_strategicTotal.vrpt-total-err, #vrpt_operationTotal.vrpt-total-err, #vrpt_totalScore.vrpt-total-err { color: #dc3545 !important; font-weight: bold; }
     </style>
     <script th:inline="javascript">
         (function () {
@@ -283,13 +334,13 @@
             /* ── Cập nhật hiển thị buttons theo activity ─────────────────── */
             function vrptUpdateEditableUI() {
                 var editable = vrptIsEditable();
-                vrpt$('#vrpt_btnSaveDraft, #vrpt_btnExecute, #vrpt_btnAddNew').toggle(editable);
+                vrpt$('#vrpt_btnSaveDraft, #vrpt_btnExecute, #vrpt_btnAddStrategic, #vrpt_btnAddOperation').toggle(editable);
             }
 
-            /* ── Tính và hiển thị tổng tỷ lệ ─────────────────────────────── */
-            function vrptUpdateTotal() {
+            /* ── Tính tổng tỷ lệ của 1 phần (strategic/operation) ─────────── */
+            function vrptSectionTotal(section) {
                 var total = 0;
-                vrpt$('#vrpt_itemTbody tr').each(function () {
+                vrpt$('#vrpt_' + section + 'Tbody tr').each(function () {
                     var $row = $(this);
                     if ($row.hasClass('vrpt-saved-row')) {
                         total += parseFloat($row.find('td:eq(3)').text()) || 0;
@@ -297,13 +348,31 @@
                         total += parseFloat($row.find('.vrpt-inline-score').val()) || 0;
                     }
                 });
-                total = Math.round(total * 100) / 100;
-                var $cell = vrpt$('#vrpt_totalScore');
-                $cell.text(total);
-                if (total === 100) {
-                    $cell.removeClass('vrpt-total-err').addClass('vrpt-total-ok');
+                return Math.round(total * 100) / 100;
+            }
+
+            /* ── Tính và hiển thị tổng tỷ lệ của từng phần + tổng cộng ────── */
+            function vrptUpdateTotal() {
+                var strategicTotal = vrptSectionTotal('strategic');
+                var operationTotal = vrptSectionTotal('operation');
+                var grandTotal = Math.round((strategicTotal + operationTotal) * 100) / 100;
+
+                var $strategicCell = vrpt$('#vrpt_strategicTotal');
+                $strategicCell.text(strategicTotal);
+                if (strategicTotal > 40) {
+                    $strategicCell.removeClass('vrpt-total-ok').addClass('vrpt-total-err');
                 } else {
-                    $cell.removeClass('vrpt-total-ok').addClass('vrpt-total-err');
+                    $strategicCell.removeClass('vrpt-total-err').addClass('vrpt-total-ok');
+                }
+
+                vrpt$('#vrpt_operationTotal').text(operationTotal);
+
+                var $grandCell = vrpt$('#vrpt_totalScore');
+                $grandCell.text(grandTotal);
+                if (grandTotal === 100) {
+                    $grandCell.removeClass('vrpt-total-err').addClass('vrpt-total-ok');
+                } else {
+                    $grandCell.removeClass('vrpt-total-ok').addClass('vrpt-total-err');
                 }
             }
 
@@ -402,15 +471,18 @@
                 });
             }
 
-            /* ── Render danh sách (click vào dòng để sửa inline) ────────── */
-            function vrptRenderItems() {
-                var editable = vrptIsEditable();
+            function vrptIsStrategic(itemType) {
+                return String(itemType) === '1';
+            }
+
+            /* ── Render 1 phần (strategic/operation) ─────────────────────── */
+            function vrptRenderSection(section, rows, editable) {
                 var html = '';
-                if (!inst.items.length) {
-                    html = '<tr id="vrpt_noDataRow"><td colspan="5" class="text-center text-muted">0</td></tr>';
+                if (!rows.length) {
+                    html = '<tr class="vrpt-nodata-row"><td colspan="5" class="text-center text-muted">0</td></tr>';
                 } else {
-                    inst.items.forEach(function (r, idx) {
-                        html += '<tr class="vrpt-saved-row" data-seq="' + vrptEsc(r.seq) + '">';
+                    rows.forEach(function (r, idx) {
+                        html += '<tr class="vrpt-saved-row" data-seq="' + vrptEsc(r.seq) + '" data-item-type="' + vrptEsc(r.itemType || '') + '">';
                         html += '<td class="text-center">' + (idx + 1) + '</td>';
                         html += '<td>' + vrptEsc(r.itemName) + '</td>';
                         html += '<td class="vrpt-rich-content">' + (r.itemContent || '') + '</td>';
@@ -419,21 +491,30 @@
                         if (editable) {
                             html += '<button class="btn btn-outline-danger btn-sm py-0 px-1" '
                                 + 'onclick="event.stopPropagation();vrptDeleteItem(\'' + vrptEsc(r.seq) + '\')" '
-                                + 'title="Xóa"><i class="bi bi-trash"></i></button>';
+                                + 'title="Xóa"><i class="bx bx-trash"></i></button>';
                         }
                         html += '</td>';
                         html += '</tr>';
                     });
                 }
-                vrpt$('#vrpt_itemTbody').html(html);
-                vrptUpdateTotal();
-
+                var $tbody = vrpt$('#vrpt_' + section + 'Tbody');
+                $tbody.html(html);
                 if (editable) {
-                    vrpt$('#vrpt_itemTbody .vrpt-saved-row').on('click', function (e) {
+                    $tbody.find('.vrpt-saved-row').on('click', function (e) {
                         if ($(e.target).closest('button').length) return;
                         vrptConvertRowToEdit($(this));
                     });
                 }
+            }
+
+            /* ── Render danh sách (click vào dòng để sửa inline) ────────── */
+            function vrptRenderItems() {
+                var editable = vrptIsEditable();
+                var strategicItems = inst.items.filter(function (r) { return vrptIsStrategic(r.itemType); });
+                var operationItems = inst.items.filter(function (r) { return !vrptIsStrategic(r.itemType); });
+                vrptRenderSection('strategic', strategicItems, editable);
+                vrptRenderSection('operation', operationItems, editable);
+                vrptUpdateTotal();
             }
 
             /* ── Chuyển dòng đã lưu sang chế độ chỉnh sửa inline ─────────── */
@@ -452,10 +533,10 @@
                     + '<td class="text-center">'
                     + '<button class="btn btn-outline-secondary btn-sm py-0 px-1 me-1" '
                     + 'onclick="event.stopPropagation();vrptCancelEditRow(this)" title="Hủy sửa">'
-                    + '<i class="bi bi-x-lg"></i></button>'
+                    + '<i class="bx bx-x-lg"></i></button>'
                     + '<button class="btn btn-outline-danger btn-sm py-0 px-1" '
                     + 'onclick="event.stopPropagation();vrptDeleteItem(\'' + vrptEsc(r.seq) + '\')" title="Xóa">'
-                    + '<i class="bi bi-trash"></i></button>'
+                    + '<i class="bx bx-trash"></i></button>'
                     + '</td>';
 
                 $row.removeClass('vrpt-saved-row').addClass('vrpt-edit-row').html(editHtml);
@@ -485,7 +566,7 @@
                     + '<td class="text-center">'
                     + '<button class="btn btn-outline-danger btn-sm py-0 px-1" '
                     + 'onclick="event.stopPropagation();vrptDeleteItem(\'' + vrptEsc(r.seq) + '\')" title="Xóa">'
-                    + '<i class="bi bi-trash"></i></button>'
+                    + '<i class="bx bx-trash"></i></button>'
                     + '</td>';
                 $row.removeClass('vrpt-edit-row').addClass('vrpt-saved-row').html(viewHtml);
                 $row.attr('data-seq', seq);
@@ -496,23 +577,25 @@
                 vrptUpdateTotal();
             };
 
-            /* ── Thêm dòng mới inline ─────────────────────────────────────── */
-            window.vrptAddInlineRow = function () {
-                vrpt$('#vrpt_noDataRow').hide();
-                var rowNum = vrpt$('#vrpt_itemTbody tr:not(#vrpt_noDataRow)').length + 1;
-                var html = '<tr class="vrpt-inline-row">'
+            /* ── Thêm dòng mới inline (section: 'strategic' | 'operation') ─── */
+            window.vrptAddInlineRow = function (section) {
+                var $tbody = vrpt$('#vrpt_' + section + 'Tbody');
+                $tbody.find('.vrpt-nodata-row').remove();
+                var itemTypeAttr = section === 'strategic' ? '1' : '';
+                var rowNum = $tbody.find('tr').length + 1;
+                var html = '<tr class="vrpt-inline-row" data-item-type="' + itemTypeAttr + '">'
                     + '<td class="text-center vrpt-inline-no">' + rowNum + '</td>'
                     + '<td><input type="text" class="form-control form-control-sm vrpt-inline-name" maxlength="200" /></td>'
                     + '<td style="min-width:220px;"><div class="vrpt-inline-quill" style="background:#fff;"></div></td>'
                     + '<td><input type="number" class="form-control form-control-sm vrpt-inline-score" min="0" max="100" step="1" value="0" /></td>'
                     + '<td class="text-center">'
                     + '<button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="vrptRemoveInlineRow(this)" title="Xóa dòng">'
-                    + '<i class="bi bi-dash-lg"></i>'
+                    + '<i class="bx bx-trash"></i>'
                     + '</button>'
                     + '</td>'
                     + '</tr>';
-                vrpt$('#vrpt_itemTbody').append(html);
-                var $newRow = vrpt$('#vrpt_itemTbody .vrpt-inline-row').last();
+                $tbody.append(html);
+                var $newRow = $tbody.find('.vrpt-inline-row').last();
                 var editorEl = $newRow.find('.vrpt-inline-quill')[0];
                 var q = new Quill(editorEl, { theme: 'snow', modules: { toolbar: VRPT_TOOLBAR_MINI } });
                 $newRow.data('vrpt-quill', q);
@@ -522,17 +605,15 @@
             };
 
             window.vrptRemoveInlineRow = function (btn) {
-                $(btn).closest('tr.vrpt-inline-row').remove();
+                var $row = $(btn).closest('tr.vrpt-inline-row');
+                var $tbody = $row.closest('tbody');
+                $row.remove();
                 var n = 1;
-                vrpt$('#vrpt_itemTbody tr:not(#vrpt_noDataRow)').each(function () {
+                $tbody.find('tr').each(function () {
                     $(this).find('td:first').text(n++);
                 });
-                if (vrpt$('#vrpt_itemTbody tr:not(#vrpt_noDataRow)').length === 0) {
-                    if (!vrpt$('#vrpt_noDataRow').length) {
-                        vrpt$('#vrpt_itemTbody').html('<tr id="vrpt_noDataRow"><td colspan="5" class="text-center text-muted">0</td></tr>');
-                    } else {
-                        vrpt$('#vrpt_noDataRow').show();
-                    }
+                if ($tbody.find('tr').length === 0) {
+                    $tbody.html('<tr class="vrpt-nodata-row"><td colspan="5" class="text-center text-muted">0</td></tr>');
                 }
                 vrptUpdateTotal();
             };
@@ -541,13 +622,20 @@
             window.vrptSaveDraft = function () {
                 if (!inst.currentObjectSeq) return;
 
+                var strategicTotal = vrptSectionTotal('strategic');
+                if (strategicTotal > 40) {
+                    alert(/*[[#{evs.viewRegPersonalTarget.msg.strategicOver40}]]*/ 'Tổng tỷ lệ (%) của Mục tiêu chiến lược không được vượt quá 40.');
+                    return;
+                }
+
                 var total = parseFloat(vrpt$('#vrpt_totalScore').text()) || 0;
                 if (total !== 100) {
                     alert((/*[[#{evs.viewRegPersonalTarget.msg.totalNot100}]]*/ 'Tổng tỷ lệ (%) phải bằng 100. Hiện tại: ') + total);
                     return;
                 }
 
-                var $editableRows = vrpt$('#vrpt_itemTbody .vrpt-inline-row, #vrpt_itemTbody .vrpt-edit-row');
+                var $editableRows = vrpt$('#vrpt_strategicTbody .vrpt-inline-row, #vrpt_strategicTbody .vrpt-edit-row, '
+                    + '#vrpt_operationTbody .vrpt-inline-row, #vrpt_operationTbody .vrpt-edit-row');
                 if ($editableRows.length === 0) {
                     vrptLoadItems(inst.currentObjectSeq);
                     alert(/*[[#{evs.viewRegPersonalTarget.msg.saveDraftSuccess}]]*/ 'Lưu tạm thời thành công!');
@@ -586,6 +674,7 @@
                         resumeSeq:    inst.currentResumeSeq,
                         itemName:     itemName,
                         itemContent:  itemContent,
+                        itemType:     $row.attr('data-item-type') || null,
                         itemScore:    $row.find('.vrpt-inline-score').val() || '0',
                         flag:         '0'
                     };
@@ -625,9 +714,16 @@
             window.vrptExecute = function () {
                 if (!inst.currentObjectSeq) return;
 
-                var $editableRows = vrpt$('#vrpt_itemTbody .vrpt-inline-row, #vrpt_itemTbody .vrpt-edit-row');
+                var $editableRows = vrpt$('#vrpt_strategicTbody .vrpt-inline-row, #vrpt_strategicTbody .vrpt-edit-row, '
+                    + '#vrpt_operationTbody .vrpt-inline-row, #vrpt_operationTbody .vrpt-edit-row');
                 if ($editableRows.length > 0) {
                     alert(/*[[#{evs.viewRegPersonalTarget.msg.unsavedRows}]]*/ 'Vui lòng lưu tạm thời trước khi thực hiện.');
+                    return;
+                }
+
+                var strategicTotal = vrptSectionTotal('strategic');
+                if (strategicTotal > 40) {
+                    alert(/*[[#{evs.viewRegPersonalTarget.msg.strategicOver40}]]*/ 'Tổng tỷ lệ (%) của Mục tiêu chiến lược không được vượt quá 40.');
                     return;
                 }
 

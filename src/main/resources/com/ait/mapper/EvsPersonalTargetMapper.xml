@@ -51,6 +51,7 @@
         <result column="ITEM_NAME"      property="itemName"        jdbcType="VARCHAR" />
         <result column="ITEM_CONTENT"   property="itemContent"     jdbcType="VARCHAR" />
         <result column="ITEM_CONTENT_TEXT" property="itemContentText" jdbcType="VARCHAR" />
+        <result column="ITEM_TYPE"      property="itemType"        jdbcType="VARCHAR" />
         <result column="ITEM_SCORE"     property="itemScore"       jdbcType="VARCHAR" />
         <result column="EVS_SCORE"      property="evsScore"        jdbcType="VARCHAR" />
         <result column="EVS_SCORE1"     property="evsScore1"       jdbcType="VARCHAR" />
@@ -125,6 +126,7 @@
                ITEM_NAME,
                ITEM_CONTENT,
                ITEM_CONTENT ITEM_CONTENT_TEXT,
+               ITEM_TYPE,
                NVL(ITEM_SCORE,   0) ITEM_SCORE,
                NVL(EVS_SCORE,    0) EVS_SCORE,
                NVL(EVS_SCORE1,   0) EVS_SCORE1,
@@ -153,7 +155,7 @@
     <insert id="insertItem" parameterType="com.ait.evs.manage.dto.EvsItemSstDto">
         INSERT INTO EVS_ITEM_SST (
             SEQ, RESUME_SEQ, EVS_OBJECT_SEQ,
-            ITEM_NAME, ITEM_CONTENT, ITEM_SCORE,
+            ITEM_NAME, ITEM_CONTENT, ITEM_TYPE, ITEM_SCORE,
             START_DATE, END_DATE, ACTIVITY,
             CREATED_BY, CREATED_IP, CREATE_DATE
         ) VALUES (
@@ -162,6 +164,7 @@
             #{evsObjectSeq, jdbcType=VARCHAR},
             #{itemName,     jdbcType=VARCHAR},
             #{itemContent,  jdbcType=VARCHAR},
+            #{itemType,     jdbcType=VARCHAR},
             #{itemScore,    jdbcType=NUMERIC},
             <choose>
                 <when test="startDate != null and startDate != ''">

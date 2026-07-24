@@ -263,4 +263,46 @@
         </foreach>
     </delete>
 
+    <!-- ── selectEmployeeByEmpId: tìm đúng 1 nhân viên theo Mã NV (dùng khi import Excel) ── -->
+    <select id="selectEmployeeByEmpId" resultMap="EmployeeSearchResultMap">
+        SELECT E.PERSON_ID,
+               E.EMPID,
+               E.LOCAL_NAME,
+               GET_DEPT_NAME(E.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+               E.POST_GRADE_NAME
+          FROM HR_EMPLOYEE E
+         WHERE E.ACTIVITY = 1
+           AND E.EMPID = #{empId, jdbcType=VARCHAR}
+         FETCH FIRST 1 ROW ONLY
+    </select>
+
+    <!-- ── insertObjectTemp: lưu bản ghi tham chiếu vào EVS_OBJECT_TEMP khi import Excel ── -->
+    <insert id="insertObjectTemp" parameterType="map">
+        INSERT INTO EVS_OBJECT_TEMP (
+            CPNY_ID,
+            RESUME_SEQ,
+            EMPID,
+            LOCAL_NAME,
+            AFFIRM_ID_1,
+            AFFIRM_NAME_1,
+            AFFIRM_ID_2,
+            AFFIRM_NAME_2,
+            EVS_OBJECT_SEQ,
+            UPDATE_DATE,
+            UPDATED_BY
+        ) VALUES (
+            #{cpnyId,       jdbcType=VARCHAR},
+            #{resumeSeq,    jdbcType=VARCHAR},
+            #{empid,        jdbcType=VARCHAR},
+            #{localName,    jdbcType=VARCHAR},
+            #{affirmId1,    jdbcType=VARCHAR},
+            #{affirmName1,  jdbcType=VARCHAR},
+            #{affirmId2,    jdbcType=VARCHAR},
+            #{affirmName2,  jdbcType=VARCHAR},
+            #{evsObjectSeq, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID,      jdbcType=VARCHAR}
+        )
+    </insert>
+
 </mapper>

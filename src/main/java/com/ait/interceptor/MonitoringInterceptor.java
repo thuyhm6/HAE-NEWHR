@@ -100,6 +100,12 @@ public class MonitoringInterceptor implements HandlerInterceptor {
                     return;
                 }
 
+                // Bỏ qua endpoint "/error" - đây là endpoint xử lý lỗi mặc định của Spring Boot
+                // (request bị forward tới sau khi lỗi gốc đã được log ở nơi khác), không cần log lại
+                if ("/error".equals(endpoint)) {
+                    return;
+                }
+
                 // Log error
                 String eventType = statusCode >= 500 ? "API_ERROR" : "SYSTEM_EVENT";
 

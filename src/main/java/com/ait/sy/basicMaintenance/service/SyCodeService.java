@@ -9,6 +9,8 @@ public interface SyCodeService {
 
     List<SyCodeDto> getCodeList(String parentCodeNo);
 
+    List<SyCodeDto> getUseCodeList(String parentCodeNo);
+
     void saveCode(SyCodeDto syCodeDto);
 
     void deleteCode(String codeNo);

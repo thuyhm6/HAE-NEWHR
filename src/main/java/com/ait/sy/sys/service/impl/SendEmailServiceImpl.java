@@ -481,8 +481,11 @@ public class SendEmailServiceImpl implements SendEmailService{
 			ApprovalDocumentStatus[] appDocStus = mailManger.getMailApprovalInfo(misKeys);
 			
 			for(int i=0;i<appDocStus.length;i++){
+				if(appDocStus[i] == null){
+					continue;
+				}
 				for(int j = 0;j<approvalList.size();j++){
-					Map approvalMap = (Map) approvalList.get(i);
+					Map approvalMap = (Map) approvalList.get(j);
 					if(("HAEVHR_001_"+checkNull(approvalMap.get("MISDOCID"))).equals(appDocStus[i].getMisDocId())){
 						if(!"4".equals(checkNull(appDocStus[i].getStatus()))){
 							SignerInfo[] signerInfos = appDocStus[i].getSignerInfos();
@@ -496,7 +499,7 @@ public class SendEmailServiceImpl implements SendEmailService{
 										if ("0".equals(checkNull(affirmMap.get("AFFIRM_FLAG"))) && "2".equals(checkNull(affirmMap.get("AFFIRM_LEVEL")))
 												&& "1".equals(checkNull(approvalMap.get("TIME_FLAG")))) {
 											this.sendAttendanceEmail(approvalMap);
-											String updateAttendace = this.sendEmailMapper.updateAttendace(approvalMap);
+											int updateAttendace = this.sendEmailMapper.updateAttendace(approvalMap);
 										}
 										if(signerInfos[a].getStatus() != 0 
 												&& "0".equals(checkNull(affirmMap.get("AFFIRM_FLAG")))

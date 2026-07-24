@@ -15,12 +15,12 @@
     }
 
         bindTabSwitchEvents() {
-        // Bootstrap tab switch: re-inject scripts cho tab được kích hoạt
+        // Bootstrap tab switch: chỉ chuyển hiển thị, KHÔNG load lại dữ liệu/script.
+        // Việc load lại dữ liệu chỉ thực hiện khi bấm vào menu (xem openTab()).
         document.addEventListener('shown.bs.tab', (event) => {
         const tabId = event.target.id ? event.target.id.replace('-tab', '') : null;
         if (tabId && this.tabs.has(tabId)) {
         this.activeTabId = tabId;
-        this.handleTabScripts(tabId);
     }
     });
     }
@@ -244,10 +244,12 @@
     }
 
         openTab(url, title) {
-        // Check if tab already exists
+        // Check if tab already exists: chuyển tới tab đó và load lại dữ liệu/view mới nhất
+        // (chỉ bấm menu mới load lại, bấm chuyển qua lại giữa các tab thì không load lại)
         const existingTab = this.findTabByUrl(url);
         if (existingTab) {
         this.activateTab(existingTab.id);
+        this.loadTabContent(existingTab);
         return;
     }
 
@@ -392,9 +394,8 @@
         const activePane = document.getElementById(tabId);
         if (activePane) {
         activePane.classList.add('active');
-
-        // Handle scripts for active tab
-        this.handleTabScripts(tabId);
+        // Chỉ chuyển hiển thị, KHÔNG load lại dữ liệu/script ở đây.
+        // Việc load lại dữ liệu chỉ thực hiện khi bấm vào menu (xem openTab()).
     }
     }
 
@@ -432,6 +433,17 @@
     }
 
         if (scripts.length === 0) return;
+
+        // Gỡ toàn bộ jQuery event handler đã gắn trực tiếp lên các phần tử trong pane
+        // của lần chạy script trước đó (vd: $('#code_tree').on('changed.jstree', ...)).
+        // Tab pane không bị remove khi chuyển tab nên nếu không gỡ, mỗi lần quay lại tab
+        // script sẽ chạy lại và cộng dồn handler cũ (trỏ tới DataTable/jstree đã destroy),
+        // gây lỗi khi handler cũ chạy trước và chặn handler mới thực thi.
+        const activePaneForCleanup = document.getElementById(tabId);
+        if (activePaneForCleanup && window.jQuery) {
+        window.jQuery(activePaneForCleanup).find('*').off();
+        window.jQuery(activePaneForCleanup).off();
+    }
 
         // Inject tab URL so fragment scripts can read query params
         const urlVarScript = document.createElement('script');

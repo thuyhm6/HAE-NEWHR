@@ -1,0 +1,289 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-12">
+            <!-- Form tìm kiếm -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form id="vmdl_searchForm" class="row g-3">
+                        <div class="col-md-2">
+                            <label for="vmdl_month" class="form-label" th:text="#{common.month}">Tháng</label>
+                            <input type="text" class="form-control js-daterangepicker" id="vmdl_month"
+                                data-drp-format="MMYYYY" autocomplete="off" placeholder="MMYYYY">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="vmdl_year" class="form-label" th:text="#{common.year}">Năm</label>
+                            <select class="form-select" id="vmdl_year"></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="vmdl_keyword" class="form-label" th:text="#{essDept.keyword}">Mã nhân viên / Họ tên</label>
+                            <input type="text" class="form-control" id="vmdl_keyword"
+                                th:placeholder="#{vdp.search.empKeyword.placeholder}" placeholder="Nhập mã hoặc họ tên">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="vmdl_deptNo" class="form-label" th:text="#{common.deptName}">Phòng ban</label>
+                            <input type="text" class="form-control" id="vmdl_deptNo"
+                                th:placeholder="#{vdp.search.dept.placeholder}" placeholder="Chọn phòng ban" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="vmdl_empTypeCode" class="form-label" th:text="#{common.type}">Loại</label>
+                            <select class="form-select" id="vmdl_empTypeCode">
+                                <option value="" th:text="#{common.all}">Tất cả</option>
+                                <option value="MTSVN" th:text="#{ess.viewMonthDetailList.empType.mtsvn}">MTSVN</option>
+                                <option value="THOIVU" th:text="#{ess.viewMonthDetailList.empType.thoiVu}">Thời vụ</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="vmdl_reportType" class="form-label" th:text="#{ess.viewMonthDetailList.reportType}">Loại báo cáo</label>
+                            <select class="form-select" id="vmdl_reportType">
+                                <option value="" th:text="#{ess.viewMonthDetailList.reportType.select}">LỰA CHỌN</option>
+                                <option value="314" th:text="#{ess.viewMonthDetailList.reportType.salary}">Công tính lương</option>
+                                <option value="3294" th:text="#{ess.viewMonthDetailList.reportType.bonus13th}">Công tính thưởng tháng 13</option>
+                                <option value="3293" th:text="#{ess.viewMonthDetailList.reportType.referralBonus}">Công tính thưởng giới thiệu 01.11.2025</option>
+                                <option value="3292" th:text="#{ess.viewMonthDetailList.reportType.workDuration}">Công thời lượng đi làm trong tháng</option>
+                                <option value="3291" th:text="#{ess.viewMonthDetailList.reportType.workOtPrint}">Công + Tăng ca tháng (Print)</option>
+                                <option value="3296" th:text="#{ess.viewMonthDetailList.reportType.diligence}">Công tính chuyên cần 01.03.2026</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 d-flex gap-2 flex-wrap align-items-end">
+                            <button type="button" class="btn btn-primary" onclick="vmdlSearchData()">
+                                <i class="bx bx-search"></i> <span th:text="#{essDept.search}">Tra cứu</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('306')"
+                                th:text="#{ess.viewMonthDetailList.quickReport.totalOt}">(Print)Total OT</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('3277')"
+                                th:text="#{ess.viewMonthDetailList.quickReport.attPrint}">Month attendance (Print)</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('3286')"
+                                th:text="#{ess.viewMonthDetailList.quickReport.otOver}">Month OT Over</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="vmdlQuickExport('3289')"
+                                th:text="#{ess.viewMonthDetailList.quickReport.attTotalDay}">Month Att Total Day</button>
+                            <button type="button" class="btn btn-success" onclick="vmdlExportReport()">
+                                <i class="bx bx-export"></i> <span th:text="#{ess.viewMonthDetailList.btnExport}">XUẤT BÁO CÁO</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danh sách chi tiết chấm công tháng -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                        <span class="fw-bold">
+                            <span th:text="#{common.total}">Total</span>:<span id="vmdl_totalCount">0</span>
+                        </span>
+                        <div class="ms-auto d-flex align-items-center gap-2">
+                            <span class="small" th:text="#{common.quickFilter}">Lọc nhanh</span>
+                            <input type="text" class="form-control form-control-sm" id="vmdl_quickFilter"
+                                th:placeholder="#{common.quickFilter}" placeholder="Lọc nhanh" style="max-width:200px;">
+                        </div>
+                    </div>
+                    <div class="dt-table-wrapper" style="overflow: auto;">
+                        <table id="vmdl_dataTable" class="table table-striped table-bordered table-hover text-nowrap">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th rowspan="2" th:text="#{common.stt}">NO.</th>
+                                    <th colspan="7" th:text="#{ess.viewMonthDetailList.BASIC_INFO.b}">Thông tin cơ bản</th>
+                                    <th colspan="3" th:text="#{ess.viewMonthDetailList.OT_ON_WEEKDAY.b}">HÀNH CHÍNH</th>
+                                    <th colspan="2" th:text="#{ess.viewMonthDetailList.OT_ON_WEEKEND.b}">NGÀY NGHỈ</th>
+                                    <th colspan="2" th:text="#{ess.viewMonthDetailList.OT_ON_HOLIDAY.b}">LỄ TẾT</th>
+                                    <th colspan="3" th:text="#{ess.viewMonthDetailList.WORK_DAYS.b}">Số ngày làm việc</th>
+                                </tr>
+                                <tr>
+                                    <th th:text="#{common.empId}">Mã nhân viên</th>
+                                    <th th:text="#{common.empName}">Họ tên</th>
+                                    <th th:text="#{common.deptName}">Phòng ban</th>
+                                    <th th:text="#{epi.field.dob}">Ngày sinh</th>
+                                    <th th:text="#{common.duty}">Chức vụ</th>
+                                    <th th:text="#{common.dateJoined}">Ngày vào làm</th>
+                                    <th th:text="#{hr.enpinfo.title.EMP.PROBATION_END_DATE}">Ngày kết thúc thử việc</th>
+                                    <th th:text="#{ess.viewMonthDetailList.DAY_OT.b}">TC NGÀY</th>
+                                    <th th:text="#{ess.viewMonthDetailList.NIGHT_OT.b}">TC ĐÊM</th>
+                                    <th th:text="#{ess.viewMonthDetailList.NIGHT_OT_210.b}">TC ĐÊM(210%)</th>
+                                    <th th:text="#{ess.viewMonthDetailList.DAY_OT.b}">TC NGÀY</th>
+                                    <th th:text="#{ess.viewMonthDetailList.NIGHT_OT.b}">TC ĐÊM</th>
+                                    <th th:text="#{ess.viewMonthDetailList.DAY_OT.b}">TC NGÀY</th>
+                                    <th th:text="#{ess.viewMonthDetailList.NIGHT_OT.b}">TC ĐÊM</th>
+                                    <th th:text="#{ar.viewArShiftMonthCheckList.ZHENGCHANGBAN.b}">Ca hành chính</th>
+                                    <th th:text="#{ess.viewMonthDetailList.NIGHT_SHIFT.b}">CA ĐÊM</th>
+                                    <th th:text="#{ar.viewSearchOtInfo.YINGCHUQIN.b}">Ngày công chuẩn</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="fragmentScripts">
+    <script th:inline="javascript">
+        var _vmdl_table = null;
+        var _vmdl_pageBooted = false;
+        var _vmdl_selectedDeptCodes = [];
+        var _vmdl_quickFilterTimer = null;
+        var _vmdl_msg = {
+            noData:           /*[[#{ess.viewMonthDetailList.msg.noData}]]*/ 'Không có dữ liệu',
+            loadFailed:       /*[[#{ess.viewMonthDetailList.msg.loadFailed}]]*/ 'Tải dữ liệu thất bại',
+            selectReportType: /*[[#{ess.viewMonthDetailList.msg.selectReportType}]]*/ 'Vui lòng chọn loại báo cáo'
+        };
+
+        /* ── Khởi tạo bộ chọn phòng ban ── */
+        function vmdlInitDeptSelector() {
+            if (typeof DeptTree === 'undefined') return;
+            DeptTree.init('#vmdl_deptNo', function (selectedCodes) {
+                _vmdl_selectedDeptCodes = selectedCodes || [];
+            });
+        }
+
+        /* ── Khởi tạo dropdown Năm (dùng riêng cho một số báo cáo cần lọc theo năm) ── */
+        function vmdlInitYearSelect() {
+            var $year = $('#vmdl_year');
+            if ($year.find('option').length) return;
+            var currentYear = new Date().getFullYear();
+            for (var y = currentYear + 1; y >= currentYear - 5; y--) {
+                $year.append($('<option>').val(y).text(y));
+            }
+            $year.val(currentYear);
+        }
+
+        /* ── Tách giá trị MMYYYY của ô Tháng thành month/year gửi lên server ── */
+        function vmdlParseMonthYear() {
+            var raw = ($('#vmdl_month').val() || '').trim();
+            if (raw.length !== 6) {
+                return { month: '', year: '' };
+            }
+            return { month: raw.substring(0, 2), year: raw.substring(2, 6) };
+        }
+
+        /* ── Thu thập tham số tìm kiếm ── */
+        function vmdlGetSearchParams() {
+            var my = vmdlParseMonthYear();
+            return {
+                month:       my.month,
+                year:        my.year,
+                keyword:     $('#vmdl_keyword').val(),
+                quickFilter: $('#vmdl_quickFilter').val(),
+                deptNos:     (_vmdl_selectedDeptCodes || []).join(','),
+                empTypeCode: $('#vmdl_empTypeCode').val()
+            };
+        }
+
+        /* ── Khởi tạo DataTable server-side ── */
+        function vmdlInitTable() {
+            _vmdl_table = $('#vmdl_dataTable').DataTable({
+                destroy:      true,
+                serverSide:   true,
+                paging:       true,
+                ordering:     false,
+                searching:    false,
+                lengthChange: true,
+                pageLength:   25,
+                processing:   true,
+                autoWidth:    false,
+                ajax: {
+                    url:  '/ess/tempEmp/api/monthDetailList/list',
+                    type: 'GET',
+                    data: function (d) {
+                        var p = vmdlGetSearchParams();
+                        d.month       = p.month;
+                        d.year        = p.year;
+                        d.keyword     = p.keyword;
+                        d.quickFilter = p.quickFilter;
+                        d.deptNos     = p.deptNos;
+                        d.empTypeCode = p.empTypeCode;
+                    },
+                    dataSrc: function (json) {
+                        $('#vmdl_totalCount').text(json.recordsTotal || 0);
+                        return json.data || [];
+                    },
+                    error: function () {
+                        if (typeof toastr !== 'undefined') toastr.error(_vmdl_msg.loadFailed);
+                    }
+                },
+                columns: [
+                    {
+                        data: null, className: 'text-center',
+                        render: function (data, type, row, meta) {
+                            return meta.settings._iDisplayStart + meta.row + 1;
+                        }
+                    },
+                    { data: 'empId',            className: 'text-center' },
+                    { data: 'localName' },
+                    { data: 'deptName' },
+                    { data: 'dob',               className: 'text-center' },
+                    { data: 'dutyName',          className: 'text-center' },
+                    { data: 'dateStarted',       className: 'text-center' },
+                    { data: 'endProbationDate',  className: 'text-center' },
+                    { data: 'hcDayOt',           className: 'text-end' },
+                    { data: 'hcNightOt',         className: 'text-end' },
+                    { data: 'hcNightOt210',      className: 'text-end' },
+                    { data: 'restDayOt',         className: 'text-end' },
+                    { data: 'restNightOt',       className: 'text-end' },
+                    { data: 'holDayOt',          className: 'text-end' },
+                    { data: 'holNightOt',        className: 'text-end' },
+                    { data: 'adminShiftDays',    className: 'text-end' },
+                    { data: 'nightShiftDays',    className: 'text-end' },
+                    { data: 'standardWorkDays',  className: 'text-end' }
+                ]
+            });
+        }
+
+        /* ── Khởi động trang ── */
+        function vmdlBootPage() {
+            if (_vmdl_pageBooted) return;
+            if (!document.getElementById('vmdl_dataTable')) {
+                setTimeout(vmdlBootPage, 30);
+                return;
+            }
+            _vmdl_pageBooted = true;
+            vmdlInitDeptSelector();
+            vmdlInitYearSelect();
+            if (!$('#vmdl_month').val()) {
+                $('#vmdl_month').val(moment().format('MMYYYY'));
+            }
+            if (typeof initDateRangePickers === 'function') initDateRangePickers('#vmdl_searchForm');
+            $('#vmdl_quickFilter').on('input', function () {
+                clearTimeout(_vmdl_quickFilterTimer);
+                _vmdl_quickFilterTimer = setTimeout(function () {
+                    if (_vmdl_table) _vmdl_table.ajax.reload();
+                }, 400);
+            });
+            $.when(typeof initCodeSelects === 'function' ? initCodeSelects('#vmdl_searchForm') : null).always(function () {
+                vmdlInitTable();
+            });
+        }
+
+        window.vmdlSearchData = function () {
+            if (_vmdl_table) _vmdl_table.ajax.reload();
+        };
+
+        /* ── Gọi API xuất báo cáo theo loại báo cáo đang chọn (hoặc truyền trực tiếp) ── */
+        window.vmdlExportReport = function (reportType) {
+            var type = reportType || $('#vmdl_reportType').val();
+            if (!type) {
+                if (typeof toastr !== 'undefined') toastr.warning(_vmdl_msg.selectReportType);
+                return;
+            }
+            var params = $.extend({}, vmdlGetSearchParams(), { reportType: type, reportYear: $('#vmdl_year').val() });
+            window.location.href = '/ess/tempEmp/api/monthDetailList/export?' + $.param(params);
+        };
+
+        /* ── Nút xuất nhanh: mỗi nút gắn với 1 loại báo cáo riêng, độc lập với dropdown Loại báo cáo ── */
+        window.vmdlQuickExport = function (reportType) {
+            window.vmdlExportReport(reportType);
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', vmdlBootPage);
+        }
+        if (typeof $ !== 'undefined') {
+            $(document).ready(vmdlBootPage);
+        } else {
+            vmdlBootPage();
+        }
+    </script>
+</template>

@@ -54,7 +54,9 @@
         <result column="OT_TOTAL_YEAR" property="otTotalYear" />
         <result column="USECAR_YN" property="usecarYn" />
         <result column="CAR_ADDRESS" property="carAddress" />
+        <result column="CAR_ADDRESS_NAME" property="carAddressName" />
         <result column="CAR_ADDRESS_DETAIL" property="carAddressDetail" />
+        <result column="CAR_ADDRESS_DETAIL_NAME" property="carAddressDetailName" />
     </resultMap>
 
     <resultMap id="ArOvertimeDefaultResultMap" type="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
@@ -151,6 +153,7 @@
                 A.UPDATE_DATE, A.UPDATED_BY, A.UPDATED_IP, A.ACTIVITY, A.APPLY_TIME,
                 A.CONFIRM_DATE, A.CONFIRM_BY, A.CONFIRM_IP, A.CPNY_ID, A.BATCH_YN,
                 A.BATCH_NO, A.DEDUCT_YN, A.SPECIAL_YN, A.OFFSET_YN, A.ADJUST_YN,
+                A.USECAR_YN, A.CAR_ADDRESS, A.CAR_ADDRESS_DETAIL,
                 E.EMPID, E.LOCAL_NAME, E.DEPTNO AS DEPT_NO, E.POST_GRADE_NO
             FROM ESS_APPLY_OT A
             INNER JOIN HR_EMPLOYEE E ON E.PERSON_ID = A.PERSON_ID
@@ -159,7 +162,7 @@
                 AND UPPER(E.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
             </if>
             <if test="localName != null and localName != ''">
-                AND UPPER(E.LOCAL_NAME) LIKE '%' || UPPER(#{localName, jdbcType=VARCHAR}) || '%'
+                AND CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName, jdbcType=VARCHAR})) || '%'
             </if>
             <if test="fromDate != null and fromDate != ''">
                 AND A.APPLY_OT_DATE &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
@@ -229,6 +232,111 @@
             GET_AR_MAC_TIME(B.PERSON_ID, TO_CHAR(B.APPLY_OT_DATE, 'YYYY-MM-DD'), 'OUT') AS OUTDOOR_TIME,
             GET_AR_OT_TOTAIL(TO_CHAR(B.APPLY_OT_DATE, 'YYYY/MM/DD'), B.CPNY_ID, B.PERSON_ID, '30') AS OT_TOTAL_MONTH,
             GET_AR_OT_TOTAIL(TO_CHAR(B.APPLY_OT_DATE, 'YYYY/MM/DD'), B.CPNY_ID, B.PERSON_ID, '200') AS OT_TOTAL_YEAR,
+            TO_CHAR(B.USECAR_YN) AS USECAR_YN,
+            B.CAR_ADDRESS,
+            GET_GLOBAL_NAME(B.CAR_ADDRESS, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_NAME,
+            B.CAR_ADDRESS_DETAIL,
+            GET_GLOBAL_NAME(B.CAR_ADDRESS_DETAIL, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_DETAIL_NAME,
+            AGG.AFFIRM_STR
+        FROM FILTERED_OT B
+        LEFT JOIN AFFIRM_AGG_DATA AGG ON B.APPLY_NO = AGG.APPLY_NO
+        ORDER BY B.CREATE_DATE DESC, B.EMPID
+    </select>
+
+    <select id="selectListOver" resultMap="ArOvertimeManagentResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
+        WITH FILTERED_OT AS (
+            SELECT /*+ materialize */
+                A.APPLY_NO, A.PERSON_ID, A.APPLY_OT_DATE, A.OT_FROM_TIME, A.OT_TO_TIME,
+                A.APPLY_OT_REMARK, A.OT_TYPE_NO, A.OT_TYPE_CODE, A.OT_APPLY_HOUR,
+                A.AFFIRM_FLAG, A.CONFIRM_FLAG, A.CREATE_DATE, A.CREATED_BY, A.CREATED_IP,
+                A.UPDATE_DATE, A.UPDATED_BY, A.UPDATED_IP, A.ACTIVITY, A.APPLY_TIME,
+                A.CONFIRM_DATE, A.CONFIRM_BY, A.CONFIRM_IP, A.CPNY_ID, A.BATCH_YN,
+                A.BATCH_NO, A.DEDUCT_YN, A.SPECIAL_YN, A.OFFSET_YN, A.ADJUST_YN,
+                A.USECAR_YN, A.CAR_ADDRESS, A.CAR_ADDRESS_DETAIL,
+                E.EMPID, E.LOCAL_NAME, E.DEPTNO AS DEPT_NO, E.POST_GRADE_NO
+            FROM ESS_APPLY_OT_OVER A
+            INNER JOIN HR_EMPLOYEE E ON E.PERSON_ID = A.PERSON_ID
+            WHERE A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            <if test="empId != null and empId != ''">
+                AND UPPER(E.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
+            </if>
+            <if test="localName != null and localName != ''">
+                AND CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName, jdbcType=VARCHAR})) || '%'
+            </if>
+            <if test="fromDate != null and fromDate != ''">
+                AND A.APPLY_OT_DATE &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+            </if>
+            <if test="toDate != null and toDate != ''">
+                AND A.APPLY_OT_DATE &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+            </if>
+            <if test="affirmFlag != null and affirmFlag != ''">
+                AND TO_CHAR(A.AFFIRM_FLAG) = #{affirmFlag, jdbcType=VARCHAR}
+            </if>
+            <if test="confirmFlag != null and confirmFlag != ''">
+                AND TO_CHAR(A.CONFIRM_FLAG) = #{confirmFlag, jdbcType=VARCHAR}
+            </if>
+        ),
+        AFFIRM_AGG_DATA AS (
+            SELECT
+                S.APPLY_NO,
+                LISTAGG('&lt;p&gt;' || S.AFFIRM_LEVEL || '. ' || NVL(HE.EMPID, '') || ' - ' || NVL(HE.LOCAL_NAME, '') || '&lt;/p&gt;', '')
+                       WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL) AS AFFIRM_STR
+            FROM SY_AFFIRM_EMAIL S
+            LEFT JOIN HR_EMPLOYEE HE ON S.AFFIRM_PERSON_ID = HE.PERSON_ID
+            WHERE S.AFFIRM_LEVEL &gt; 0
+              AND S.APPLY_NO IN (SELECT APPLY_NO FROM FILTERED_OT)
+            GROUP BY S.APPLY_NO
+        )
+        SELECT
+            B.APPLY_NO AS APPLY_NO,
+            B.PERSON_ID,
+            B.EMPID,
+            B.LOCAL_NAME,
+            B.DEPT_NO,
+            GET_DEPT_NAME(B.DEPT_NO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            B.POST_GRADE_NO,
+            GET_GLOBAL_NAME(B.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+            TO_CHAR(B.APPLY_OT_DATE, 'YYYY-MM-DD') AS APPLY_OT_DATE,
+            TO_CHAR(B.OT_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS OT_FROM_TIME,
+            TO_CHAR(B.OT_TO_TIME, 'YYYY-MM-DD HH24:MI') AS OT_TO_TIME,
+            B.APPLY_OT_REMARK,
+            B.OT_TYPE_NO,
+            B.OT_TYPE_CODE,
+            GET_GLOBAL_NAME(B.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS OT_TYPE_NAME,
+            TO_CHAR(B.OT_APPLY_HOUR) AS OT_APPLY_HOUR,
+            TO_CHAR(B.AFFIRM_FLAG) AS AFFIRM_FLAG,
+            GET_GLOBAL_NAME(B.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+            TO_CHAR(B.CONFIRM_FLAG) AS CONFIRM_FLAG,
+            TO_CHAR(B.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
+            GET_UPDATED_INFO(B.CREATED_BY) AS CREATED_BY,
+            B.CREATED_IP,
+            TO_CHAR(B.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
+            GET_UPDATED_INFO(B.UPDATED_BY) AS UPDATED_BY,
+            B.UPDATED_IP,
+            B.ACTIVITY AS ACTIVITY,
+            TO_CHAR(B.APPLY_TIME, 'YYYY-MM-DD HH24:MI:SS') AS APPLY_TIME,
+            TO_CHAR(B.CONFIRM_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CONFIRM_DATE,
+            B.CONFIRM_BY,
+            B.CONFIRM_IP,
+            B.CPNY_ID,
+            B.BATCH_YN AS BATCH_YN,
+            B.BATCH_NO AS BATCH_NO,
+            B.DEDUCT_YN AS DEDUCT_YN,
+            B.SPECIAL_YN AS SPECIAL_YN,
+            B.OFFSET_YN AS OFFSET_YN,
+            B.ADJUST_YN AS ADJUST_YN,
+            TO_CHAR(B.OT_FROM_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_FROM_DATE_TIME,
+            TO_CHAR(B.OT_TO_TIME, 'YYYY-MM-DD HH24:MI') AS DETAIL_TO_DATE_TIME,
+            GET_AR_MAC_TIME(B.PERSON_ID, TO_CHAR(B.APPLY_OT_DATE, 'YYYY-MM-DD'), 'IN') AS INDOOR_TIME,
+            GET_AR_MAC_TIME(B.PERSON_ID, TO_CHAR(B.APPLY_OT_DATE, 'YYYY-MM-DD'), 'OUT') AS OUTDOOR_TIME,
+            GET_AR_OT_TOTAIL(TO_CHAR(B.APPLY_OT_DATE, 'YYYY/MM/DD'), B.CPNY_ID, B.PERSON_ID, '30') AS OT_TOTAL_MONTH,
+            GET_AR_OT_TOTAIL(TO_CHAR(B.APPLY_OT_DATE, 'YYYY/MM/DD'), B.CPNY_ID, B.PERSON_ID, '200') AS OT_TOTAL_YEAR,
+            TO_CHAR(B.USECAR_YN) AS USECAR_YN,
+            B.CAR_ADDRESS,
+            GET_GLOBAL_NAME(B.CAR_ADDRESS, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_NAME,
+            B.CAR_ADDRESS_DETAIL,
+            GET_GLOBAL_NAME(B.CAR_ADDRESS_DETAIL, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_DETAIL_NAME,
             AGG.AFFIRM_STR
         FROM FILTERED_OT B
         LEFT JOIN AFFIRM_AGG_DATA AGG ON B.APPLY_NO = AGG.APPLY_NO
@@ -338,7 +446,7 @@
                 A.AFFIRM_CONTENT
             FROM SY_AFFIRM_EMAIL A
             INNER JOIN HR_EMPLOYEE HR ON A.AFFIRM_PERSON_ID = HR.PERSON_ID
-            WHERE A.APPLY_NO = TO_NUMBER(#{applyNo, jdbcType=VARCHAR})
+            WHERE A.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
             <if test="applyType != null and applyType != ''">
                 AND A.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
             </if>
@@ -368,7 +476,7 @@
                 TO_CHAR(B.CONFIRM_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE,
                 '' AS AFFIRM_CONTENT
             FROM ESS_APPLY_OT B
-            WHERE B.APPLY_NO = TO_NUMBER(#{applyNo, jdbcType=VARCHAR})
+            WHERE B.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
         ) T
         ORDER BY TO_NUMBER(T.AFFIRM_LEVEL)
     </select>
@@ -476,7 +584,7 @@
                 A.AFFIRM_CONTENT
             FROM SY_AFFIRM_EMAIL A
             INNER JOIN HR_EMPLOYEE HR ON A.AFFIRM_PERSON_ID = HR.PERSON_ID
-            WHERE A.APPLY_NO = TO_NUMBER(#{applyNo, jdbcType=VARCHAR})
+            WHERE A.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
             <if test="applyType != null and applyType != ''">
                 AND A.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
             </if>
@@ -506,7 +614,7 @@
                 TO_CHAR(B.CONFIRM_DATE, 'DD/MM/YYYY HH24:MI:SS') AS UPDATE_DATE,
                 '' AS AFFIRM_CONTENT
             FROM ESS_APPLY_OT_OVER B
-            WHERE B.APPLY_NO = TO_NUMBER(#{applyNo, jdbcType=VARCHAR})
+            WHERE B.APPLY_NO = #{applyNo, jdbcType=VARCHAR}
         ) T
         ORDER BY TO_NUMBER(T.AFFIRM_LEVEL)
     </select>
@@ -706,6 +814,7 @@
             CPNY_ID,
             BATCH_YN,
             DEDUCT_YN,
+            MISDOCID,
             USECAR_YN,
             CAR_ADDRESS,
             CAR_ADDRESS_DETAIL
@@ -731,7 +840,8 @@
             SYSDATE,
             #{cpnyId, jdbcType=VARCHAR},
             0,
-            0,
+            #{deductYn, jdbcType=VARCHAR},
+            TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
             #{usecarYn, jdbcType=NUMERIC},
             #{carAddress, jdbcType=VARCHAR},
             #{carAddressDetail, jdbcType=VARCHAR}
@@ -762,6 +872,7 @@
             CPNY_ID,
             BATCH_YN,
             DEDUCT_YN,
+            MISDOCID,
             USECAR_YN,
             CAR_ADDRESS,
             CAR_ADDRESS_DETAIL
@@ -787,7 +898,8 @@
             SYSDATE,
             #{cpnyId, jdbcType=VARCHAR},
             0,
-            0,
+            #{deductYn, jdbcType=VARCHAR},
+            TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
             #{usecarYn, jdbcType=NUMERIC},
             #{carAddress, jdbcType=VARCHAR},
             #{carAddressDetail, jdbcType=VARCHAR}
@@ -831,6 +943,8 @@
             ACTIVITY = 1,
             APPLY_TIME = SYSDATE,
             CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            DEDUCT_YN = #{deductYn, jdbcType=VARCHAR},
+            MISDOCID = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
             USECAR_YN = #{usecarYn, jdbcType=NUMERIC},
             CAR_ADDRESS = #{carAddress, jdbcType=VARCHAR},
             CAR_ADDRESS_DETAIL = #{carAddressDetail, jdbcType=VARCHAR}
@@ -846,6 +960,16 @@
 
     <update id="cancelOvertimeApply">
         UPDATE ESS_APPLY_OT
+        SET ACTIVITY = 1,
+            AFFIRM_FLAG = 14014310,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="cancelOvertimeApplyOver">
+        UPDATE ESS_APPLY_OT_OVER
         SET ACTIVITY = 1,
             AFFIRM_FLAG = 14014310,
             UPDATE_DATE = SYSDATE,
@@ -870,7 +994,7 @@
                    AND SY.APPLY_FLAG = SY2.APPLY_FLAG
                    AND SY2.SEQ = (SELECT MAX(SEQ)
                                     FROM SY_AFFIRM_EMAIL
-                                   WHERE APPLY_NO = TO_NUMBER(#{applyNo, jdbcType=VARCHAR})))
+                                   WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}))
            AND ROWNUM &lt; 2
     </select>
 
@@ -891,6 +1015,10 @@
 
     <delete id="deleteOvertimeApplyByApplyNo">
         DELETE FROM ESS_APPLY_OT WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </delete>
+
+    <delete id="deleteOvertimeApplyOverByApplyNo">
+        DELETE FROM ESS_APPLY_OT_OVER WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
     </delete>
 
     <delete id="deleteApplyResultByApplyNo">

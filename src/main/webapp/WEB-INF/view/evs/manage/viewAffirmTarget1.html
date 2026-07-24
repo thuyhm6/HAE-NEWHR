@@ -298,8 +298,13 @@
                         <!-- Objective Confirm -->
                         <div class="fw-semibold small mb-1 border-bottom pb-1"
                              th:text="#{evs.viewAffirmTarget1.modal.objectiveTitle}">Objective Confirm</div>
+
+                        <!-- Mục tiêu chiến lược (ITEM_TYPE = 1) -->
+                        <div class="mb-1">
+                            <span class="fw-semibold small" th:text="#{evs.viewAffirmTarget1.modal.strategicTarget}">Mục tiêu chiến lược</span>
+                        </div>
                         <div class="table-responsive mb-2">
-                            <table class="table table-bordered table-sm align-middle mb-0" id="vat1dm_itemTable">
+                            <table class="table table-bordered table-sm align-middle mb-0" id="vat1dm_strategicTable">
                                 <thead class="table-light text-center align-middle">
                                     <tr>
                                         <th style="width:44px;" th:text="#{evs.viewAffirmTarget1.col.no}">No</th>
@@ -310,17 +315,61 @@
                                         <th style="width:120px;" th:text="#{evs.viewAffirmTarget1.modal.col.affirm1Score}">Đánh giá lần 1</th>
                                     </tr>
                                 </thead>
-                                <tbody id="vat1dm_itemTbody">
+                                <tbody id="vat1dm_strategicTbody">
                                     <tr><td colspan="6" class="text-center text-muted">-</td></tr>
                                 </tbody>
                                 <tfoot>
                                     <tr class="table-light fw-semibold">
-                                        <td colspan="3" class="text-end small">Total</td>
-                                        <td class="text-center">100</td>
-                                        <td class="text-center" id="vat1dm_selfTotal">-</td>
-                                        <td class="text-center" id="vat1dm_affirm1Total">0</td>
+                                        <td colspan="3" class="text-end small" th:text="#{common.total}">Tổng</td>
+                                        <td class="text-center" id="vat1dm_strategicItemScoreTotal">0</td>
+                                        <td class="text-center" id="vat1dm_strategicSelfTotal">-</td>
+                                        <td class="text-center" id="vat1dm_strategicAffirm1Total">0</td>
                                     </tr>
                                 </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Mục tiêu vận hành (ITEM_TYPE IS NULL) -->
+                        <div class="mb-1">
+                            <span class="fw-semibold small" th:text="#{evs.viewAffirmTarget1.modal.operationTarget}">Mục tiêu vận hành</span>
+                        </div>
+                        <div class="table-responsive mb-2">
+                            <table class="table table-bordered table-sm align-middle mb-0" id="vat1dm_operationTable">
+                                <thead class="table-light text-center align-middle">
+                                    <tr>
+                                        <th style="width:44px;" th:text="#{evs.viewAffirmTarget1.col.no}">No</th>
+                                        <th style="width:180px;" th:text="#{evs.viewAffirmTarget1.modal.col.evalItem}">Hạng mục đánh giá</th>
+                                        <th th:text="#{evs.viewAffirmTarget1.modal.col.target}">Mục tiêu</th>
+                                        <th style="width:90px;" th:text="#{evs.viewAffirmTarget1.modal.col.targetScore}">Điểm chỉ tiêu</th>
+                                        <th style="width:110px;" th:text="#{evs.viewAffirmTarget1.modal.col.selfScore}">Tự đánh giá (%)</th>
+                                        <th style="width:120px;" th:text="#{evs.viewAffirmTarget1.modal.col.affirm1Score}">Đánh giá lần 1</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vat1dm_operationTbody">
+                                    <tr><td colspan="6" class="text-center text-muted">-</td></tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-light fw-semibold">
+                                        <td colspan="3" class="text-end small" th:text="#{common.total}">Tổng</td>
+                                        <td class="text-center" id="vat1dm_operationItemScoreTotal">0</td>
+                                        <td class="text-center" id="vat1dm_operationSelfTotal">-</td>
+                                        <td class="text-center" id="vat1dm_operationAffirm1Total">0</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Tổng cộng cả 2 phần -->
+                        <div class="table-responsive mb-2">
+                            <table class="table table-bordered table-sm mb-0">
+                                <tbody>
+                                    <tr class="table-light fw-semibold">
+                                        <td class="text-end small" th:text="#{common.total}">Tổng</td>
+                                        <td class="text-center" style="width:90px;" id="vat1dm_itemScoreTotal">100</td>
+                                        <td class="text-center" style="width:110px;" id="vat1dm_selfTotal">-</td>
+                                        <td class="text-center" style="width:120px;" id="vat1dm_affirm1Total">0</td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
 
@@ -769,9 +818,12 @@
                 var $modal = $('#' + _vat1_tabId).find('#vat1_detailModal');
                 $modal.find('#vat1dm_objectSeq').val(objectSeq);
                 $modal.find('#vat1dm_canInput').val('0');
-                $modal.find('#vat1dm_itemTbody').html('<tr><td colspan="6" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>');
-                $modal.find('#vat1dm_selfTotal').text('-');
-                $modal.find('#vat1dm_affirm1Total').text('0');
+                var vat1dmSpinner = '<tr><td colspan="6" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>';
+                $modal.find('#vat1dm_strategicTbody').html(vat1dmSpinner);
+                $modal.find('#vat1dm_operationTbody').html(vat1dmSpinner);
+                $modal.find('#vat1dm_strategicItemScoreTotal, #vat1dm_operationItemScoreTotal, #vat1dm_itemScoreTotal').text('0');
+                $modal.find('#vat1dm_strategicSelfTotal, #vat1dm_operationSelfTotal, #vat1dm_selfTotal').text('-');
+                $modal.find('#vat1dm_strategicAffirm1Total, #vat1dm_operationAffirm1Total, #vat1dm_affirm1Total').text('0');
                 $modal.find('#vat1dm_affirm1Score').text('0');
                 $modal.find('#vat1dm_affirm1Grade').text('-');
                 $modal.find('#vat1dm_selfContent').html('');
@@ -792,7 +844,9 @@
                         vat1dmLoadItems(objectSeq, info, $modal);
                     },
                     error: function () {
-                        $modal.find('#vat1dm_itemTbody').html('<tr><td colspan="6" class="text-center text-danger">Error</td></tr>');
+                        var errHtml = '<tr><td colspan="6" class="text-center text-danger">Error</td></tr>';
+                        $modal.find('#vat1dm_strategicTbody').html(errHtml);
+                        $modal.find('#vat1dm_operationTbody').html(errHtml);
                     }
                 });
             };
@@ -836,15 +890,22 @@
                         vat1dmRenderItems(items, $modal);
                     },
                     error: function () {
-                        $modal.find('#vat1dm_itemTbody').html('<tr><td colspan="6" class="text-center text-danger">Error</td></tr>');
+                        var errHtml = '<tr><td colspan="6" class="text-center text-danger">Error</td></tr>';
+                        $modal.find('#vat1dm_strategicTbody').html(errHtml);
+                        $modal.find('#vat1dm_operationTbody').html(errHtml);
                     }
                 });
             }
 
-            function vat1dmRenderItems(items, $modal) {
-                var canInput = $modal.find('#vat1dm_canInput').val() === '1';
-                if (!items || !items.length) {
-                    $modal.find('#vat1dm_itemTbody').html('<tr><td colspan="6" class="text-center text-muted">-</td></tr>');
+            function vat1dmIsStrategic(itemType) {
+                return String(itemType) === '1';
+            }
+
+            /* ── Render 1 phần (strategic/operation) ─────────────────────────── */
+            function vat1dmRenderSection(section, items, canInput, $modal) {
+                var $tbody = $modal.find('#vat1dm_' + section + 'Tbody');
+                if (!items.length) {
+                    $tbody.html('<tr><td colspan="6" class="text-center text-muted">-</td></tr>');
                     return;
                 }
                 var html = '';
@@ -867,17 +928,32 @@
                         + '</td>';
                     html += '</tr>';
                 });
-                $modal.find('#vat1dm_itemTbody').html(html);
+                $tbody.html(html);
+            }
+
+            /* ── Render 2 bảng: Mục tiêu chiến lược / Mục tiêu vận hành ───────── */
+            function vat1dmRenderItems(items, $modal) {
+                var canInput = $modal.find('#vat1dm_canInput').val() === '1';
+                items = items || [];
+                var strategicItems = items.filter(function (r) { return vat1dmIsStrategic(r.itemType); });
+                var operationItems = items.filter(function (r) { return !vat1dmIsStrategic(r.itemType); });
+                vat1dmRenderSection('strategic', strategicItems, canInput, $modal);
+                vat1dmRenderSection('operation', operationItems, canInput, $modal);
                 vat1dmUpdateTotals($modal);
             }
 
-            function vat1dmUpdateTotals($modal) {
+            /* ── Tính tổng của 1 phần: item score / tự đánh giá / đánh giá lần 1 ── */
+            function vat1dmSectionTotals(section, $modal) {
+                var itemScoreTotal = 0;
                 var selfTotal = 0;
                 var affirm1Total = 0;
                 var hasAffirm1Input = false;
-                $modal.find('#vat1dm_itemTbody tr').each(function () {
-                    var itemScore = parseFloat($(this).find('td').eq(3).data('itemscore')) || 0;
-                    var selfScore = parseFloat($(this).find('td').eq(4).text()) || 0;
+                $modal.find('#vat1dm_' + section + 'Tbody tr').each(function () {
+                    var $tds = $(this).find('td');
+                    if ($tds.length < 5) return; // dòng "-" khi không có mục tiêu
+                    var itemScore = parseFloat($tds.eq(3).data('itemscore')) || 0;
+                    var selfScore = parseFloat($tds.eq(4).text()) || 0;
+                    itemScoreTotal += itemScore;
                     selfTotal += selfScore * itemScore / 100;
                     var score1 = parseFloat($(this).find('.vat1dm-score1-input').val());
                     if (!isNaN(score1)) {
@@ -885,8 +961,32 @@
                         affirm1Total += score1 * itemScore / 100;
                     }
                 });
-                selfTotal    = Math.round(selfTotal    * 100) / 100;
-                affirm1Total = Math.round(affirm1Total * 100) / 100;
+                return {
+                    itemScoreTotal: Math.round(itemScoreTotal * 100) / 100,
+                    selfTotal: Math.round(selfTotal * 100) / 100,
+                    affirm1Total: Math.round(affirm1Total * 100) / 100,
+                    hasAffirm1Input: hasAffirm1Input
+                };
+            }
+
+            function vat1dmUpdateTotals($modal) {
+                var strategic = vat1dmSectionTotals('strategic', $modal);
+                var operation = vat1dmSectionTotals('operation', $modal);
+
+                $modal.find('#vat1dm_strategicItemScoreTotal').text(strategic.itemScoreTotal);
+                $modal.find('#vat1dm_strategicSelfTotal').text(strategic.selfTotal > 0 ? strategic.selfTotal : '-');
+                $modal.find('#vat1dm_strategicAffirm1Total').text(strategic.hasAffirm1Input ? strategic.affirm1Total : '-');
+
+                $modal.find('#vat1dm_operationItemScoreTotal').text(operation.itemScoreTotal);
+                $modal.find('#vat1dm_operationSelfTotal').text(operation.selfTotal > 0 ? operation.selfTotal : '-');
+                $modal.find('#vat1dm_operationAffirm1Total').text(operation.hasAffirm1Input ? operation.affirm1Total : '-');
+
+                var itemScoreTotal  = Math.round((strategic.itemScoreTotal + operation.itemScoreTotal) * 100) / 100;
+                var selfTotal       = Math.round((strategic.selfTotal      + operation.selfTotal)      * 100) / 100;
+                var affirm1Total    = Math.round((strategic.affirm1Total   + operation.affirm1Total)   * 100) / 100;
+                var hasAffirm1Input = strategic.hasAffirm1Input || operation.hasAffirm1Input;
+
+                $modal.find('#vat1dm_itemScoreTotal').text(itemScoreTotal);
                 $modal.find('#vat1dm_selfTotal').text(selfTotal > 0 ? selfTotal : '-');
                 $modal.find('#vat1dm_affirm1Total').text(hasAffirm1Input ? affirm1Total : '-');
                 // Chỉ ghi đè điểm số khi có item score thực sự được nhập,

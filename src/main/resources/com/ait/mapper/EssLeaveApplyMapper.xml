@@ -70,7 +70,7 @@
         <result property="hrComment" column="HR_COMMENT" />
         <result property="annualLeaveCount" column="ANNUAL_LEAVE_COUNT" />
         <result property="affirmStr" column="AFFIRM_STR" />
-        <result property="sexCode" column="SEX_CODE" />
+        <result property="sexCode" column="SEXCODE" />
     </resultMap>
 
     <resultMap id="EssLeaveApplyDetailResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto" extends="DtoResultMap">
@@ -164,7 +164,7 @@
             TO_CHAR(A.UPDATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS UPDATE_DATE,
             GET_UPDATED_INFO(A.UPDATED_BY) AS UPDATED_BY,
             A.UPDATED_IP,
-            HPI.SEX_CODE,
+            HPI.SEXCODE,
             (
                 SELECT LISTAGG('&lt;p&gt;' || S.AFFIRM_LEVEL || '. ' || NVL(HE.EMPID, '') || ' - ' || NVL(HE.LOCAL_NAME, '') || '&lt;/p&gt;', '')
                            WITHIN GROUP (ORDER BY S.AFFIRM_LEVEL)
@@ -181,7 +181,7 @@
             AND UPPER(E.EMPID) LIKE '%' || UPPER(#{empId, jdbcType=VARCHAR}) || '%'
         </if>
         <if test="localName != null and localName != ''">
-            AND UPPER(E.LOCAL_NAME) LIKE '%' || UPPER(#{localName, jdbcType=VARCHAR}) || '%'
+            AND CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName, jdbcType=VARCHAR})) || '%'
         </if>
         <if test="fromDate != null and fromDate != ''">
             AND A.LEAVE_FROM_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
@@ -399,6 +399,7 @@
             LEAVE_REASON, LEAVE_TYPE_NO, LEAVE_TYPE_CODE,
             APPLY_LENGTH,
             AFFIRM_FLAG,
+            MISDOCID,
             CONFIRM_FLAG, CPNY_ID, CREATE_DATE, CREATED_BY, CREATED_IP, ACTIVITY
         ) VALUES (
             #{applyNo, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, SYSDATE,
@@ -413,6 +414,7 @@
                 GET_CODE_NO(#{leaveTypeCode, jdbcType=VARCHAR}, '21', #{cpnyId, jdbcType=VARCHAR}, 'CODE')
             ),
             '14014306',
+            TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
             0, #{cpnyId, jdbcType=VARCHAR}, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, 1
         )
     </insert>
@@ -434,6 +436,7 @@
             ),
             AFFIRM_FLAG = '14014306',
             ACTIVITY = 1,
+            MISDOCID = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
             CONFIRM_FLAG = 0,
             CONFIRM_DATE = NULL,
             CONFIRM_BY = NULL,
@@ -627,7 +630,7 @@
                 #{lang, jdbcType=VARCHAR}
             ) AS SHIFT_NAME,
             GET_DEPT_NAME(HE.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
-            HPI.SEX_CODE
+            HPI.SEXCODE
         FROM SHIFT_DATA SD, HR_EMPLOYEE HE
         LEFT JOIN HR_PERSONAL_INFO HPI ON HPI.PERSON_ID = HE.PERSON_ID
         WHERE HE.PERSON_ID = #{personId, jdbcType=VARCHAR}

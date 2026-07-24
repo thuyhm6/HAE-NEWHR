@@ -1,5 +1,6 @@
 package com.ait.ar.attendanceMintenance.controller;
 
+import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
 import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
 import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyImportTempDto;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
@@ -188,12 +189,20 @@ public class EssLeaveApplyController {
 
     @PostMapping("/api/leaveApply/resubmit")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> resubmitLeaveApply(@RequestBody Map<String, Object> params) {
+    public ResponseEntity<Map<String, Object>> resubmitLeaveApply(@RequestBody Map<String, Object> params, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
             service.resubmitLeaveApply(params);
             response.put("success", true);
             response.put("message", "Lưu lại đơn thành công");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            String savedApplyNo = params.get("applyNo") != null ? params.get("applyNo").toString() : "";
+            try {
+                mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+            }
         } catch (Exception e) {
             log.error("Failed to resubmit leave application applyNo={}", params != null ? params.get("applyNo") : null, e);
             response.put("success", false);

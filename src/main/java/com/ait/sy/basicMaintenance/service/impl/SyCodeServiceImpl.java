@@ -38,6 +38,14 @@ public class SyCodeServiceImpl implements SyCodeService {
     }
 
     @Override
+    public List<SyCodeDto> getUseCodeList(String parentCodeNo) {
+        if (parentCodeNo == null || parentCodeNo.isEmpty()) {
+            return syCodeMapper.findUseCodeWithParentNo("ROOT");
+        }
+        return syCodeMapper.findUseCodeWithParentNo(parentCodeNo);
+    }
+
+    @Override
     @Transactional
     public void saveCode(SyCodeDto dto) {
         boolean isNew = dto.getCodeNo() == null || dto.getCodeNo().trim().isEmpty()

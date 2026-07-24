@@ -58,7 +58,7 @@
         $(document).ready(function () {
             // Tải danh sách ca làm việc thông qua parent-code 400223
             $.ajax({
-                url: '/sys/api/code/list?parentCodeNo=400223',
+                url: '/sys/api/getCode/list?parentCodeNo=400223',
                 success: function (data) {
                     _shg_shiftList = data || [];
                     shgInitTable();

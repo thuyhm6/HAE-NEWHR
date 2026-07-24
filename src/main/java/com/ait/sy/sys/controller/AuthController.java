@@ -54,10 +54,25 @@ public class AuthController {
     private PasswordUpdateService passwordUpdateService;
 
     /**
+     * Chặn cache trang login để tránh gửi lại csrfToken cũ sau khi session đã bị
+     * invalidate (timeout/logout)
+     */
+    private void disableCache(HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+    }
+
+    /**
      * Hiển thị trang đăng nhập (main route)
      */
     @GetMapping("/login")
-    public String loginPage(Model model, HttpSession session, HttpServletRequest request) {
+    public String loginPage(Model model, HttpSession session, HttpServletRequest request,
+            HttpServletResponse response) {
+        // Không cho browser/proxy cache trang login, tránh việc form gửi lại
+        // csrfToken cũ (đã hết hạn theo session cũ) sau khi timeout/logout
+        disableCache(response);
+
         // Kiểm tra user đã đăng nhập chưa
         HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
         if (currentHrUser != null) {
@@ -67,6 +82,8 @@ public class AuthController {
         // Tạo CSRF token
         csrfUtil.saveCsrfToken(session);
         String csrfToken = csrfUtil.getCsrfToken(session);
+        log.info("[CSRF-DEBUG] GET /login sessionId={} isNew={} csrfToken={}", session.getId(), session.isNew(),
+                maskToken(csrfToken));
 
         // Thêm thông tin rate limiting
         int remainingAttempts = hrAuthenticationServiceImpl.getRemainingLoginAttempts(request);
@@ -81,10 +98,25 @@ public class AuthController {
     }
 
     /**
+     * Che bớt token khi ghi log, chỉ giữ lại vài ký tự đầu để đối chiếu debug
+     */
+    private String maskToken(String token) {
+        if (token == null) {
+            return "null";
+        }
+        return token.length() > 8 ? token.substring(0, 8) + "...(len=" + token.length() + ")" : token;
+    }
+
+    /**
      * Hiển thị trang đăng nhập (alternative route)
      */
     @GetMapping("/auth/login")
-    public String authLoginPage(Model model, HttpSession session, HttpServletRequest request) {
+    public String authLoginPage(Model model, HttpSession session, HttpServletRequest request,
+            HttpServletResponse response) {
+        // Không cho browser/proxy cache trang login, tránh việc form gửi lại
+        // csrfToken cũ (đã hết hạn theo session cũ) sau khi timeout/logout
+        disableCache(response);
+
         // Kiểm tra user đã đăng nhập chưa
         HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
         if (currentHrUser != null) {
@@ -124,6 +156,11 @@ public class AuthController {
         try {
             // Kiểm tra CSRF token
             String sessionCsrf = csrfUtil.getCsrfToken(session);
+            log.info(
+                    "[CSRF-DEBUG] POST /login sessionId={} isNew={} requestedSessionId={} requestedSessionIdValid={} requestedSessionIdFromCookie={} sessionToken={} formToken={}",
+                    session.getId(), session.isNew(), request.getRequestedSessionId(),
+                    request.isRequestedSessionIdValid(), request.isRequestedSessionIdFromCookie(),
+                    maskToken(sessionCsrf), maskToken(csrfToken));
             if (sessionCsrf == null || !sessionCsrf.equals(csrfToken)) {
                 log.warn("CSRF token mismatch for login attempt from IP: {}", IpUtil.getClientIpAddr(request));
                 model.addAttribute("error", "Phiên làm việc không hợp lệ. Vui lòng thử lại.");

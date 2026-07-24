@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface EvsAffirmorSetupMapper {
@@ -14,6 +15,12 @@ public interface EvsAffirmorSetupMapper {
 
     /** Tìm kiếm nhân viên để chọn làm người đánh giá */
     List<EvsAffirmorSetupDto> searchEmployee(EvsAffirmorSetupDto dto);
+
+    /** Tìm nhân viên theo đúng Mã NV (dùng khi import Excel) */
+    EvsAffirmorSetupDto selectEmployeeByEmpId(@Param("empId") String empId);
+
+    /** Lưu bản ghi tham chiếu vào EVS_OBJECT_TEMP khi import Excel */
+    void insertObjectTemp(Map<String, Object> params);
 
     /** Cập nhật người đánh giá cho một đối tượng */
     void updateAffirmor(EvsAffirmorSetupDto dto);

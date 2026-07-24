@@ -275,6 +275,8 @@
                         activity: $('#codeActivity').is(':checked') ? '1' : '0'
                     };
 
+                    var isNewMode = $('#isNewMode').val() === 'true';
+
                     $.ajax({
                         url: '/sys/api/code/save',
                         type: 'POST',
@@ -285,7 +287,20 @@
                                 toastr.success(res.message);
                                 $('#codeModal').modal('hide');
                                 loadTable(currentParentCode);
-                                loadTree(); // Refresh tree as structure might change
+
+                                if (isNewMode) {
+                                    // Thêm mới có thể sinh node cha mới -> phải tải lại toàn bộ cây
+                                    loadTree();
+                                } else {
+                                    // Cập nhật không đổi cấu trúc cây -> chỉ đổi tên node hiện có, tránh destroy/rebuild
+                                    // làm mất trạng thái chọn và khiến các node cha không còn phản hồi click
+                                    var treeInst = $('#code_tree').jstree(true);
+                                    var node = treeInst && treeInst.get_node(data.codeNo);
+                                    if (node) {
+                                        node.data = data;
+                                        treeInst.rename_node(node, data.nameVi ? data.nameVi : data.codeNo);
+                                    }
+                                }
                             } else {
                                 toastr.error(res.message);
                             }

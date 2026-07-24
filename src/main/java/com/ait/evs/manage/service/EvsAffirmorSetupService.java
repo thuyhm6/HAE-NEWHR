@@ -1,7 +1,9 @@
 package com.ait.evs.manage.service;
 
 import com.ait.evs.manage.dto.EvsAffirmorSetupDto;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface EvsAffirmorSetupService {
@@ -26,4 +28,7 @@ public interface EvsAffirmorSetupService {
 
     /** Xóa các đối tượng đánh giá theo danh sách SEQ */
     void deleteObjects(List<String> seqList);
+
+    /** Import danh sách đối tượng đánh giá từ file Excel (đọc file, lưu EVS_OBJECT_TEMP rồi thêm mới như addObject) */
+    List<String> importExcel(String resumeSeq, MultipartFile file) throws IOException;
 }

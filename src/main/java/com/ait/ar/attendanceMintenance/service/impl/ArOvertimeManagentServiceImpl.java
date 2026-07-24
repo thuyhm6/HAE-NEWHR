@@ -47,6 +47,12 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
     }
 
     @Override
+    public List<ArOvertimeManagentDto> getListOver(ArOvertimeManagentDto dto) {
+        ArOvertimeManagentDto safeDto = dto == null ? new ArOvertimeManagentDto() : dto;
+        return mapper.selectListOver(safeDto);
+    }
+
+    @Override
     public Map<String, Object> getDetail(String applyNo, String applyType) {
         String resolvedApplyNo = safeString(applyNo);
         if (resolvedApplyNo.isEmpty()) {
@@ -467,6 +473,61 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
 
     @Override
     @Transactional
+    public void cancelOvertimeApplyOver(String applyNo) {
+        String resolvedApplyNo = safeString(applyNo);
+        if (resolvedApplyNo.isEmpty()) {
+            throw new IllegalArgumentException("Mã đơn tăng ca vượt không hợp lệ.");
+        }
+
+        mapper.cancelOvertimeApplyOver(resolvedApplyNo);
+
+        Map<String, Object> deleteParams = new HashMap<>();
+        deleteParams.put("applyNo", resolvedApplyNo);
+        deleteParams.put("message", "");
+        mapper.callDeleteOtConfirm(deleteParams);
+
+        String deleteMsg = safeString(deleteParams.get("message"));
+        if (isProcedureErrorMessage(deleteMsg)) {
+            throw new IllegalStateException(deleteMsg);
+        }
+
+        SyAffirmEmailDto affirmEmail = mapper.selectCancelAffirmEmail(resolvedApplyNo);
+        if (affirmEmail == null) {
+            return;
+        }
+
+        Map<String, Object> cancelParams = new HashMap<>();
+        cancelParams.put("applyNo", affirmEmail.getApplyNo());
+        cancelParams.put("applyType", affirmEmail.getApplyType());
+        cancelParams.put("applyFlag", affirmEmail.getApplyFlag());
+        cancelParams.put("message", "");
+        mapper.callAffirmCancel(cancelParams);
+
+        String cancelMsg = safeString(cancelParams.get("message"));
+        if (isProcedureErrorMessage(cancelMsg)) {
+            throw new IllegalStateException(cancelMsg);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> cancelBatchOvertimeApplyOver(List<String> applyNos) {
+        if (applyNos == null || applyNos.isEmpty()) {
+            throw new IllegalArgumentException("Danh sách đơn tăng ca vượt không hợp lệ.");
+        }
+        int count = 0;
+        for (String applyNo : applyNos) {
+            cancelOvertimeApplyOver(applyNo);
+            count++;
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("count", count);
+        return result;
+    }
+
+    @Override
+    @Transactional
     public void resubmitOvertimeApply(ArOvertimeManagentDto dto) {
         if (dto == null) {
             throw new IllegalArgumentException("Dữ liệu tăng ca không hợp lệ.");
@@ -484,6 +545,34 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         // Tạo mới với applyNo rỗng để save() tự cấp số mới
         dto.setApplyNo("");
         save(dto);
+    }
+
+    @Override
+    @Transactional
+    public void resubmitOvertimeApplyOver(ArOvertimeManagentDto dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Dữ liệu tăng ca vượt không hợp lệ.");
+        }
+        String applyNo = safeString(dto.getApplyNo());
+        if (applyNo.isEmpty()) {
+            throw new IllegalArgumentException("Mã đơn tăng ca vượt không hợp lệ.");
+        }
+
+        mapper.deleteApplyResultByApplyNo(applyNo);
+        affirmEmailMapper.delete(applyNo);
+        mapper.deleteOvertimeApplyOverByApplyNo(applyNo);
+
+        dto.setApplyNo("");
+        saveOver(dto);
+    }
+
+    @Override
+    @Transactional
+    public void saveBatchOver(List<ArOvertimeManagentDto> dtos) {
+        if (dtos == null || dtos.isEmpty()) return;
+        for (ArOvertimeManagentDto dto : dtos) {
+            saveOver(dto);
+        }
     }
 
     @Override

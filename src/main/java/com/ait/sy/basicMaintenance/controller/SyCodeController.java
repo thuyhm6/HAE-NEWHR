@@ -41,6 +41,12 @@ public class SyCodeController {
         return syCodeService.getCodeList(parentCodeNo);
     }
 
+    @GetMapping("/api/getCode/list")
+    @ResponseBody
+    public List<SyCodeDto> getUseCodeList(@RequestParam(required = false) String parentCodeNo) {
+        return syCodeService.getUseCodeList(parentCodeNo);
+    }
+
     @PostMapping("/api/code/save")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveCode(@RequestBody SyCodeDto dto) {

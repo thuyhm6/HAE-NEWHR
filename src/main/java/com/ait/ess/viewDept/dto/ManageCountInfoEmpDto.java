@@ -23,6 +23,7 @@ public class ManageCountInfoEmpDto {
     private String postFamily;
     private String empTypeCode;
     private String empOffice;
+    private String asOfDate;
 
     // Phân trang
     private int draw;

@@ -59,6 +59,12 @@ public class HrContractServiceImpl implements HrContractService {
     }
 
     @Override
+    public List<HrContract> getContractsByPersonId(String personId) {
+        logger.info("Lấy danh sách hợp đồng theo personId={}", personId);
+        return hrContractMapper.getContractsByPersonId(personId);
+    }
+
+    @Override
     public List<HrContract> getContractsWithSearchAndPagination(String keyword, int page, int size) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return getContractsWithPagination(page, size);

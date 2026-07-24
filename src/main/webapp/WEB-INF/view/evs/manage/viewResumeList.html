@@ -1,4 +1,7 @@
 <div th:fragment="content">
+    <style>
+        #vrl_table tbody tr { cursor: pointer; }
+    </style>
     <div class="row">
         <div class="col-12" id="vrl_pageWrapper">
 
@@ -302,7 +305,7 @@
             };
 
             window.vrlClearSearch = function () {
-                vrl$('#vrl_yearSearch').val(new Date().getFullYear());
+                vrl$('#vrl_yearSearch').val();
                 vrl$('#vrl_cycleSearch').val('');
                 if (inst.table) inst.table.ajax.reload();
             };
@@ -313,7 +316,7 @@
                 vrl$('#vrl_resumeName').val('');
                 vrl$('#vrl_remark').val('');
                 vrl$('#vrl_evsCycle').val('');
-                vrl$('#vrl_evsYear').val(new Date().getFullYear());
+                vrl$('#vrl_evsYear').val();
                 vrlLoadMonthOptions('', '');
                 vrl$('#vrl_standardDate').val('');
                 vrl$('#vrl_evsStartDate').val('');
@@ -427,7 +430,7 @@
 
                 if (typeof initDateRangePickers === 'function') initDateRangePickers('#' + _vrl_tabId + ' #vrl_pageWrapper');
 
-                vrl$('#vrl_yearSearch').val(new Date().getFullYear());
+                vrl$('#vrl_yearSearch').val();
 
                 inst.table = vrl$('#vrl_table').DataTable({
                     scrollY: 'calc(100vh - 320px)',
@@ -474,16 +477,19 @@
                             data: null, className: 'text-center', width: '80px', orderable: false,
                             render: function (data, type, row) {
                                 return '<div class="btn-group btn-group-sm">'
-                                    + '<button class="btn btn-outline-primary py-0 px-1"'
-                                    + ' onclick="vrlOpenEditModal(\'' + vrlEscHtml(row.seq) + '\')">'
-                                    + '<i class="bi bi-pencil"></i></button>'
                                     + '<button class="btn btn-outline-danger py-0 px-1"'
                                     + ' onclick="vrlOpenDeleteModal(\'' + vrlEscHtml(row.seq) + '\',\'' + vrlEscHtml(row.resumeName) + '\')">'
-                                    + '<i class="bi bi-trash"></i></button>'
+                                    + '<i class="bx bx-trash"></i></button>'
                                     + '</div>';
                             }
                         }
                     ]
+                });
+
+                vrl$('#vrl_table tbody').on('click', 'tr', function (e) {
+                    if (vrl$(e.target).closest('.btn-group').length) return;
+                    var row = inst.table.row(this).data();
+                    if (row) vrlOpenEditModal(row.seq);
                 });
             });
         })();

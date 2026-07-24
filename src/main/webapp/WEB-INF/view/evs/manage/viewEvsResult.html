@@ -281,6 +281,403 @@
 
         </div><!-- /#ver_pageWrapper -->
     </div><!-- /.row -->
+
+    <!-- Modal chi tiết đánh giá (evsType=ability) - chỉ xem, giống vat2a_detailModal -->
+    <div class="modal fade" id="ver_abilityDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title fw-bold"
+                        th:text="#{evs.viewAffirmTarget2Ability.modal.personalInfo}">Thông tin cá nhân</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2" style="max-height:80vh;overflow-y:auto;">
+                    <!-- Thông tin cơ bản + Hạng mục đánh giá -->
+                    <div class="row g-0 mb-2">
+                        <div class="col-md-6">
+                            <table class="table table-bordered table-sm mb-0 h-100">
+                                <thead class="table-light text-center">
+                                    <tr><th colspan="2" th:text="#{evs.viewAffirmTarget2Ability.modal.basicInfo}">Thông tin cơ bản</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted small" style="width:35%;"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.fullName}">Họ tên</td>
+                                        <td id="ver_ab_localName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.position}">Chức vụ</td>
+                                        <td id="ver_ab_postGradeName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.dept}">Phòng ban</td>
+                                        <td id="ver_ab_deptname"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.hireDate}">Ngày vào làm</td>
+                                        <td id="ver_ab_dateStarted"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-bordered table-sm mb-0 h-100">
+                                <thead class="table-light text-center">
+                                    <tr><th colspan="2" th:text="#{evs.viewAffirmTarget2Ability.modal.evalCategory}">Hạng mục đánh giá</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted small" style="width:40%;"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.evalYear}">Năm đánh giá</td>
+                                        <td id="ver_ab_evsYear"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.period}">Thời gian</td>
+                                        <td id="ver_ab_evsPeriod"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.appraiser1}">Người đánh giá lần 1</td>
+                                        <td id="ver_ab_localName1"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2Ability.modal.appraiser2}">Người đánh giá lần 2</td>
+                                        <td id="ver_ab_localName2"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Bảng năng lực -->
+                    <div class="fw-semibold small mb-1 border-bottom pb-1"
+                         th:text="#{evs.viewAffirmTarget2Ability.modal.abilityTitle}">Đánh giá năng lực lần 2</div>
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="ver_ab_itemTable">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th style="width:44px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.no}">No</th>
+                                    <th style="width:160px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.distinction}">Phân biệt</th>
+                                    <th style="width:200px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.evalItem}">Hạng mục đánh giá</th>
+                                    <th th:text="#{evs.viewAffirmTarget2Ability.modal.col.criterion}">Chỉ tiêu đánh giá</th>
+                                    <th style="width:90px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.itemScore}">Điểm chỉ tiêu</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.selfScore}">Tự đánh giá</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.affirm1Score}">Đánh giá lần 1</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.affirm2Score}">Đánh giá lần 2</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ver_ab_itemTbody">
+                                <tr><td colspan="8" class="text-center text-muted">-</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-semibold">
+                                    <td colspan="4" class="text-end small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center" id="ver_ab_totalItemScore">0</td>
+                                    <td class="text-center" id="ver_ab_selfTotal">-</td>
+                                    <td class="text-center" id="ver_ab_affirm1Total">-</td>
+                                    <td class="text-center" id="ver_ab_affirm2Total">-</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Ý kiến bản thân -->
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{evs.viewAffirmTarget2Ability.modal.selfOpinion}">Ý kiến cá nhân</th>
+                                    <th style="width:100px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.totalScore}">Điểm số</th>
+                                    <th style="width:80px;" th:text="#{evs.viewAffirmTarget2Ability.col.grade}">Cấp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div id="ver_ab_selfContent" class="small" style="min-height:40px;"></div></td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_ab_selfScore">-</td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_ab_selfGrade">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ý kiến đánh giá lần 1 -->
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{evs.viewAffirmTarget2Ability.modal.affirm1Opinion}">Ý kiến đánh giá lần 1</th>
+                                    <th style="width:100px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.totalScore}">Điểm số</th>
+                                    <th style="width:130px;" th:text="#{evs.viewAffirmTarget2Ability.col.grade}">Cấp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div id="ver_ab_affirm1Content" class="small" style="min-height:40px;"></div></td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_ab_affirm1Score">-</td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_ab_affirm1Grade">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ý kiến đánh giá lần 2 -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{evs.viewAffirmTarget2Ability.modal.affirm2Opinion}">Ý kiến đánh giá lần 2</th>
+                                    <th style="width:100px;" th:text="#{evs.viewAffirmTarget2Ability.modal.col.totalScore}">Điểm số</th>
+                                    <th style="width:130px;" th:text="#{evs.viewAffirmTarget2Ability.col.grade}">Cấp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div id="ver_ab_affirm2Content" class="small" style="min-height:40px;"></div></td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_ab_affirm2Score">-</td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_ab_affirm2Grade">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <span th:text="#{common.close}">Đóng</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal chi tiết đánh giá (evsType=performance) - chỉ xem, giống vat2_detailModal -->
+    <div class="modal fade" id="ver_perfDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title fw-bold"
+                        th:text="#{evs.viewAffirmTarget2.modal.personalInfo}">Thông tin cá nhân</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-2" style="max-height:80vh;overflow-y:auto;">
+                    <!-- Thông tin cơ bản + Hạng mục đánh giá -->
+                    <div class="row g-0 mb-2">
+                        <div class="col-md-6">
+                            <table class="table table-bordered table-sm mb-0 h-100">
+                                <thead class="table-light text-center">
+                                    <tr><th colspan="2" th:text="#{evs.viewAffirmTarget2.modal.basicInfo}">Thông tin cơ bản</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted small" style="width:35%;"
+                                            th:text="#{evs.viewAffirmTarget2.modal.fullName}">Họ tên</td>
+                                        <td id="ver_pf_localName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2.modal.position}">Chức vụ</td>
+                                        <td id="ver_pf_postGradeName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2.modal.dept}">Phòng ban</td>
+                                        <td id="ver_pf_deptname"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2.modal.hireDate}">Ngày vào làm</td>
+                                        <td id="ver_pf_dateStarted"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-bordered table-sm mb-0 h-100">
+                                <thead class="table-light text-center">
+                                    <tr><th colspan="2" th:text="#{evs.viewAffirmTarget2.modal.evalCategory}">Hạng mục đánh giá</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted small" style="width:40%;"
+                                            th:text="#{evs.viewAffirmTarget2.modal.evalYear}">Năm đánh giá</td>
+                                        <td id="ver_pf_evsYear"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2.modal.period}">Thời gian</td>
+                                        <td id="ver_pf_evsPeriod"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2.modal.appraiser1}">Người đánh giá lần 1</td>
+                                        <td id="ver_pf_localName1"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewAffirmTarget2.modal.appraiser2}">Người đánh giá lần 2</td>
+                                        <td id="ver_pf_localName2"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Objective Confirm -->
+                    <div class="fw-semibold small mb-1 border-bottom pb-1"
+                         th:text="#{evs.viewAffirmTarget2.modal.objectiveTitle}">Objective Confirm</div>
+
+                    <!-- Mục tiêu chiến lược -->
+                    <div class="mb-1">
+                        <span class="fw-semibold small" th:text="#{evs.viewAffirmTarget2.modal.strategicTarget}">Mục tiêu chiến lược</span>
+                    </div>
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="ver_pf_strategicTable">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th style="width:44px;" th:text="#{evs.viewAffirmTarget2.col.no}">No</th>
+                                    <th style="width:180px;" th:text="#{evs.viewAffirmTarget2.modal.col.evalItem}">Hạng mục đánh giá</th>
+                                    <th th:text="#{evs.viewAffirmTarget2.modal.col.target}">Mục tiêu</th>
+                                    <th style="width:90px;" th:text="#{evs.viewAffirmTarget2.modal.col.targetScore}">Điểm chỉ tiêu</th>
+                                    <th style="width:110px;" th:text="#{evs.viewAffirmTarget2.modal.col.selfScore}">Tự đánh giá (%)</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2.modal.col.affirm1Score}">Đánh giá lần 1</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2.modal.col.affirm2Score}">Đánh giá lần 2</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ver_pf_strategicTbody">
+                                <tr><td colspan="7" class="text-center text-muted">-</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-semibold">
+                                    <td colspan="3" class="text-end small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center" id="ver_pf_strategicItemScoreTotal">0</td>
+                                    <td class="text-center" id="ver_pf_strategicSelfTotal">-</td>
+                                    <td class="text-center" id="ver_pf_strategicAffirm1Total">-</td>
+                                    <td class="text-center" id="ver_pf_strategicAffirm2Total">-</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Mục tiêu vận hành -->
+                    <div class="mb-1">
+                        <span class="fw-semibold small" th:text="#{evs.viewAffirmTarget2.modal.operationTarget}">Mục tiêu vận hành</span>
+                    </div>
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm align-middle mb-0" id="ver_pf_operationTable">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th style="width:44px;" th:text="#{evs.viewAffirmTarget2.col.no}">No</th>
+                                    <th style="width:180px;" th:text="#{evs.viewAffirmTarget2.modal.col.evalItem}">Hạng mục đánh giá</th>
+                                    <th th:text="#{evs.viewAffirmTarget2.modal.col.target}">Mục tiêu</th>
+                                    <th style="width:90px;" th:text="#{evs.viewAffirmTarget2.modal.col.targetScore}">Điểm chỉ tiêu</th>
+                                    <th style="width:110px;" th:text="#{evs.viewAffirmTarget2.modal.col.selfScore}">Tự đánh giá (%)</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2.modal.col.affirm1Score}">Đánh giá lần 1</th>
+                                    <th style="width:120px;" th:text="#{evs.viewAffirmTarget2.modal.col.affirm2Score}">Đánh giá lần 2</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ver_pf_operationTbody">
+                                <tr><td colspan="7" class="text-center text-muted">-</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-semibold">
+                                    <td colspan="3" class="text-end small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center" id="ver_pf_operationItemScoreTotal">0</td>
+                                    <td class="text-center" id="ver_pf_operationSelfTotal">-</td>
+                                    <td class="text-center" id="ver_pf_operationAffirm1Total">-</td>
+                                    <td class="text-center" id="ver_pf_operationAffirm2Total">-</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Tổng cộng cả 2 phần -->
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm mb-0">
+                            <tbody>
+                                <tr class="table-light fw-semibold">
+                                    <td class="text-end small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center" style="width:90px;" id="ver_pf_itemScoreTotal">0</td>
+                                    <td class="text-center" style="width:110px;" id="ver_pf_selfTotal">-</td>
+                                    <td class="text-center" style="width:120px;" id="ver_pf_affirm1Total">-</td>
+                                    <td class="text-center" style="width:120px;" id="ver_pf_affirm2Total">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ý kiến cá nhân -->
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{evs.viewAffirmTarget2.modal.selfOpinion}">Ý kiến cá nhân</th>
+                                    <th style="width:100px;" th:text="#{evs.viewAffirmTarget2.modal.col.totalScore}">Điểm số</th>
+                                    <th style="width:80px;" th:text="#{evs.viewAffirmTarget2.col.grade}">Cấp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div id="ver_pf_selfContent" class="small" style="min-height:40px;"></div></td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_pf_selfScore">-</td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_pf_selfGrade">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ý kiến đánh giá lần 1 -->
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{evs.viewAffirmTarget2.modal.affirm1Opinion}">Ý kiến đánh giá lần 1</th>
+                                    <th style="width:100px;" th:text="#{evs.viewAffirmTarget2.modal.col.totalScore}">Điểm số</th>
+                                    <th style="width:130px;" th:text="#{evs.viewAffirmTarget2.col.grade}">Cấp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div id="ver_pf_affirm1Content" class="small" style="min-height:40px;"></div></td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_pf_affirm1Score">-</td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_pf_affirm1Grade">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ý kiến đánh giá lần 2 -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th th:text="#{evs.viewAffirmTarget2.modal.affirm2Opinion}">Ý kiến đánh giá lần 2</th>
+                                    <th style="width:100px;" th:text="#{evs.viewAffirmTarget2.modal.col.totalScore}">Điểm số</th>
+                                    <th style="width:130px;" th:text="#{evs.viewAffirmTarget2.col.grade}">Cấp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><div id="ver_pf_affirm2Content" class="small" style="min-height:40px;"></div></td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_pf_affirm2Score">-</td>
+                                    <td class="text-center fw-semibold align-middle" id="ver_pf_affirm2Grade">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <span th:text="#{common.close}">Đóng</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div><!-- th:fragment="content" -->
 
 <template id="fragmentScripts">
@@ -746,9 +1143,214 @@
             };
 
             // ── Xem chi tiết ─────────────────────────────────────────────────
+            // evsType=ability  -> modal giống vat2a_detailModal (viewAffirmTarget2Ability.html)
+            // evsType=performance -> modal giống vat2_detailModal (viewAffirmTarget2.html)
+            // Chỉ xem (read-only): không có input/nút Lưu/Xác nhận/Từ chối vì đây là màn hình xem kết quả.
             window.verViewDetail = function (seq) {
-                console.log('[ver] View detail seq:', seq);
+                if (inst.evsType === 'ability') {
+                    verOpenAbilityModal(seq);
+                } else if (inst.evsType === 'performance') {
+                    verOpenPerfModal(seq);
+                } else {
+                    console.warn('[ver] evsType không xác định, không thể mở modal chi tiết:', inst.evsType);
+                }
             };
+
+            // ── Modal chi tiết đánh giá năng lực (evsType=ability) ────────────
+            function verOpenAbilityModal(objectSeq) {
+                var $modal = ver$('#ver_abilityDetailModal');
+                $modal.find('#ver_ab_itemTbody').html(
+                    '<tr><td colspan="8" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>');
+                $modal.find('#ver_ab_totalItemScore').text('0');
+                $modal.find('#ver_ab_selfTotal, #ver_ab_affirm1Total, #ver_ab_affirm2Total').text('-');
+                $modal.find('#ver_ab_selfContent, #ver_ab_affirm1Content, #ver_ab_affirm2Content').html('');
+                $modal.find('#ver_ab_selfScore, #ver_ab_selfGrade, #ver_ab_affirm1Score, #ver_ab_affirm1Grade, #ver_ab_affirm2Score, #ver_ab_affirm2Grade').text('-');
+
+                bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+
+                $.ajax({
+                    url: '/evs/manage/api/affirmTarget2/objectInfo',
+                    type: 'GET',
+                    data: { evsObjectSeq: objectSeq },
+                    success: function (info) {
+                        verAbRenderInfo(info, $modal);
+                        $.ajax({
+                            url: '/evs/manage/api/affirmTarget2Ability/itemList',
+                            type: 'GET',
+                            data: { evsObjectSeq: objectSeq },
+                            success: function (items) { verAbRenderItems(items, $modal); },
+                            error: function () {
+                                $modal.find('#ver_ab_itemTbody').html(
+                                    '<tr><td colspan="8" class="text-center text-danger">Error</td></tr>');
+                            }
+                        });
+                    },
+                    error: function () {
+                        $modal.find('#ver_ab_itemTbody').html(
+                            '<tr><td colspan="8" class="text-center text-danger">Error</td></tr>');
+                    }
+                });
+            }
+
+            function verAbRenderInfo(info, $modal) {
+                info = info || {};
+                $modal.find('#ver_ab_localName').text(info.localName || '');
+                $modal.find('#ver_ab_postGradeName').text(info.postGradeName || '');
+                $modal.find('#ver_ab_deptname').text(info.deptname || '');
+                $modal.find('#ver_ab_dateStarted').text(info.dateStarted || '');
+                $modal.find('#ver_ab_evsYear').text(info.evsYear || '');
+                var period = (info.evsStartDate || '') + (info.evsStartDate && info.evsEndDate ? '~' : '') + (info.evsEndDate || '');
+                $modal.find('#ver_ab_evsPeriod').text(period);
+                $modal.find('#ver_ab_localName1').text(info.localName1 || '');
+                $modal.find('#ver_ab_localName2').text(info.localName2 || '');
+
+                // Điểm số/cấp lấy trực tiếp từ EVS_AFFIRM (evsPoint/evsGrade) - đã là giá trị cuối cùng
+                $modal.find('#ver_ab_selfContent').html(verEsc(info.affirmContent0 || ''));
+                $modal.find('#ver_ab_selfScore').text(info.evsPoint0 || '-');
+                $modal.find('#ver_ab_selfGrade').html(verGradeBadge(info.evsGrade0) || '-');
+                $modal.find('#ver_ab_selfTotal').text(info.evsPoint0 || '-');
+
+                $modal.find('#ver_ab_affirm1Content').html(verEsc(info.affirmComment1 || info.affirmContent1 || ''));
+                $modal.find('#ver_ab_affirm1Score').text(info.evsPoint1 || '-');
+                $modal.find('#ver_ab_affirm1Grade').html(verGradeBadge(info.evsGrade1) || '-');
+                $modal.find('#ver_ab_affirm1Total').text(info.evsPoint1 || '-');
+
+                $modal.find('#ver_ab_affirm2Content').html(verEsc(info.affirmComment2 || info.affirmContent2 || ''));
+                $modal.find('#ver_ab_affirm2Score').text(info.evsPoint2 || '-');
+                $modal.find('#ver_ab_affirm2Grade').html(verGradeBadge(info.evsGrade2) || '-');
+                $modal.find('#ver_ab_affirm2Total').text(info.evsPoint2 || '-');
+            }
+
+            function verAbRenderItems(items, $modal) {
+                if (!items || !items.length) {
+                    $modal.find('#ver_ab_itemTbody').html(
+                        '<tr><td colspan="8" class="text-center text-muted">-</td></tr>');
+                    $modal.find('#ver_ab_totalItemScore').text('0');
+                    return;
+                }
+                var html = '';
+                var totalItem = 0;
+                items.forEach(function (item, idx) {
+                    totalItem += parseFloat(item.itemScore) || 0;
+                    html += '<tr>';
+                    html += '<td class="text-center">' + (idx + 1) + '</td>';
+                    html += '<td>' + verEsc(item.groupName || '') + '</td>';
+                    html += '<td>' + verEsc(item.itemName || '') + '</td>';
+                    html += '<td class="small">' + verEsc(item.remark || '') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.itemScore || '0') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.evsScore0 || '') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.evsScore1 || '') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.evsScore2 || '') + '</td>';
+                    html += '</tr>';
+                });
+                $modal.find('#ver_ab_itemTbody').html(html);
+                $modal.find('#ver_ab_totalItemScore').text(Math.round(totalItem * 100) / 100);
+            }
+
+            // ── Modal chi tiết đánh giá lần 2 (evsType=performance) ───────────
+            function verOpenPerfModal(objectSeq) {
+                var $modal = ver$('#ver_perfDetailModal');
+                var spinner = '<tr><td colspan="7" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>';
+                $modal.find('#ver_pf_strategicTbody, #ver_pf_operationTbody').html(spinner);
+                $modal.find('#ver_pf_strategicItemScoreTotal, #ver_pf_operationItemScoreTotal, #ver_pf_itemScoreTotal').text('0');
+                $modal.find('#ver_pf_strategicSelfTotal, #ver_pf_operationSelfTotal, #ver_pf_selfTotal').text('-');
+                $modal.find('#ver_pf_strategicAffirm1Total, #ver_pf_operationAffirm1Total, #ver_pf_affirm1Total').text('-');
+                $modal.find('#ver_pf_strategicAffirm2Total, #ver_pf_operationAffirm2Total, #ver_pf_affirm2Total').text('-');
+                $modal.find('#ver_pf_selfContent, #ver_pf_affirm1Content, #ver_pf_affirm2Content').html('');
+                $modal.find('#ver_pf_selfScore, #ver_pf_selfGrade, #ver_pf_affirm1Score, #ver_pf_affirm1Grade, #ver_pf_affirm2Score, #ver_pf_affirm2Grade').text('-');
+
+                bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+
+                $.ajax({
+                    url: '/evs/manage/api/affirmTarget2/objectInfo',
+                    type: 'GET',
+                    data: { evsObjectSeq: objectSeq },
+                    success: function (info) {
+                        verPfRenderInfo(info, $modal);
+                        $.ajax({
+                            url: '/evs/manage/api/affirmTarget2/itemList',
+                            type: 'GET',
+                            data: { evsObjectSeq: objectSeq },
+                            success: function (items) { verPfRenderItems(items, $modal); },
+                            error: function () {
+                                $modal.find('#ver_pf_strategicTbody, #ver_pf_operationTbody').html(
+                                    '<tr><td colspan="7" class="text-center text-danger">Error</td></tr>');
+                            }
+                        });
+                    },
+                    error: function () {
+                        $modal.find('#ver_pf_strategicTbody, #ver_pf_operationTbody').html(
+                            '<tr><td colspan="7" class="text-center text-danger">Error</td></tr>');
+                    }
+                });
+            }
+
+            function verPfRenderInfo(info, $modal) {
+                info = info || {};
+                $modal.find('#ver_pf_localName').text(info.localName || '');
+                $modal.find('#ver_pf_postGradeName').text(info.postGradeName || '');
+                $modal.find('#ver_pf_deptname').text(info.deptname || '');
+                $modal.find('#ver_pf_dateStarted').text(info.dateStarted || '');
+                $modal.find('#ver_pf_evsYear').text(info.evsYear || '');
+                var period = (info.evsStartDate || '') + (info.evsStartDate && info.evsEndDate ? '~' : '') + (info.evsEndDate || '');
+                $modal.find('#ver_pf_evsPeriod').text(period);
+                $modal.find('#ver_pf_localName1').text(info.localName1 || '');
+                $modal.find('#ver_pf_localName2').text(info.localName2 || '');
+
+                // Điểm số/cấp lấy trực tiếp từ EVS_AFFIRM (evsPoint/evsGrade) - đã là giá trị cuối cùng
+                $modal.find('#ver_pf_selfContent').html(verEsc(info.affirmContent0 || ''));
+                $modal.find('#ver_pf_selfScore').text(info.evsPoint0 || '-');
+                $modal.find('#ver_pf_selfGrade').html(verGradeBadge(info.evsGrade0) || '-');
+                $modal.find('#ver_pf_selfTotal').text(info.evsPoint0 || '-');
+
+                $modal.find('#ver_pf_affirm1Content').html(verEsc(info.affirmComment1 || ''));
+                $modal.find('#ver_pf_affirm1Score').text(info.evsPoint1 || '-');
+                $modal.find('#ver_pf_affirm1Grade').html(verGradeBadge(info.evsGrade1) || '-');
+                $modal.find('#ver_pf_affirm1Total').text(info.evsPoint1 || '-');
+
+                $modal.find('#ver_pf_affirm2Content').html(verEsc(info.affirmContent2 || ''));
+                $modal.find('#ver_pf_affirm2Score').text(info.evsPoint2 || '-');
+                $modal.find('#ver_pf_affirm2Grade').html(verGradeBadge(info.evsGrade2) || '-');
+                $modal.find('#ver_pf_affirm2Total').text(info.evsPoint2 || '-');
+            }
+
+            function verPfIsStrategic(itemType) { return String(itemType) === '1'; }
+
+            function verPfRenderSection(section, items, $modal) {
+                var $tbody = $modal.find('#ver_pf_' + section + 'Tbody');
+                if (!items.length) {
+                    $tbody.html('<tr><td colspan="7" class="text-center text-muted">-</td></tr>');
+                    $modal.find('#ver_pf_' + section + 'ItemScoreTotal').text('0');
+                    return 0;
+                }
+                var html = '';
+                var itemScoreTotal = 0;
+                items.forEach(function (item, idx) {
+                    itemScoreTotal += parseFloat(item.itemScore) || 0;
+                    html += '<tr>';
+                    html += '<td class="text-center">' + (idx + 1) + '</td>';
+                    html += '<td>' + verEsc(item.itemName || '') + '</td>';
+                    html += '<td class="small">' + (item.itemContent || '') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.itemScore || '0') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.evsScore || '0') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.evsScore1 || '0') + '</td>';
+                    html += '<td class="text-center">' + verEsc(item.evsScore2 || '') + '</td>';
+                    html += '</tr>';
+                });
+                $tbody.html(html);
+                itemScoreTotal = Math.round(itemScoreTotal * 100) / 100;
+                $modal.find('#ver_pf_' + section + 'ItemScoreTotal').text(itemScoreTotal);
+                return itemScoreTotal;
+            }
+
+            function verPfRenderItems(items, $modal) {
+                items = items || [];
+                var strategicItems = items.filter(function (r) { return verPfIsStrategic(r.itemType); });
+                var operationItems = items.filter(function (r) { return !verPfIsStrategic(r.itemType); });
+                var strategicTotal = verPfRenderSection('strategic', strategicItems, $modal);
+                var operationTotal = verPfRenderSection('operation', operationItems, $modal);
+                $modal.find('#ver_pf_itemScoreTotal').text(Math.round((strategicTotal + operationTotal) * 100) / 100);
+            }
 
             // ── Khởi tạo DeptTree selector ────────────────────────────────────
             function verInitDeptSelector() {
@@ -1029,7 +1631,7 @@
 
                 // Load grade options (14015161) rồi mới load dữ liệu lần đầu
                 $.ajax({
-                    url: '/sys/api/code/list?parentCodeNo=14015161',
+                    url: '/sys/api/getCode/list?parentCodeNo=14015161',
                     type: 'GET',
                     success: function (data) {
                         inst.gradeOptions = (data || []).map(function (code) {

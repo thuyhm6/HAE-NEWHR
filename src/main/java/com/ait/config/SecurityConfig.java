@@ -50,7 +50,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                                 "/actuator/health", "/api/health", "/api/csrf-token",
                                 "/change-language", "/api/current-language", "/api/supported-languages")
                         .permitAll()
-                        .antMatchers(HttpMethod.GET, "/sys/api/code/list", "/sys/api/menu/list")
+                        .antMatchers(HttpMethod.GET, "/sys/api/code/list", "/sys/api/code/tree", "/sys/api/menu/list",
+                                "/sys/api/getCode/list")
                         .authenticated()
                         .antMatchers("/sy/excel/api/**")
                         .authenticated()
@@ -78,13 +79,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
-                .csrf(csrf -> csrf
-                        .ignoringAntMatchers(
-                                "/auth/login", "/logout",
-                                "/api/change-first-password",
-                                "/api/csrf-token",
-                                "/password/api/verify-old-password",
-                                "/password/api/change-password"))
+                .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/login")))
                 .addFilterBefore(new SessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

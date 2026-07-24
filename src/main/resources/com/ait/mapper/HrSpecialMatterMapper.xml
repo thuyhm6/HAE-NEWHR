@@ -337,4 +337,15 @@
         WHERE SPECIAL_NO = #{specialNo}
     </delete>
 
+    <!-- Lấy danh sách hạng mục đặc biệt của một nhân viên (hồ sơ nhân viên ess/viewDept) -->
+    <select id="searchByPersonId" resultMap="HrSpecialMatterResultMap">
+        SELECT
+            <include refid="baseColumns"/>,
+            <include refid="employeeColumns"/>
+        <include refid="baseFromClause"/>
+        WHERE hsm.PERSON_ID = #{personId, jdbcType=VARCHAR}
+          AND (hsm.ACTIVITY = 1 OR hsm.ACTIVITY IS NULL)
+        ORDER BY hsm.START_DATE DESC, hsm.SPECIAL_NO DESC
+    </select>
+
 </mapper>

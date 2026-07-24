@@ -79,8 +79,8 @@
                             style="min-width:2000px">
                             <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th><input type="checkbox" id="ab_chkAll" title="Chọn tất cả"></th>
                                     <th>No</th>
+                                    <th><input type="checkbox" id="ab_chkAll" title="Chọn tất cả"></th>
                                     <th th:text="#{common.empName}">Nhân viên</th>
                                     <th th:text="#{common.deptName}">Phòng ban</th>
                                     <th th:text="#{applyAtt.remainLeave}">Phép còn</th>
@@ -235,7 +235,7 @@
             abInitDate();
 
             $.ajax({
-                url: '/sys/api/code/list?parentCodeNo=21',
+                url: '/sys/api/getCode/list?parentCodeNo=21',
                 success: function (data) {
                     _ab_typeList = data || [];
                     abPopulateLeaveTypeFilter();
@@ -289,15 +289,15 @@
                 pageLength: 25,
                 processing: true,
                 columnDefs: [
-                    { targets: 0, width: '30px', orderable: false },
-                    { targets: 1, width: '15px' },
+                    { targets: 0, width: '30px'},
+                    { targets: 1, width: '15px', orderable: false},
                     { targets: 2, width: '180px' },
                     { targets: 3, width: '140px' },
                     { targets: 4, width: '40px' },
                     { targets: 5, width: '120px' },
                     { targets: 6, width: '200px' },
-                    { targets: 7, width: '120px' },
-                    { targets: 8, width: '120px' },
+                    { targets: 7, width: '150px' },
+                    { targets: 8, width: '150px' },
                     { targets: 9, width: '40px' },
                     { targets: 10, width: '220px' },
                     { targets: 11, width: '120px' },
@@ -306,7 +306,7 @@
                     { targets: 14, width: '160px' },
                     { targets: 15, width: '40px' }
                 ],
-                fixedColumns: hasFixedColumns ? { leftColumns: 2 } : false,
+                fixedColumns: hasFixedColumns ? { leftColumns: 3 } : false,
                 initComplete: function () {
                     this.api().columns.adjust();
                     abInitInputPlugins('#ab_dataTable_wrapper');
@@ -340,16 +340,17 @@
                 columns: [
                     {
                         data: null,
+                        render: function (data, type, row, meta) { return meta.row + 1; }
+                    },
+                    {
+                        data: null,
                         className: 'text-center align-middle',
                         render: function (data, type, row) {
                             if (row.isNew || row.affirmFlag !== '14014308') return '';
                             return '<input type="checkbox" class="ab-chk-cancel">';
                         }
                     },
-                    {
-                        data: null,
-                        render: function (data, type, row, meta) { return meta.row + 1; }
-                    },
+                    
                     {
                         data: 'empId',
                         render: function (data, type, row) {
@@ -579,7 +580,7 @@
                             $tr.find('td').eq(4).text(rowData.annualLeaveCount);
                             rowData.shiftName = res.SHIFT_NAME || res.shiftName || '';
                             $tr.find('td').eq(5).text(rowData.shiftName);
-                            rowData.sexCode = res.SEX_CODE || res.sexCode || '';
+                            rowData.sexCode = res.SEXCODE || res.sexCode || '';
                             if (res.START_TIME || res.startTime) {
                                 rowData.leaveFromTime = res.START_TIME || res.startTime;
                                 var $fromInput = $tr.find('.ab-in-from');

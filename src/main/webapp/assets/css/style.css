@@ -154,15 +154,17 @@ table.dataTable tbody tr:hover>.sorting_1 {
 
 
 
-/* --- Custom JSTree Styles for #code_tree, #codeParam_tree --- */
+/* --- Custom JSTree Styles for #code_tree, #codeParam_tree, #currOrg_tree --- */
 
 /* Force remove bullets (dots) */
 #code_tree ul,
 #codeParam_tree ul,
 #menuParam_tree ul,
+#currOrg_tree ul,
 #code_tree li,
 #codeParam_tree li,
-#menuParam_tree li {
+#menuParam_tree li,
+#currOrg_tree li {
     list-style: none !important;
     list-style-type: none !important;
     margin: 0;
@@ -172,14 +174,16 @@ table.dataTable tbody tr:hover>.sorting_1 {
 /* JSTree Nesting Indentation */
 #code_tree ul,
 #codeParam_tree ul,
-#menuParam_tree ul {
+#menuParam_tree ul,
+#currOrg_tree ul {
     padding-left: 20px !important;
 }
 
 /* Hide default JSTree theme icons (arrows/dots) */
 #code_tree .jstree-ocl,
 #codeParam_tree .jstree-ocl,
-#menuParam_tree .jstree-ocl {
+#menuParam_tree .jstree-ocl,
+#currOrg_tree .jstree-ocl {
     background: none !important;
     width: 24px !important;
     position: relative;
@@ -189,7 +193,8 @@ table.dataTable tbody tr:hover>.sorting_1 {
 /* Custom (+) Icon for Closed state */
 #code_tree .jstree-closed>.jstree-ocl::before,
 #codeParam_tree .jstree-closed>.jstree-ocl::before,
-#menuParam_tree .jstree-closed>.jstree-ocl::before {
+#menuParam_tree .jstree-closed>.jstree-ocl::before,
+#currOrg_tree .jstree-closed>.jstree-ocl::before {
     content: "+";
     display: inline-block;
     width: 14px;
@@ -206,7 +211,8 @@ table.dataTable tbody tr:hover>.sorting_1 {
 /* Custom (-) Icon for Open state */
 #code_tree .jstree-open>.jstree-ocl::before,
 #codeParam_tree .jstree-open>.jstree-ocl::before,
-#menuParam_tree .jstree-open>.jstree-ocl::before {
+#menuParam_tree .jstree-open>.jstree-ocl::before,
+#currOrg_tree .jstree-open>.jstree-ocl::before {
     content: "-";
     display: inline-block;
     width: 14px;
@@ -223,7 +229,8 @@ table.dataTable tbody tr:hover>.sorting_1 {
 /* Hide toggle icon for Leaf nodes */
 #code_tree .jstree-leaf>.jstree-ocl::before,
 #codeParam_tree .jstree-leaf>.jstree-ocl::before,
-#menuParam_tree .jstree-leaf>.jstree-ocl::before {
+#menuParam_tree .jstree-leaf>.jstree-ocl::before,
+#currOrg_tree .jstree-leaf>.jstree-ocl::before {
     display: none;
 }
 

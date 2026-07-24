@@ -43,8 +43,8 @@
                 AND UPPER(CODE_NO) LIKE '%' || UPPER(#{codeNo}) || '%'
             </if>
             <if test="codeName != null and codeName != ''">
-                AND (UPPER(CODE_NAME) LIKE '%' || UPPER(#{codeName}) || '%' 
-                  OR UPPER(CODE_ENG_NAME) LIKE '%' || UPPER(#{codeName}) || '%')
+                AND CONVERTTOUNSIGN((UPPER(CODE_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{codeName})) || '%' 
+                  OR CONVERTTOUNSIGN(UPPER(CODE_ENG_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{codeName})) || '%')
             </if>
         </where>
         ORDER BY ORDERNO, CODE_NO

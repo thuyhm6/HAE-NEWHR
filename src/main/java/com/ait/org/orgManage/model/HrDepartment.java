@@ -195,6 +195,11 @@ public class HrDepartment {
     private String managerEmpName;
 
     /**
+     * Tên loại phòng ban (Virtual - lấy từ GET_GLOBAL_NAME)
+     */
+    private String deptTypeName;
+
+    /**
      * Kiểm tra phòng ban có hoạt động không
      */
     public boolean isActive() {

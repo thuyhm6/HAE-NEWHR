@@ -31,6 +31,12 @@
                             <button type="button" class="btn btn-primary" onclick="veasOpenAddModal()">
                                 <i class="bi bi-plus-circle"></i> <span th:text="#{evs.viewEvsAffirmorSetup.btnAddNew}">Thêm mới</span>
                             </button>
+                            <button type="button" class="btn btn-info btn-sm" onclick="veasDownloadTemplate()">
+                                <i class="bx bx-download"></i> <span th:text="#{common.downloadTemplate}">Tải File Mẫu</span>
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="veasOpenImportModal()">
+                                <i class="bx bx-upload"></i> <span th:text="#{common.importExcel}">Import Excel</span>
+                            </button>
                             <button type="button" class="btn btn-success" onclick="veasSaveAll()">
                                 <i class="bi bi-save"></i> <span th:text="#{evs.viewEvsAffirmorSetup.btnSaveAll}">Lưu tất cả</span>
                             </button>
@@ -67,7 +73,7 @@
                                 <input type="hidden" id="veas_bulkLocalName">
                                 <input type="hidden" id="veas_bulkPosition">
                                 <button class="btn btn-outline-secondary" type="button" onclick="veasBulkSearch('')">
-                                    <i class="bi bi-search"></i>
+                                    <i class="bx bx-search"></i>
                                 </button>
                             </div>
                         </div>
@@ -337,6 +343,21 @@
                     + ' data-name="' + veasEsc(val) + '" data-pid="' + veasEsc(pid) + '"'
                     + ' title="' + veasEsc(_veas_i18n.clickToEdit) + '">' + display + '</span>';
             }
+
+            // Tải file Excel mẫu
+            window.veasDownloadTemplate = function () {
+                window.location.href = '/sy/excel/api/downloadTemplate?templateName=EvsObject_add_Template';
+            };
+
+            // Mở modal import Excel (dùng shared component ExcelImport)
+            window.veasOpenImportModal = function () {
+                var resumeSeq = veas$('#veas_resumeSeq').val();
+                if (!resumeSeq) { alert(_veas_i18n.selectEvalFirst); return; }
+                var importUrl = '/evs/manage/api/affirmorSetup/importExcel?resumeSeq=' + encodeURIComponent(resumeSeq);
+                ExcelImport.open(importUrl, function () {
+                    if (inst.table) inst.table.ajax.reload();
+                });
+            };
 
             // Mở EmployeeSearchModal với keyword pre-fill
             function veasOpenAffirmSearch(seq, level, keyword) {

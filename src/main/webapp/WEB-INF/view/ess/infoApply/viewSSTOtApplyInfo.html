@@ -64,7 +64,7 @@
                             <tr>
                                 <th class="table-light text-center" th:text="#{essOt.duration}">Thời lượng</th>
                                 <td id="soa_duration">--</td>
-                                <th class="table-light text-center" th:text="#{essOt.mealBreak}">Bảo cơm / Nghỉ ngơi (30')</th>
+                                <th class="table-light text-center" th:text="#{essOt.mealBreak}">Báo cơm</th>
                                 <td>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox"
@@ -87,6 +87,7 @@
                                 <td>
                                     <select class="form-select form-select-sm" id="soa_carAddress"
                                         data-parent-code="90000578"
+                                        data-default-text="Select"
                                         onchange="soaOnCarAddressChange()"
                                         disabled></select>
                                 </td>
@@ -405,7 +406,9 @@
 
         window.soaPickApprover = function(btn, keyword) {
             if (typeof EmployeeSearchModal !== 'undefined') {
+                var soaPicked = false;
                 EmployeeSearchModal.open(function(emp) {
+                    soaPicked = true;
                     _soa_approverList.push({
                         personId:     emp.personId || '',
                         localName:    emp.localName || '',
@@ -415,6 +418,13 @@
                     });
                     soaRenderApprovers();
                 }, keyword || '');
+                // Nếu đóng modal mà chưa chọn nhân viên nào thì bỏ dòng input tạm,
+                // tránh gây hiểu lầm là đã thêm người phê duyệt thành công.
+                $(EmployeeSearchModal.config.modalId).off('hidden.bs.modal.soaPick').on('hidden.bs.modal.soaPick', function() {
+                    if (!soaPicked) {
+                        soaCancelApproverInput();
+                    }
+                });
             } else {
                 alert(_soa_i18n.addApprover + ': EmployeeSearchModal not found.');
             }
@@ -524,7 +534,10 @@
             }
 
             // ── Điều kiện 4: Nộp sau giờ làm → tự động thêm Trưởng BP nhân sự
-            if (_soa_shiftEndTime && _soa_hrDeptManager && _soa_hrDeptManager.personId) {
+            // Chỉ áp dụng khi ngày xin tăng ca là quá khứ hoặc hôm nay; nếu là ngày tương lai thì bỏ qua.
+            var soaTodayStr = new Date().toISOString().slice(0, 10);
+            var soaIsPastOrToday = dateApi && dateApi <= soaTodayStr;
+            if (soaIsPastOrToday && _soa_shiftEndTime && _soa_hrDeptManager && _soa_hrDeptManager.personId) {
                 var shiftEndDt = new Date(_soa_shiftEndTime.replace(' ', 'T'));
                 if (!isNaN(shiftEndDt) && new Date() > shiftEndDt) {
                     var alreadyIn = _soa_approverList.some(function(a) {

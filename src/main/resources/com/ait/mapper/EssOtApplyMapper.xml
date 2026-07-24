@@ -21,6 +21,11 @@
         <result property="confirmFlagName" column="CONFIRM_FLAG_NAME" />
         <result property="createdBy"      column="CREATED_BY" />
         <result property="createdIp"      column="CREATED_IP" />
+        <result property="usecarYn"       column="USECAR_YN" />
+        <result property="carAddress"     column="CAR_ADDRESS" />
+        <result property="carAddressName" column="CAR_ADDRESS_NAME" />
+        <result property="carAddressDetail" column="CAR_ADDRESS_DETAIL" />
+        <result property="carAddressDetailName" column="CAR_ADDRESS_DETAIL_NAME" />
     </resultMap>
 
     <select id="selectMyOtApplyList" resultMap="EssOtApplyListResultMap">
@@ -40,7 +45,12 @@
             A.CONFIRM_FLAG,
             GET_GLOBAL_NAME(TO_CHAR(A.CONFIRM_FLAG), #{lang, jdbcType=VARCHAR}) AS CONFIRM_FLAG_NAME,
             A.CREATED_BY,
-            A.CREATED_IP
+            A.CREATED_IP,
+            TO_CHAR(A.USECAR_YN) AS USECAR_YN,
+            A.CAR_ADDRESS,
+            GET_GLOBAL_NAME(A.CAR_ADDRESS, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_NAME,
+            A.CAR_ADDRESS_DETAIL,
+            GET_GLOBAL_NAME(A.CAR_ADDRESS_DETAIL, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_DETAIL_NAME
         FROM ESS_APPLY_OT A
         WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
           AND A.ACTIVITY  = 1
@@ -116,7 +126,12 @@
             A.CONFIRM_FLAG,
             GET_GLOBAL_NAME(TO_CHAR(A.CONFIRM_FLAG), #{lang, jdbcType=VARCHAR}) AS CONFIRM_FLAG_NAME,
             A.CREATED_BY,
-            A.CREATED_IP
+            A.CREATED_IP,
+            TO_CHAR(A.USECAR_YN) AS USECAR_YN,
+            A.CAR_ADDRESS,
+            GET_GLOBAL_NAME(A.CAR_ADDRESS, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_NAME,
+            A.CAR_ADDRESS_DETAIL,
+            GET_GLOBAL_NAME(A.CAR_ADDRESS_DETAIL, #{lang, jdbcType=VARCHAR}) AS CAR_ADDRESS_DETAIL_NAME
         FROM ESS_APPLY_OT_OVER A
         WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
           AND A.ACTIVITY  = 1
@@ -178,7 +193,7 @@
         SELECT
             HE.PERSON_ID  AS PERSON_ID,
             HE.LOCAL_NAME AS LOCAL_NAME,
-            HE.EMP_ID     AS EMP_ID,
+            HE.EMPID     AS EMP_ID,
             GET_GLOBAL_NAME(HE.DUTY_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME,
             D.ORG_NAME_LOCAL AS DEPT_NAME
         FROM HR_DEPARTMENT HD

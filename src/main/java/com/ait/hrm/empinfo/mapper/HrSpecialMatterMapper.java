@@ -67,6 +67,11 @@ public interface HrSpecialMatterMapper {
         int deleteSpecialMatter(@Param("specialNo") String specialNo);
 
         /**
+         * Lấy danh sách hạng mục đặc biệt của một nhân viên (dùng cho hồ sơ nhân viên ess/viewDept)
+         */
+        List<HrSpecialMatter> searchByPersonId(@Param("personId") String personId);
+
+        /**
          * DataTables server-side processing - Lấy danh sách với tìm kiếm và sắp xếp
          */
         List<HrSpecialMatter> getFemaleEmployeesForDataTables(

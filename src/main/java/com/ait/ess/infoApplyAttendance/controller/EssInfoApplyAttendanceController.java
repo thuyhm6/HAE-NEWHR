@@ -1,6 +1,7 @@
 package com.ait.ess.infoApplyAttendance.controller;
 
 import com.ait.ar.attendanceMintenance.controller.EssLeaveApplyController;
+import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
 import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
 import com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto;
@@ -12,6 +13,7 @@ import com.ait.ess.infoApplyAttendance.service.EssCoordApplyAttendanceService;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.util.MailSendApprovalManager;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -232,13 +234,23 @@ public class EssInfoApplyAttendanceController {
     @PostMapping("/api/attendanceEx/apply")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> applyAttendanceExForBatch(
-            @RequestBody List<EssAttendanceExForBatchDto> selectedRows) {
+            @RequestBody List<EssAttendanceExForBatchDto> selectedRows, HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         try {
             int successCount = service.applyAttendanceExForBatch(selectedRows);
             response.put("success", true);
             response.put("count", successCount);
             response.put("message", "Xin phép thành công " + successCount + " dòng.");
+
+            // Gửi thông tin phê duyệt lên EagleOffice chỉ cho đơn vừa lưu (best-effort)
+            for (EssAttendanceExForBatchDto dto : selectedRows) {
+                String savedApplyNo = dto.getApplyNo() != null ? dto.getApplyNo() : "";
+                try {
+                    mailSendApprovalManager.sendAffirmInfoEmailApproval(request, savedApplyNo);
+                } catch (Exception eagleEx) {
+                    log.warn("EagleOffice notification failed for applyNo={}: {}", savedApplyNo, eagleEx.getMessage());
+                }
+            }
         } catch (Exception e) {
             log.error("Failed to save leave application data", e);
             response.put("success", false);

@@ -3,7 +3,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <form id="mep_searchForm" class="row g-3 mb-4">
+                    <form id="mep_searchForm" class="row g-3 mb-2">
                         <div class="col-md-3">
                             <label for="mep_keyword" class="form-label" th:text="#{essDept.keyword}">Mã nhân viên / Họ tên</label>
                             <input type="text" class="form-control" id="mep_keyword"
@@ -14,17 +14,17 @@
                             <input type="text" class="form-control" id="mep_deptNo"
                                 th:placeholder="#{vdp.search.dept.placeholder}" placeholder="Chọn phòng ban" readonly>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label for="mep_fromDate" class="form-label" th:text="#{essDept.fromDate}">Ngày vào làm từ</label>
                             <input type="text" class="form-control js-daterangepicker" id="mep_fromDate"
                                 data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label for="mep_toDate" class="form-label" th:text="#{essDept.toDate}">Ngày vào làm đến</label>
                             <input type="text" class="form-control js-daterangepicker" id="mep_toDate"
                                 data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false" autocomplete="off">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label for="mep_postFamily" class="form-label" th:text="#{common.empGroup}">Nhóm nhân viên</label>
                             <select class="form-select" id="mep_postFamily" data-parent-code="14015812"
                                 th:attr="data-default-text=#{common.selectAll}" data-default-text="-- Tất cả --"></select>
@@ -34,24 +34,24 @@
                             <select class="form-select" id="mep_empTypeCode" data-parent-code="13864"
                                 th:attr="data-default-text=#{common.selectAll}" data-default-text="-- Tất cả --"></select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label for="mep_empOffice" class="form-label" th:text="#{common.status}">Trạng thái</label>
                             <select class="form-select" id="mep_empOffice" data-parent-code="15118"
                                 th:attr="data-default-text=#{common.selectAll}" data-default-text="-- Tất cả --"
                                 data-default-value="15119" onchange="mepToggleAsOfDate(this.value)"></select>
                         </div>
-                        <div class="col-md-2" id="mep_asOfDateWrap">
+                        <div class="col-md-1" id="mep_asOfDateWrap">
                             <label for="mep_asOfDate" class="form-label" th:text="#{mep.field.asOfDate}">Ngày tra cứu</label>
                             <input type="text" class="form-control js-daterangepicker" id="mep_asOfDate"
                                 data-drp-format="YYYY-MM-DD" data-drp-auto-update-input="false"
                                 autocomplete="off" placeholder="DD/MM/YYYY">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label for="mep_nationalityCode" class="form-label" th:text="#{mep.field.nationality}">Quốc tịch</label>
                             <select class="form-select" id="mep_nationalityCode" data-parent-code="870"
                                 th:attr="data-default-text=#{common.selectAll}" data-default-text="-- Tất cả --"></select>
                         </div>
-                        <div class="col-md-6 d-flex align-items-end gap-2 flex-wrap">
+                        <div class="col-md-3 d-flex align-items-end gap-2 flex-wrap">
                             <button type="button" class="btn btn-primary" onclick="mepSearchData()">
                                 <i class="bx bx-search"></i> <span th:text="#{essDept.search}">Tra cứu</span>
                             </button>

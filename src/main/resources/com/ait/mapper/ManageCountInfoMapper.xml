@@ -43,13 +43,16 @@
             WHERE ASI.DEPTNO = D.DEPTNO
               AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
         )
+        <!-- Khi asOfDate có giá trị và trạng thái đang lọc là "Đang làm việc" (15119, kể cả giá trị mặc định):
+             bỏ qua filter EMP_OFFICE hiện tại, thay bằng filter theo DATE_STARTED/DATE_LEFT
+             để lấy đúng số nhân viên đang làm việc tại thời điểm truy vấn -->
         <choose>
-            <when test="empOffice != null and empOffice != ''">
+            <when test="empOffice != null and empOffice != '' and not ('15119'.equals(empOffice) and asOfDate != null and asOfDate != '')">
                 AND H.EMP_OFFICE = #{empOffice, jdbcType=VARCHAR}
             </when>
-            <otherwise>
+            <when test="(empOffice == null or empOffice == '') and (asOfDate == null or asOfDate == '')">
                 AND H.EMP_OFFICE = '15119'
-            </otherwise>
+            </when>
         </choose>
         <if test="keyword != null and keyword != ''">
             AND (
@@ -65,6 +68,11 @@
         </if>
         <if test="empTypeCode != null and empTypeCode != ''">
             AND H.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="asOfDate != null and asOfDate != '' and (empOffice == null or empOffice == '' or '15119'.equals(empOffice))">
+            AND TRUNC(H.DATE_STARTED) &lt;= TO_DATE(#{asOfDate, jdbcType=VARCHAR}, 'YYYY/MM/DD')
+            AND (H.DATE_LEFT IS NULL
+                 OR TRUNC(H.DATE_LEFT) &gt;= TO_DATE(#{asOfDate, jdbcType=VARCHAR}, 'YYYY/MM/DD'))
         </if>
     </sql>
 

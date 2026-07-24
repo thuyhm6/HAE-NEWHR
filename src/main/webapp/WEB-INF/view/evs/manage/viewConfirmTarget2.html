@@ -81,158 +81,198 @@
                 <p class="alert alert-warning fs-4 fw-bold" role="alert" th:text="#{evs.viewConfirmTarget1.msg.notInEvalPeriod}">Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!</p>
             </div>
         </div>
+    </div><!-- /.row -->
 
-        <!-- Modal chi tiết xác nhận mục tiêu lần 2 -->
-        <div class="modal fade" id="vct2_detailModal" tabindex="-1" aria-labelledby="vct2_detailModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header py-2">
-                        <h6 class="modal-title fw-bold" id="vct2_detailModalLabel"
-                            th:text="#{evs.viewConfirmTarget2.modalTitle}">Xác nhận mục tiêu (lần 2)</h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-2">
-                        <!-- Thông tin cá nhân -->
-                        <div class="fw-bold mb-2 border-bottom pb-1"
-                             th:text="#{evs.viewConfirmTarget2.personalInfo}">Thông tin cá nhân</div>
-                        <div class="row g-0 mb-3">
-                            <div class="col-md-6">
-                                <table class="table table-bordered table-sm mb-0 h-100">
-                                    <thead class="table-light text-center">
-                                        <tr>
-                                            <th colspan="2" th:text="#{evs.viewConfirmTarget2.basicInfo}">Thông tin cơ bản</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-muted small" style="width:35%;"
-                                                th:text="#{evs.viewConfirmTarget2.fullName}">Họ tên</td>
-                                            <td id="vct2_localName"></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted small"
-                                                th:text="#{evs.viewConfirmTarget2.position}">Chức vụ</td>
-                                            <td id="vct2_postGradeName"></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted small"
-                                                th:text="#{evs.viewConfirmTarget2.dept}">Phòng ban</td>
-                                            <td id="vct2_deptname"></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted small"
-                                                th:text="#{evs.viewConfirmTarget2.hireDate}">Ngày vào làm</td>
-                                            <td id="vct2_dateStarted"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="col-md-6">
-                                <table class="table table-bordered table-sm mb-0 h-100">
-                                    <thead class="table-light text-center">
-                                        <tr>
-                                            <th colspan="2" th:text="#{evs.viewConfirmTarget2.evalCategory}">Hạng mục đánh giá</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-muted small" style="width:40%;"
-                                                th:text="#{evs.viewConfirmTarget2.evalYear}">Năm đánh giá</td>
-                                            <td id="vct2_evsYear"></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted small"
-                                                th:text="#{evs.viewConfirmTarget2.period}">Thời gian</td>
-                                            <td id="vct2_evsPeriod"></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted small"
-                                                th:text="#{evs.viewConfirmTarget2.appraiser1}">Người đánh giá lần 1</td>
-                                            <td id="vct2_localName1"></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted small"
-                                                th:text="#{evs.viewConfirmTarget2.appraiser2}">Người đánh giá lần 2</td>
-                                            <td id="vct2_localName2"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Objective Confirm (readonly) -->
-                        <div class="fw-bold mb-1"
-                             th:text="#{evs.viewConfirmTarget2.objectiveConfirm}">Objective Confirm</div>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-bordered table-sm align-middle mb-0"
-                                   id="vct2_itemTable" style="width:100%;">
-                                <thead class="table-light text-center align-middle">
+    <!-- Modal chi tiết xác nhận mục tiêu lần 2 -->
+    <div class="modal fade" id="vct2_detailModal" tabindex="-1" aria-labelledby="vct2_detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title fw-bold" id="vct2_detailModalLabel"
+                        th:text="#{evs.viewConfirmTarget2.modalTitle}">Xác nhận mục tiêu (lần 2)</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-2">
+                    <!-- Thông tin cá nhân -->
+                    <div class="fw-bold mb-2 border-bottom pb-1"
+                         th:text="#{evs.viewConfirmTarget2.personalInfo}">Thông tin cá nhân</div>
+                    <div class="row g-0 mb-3">
+                        <div class="col-md-6">
+                            <table class="table table-bordered table-sm mb-0 h-100">
+                                <thead class="table-light text-center">
                                     <tr>
-                                        <th style="width:48px;" th:text="#{evs.viewConfirmTarget2.col.no}">No</th>
-                                        <th style="width:220px;" th:text="#{evs.viewConfirmTarget2.col.evalItem}">Hạng mục đánh giá</th>
-                                        <th th:text="#{evs.viewConfirmTarget2.col.target}">Mục tiêu</th>
-                                        <th style="width:90px;" th:text="#{evs.viewConfirmTarget2.col.ratio}">Tỷ lệ(%)</th>
+                                        <th colspan="2" th:text="#{evs.viewConfirmTarget2.basicInfo}">Thông tin cơ bản</th>
                                     </tr>
                                 </thead>
-                                <tbody id="vct2_itemTbody">
+                                <tbody>
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted">0</td>
+                                        <td class="text-muted small" style="width:35%;"
+                                            th:text="#{evs.viewConfirmTarget2.fullName}">Họ tên</td>
+                                        <td id="vct2_localName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewConfirmTarget2.position}">Chức vụ</td>
+                                        <td id="vct2_postGradeName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewConfirmTarget2.dept}">Phòng ban</td>
+                                        <td id="vct2_deptname"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewConfirmTarget2.hireDate}">Ngày vào làm</td>
+                                        <td id="vct2_dateStarted"></td>
                                     </tr>
                                 </tbody>
-                                <tfoot>
-                                    <tr class="table-light">
-                                        <td colspan="3" class="text-end fw-bold small">Total</td>
-                                        <td class="text-center fw-bold" id="vct2_totalScore">0</td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
+                        <div class="col-md-6">
+                            <table class="table table-bordered table-sm mb-0 h-100">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th colspan="2" th:text="#{evs.viewConfirmTarget2.evalCategory}">Hạng mục đánh giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted small" style="width:40%;"
+                                            th:text="#{evs.viewConfirmTarget2.evalYear}">Năm đánh giá</td>
+                                        <td id="vct2_evsYear"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewConfirmTarget2.period}">Thời gian</td>
+                                        <td id="vct2_evsPeriod"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewConfirmTarget2.appraiser1}">Người đánh giá lần 1</td>
+                                        <td id="vct2_localName1"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted small"
+                                            th:text="#{evs.viewConfirmTarget2.appraiser2}">Người đánh giá lần 2</td>
+                                        <td id="vct2_localName2"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
 
-                        <!-- Phần 2: Ý kiến người đánh giá -->
-                        <div class="fw-bold mb-2 border-bottom pb-1"
-                             th:text="#{evs.viewConfirmTarget2.part2}">Phần 2</div>
-                        <table class="table table-bordered table-sm mb-0">
-                            <thead class="table-light text-center">
+                    <!-- Objective Confirm (readonly) -->
+                    <div class="fw-bold mb-1"
+                         th:text="#{evs.viewConfirmTarget2.objectiveConfirm}">Objective Confirm</div>
+
+                    <!-- Mục tiêu chiến lược (ITEM_TYPE = 1) -->
+                    <div class="mb-1">
+                        <span class="fw-bold small" th:text="#{evs.viewConfirmTarget2.strategicTarget}">Mục tiêu chiến lược</span>
+                    </div>
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm align-middle mb-0"
+                               id="vct2_strategicTable" style="width:100%;">
+                            <thead class="table-light text-center align-middle">
                                 <tr>
-                                    <th style="width:160px;"></th>
-                                    <th th:text="#{evs.viewConfirmTarget2.col.opinion}">Ý kiến</th>
+                                    <th style="width:48px;" th:text="#{evs.viewConfirmTarget2.col.no}">No</th>
+                                    <th style="width:220px;" th:text="#{evs.viewConfirmTarget2.col.evalItem}">Hạng mục đánh giá</th>
+                                    <th th:text="#{evs.viewConfirmTarget2.col.target}">Mục tiêu</th>
+                                    <th style="width:90px;" th:text="#{evs.viewConfirmTarget2.col.ratio}">Tỷ lệ(%)</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="vct2_strategicTbody">
                                 <tr>
-                                    <td class="text-muted small align-middle"
-                                        th:text="#{evs.viewConfirmTarget2.appraiser1Comment}">Người đánh giá cấp 1</td>
-                                    <td>
-                                        <textarea class="form-control form-control-sm" id="vct2_affirmComment1"
-                                                  rows="4" readonly style="resize:none;"></textarea>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted small align-middle"
-                                        th:text="#{evs.viewConfirmTarget2.appraiser2Comment}">Người đánh giá cấp 2</td>
-                                    <td>
-                                        <textarea class="form-control form-control-sm" id="vct2_affirmComment2"
-                                                  rows="4" style="resize:none;"></textarea>
-                                    </td>
+                                    <td colspan="4" class="text-center text-muted">0</td>
                                 </tr>
                             </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <td colspan="3" class="text-end fw-bold small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center fw-bold" id="vct2_strategicTotal">0</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
-                    <div class="modal-footer py-2">
-                        <button type="button" class="btn btn-success btn-sm" onclick="vct2Confirm('1')">
-                            <span th:text="#{evs.viewConfirmTarget2.btnConfirm}">Xác nhận</span>
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="vct2Confirm('0')">
-                            <span th:text="#{evs.viewConfirmTarget2.btnReject}">Từ chối</span>
-                        </button>
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="vct2CloseDetail()">
-                            <span th:text="#{evs.viewConfirmTarget2.btnClose}">Đóng</span>
-                        </button>
+
+                    <!-- Mục tiêu vận hành (ITEM_TYPE IS NULL) -->
+                    <div class="mb-1">
+                        <span class="fw-bold small" th:text="#{evs.viewConfirmTarget2.operationTarget}">Mục tiêu vận hành</span>
                     </div>
+                    <div class="table-responsive mb-2">
+                        <table class="table table-bordered table-sm align-middle mb-0"
+                               id="vct2_operationTable" style="width:100%;">
+                            <thead class="table-light text-center align-middle">
+                                <tr>
+                                    <th style="width:48px;" th:text="#{evs.viewConfirmTarget2.col.no}">No</th>
+                                    <th style="width:220px;" th:text="#{evs.viewConfirmTarget2.col.evalItem}">Hạng mục đánh giá</th>
+                                    <th th:text="#{evs.viewConfirmTarget2.col.target}">Mục tiêu</th>
+                                    <th style="width:90px;" th:text="#{evs.viewConfirmTarget2.col.ratio}">Tỷ lệ(%)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vct2_operationTbody">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">0</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light">
+                                    <td colspan="3" class="text-end fw-bold small" th:text="#{common.total}">Tổng</td>
+                                    <td class="text-center fw-bold" id="vct2_operationTotal">0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Tổng cộng cả 2 phần -->
+                    <div class="d-flex justify-content-end align-items-center mb-3">
+                        <span class="fw-bold me-2" th:text="#{common.total}">Tổng</span>
+                        <span class="fw-bold" id="vct2_totalScore">0</span>
+                    </div>
+
+                    <!-- Phần 2: Ý kiến người đánh giá -->
+                    <div class="fw-bold mb-2 border-bottom pb-1"
+                         th:text="#{evs.viewConfirmTarget2.part2}">Phần 2</div>
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th style="width:160px;"></th>
+                                <th th:text="#{evs.viewConfirmTarget2.col.opinion}">Ý kiến</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-muted small align-middle"
+                                    th:text="#{evs.viewConfirmTarget2.appraiser1Comment}">Người đánh giá cấp 1</td>
+                                <td>
+                                    <textarea class="form-control form-control-sm" id="vct2_affirmComment1"
+                                              rows="4" readonly style="resize:none;"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted small align-middle"
+                                    th:text="#{evs.viewConfirmTarget2.appraiser2Comment}">Người đánh giá cấp 2</td>
+                                <td>
+                                    <textarea class="form-control form-control-sm" id="vct2_affirmComment2"
+                                              rows="4" style="resize:none;"></textarea>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer py-2">
+                    <button type="button" class="btn btn-success btn-sm" onclick="vct2Confirm('1')">
+                        <span th:text="#{evs.viewConfirmTarget2.btnConfirm}">Xác nhận</span>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="vct2Confirm('0')">
+                        <span th:text="#{evs.viewConfirmTarget2.btnReject}">Từ chối</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" onclick="vct2CloseDetail()">
+                        <span th:text="#{evs.viewConfirmTarget2.btnClose}">Đóng</span>
+                    </button>
                 </div>
             </div>
         </div>
-    </div><!-- /.row -->
+    </div>
 </div><!-- th:fragment="content" -->
 
 <template id="fragmentScripts">
@@ -251,9 +291,12 @@
             font-weight: 500;
             cursor: pointer;
         }
-        #vct2_itemTable td.vct2-rich-content p { margin: 0; }
-        #vct2_itemTable td.vct2-rich-content ul,
-        #vct2_itemTable td.vct2-rich-content ol { margin: 0; padding-left: 1.2em; }
+        #vct2_strategicTable td.vct2-rich-content p,
+        #vct2_operationTable td.vct2-rich-content p { margin: 0; }
+        #vct2_strategicTable td.vct2-rich-content ul,
+        #vct2_strategicTable td.vct2-rich-content ol,
+        #vct2_operationTable td.vct2-rich-content ul,
+        #vct2_operationTable td.vct2-rich-content ol { margin: 0; padding-left: 1.2em; }
     </style>
     <script th:inline="javascript">
         (function () {
@@ -464,7 +507,7 @@
                         vct2ShowModal();
                     },
                     error: function () {
-                        vct2$('#vct2_itemTbody').html('<tr><td colspan="4" class="text-center text-muted">0</td></tr>');
+                        vct2RenderItems([]);
                         vct2ShowModal();
                     }
                 });
@@ -477,12 +520,17 @@
                 modal.show();
             }
 
-            /* ── Render danh sách mục tiêu (readonly) ──────────────────────── */
-            function vct2RenderItems(rows) {
+            function vct2IsStrategic(itemType) {
+                return String(itemType) === '1';
+            }
+
+            /* ── Render 1 phần (strategic/operation), trả về tổng của phần đó ── */
+            function vct2RenderSection(section, rows) {
+                var $tbody = vct2$('#vct2_' + section + 'Tbody');
                 if (!rows.length) {
-                    vct2$('#vct2_itemTbody').html('<tr><td colspan="4" class="text-center text-muted">0</td></tr>');
-                    vct2$('#vct2_totalScore').text('0');
-                    return;
+                    $tbody.html('<tr><td colspan="4" class="text-center text-muted">0</td></tr>');
+                    vct2$('#vct2_' + section + 'Total').text('0');
+                    return 0;
                 }
                 var html = '';
                 var total = 0;
@@ -495,8 +543,19 @@
                     html += '</tr>';
                     total += parseFloat(r.itemScore) || 0;
                 });
-                vct2$('#vct2_itemTbody').html(html);
-                vct2$('#vct2_totalScore').text(Math.round(total * 100) / 100);
+                total = Math.round(total * 100) / 100;
+                $tbody.html(html);
+                vct2$('#vct2_' + section + 'Total').text(total);
+                return total;
+            }
+
+            /* ── Render 2 bảng: Mục tiêu chiến lược / Mục tiêu vận hành (readonly) ── */
+            function vct2RenderItems(rows) {
+                var strategicItems = rows.filter(function (r) { return vct2IsStrategic(r.itemType); });
+                var operationItems = rows.filter(function (r) { return !vct2IsStrategic(r.itemType); });
+                var strategicTotal = vct2RenderSection('strategic', strategicItems);
+                var operationTotal = vct2RenderSection('operation', operationItems);
+                vct2$('#vct2_totalScore').text(Math.round((strategicTotal + operationTotal) * 100) / 100);
             }
 
             /* ── Xác nhận / Từ chối ────────────────────────────────────────── */

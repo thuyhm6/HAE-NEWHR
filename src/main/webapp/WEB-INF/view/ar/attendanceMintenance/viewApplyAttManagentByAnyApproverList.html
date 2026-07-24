@@ -240,7 +240,7 @@
 
             // Tải danh sách loại nghỉ phép thông qua parentCodeNo 21
             $.ajax({
-                url: '/sys/api/code/list?parentCodeNo=21',
+                url: '/sys/api/getCode/list?parentCodeNo=21',
                 success: function (data) {
                     _lv_typeList = data || [];
                     lvPopulateLeaveTypeFilter();
@@ -587,7 +587,7 @@
                             $tr.find('td').eq(4).text(rowData.annualLeaveCount);
                             rowData.shiftName = res.SHIFT_NAME || res.shiftName || '';
                             $tr.find('td').eq(5).text(rowData.shiftName);
-                            rowData.sexCode = res.SEX_CODE || res.sexCode || '';
+                            rowData.sexCode = res.SEXCODE || res.sexCode || '';
                             if (res.START_TIME || res.startTime) {
                                 rowData.leaveFromTime = res.START_TIME || res.startTime;
                                 var $fromInput = $tr.find('.lv-in-from');

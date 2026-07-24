@@ -170,6 +170,10 @@ public class LoggingServiceImpl implements LoggingService {
         if (statusCode == 404 && isStatic) {
             return;
         }
+        // Bỏ qua endpoint "/error" - endpoint xử lý lỗi mặc định của Spring Boot, lỗi gốc đã được log ở nơi khác
+        if ("/error".equals(endpoint)) {
+            return;
+        }
 
         LogLevel level = statusCode >= 400 ? LogLevel.WARN : LogLevel.INFO;
         EventType eventType = statusCode >= 400 ? EventType.API_ERROR : EventType.SYSTEM_EVENT;

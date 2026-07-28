@@ -107,6 +107,12 @@
                             <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
                             <textarea class="form-control form-control-sm" id="we_remark" rows="2"></textarea>
                         </div>
+                        <div class="col-12 mt-2" id="we_existingFilesWrap" style="display:none;">
+                            <label class="form-label fw-semibold">
+                                <i class="bx bx-paperclip me-1"></i><span th:text="#{epi.field.attachFiles}">File đính kèm</span>
+                            </label>
+                            <ul id="we_fileList" class="list-group list-group-flush mb-2"></ul>
+                        </div>
                         <div class="col-12 mt-2">
                             <div class="alert alert-info py-2 mb-2 small">
                                 <i class="bx bx-info-circle me-1"></i>
@@ -148,7 +154,8 @@
                 errWorkExp:        /*[[#{epi.msg.saveError.workExp}]]*/ 'Lỗi khi gửi yêu cầu kinh nghiệm làm việc!',
                 systemError:       /*[[#{epi.msg.systemError}]]*/ 'Lỗi hệ thống',
                 titleAddWorkExp:   /*[[#{epi.modal.addWorkExp}]]*/ 'Thêm mới kinh nghiệm',
-                titleEditWorkExp:  /*[[#{epi.modal.editWorkExp}]]*/ 'Cập nhật kinh nghiệm'
+                titleEditWorkExp:  /*[[#{epi.modal.editWorkExp}]]*/ 'Cập nhật kinh nghiệm',
+                noFile:            /*[[#{veai.msg.noFile}]]*/ 'Không có file đính kèm'
             };
 
             var currentWorkExpList = [];
@@ -233,6 +240,44 @@
                 });
             }
 
+            // ===== File đính kèm đã gửi trước đó =====
+            function wiEsc(v) {
+                if (v == null) return '';
+                return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            function renderFileList(ulId, files) {
+                var ul = document.getElementById(ulId);
+                if (!files || !files.length) {
+                    ul.innerHTML = '<li class="list-group-item text-muted small">' + wiEsc(i18n.noFile) + '</li>';
+                    return;
+                }
+                var html = '';
+                files.forEach(function (f) {
+                    html += '<li class="list-group-item py-1 px-2 d-flex align-items-center gap-2">'
+                          + '<i class="bx bx-file text-primary"></i>'
+                          + '<a href="/ess/empinfo/api/files/download/' + encodeURIComponent(f.fileNo) + '" target="_blank" class="text-truncate">'
+                          + wiEsc(f.fileName) + '</a></li>';
+                });
+                ul.innerHTML = html;
+            }
+
+            function loadWorkExpFiles(workExpNo) {
+                var wrap = document.getElementById('we_existingFilesWrap');
+                if (!workExpNo) {
+                    wrap.style.display = 'none';
+                    return;
+                }
+                wrap.style.display = '';
+                document.getElementById('we_fileList').innerHTML = '<li class="list-group-item text-muted small">' + wiEsc(i18n.loading) + '</li>';
+                $.ajax({
+                    url: '/ess/empinfo/api/workInfo/workExperienceFiles/' + workExpNo,
+                    type: 'GET',
+                    success: function (files) { renderFileList('we_fileList', files); },
+                    error: function () { renderFileList('we_fileList', []); }
+                });
+            }
+
             // ===== Modal: Kinh nghiệm =====
             window.openWorkExpModal = function (indexOrNull) {
                 var isNew = indexOrNull === null;
@@ -249,6 +294,7 @@
                     document.getElementById('we_resignReason').value = '';
                     document.getElementById('we_witness').value = '';
                     document.getElementById('we_remark').value = '';
+                    loadWorkExpFiles(null);
                 } else {
                     var item = currentWorkExpList[indexOrNull];
                     document.getElementById('we_workExpNo').value = item.workExpNo || '';
@@ -260,6 +306,7 @@
                     document.getElementById('we_resignReason').value = item.resignReason || '';
                     document.getElementById('we_witness').value = item.witness || '';
                     document.getElementById('we_remark').value = item.remark || '';
+                    loadWorkExpFiles(item.workExpNo);
                 }
 
                 new bootstrap.Modal(document.getElementById('modalWorkExp')).show();
@@ -307,7 +354,7 @@
                     processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalWorkExp')).hide();
-                        showToast(i18n.applySuccess, 'success');
+                        showToast(i18n.applySuccess, 'success', true);
                         document.getElementById('we_attachFiles').value = '';
                         loadWorkExperience();
                     },

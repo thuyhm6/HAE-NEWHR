@@ -399,4 +399,52 @@ public class EssPersonalInfoServiceImpl implements EssPersonalInfoService {
             return Collections.emptyList();
         }
     }
+
+    @Override
+    public List<EssFileDto> getFilesByEducNo(Long educNo) {
+        if (educNo == null) return Collections.emptyList();
+        try {
+            List<EssFileDto> result = essFileMapper.selectFilesByEducNo(educNo);
+            return result != null ? result : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Lỗi lấy danh sách file theo educNo={}", educNo, e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<EssFileDto> getFilesByQualNo(Long qualNo) {
+        if (qualNo == null) return Collections.emptyList();
+        try {
+            List<EssFileDto> result = essFileMapper.selectFilesByQualNo(qualNo);
+            return result != null ? result : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Lỗi lấy danh sách file theo qualNo={}", qualNo, e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<EssFileDto> getFilesByWorkExpNo(Long workExpNo) {
+        if (workExpNo == null) return Collections.emptyList();
+        try {
+            List<EssFileDto> result = essFileMapper.selectFilesByWorkExpNo(workExpNo);
+            return result != null ? result : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Lỗi lấy danh sách file theo workExpNo={}", workExpNo, e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public List<EssFileDto> getFilesByPersonId(String personId) {
+        if (personId == null || personId.trim().isEmpty()) return Collections.emptyList();
+        try {
+            List<EssFileDto> result = essFileMapper.selectFilesByPersonId(personId);
+            return result != null ? result : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Lỗi lấy danh sách file theo personId={}", personId, e);
+            return Collections.emptyList();
+        }
+    }
 }

@@ -58,4 +58,72 @@
         ORDER BY CREATE_DATE
     </select>
 
+    <select id="selectFilesByEducNo" resultMap="EssFileResultMap">
+        SELECT
+            f.FILE_NO,
+            f.APPLY_NO,
+            f.APPLY_TYPE,
+            f.FILE_URL,
+            f.FILE_NAME
+        FROM ESS_FILE f
+        WHERE f.APPLY_TYPE = 'HR_EDUCATION_APPLY'
+          AND f.ACTIVITY = 1
+          AND f.APPLY_NO IN (
+              SELECT TO_CHAR(EDUC_NO) FROM HR_EDUCATION_APPLY
+              WHERE UPDATE_EDUC_NO = #{educNo, jdbcType=NUMERIC}
+          )
+        ORDER BY f.CREATE_DATE
+    </select>
+
+    <select id="selectFilesByQualNo" resultMap="EssFileResultMap">
+        SELECT
+            f.FILE_NO,
+            f.APPLY_NO,
+            f.APPLY_TYPE,
+            f.FILE_URL,
+            f.FILE_NAME
+        FROM ESS_FILE f
+        WHERE f.APPLY_TYPE = 'HR_QUALIFICATION_APPLY'
+          AND f.ACTIVITY = 1
+          AND f.APPLY_NO IN (
+              SELECT TO_CHAR(QUAL_NO) FROM HR_QUALIFICATION_APPLY
+              WHERE UPDATE_QUAL_NO = #{qualNo, jdbcType=NUMERIC}
+          )
+        ORDER BY f.CREATE_DATE
+    </select>
+
+    <select id="selectFilesByWorkExpNo" resultMap="EssFileResultMap">
+        SELECT
+            f.FILE_NO,
+            f.APPLY_NO,
+            f.APPLY_TYPE,
+            f.FILE_URL,
+            f.FILE_NAME
+        FROM ESS_FILE f
+        WHERE f.APPLY_TYPE = 'HR_WORK_EXPERIENCE_APPLY'
+          AND f.ACTIVITY = 1
+          AND f.APPLY_NO IN (
+              SELECT TO_CHAR(WORK_EXPER_NO) FROM HR_WORK_EXPERIENCE_APPLY
+              WHERE UPDATE_WORK_EXPER_NO = #{workExpNo, jdbcType=NUMERIC}
+          )
+        ORDER BY f.CREATE_DATE
+    </select>
+
+    <select id="selectFilesByPersonId" resultMap="EssFileResultMap">
+        SELECT
+            f.FILE_NO,
+            f.APPLY_NO,
+            f.APPLY_TYPE,
+            f.FILE_URL,
+            f.FILE_NAME
+        FROM ESS_FILE f
+        WHERE f.APPLY_TYPE = 'HR_PERSONAL_INFO_APPLY'
+          AND f.ACTIVITY = 1
+          AND f.APPLY_NO IN (
+              SELECT TO_CHAR(PERSON_NO) FROM HR_PERSONAL_INFO_APPLY
+              WHERE PERSON_ID = #{personId, jdbcType=VARCHAR}
+          )
+        ORDER BY f.CREATE_DATE
+    </select>
+
 </mapper>

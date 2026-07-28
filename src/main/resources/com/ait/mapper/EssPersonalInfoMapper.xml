@@ -235,7 +235,8 @@
             HP.EMAIL_SECOND AS emailSecond,
             HP.SING_ID AS singId,
             HP.HOME_ADDRESS AS homeAddress,
-            HP.OFFICE_PHONE AS officePhone
+            HP.OFFICE_PHONE AS officePhone,
+            HP.PHOTO_PATH AS photoPath
         FROM HR_EMPLOYEE HE
         LEFT JOIN HR_PERSONAL_INFO HP ON HE.PERSON_ID = HP.PERSON_ID AND HP.ACTIVITY = 1
         LEFT JOIN HR_DEPARTMENT D ON HE.DEPTNO = D.DEPTNO

@@ -46,7 +46,9 @@
 
     <select id="getByPersonId" resultMap="BaseResultMap">
         SELECT 
-            wx.*
+            wx.WORK_EXPER_NO, wx.PERSON_ID, wx.CPNY_NAME, wx.DEPT_NAME, wx.POSITION, wx.DUTY, TO_CHAR(wx.START_DATE, 'DD/MM/YYYY') AS START_DATE, TO_CHAR(wx.END_DATE, 'DD/MM/YYYY') AS END_DATE, wx.PAY_YEAR, wx.RESIGN_REASON, wx.WITNESS, 
+            wx.CELLPHONE, wx.AGE_LIMIT, wx.WORK_ADDRESS, wx.SENIORITY_RESPONSE, TO_CHAR(wx.CREATE_DATE, 'DD/MM/YYYY') AS CREATE_DATE, wx.CREATED_BY, TO_CHAR(wx.UPDATE_DATE, 'DD/MM/YYYY') AS UPDATE_DATE, wx.UPDATED_BY, wx.ORDERNO, wx.ACTIVITY, 
+            wx.REMARK, wx.UPDATED_IP, wx.CREATED_IP, wx.CPNY_ENGLISH_NAME, wx.PRO_CPNY_PHONE, wx.OVERSEAS, wx.NATIONALITY, wx.PAYROLL
         FROM hr_work_experience wx
         WHERE wx.PERSON_ID = #{personId}
           AND wx.ACTIVITY = 1
@@ -55,7 +57,9 @@
 
     <select id="searchWorkExperience" resultMap="BaseResultMap">
         SELECT 
-            wx.*,
+            wx.WORK_EXPER_NO, wx.PERSON_ID, wx.CPNY_NAME, wx.DEPT_NAME, wx.POSITION, wx.DUTY, TO_CHAR(wx.START_DATE, 'DD/MM/YYYY') AS START_DATE, TO_CHAR(wx.END_DATE, 'DD/MM/YYYY') AS END_DATE, wx.PAY_YEAR, wx.RESIGN_REASON, wx.WITNESS, 
+            wx.CELLPHONE, wx.AGE_LIMIT, wx.WORK_ADDRESS, wx.SENIORITY_RESPONSE, TO_CHAR(wx.CREATE_DATE, 'DD/MM/YYYY') AS CREATE_DATE, wx.CREATED_BY, TO_CHAR(wx.UPDATE_DATE, 'DD/MM/YYYY') AS UPDATE_DATE, wx.UPDATED_BY, wx.ORDERNO, wx.ACTIVITY, 
+            wx.REMARK, wx.UPDATED_IP, wx.CREATED_IP, wx.CPNY_ENGLISH_NAME, wx.PRO_CPNY_PHONE, wx.OVERSEAS, wx.NATIONALITY, wx.PAYROLL,
             e.EMPID,
             e.LOCAL_NAME,
             e.DEPTNO
@@ -77,7 +81,9 @@
 
     <select id="getById" resultMap="BaseResultMap">
         SELECT 
-            wx.*,
+            wx.WORK_EXPER_NO, wx.PERSON_ID, wx.CPNY_NAME, wx.DEPT_NAME, wx.POSITION, wx.DUTY, TO_CHAR(wx.START_DATE, 'DD/MM/YYYY') AS START_DATE, TO_CHAR(wx.END_DATE, 'DD/MM/YYYY') AS END_DATE, wx.PAY_YEAR, wx.RESIGN_REASON, wx.WITNESS, 
+            wx.CELLPHONE, wx.AGE_LIMIT, wx.WORK_ADDRESS, wx.SENIORITY_RESPONSE, TO_CHAR(wx.CREATE_DATE, 'DD/MM/YYYY') AS CREATE_DATE, wx.CREATED_BY, TO_CHAR(wx.UPDATE_DATE, 'DD/MM/YYYY') AS UPDATE_DATE, wx.UPDATED_BY, wx.ORDERNO, wx.ACTIVITY, 
+            wx.REMARK, wx.UPDATED_IP, wx.CREATED_IP, wx.CPNY_ENGLISH_NAME, wx.PRO_CPNY_PHONE, wx.OVERSEAS, wx.NATIONALITY, wx.PAYROLL,
             e.EMPID,
             e.LOCAL_NAME,
             e.DEPTNO

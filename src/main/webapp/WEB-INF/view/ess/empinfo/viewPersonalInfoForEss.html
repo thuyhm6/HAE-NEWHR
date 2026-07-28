@@ -299,6 +299,12 @@
                         </div>
                     </div>
                     <!-- Row 8: File đính kèm -->
+                    <div class="col-12 mt-2" id="mp_existingFilesWrap" style="display:none;">
+                        <label class="form-label fw-semibold">
+                            <i class="bx bx-paperclip me-1"></i><span th:text="#{epi.field.attachFiles}">File đính kèm</span>
+                        </label>
+                        <ul id="mp_fileList" class="list-group list-group-flush mb-2"></ul>
+                    </div>
                     <div class="col-12 mt-2">
                         <div class="alert alert-info py-2 mb-2 small">
                             <i class="bx bx-info-circle me-1"></i>
@@ -506,7 +512,8 @@
                 editEmergency:    /*[[#{epi.modal.editEmergency}]]*/ 'Cập nhật liên hệ khẩn cấp',
                 iconMap:          '<i class="bx bx-map me-1"></i>',
                 iconGroup:        '<i class="bx bx-group me-1"></i>',
-                iconPhone:        '<i class="bx bx-phone-call me-1"></i>'
+                iconPhone:        '<i class="bx bx-phone-call me-1"></i>',
+                noFile:           /*[[#{veai.msg.noFile}]]*/ 'Không có file đính kèm'
             };
 
             var currentPersonalInfo = {};
@@ -529,6 +536,41 @@
                     var year = d.getFullYear();
                     return day + '/' + month + '/' + year;
                 } catch (e) { return dateStr; }
+            }
+
+            function resolvePhotoPath(photoPath) {
+                if (!photoPath) return '';
+                var normalizedPath = String(photoPath).trim();
+                if (!normalizedPath) return '';
+                if (/^(https?:)?\/\//i.test(normalizedPath) || normalizedPath.indexOf('data:') === 0) {
+                    return normalizedPath;
+                }
+                if (normalizedPath.charAt(0) === '/') return normalizedPath;
+                return '/' + normalizedPath.replace(/^\/+/, '');
+            }
+
+            function setPhoto(photoPath) {
+                var photoUrl = resolvePhotoPath(photoPath);
+                var photoEl = document.getElementById('epi_photo');
+                var fallbackEl = document.getElementById('epi_photoFallback');
+                if (!photoEl || !fallbackEl) return;
+
+                photoEl.onerror = function () {
+                    photoEl.src = '';
+                    photoEl.classList.add('d-none');
+                    fallbackEl.classList.remove('d-none');
+                };
+
+                if (!photoUrl) {
+                    photoEl.src = '';
+                    photoEl.classList.add('d-none');
+                    fallbackEl.classList.remove('d-none');
+                    return;
+                }
+
+                photoEl.src = photoUrl;
+                photoEl.classList.remove('d-none');
+                fallbackEl.classList.add('d-none');
             }
 
             function toInputDate(dateStr) {
@@ -568,6 +610,7 @@
                     success: function (data) {
                         if (!data) return;
                         currentPersonalInfo = data;
+                        setPhoto(data.photoPath);
                         setText('epi_dob', formatDate(data.dob));
                         setText('epi_sexName', data.sexName);
                         setText('epi_maritalStatusName', data.maritalStatusName);
@@ -683,6 +726,40 @@
                 });
             }
 
+            // ===== File đính kèm đã gửi trước đó =====
+            function epiEsc(v) {
+                if (v == null) return '';
+                return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            function renderFileList(ulId, files) {
+                var ul = document.getElementById(ulId);
+                if (!files || !files.length) {
+                    ul.innerHTML = '<li class="list-group-item text-muted small">' + epiEsc(I18N.noFile) + '</li>';
+                    return;
+                }
+                var html = '';
+                files.forEach(function (f) {
+                    html += '<li class="list-group-item py-1 px-2 d-flex align-items-center gap-2">'
+                          + '<i class="bx bx-file text-primary"></i>'
+                          + '<a href="/ess/empinfo/api/files/download/' + encodeURIComponent(f.fileNo) + '" target="_blank" class="text-truncate">'
+                          + epiEsc(f.fileName) + '</a></li>';
+                });
+                ul.innerHTML = html;
+            }
+
+            function loadPersonalFiles() {
+                var wrap = document.getElementById('mp_existingFilesWrap');
+                wrap.style.display = '';
+                document.getElementById('mp_fileList').innerHTML = '<li class="list-group-item text-muted small">' + epiEsc(I18N.loading) + '</li>';
+                $.ajax({
+                    url: '/ess/empinfo/api/personalInfo/personalFiles',
+                    type: 'GET',
+                    success: function (files) { renderFileList('mp_fileList', files); },
+                    error: function () { renderFileList('mp_fileList', []); }
+                });
+            }
+
             // ===== Modal: Cá nhân =====
             function mp_calcAge() {
                 var dobVal = document.getElementById('mp_dob').value;
@@ -739,6 +816,8 @@
                     $('#mp_residentialDistinction').val(d.residentialDistinction || '');
                 });
 
+                loadPersonalFiles();
+
                 new bootstrap.Modal(document.getElementById('modalPersonal')).show();
             };
 
@@ -792,7 +871,7 @@
                     processData: false,
                     success: function (resp) {
                         bootstrap.Modal.getInstance(document.getElementById('modalPersonal')).hide();
-                        showToast(I18N.applySuccess, 'success');
+                        showToast(I18N.applySuccess, 'success', true);
                         document.getElementById('mp_attachFiles').value = '';
                         loadBasicInfo();
                     },
@@ -926,7 +1005,7 @@
                     processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalFamily')).hide();
-                        showToast(I18N.applySuccess, 'success');
+                        showToast(I18N.applySuccess, 'success', true);
                         document.getElementById('fam_attachFiles').value = '';
                         loadFamily();
                     },
@@ -1008,7 +1087,7 @@
                     processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalEmergency')).hide();
-                        showToast(I18N.applySuccess, 'success');
+                        showToast(I18N.applySuccess, 'success', true);
                         document.getElementById('emer_attachFiles').value = '';
                         loadEmergency();
                     },

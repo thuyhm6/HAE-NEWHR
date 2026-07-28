@@ -67,7 +67,7 @@ CSS, JS, Images được serve từ:
   </head>
   <body>
     <!-- Content -->
-    <script src="/assets/plugin/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="/assets/js/jquery-3.6.0.min.js"></script>
     <script src="/assets/js/app.js"></script>
   </body>

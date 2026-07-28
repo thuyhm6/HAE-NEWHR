@@ -75,6 +75,26 @@ public interface EssPersonalInfoService {
     List<EssFileDto> getFilesByApplyNo(String applyNo);
 
     /**
+     * Lấy file đính kèm của một bản ghi học vấn đã duyệt, theo EDUC_NO.
+     */
+    List<EssFileDto> getFilesByEducNo(Long educNo);
+
+    /**
+     * Lấy file đính kèm của một bản ghi chứng chỉ đã duyệt, theo QUAL_NO.
+     */
+    List<EssFileDto> getFilesByQualNo(Long qualNo);
+
+    /**
+     * Lấy file đính kèm của một bản ghi kinh nghiệm làm việc đã duyệt, theo WORK_EXPER_NO.
+     */
+    List<EssFileDto> getFilesByWorkExpNo(Long workExpNo);
+
+    /**
+     * Lấy file đính kèm của thông tin cá nhân, theo personId.
+     */
+    List<EssFileDto> getFilesByPersonId(String personId);
+
+    /**
      * Lấy chi tiết một apply theo applyNo và applyTableType
      */
     Object getApplyDetail(String applyNo, String applyTableType);

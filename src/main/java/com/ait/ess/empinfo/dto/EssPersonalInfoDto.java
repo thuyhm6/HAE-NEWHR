@@ -59,4 +59,5 @@ public class EssPersonalInfoDto {
     private String cvUpdateStatus;
     private String armyOrNot;
     private String obstacleOrNot;
+    private String photoPath;
 }

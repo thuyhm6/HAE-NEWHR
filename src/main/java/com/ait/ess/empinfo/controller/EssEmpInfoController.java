@@ -224,6 +224,15 @@ public class EssEmpInfoController {
         }
     }
 
+    /**
+     * API: Lấy danh sách file đính kèm của một bản ghi kinh nghiệm làm việc đã duyệt (workExpNo)
+     */
+    @GetMapping("/api/workInfo/workExperienceFiles/{workExpNo}")
+    @ResponseBody
+    public ResponseEntity<List<EssFileDto>> getWorkExperienceFiles(@PathVariable Long workExpNo) {
+        return ResponseEntity.ok(essPersonalInfoService.getFilesByWorkExpNo(workExpNo));
+    }
+
     @DeleteMapping("/api/workInfo/deleteWorkExperience/{workExpNo}")
     @ResponseBody
     public ResponseEntity<?> deleteWorkExperience(@PathVariable Long workExpNo) {
@@ -334,6 +343,15 @@ public class EssEmpInfoController {
         }
     }
 
+    /**
+     * API: Lấy danh sách file đính kèm của một bản ghi học vấn đã duyệt (educNo)
+     */
+    @GetMapping("/api/qualInfo/educationFiles/{educNo}")
+    @ResponseBody
+    public ResponseEntity<List<EssFileDto>> getEducationFiles(@PathVariable Long educNo) {
+        return ResponseEntity.ok(essPersonalInfoService.getFilesByEducNo(educNo));
+    }
+
     @GetMapping("/api/qualInfo/myQualification")
     @ResponseBody
     public ResponseEntity<List<HrQualification>> getMyQualification(HttpSession session) {
@@ -371,6 +389,15 @@ public class EssEmpInfoController {
             log.error("Lỗi xóa chứng chỉ ESS", e);
             return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
         }
+    }
+
+    /**
+     * API: Lấy danh sách file đính kèm của một bản ghi chứng chỉ đã duyệt (qualNo)
+     */
+    @GetMapping("/api/qualInfo/qualificationFiles/{qualNo}")
+    @ResponseBody
+    public ResponseEntity<List<EssFileDto>> getQualificationFiles(@PathVariable Long qualNo) {
+        return ResponseEntity.ok(essPersonalInfoService.getFilesByQualNo(qualNo));
     }
 
     @GetMapping("/api/qualInfo/myReward")
@@ -415,6 +442,16 @@ public class EssEmpInfoController {
             log.error("Lỗi gửi yêu cầu thay đổi thông tin cá nhân ESS", e);
             return ResponseEntity.status(500).body(Collections.singletonMap("error", "Lỗi hệ thống"));
         }
+    }
+
+    /**
+     * API: Lấy danh sách file đính kèm của thông tin cá nhân nhân viên đang đăng nhập
+     */
+    @GetMapping("/api/personalInfo/personalFiles")
+    @ResponseBody
+    public ResponseEntity<List<EssFileDto>> getPersonalFiles(HttpSession session) {
+        String personId = (String) session.getAttribute("adminID");
+        return ResponseEntity.ok(essPersonalInfoService.getFilesByPersonId(personId));
     }
 
     /**

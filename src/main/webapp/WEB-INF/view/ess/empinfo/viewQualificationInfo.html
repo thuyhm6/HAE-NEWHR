@@ -138,6 +138,12 @@
                             <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
                             <textarea class="form-control form-control-sm" id="ed_remark" rows="2"></textarea>
                         </div>
+                        <div class="col-12 mt-2" id="ed_existingFilesWrap" style="display:none;">
+                            <label class="form-label fw-semibold">
+                                <i class="bx bx-paperclip me-1"></i><span th:text="#{epi.field.attachFiles}">File đính kèm</span>
+                            </label>
+                            <ul id="ed_fileList" class="list-group list-group-flush mb-2"></ul>
+                        </div>
                         <div class="col-12 mt-2">
                             <div class="alert alert-info py-2 mb-2 small">
                                 <i class="bx bx-info-circle me-1"></i>
@@ -208,6 +214,12 @@
                             <label class="form-label fw-semibold" th:text="#{epi.field.remark}">Ghi chú</label>
                             <textarea class="form-control form-control-sm" id="ql_qualRemark" rows="2"></textarea>
                         </div>
+                        <div class="col-12 mt-2" id="ql_existingFilesWrap" style="display:none;">
+                            <label class="form-label fw-semibold">
+                                <i class="bx bx-paperclip me-1"></i><span th:text="#{epi.field.attachFiles}">File đính kèm</span>
+                            </label>
+                            <ul id="ql_fileList" class="list-group list-group-flush mb-2"></ul>
+                        </div>
                         <div class="col-12 mt-2">
                             <div class="alert alert-info py-2 mb-2 small">
                                 <i class="bx bx-info-circle me-1"></i>
@@ -254,7 +266,8 @@
                 titleAddEduc:       /*[[#{qi.modal.addEduc}]]*/ 'Thêm mới học vấn',
                 titleEditEduc:      /*[[#{qi.modal.editEduc}]]*/ 'Cập nhật học vấn',
                 titleAddQual:       /*[[#{qi.modal.addQual}]]*/ 'Thêm mới chứng chỉ',
-                titleEditQual:      /*[[#{qi.modal.editQual}]]*/ 'Cập nhật chứng chỉ'
+                titleEditQual:      /*[[#{qi.modal.editQual}]]*/ 'Cập nhật chứng chỉ',
+                noFile:             /*[[#{veai.msg.noFile}]]*/ 'Không có file đính kèm'
             };
 
             var currentEducList = [];
@@ -265,7 +278,7 @@
                 if (el) el.textContent = val || '';
             }
 
-            function showToast(msg, type) {
+            function showToast(msg, type, persist) {
                 var container = document.getElementById('qi_toast_container');
                 if (!container) {
                     container = document.createElement('div');
@@ -277,7 +290,9 @@
                 toast.className = 'alert alert-' + (type || 'info') + ' alert-dismissible fade show shadow-sm py-2';
                 toast.innerHTML = msg + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
                 container.appendChild(toast);
-                setTimeout(function () { if (toast.parentNode) toast.remove(); }, 3500);
+                if (!persist) {
+                    setTimeout(function () { if (toast.parentNode) toast.remove(); }, 3500);
+                }
             }
 
             function formatDate(val) {
@@ -293,6 +308,60 @@
                 if (!val) return '';
                 if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.substring(0, 10);
                 return '';
+            }
+
+            // ===== File đính kèm đã gửi trước đó =====
+            function qiEsc(v) {
+                if (v == null) return '';
+                return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            function renderFileList(ulId, files) {
+                var ul = document.getElementById(ulId);
+                if (!files || !files.length) {
+                    ul.innerHTML = '<li class="list-group-item text-muted small">' + qiEsc(i18n.noFile) + '</li>';
+                    return;
+                }
+                var html = '';
+                files.forEach(function (f) {
+                    html += '<li class="list-group-item py-1 px-2 d-flex align-items-center gap-2">'
+                          + '<i class="bx bx-file text-primary"></i>'
+                          + '<a href="/ess/empinfo/api/files/download/' + encodeURIComponent(f.fileNo) + '" target="_blank" class="text-truncate">'
+                          + qiEsc(f.fileName) + '</a></li>';
+                });
+                ul.innerHTML = html;
+            }
+
+            function loadEducFiles(educNo) {
+                var wrap = document.getElementById('ed_existingFilesWrap');
+                if (!educNo) {
+                    wrap.style.display = 'none';
+                    return;
+                }
+                wrap.style.display = '';
+                document.getElementById('ed_fileList').innerHTML = '<li class="list-group-item text-muted small">' + i18n.loading + '</li>';
+                $.ajax({
+                    url: '/ess/empinfo/api/qualInfo/educationFiles/' + educNo,
+                    type: 'GET',
+                    success: function (files) { renderFileList('ed_fileList', files); },
+                    error: function () { renderFileList('ed_fileList', []); }
+                });
+            }
+
+            function loadQualFiles(qualNo) {
+                var wrap = document.getElementById('ql_existingFilesWrap');
+                if (!qualNo) {
+                    wrap.style.display = 'none';
+                    return;
+                }
+                wrap.style.display = '';
+                document.getElementById('ql_fileList').innerHTML = '<li class="list-group-item text-muted small">' + i18n.loading + '</li>';
+                $.ajax({
+                    url: '/ess/empinfo/api/qualInfo/qualificationFiles/' + qualNo,
+                    type: 'GET',
+                    success: function (files) { renderFileList('ql_fileList', files); },
+                    error: function () { renderFileList('ql_fileList', []); }
+                });
             }
 
             // ===== Trình độ học vấn =====
@@ -398,6 +467,7 @@
                     ['ed_educNo', 'ed_institutionName', 'ed_startDate',
                         'ed_endDate', 'ed_subject', 'ed_degreesCode', 'ed_eduDegNum', 'ed_remark']
                         .forEach(function (id) { document.getElementById(id).value = ''; });
+                    loadEducFiles(null);
                 } else {
                     var item = currentEducList[indexOrNull];
                     degreeCode = item.degreeCode || '';
@@ -409,6 +479,7 @@
                     document.getElementById('ed_degreesCode').value = item.degreesCode || '';
                     document.getElementById('ed_eduDegNum').value = item.eduDegNum || '';
                     document.getElementById('ed_remark').value = item.remark || '';
+                    loadEducFiles(item.educNo);
                 }
 
                 $.when(initCodeSelects('#ed_degreeCode')).done(function () {
@@ -459,7 +530,7 @@
                     processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalEduc')).hide();
-                        showToast(i18n.applySuccess, 'success');
+                        showToast(i18n.applySuccess, 'success', true);
                         document.getElementById('ed_attachFiles').value = '';
                         loadEducation();
                     },
@@ -482,6 +553,7 @@
                     ['ql_qualNo', 'ql_qualName', 'ql_qualLevel', 'ql_dateObtained', 'ql_validityDate',
                         'ql_qualCardNo', 'ql_qualInstitute', 'ql_qualGrade', 'ql_qualRemark']
                         .forEach(function (id) { document.getElementById(id).value = ''; });
+                    loadQualFiles(null);
                 } else {
                     var item = currentQualList[indexOrNull];
                     document.getElementById('ql_qualNo').value = item.qualNo || '';
@@ -493,6 +565,7 @@
                     document.getElementById('ql_qualInstitute').value = item.qualInstitute || '';
                     document.getElementById('ql_qualGrade').value = item.qualGrade || '';
                     document.getElementById('ql_qualRemark').value = item.qualRemark || '';
+                    loadQualFiles(item.qualNo);
                 }
                 new bootstrap.Modal(document.getElementById('modalQual')).show();
             };
@@ -538,7 +611,7 @@
                     processData: false,
                     success: function () {
                         bootstrap.Modal.getInstance(document.getElementById('modalQual')).hide();
-                        showToast(i18n.applySuccess, 'success');
+                        showToast(i18n.applySuccess, 'success', true);
                         document.getElementById('ql_attachFiles').value = '';
                         loadQualification();
                     },

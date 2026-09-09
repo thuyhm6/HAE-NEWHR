@@ -1,0 +1,99 @@
+<div class="phi-page">
+  <nz-card>
+    <h5 class="phi-title">
+      <span nz-icon nzType="picture"></span>
+      {{ i18n.t('hrm.photoImport.title', 'Import ảnh đại diện nhân viên') }}
+    </h5>
+
+    <nz-alert
+      nzType="info"
+      nzShowIcon
+      class="phi-instruction"
+      [nzMessage]="instructionTpl"
+    ></nz-alert>
+    <ng-template #instructionTpl>
+      <strong>{{ i18n.t('hrm.photoImport.instruction', 'Hướng dẫn sử dụng') }}:</strong>
+      <ul class="phi-instruction-list">
+        <li>{{ i18n.t('hrm.photoImport.filename.rule', 'Tên file phải chứa mã nhân viên (ví dụ: NV001.jpg, nv001_photo.png)') }}</li>
+        <li>{{ i18n.t('hrm.photoImport.accept.formats', 'Định dạng cho phép: .jpg, .jpeg, .png') }}</li>
+        <li>{{ i18n.t('hrm.photoImport.max.size', 'Ảnh sẽ tự động được cắt về kích thước 600x800px khi lưu') }}</li>
+        <li>{{ i18n.t('hrm.photoImport.overwrite.note', 'Ảnh mới sẽ ghi đè ảnh cũ của cùng nhân viên') }}</li>
+      </ul>
+    </ng-template>
+
+    <div class="phi-upload-row">
+      <div class="phi-file-input-wrap">
+        <label class="phi-label">{{ i18n.t('hrm.photoImport.selectFiles', 'Chọn file ảnh (có thể chọn nhiều file)') }}</label>
+        <input id="phi-file-input" type="file" accept=".jpg,.jpeg,.png" multiple (change)="onFilesSelected($event)" class="phi-file-input" />
+        <div class="phi-file-count">
+          @if (selectedFiles().length) {
+            {{ selectedFiles().length }} {{ i18n.t('hrm.photoImport.selected.count', 'file đã được chọn') }}
+          } @else {
+            {{ i18n.t('hrm.photoImport.noFilesSelected', 'Chưa chọn file nào') }}
+          }
+        </div>
+      </div>
+      <div class="phi-actions">
+        <button id="phi-btn-preview" nz-button nzType="primary" [nzLoading]="checking()" (click)="preview()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('hrm.photoImport.btnPreview', 'Kiểm tra') }}
+        </button>
+        <button id="phi-btn-reset" nz-button (click)="reset()">
+          <span nz-icon nzType="undo"></span>
+          {{ i18n.t('hrm.photoImport.btnReset', 'Chọn lại') }}
+        </button>
+      </div>
+    </div>
+  </nz-card>
+
+  @if (results().length) {
+    <nz-card>
+      <div class="phi-result-header">
+        <h5>
+          {{ i18n.t('hrm.photoImport.result.title', 'Kết quả kiểm tra') }}
+          &nbsp;—&nbsp;
+          <span class="phi-success-count">{{ successCount }}</span> {{ i18n.t('hrm.photoImport.result.valid', 'hợp lệ') }}
+          &nbsp;/&nbsp;
+          <span class="phi-fail-count">{{ failCount }}</span> {{ i18n.t('hrm.photoImport.result.invalid', 'lỗi') }}
+        </h5>
+        @if (!isSaveResult() && successCount > 0) {
+          <button id="phi-btn-confirm" nz-button nzType="primary" [nzLoading]="saving()" (click)="confirmSave()">
+            <span nz-icon nzType="check-circle"></span>
+            {{ i18n.t('hrm.photoImport.btnConfirm', 'Xác nhận lưu') }}
+          </button>
+        }
+      </div>
+
+      <nz-table [nzData]="results()" [nzShowPagination]="false" nzSize="small">
+        <thead>
+          <tr>
+            <th nzWidth="50px" class="phi-col-center">{{ i18n.t('hrm.photoImport.col.no', 'STT') }}</th>
+            <th>{{ i18n.t('hrm.photoImport.col.fileName', 'Tên file') }}</th>
+            <th nzWidth="120px">{{ i18n.t('hrm.photoImport.col.empId', 'Mã nhân viên') }}</th>
+            <th>{{ i18n.t('hrm.photoImport.col.empName', 'Tên nhân viên') }}</th>
+            <th nzWidth="120px" class="phi-col-center">{{ i18n.t('hrm.photoImport.col.status', 'Trạng thái') }}</th>
+            <th>{{ i18n.t('hrm.photoImport.col.errorReason', 'Lý do lỗi') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of results(); track $index; let idx = $index) {
+            <tr>
+              <td class="phi-col-center">{{ idx + 1 }}</td>
+              <td>{{ r.fileName }}</td>
+              <td>{{ r.empId }}</td>
+              <td>{{ r.localName }}</td>
+              <td class="phi-col-center">
+                @if (r.success) {
+                  <nz-tag nzColor="success">{{ i18n.t('hrm.photoImport.status.success', 'Hợp lệ') }}</nz-tag>
+                } @else {
+                  <nz-tag nzColor="error">{{ i18n.t('hrm.photoImport.status.failed', 'Lỗi') }}</nz-tag>
+                }
+              </td>
+              <td class="phi-error-text">{{ r.errorMessage }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-card>
+  }
+</div>

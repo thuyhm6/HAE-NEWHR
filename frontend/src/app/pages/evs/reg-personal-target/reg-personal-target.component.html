@@ -1,0 +1,194 @@
+@if (!hasAnyResume()) {
+  <div class="vrpt-empty-notice">
+    <span nz-icon nzType="exclamation-circle" nzTheme="outline" class="vrpt-empty-icon"></span>
+    <p class="vrpt-empty-text">{{ i18n.t('evs.viewConfirmTarget1.msg.notInEvalPeriod', 'Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!') }}</p>
+  </div>
+} @else {
+  <div class="vrpt-page">
+    <div class="vrpt-search-card">
+      <label class="vrpt-inline-label">{{ i18n.t('evs.viewRegPersonalTarget.evalName', 'Tên đánh giá') }}</label>
+      <nz-select id="vrpt-resume-seq" nzSize="small" style="width:300px" [ngModel]="searchResumeSeq()" (ngModelChange)="searchResumeSeq.set($event)">
+        @for (opt of resumeOptions(); track opt.seq) { <nz-option [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option> }
+      </nz-select>
+      <button id="vrpt-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span> {{ i18n.t('evs.viewRegPersonalTarget.btnSearch', 'Tra cứu') }}
+      </button>
+    </div>
+
+    @if (info(); as d) {
+      <!-- Thông tin cá nhân -->
+      <div class="vrpt-card">
+        <div class="vrpt-card-title">{{ i18n.t('evs.viewRegPersonalTarget.personalInfo', 'Thông tin cá nhân') }}</div>
+        <div class="vrpt-info-grid">
+          <table class="vrpt-info-table">
+            <thead><tr><th colspan="2">{{ i18n.t('evs.viewRegPersonalTarget.basicInfo', 'Thông tin cơ bản') }}</th></tr></thead>
+            <tbody>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.fullName', 'Họ tên') }}</td><td>{{ d.localName }}</td></tr>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.position', 'Chức vụ') }}</td><td>{{ d.postGradeName }}</td></tr>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.dept', 'Phòng ban') }}</td><td>{{ d.deptname }}</td></tr>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.hireDate', 'Ngày vào làm') }}</td><td>{{ d.dateStarted }}</td></tr>
+            </tbody>
+          </table>
+          <table class="vrpt-info-table">
+            <thead><tr><th colspan="2">{{ i18n.t('evs.viewRegPersonalTarget.evalCategory', 'Hạng mục đánh giá') }}</th></tr></thead>
+            <tbody>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.evalYear', 'Năm đánh giá') }}</td><td>{{ d.evsYear }}</td></tr>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.period', 'Thời gian') }}</td><td>{{ d.evsStartDate }}@if (d.evsEndDate) { ~{{ d.evsEndDate }} }</td></tr>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.appraiser1', 'Người đánh giá lần 1') }}</td><td>{{ d.localName1 }}</td></tr>
+              <tr><td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.appraiser2', 'Người đánh giá lần 2') }}</td><td>{{ d.localName2 }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Objective Confirm -->
+      <div class="vrpt-card">
+        <div class="vrpt-card-header">
+          <span class="vrpt-card-title">{{ i18n.t('evs.viewRegPersonalTarget.objectiveConfirm', 'Objective Confirm') }}</span>
+          @if (editable()) {
+            <button id="vrpt-execute-btn" nz-button nzType="primary" nzSize="small" [nzLoading]="executing()" (click)="execute()">
+              {{ i18n.t('evs.viewRegPersonalTarget.btnExecute', 'Thực hiện') }}
+            </button>
+          }
+        </div>
+
+        <!-- Mục tiêu chiến lược -->
+        <div class="vrpt-section-header">
+          <span class="vrpt-section-title">{{ i18n.t('evs.viewRegPersonalTarget.strategicTarget', 'Mục tiêu chiến lược') }}</span>
+          @if (editable()) {
+            <button id="vrpt-add-strategic-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal('strategic')">
+              <span nz-icon nzType="plus"></span> {{ i18n.t('evs.viewRegPersonalTarget.btnAddNew', 'Thêm mới(+)') }}
+            </button>
+          }
+        </div>
+        <nz-table [nzData]="strategicItems()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="48px" class="vrpt-col-center">{{ i18n.t('evs.viewRegPersonalTarget.col.no', 'No') }}</th>
+              <th nzWidth="220px">{{ i18n.t('evs.viewRegPersonalTarget.col.evalCategory', 'Hạng mục đánh giá') }}</th>
+              <th>{{ i18n.t('evs.viewRegPersonalTarget.col.target', 'Mục tiêu') }}</th>
+              <th nzWidth="90px" class="vrpt-col-center">{{ i18n.t('evs.viewRegPersonalTarget.col.ratio', 'Tỷ lệ(%)') }}</th>
+              @if (editable()) { <th nzWidth="80px" class="vrpt-col-center">{{ i18n.t('evs.viewRegPersonalTarget.col.action', 'Thao tác') }}</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of strategicItems(); track row.seq; let idx = $index) {
+              <tr class="vrpt-data-row" (click)="editable() && openEditModal(row)">
+                <td class="vrpt-col-center">{{ idx + 1 }}</td>
+                <td>{{ row.itemName }}</td>
+                <td class="vrpt-rich-content" [innerHTML]="row.itemContent"></td>
+                <td class="vrpt-col-center">{{ row.itemScore }}</td>
+                @if (editable()) {
+                  <td class="vrpt-col-center">
+                    <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteItem(row)"><span nz-icon nzType="delete"></span></button>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr><td [attr.colspan]="editable() ? 5 : 4" class="vrpt-col-center">0</td></tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="vrpt-total-row">
+              <td colspan="3" class="vrpt-total-label">{{ i18n.t('common.total', 'Tổng') }}</td>
+              <td class="vrpt-col-center" [class.vrpt-total-err]="strategicTotal() > 40">{{ strategicTotal() }}</td>
+              @if (editable()) { <td></td> }
+            </tr>
+          </tfoot>
+        </nz-table>
+
+        <!-- Mục tiêu vận hành -->
+        <div class="vrpt-section-header">
+          <span class="vrpt-section-title">{{ i18n.t('evs.viewRegPersonalTarget.operationTarget', 'Mục tiêu vận hành') }}</span>
+          @if (editable()) {
+            <button id="vrpt-add-operation-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal('operation')">
+              <span nz-icon nzType="plus"></span> {{ i18n.t('evs.viewRegPersonalTarget.btnAddNew', 'Thêm mới(+)') }}
+            </button>
+          }
+        </div>
+        <nz-table [nzData]="operationItems()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="48px" class="vrpt-col-center">{{ i18n.t('evs.viewRegPersonalTarget.col.no', 'No') }}</th>
+              <th nzWidth="220px">{{ i18n.t('evs.viewRegPersonalTarget.col.evalCategory', 'Hạng mục đánh giá') }}</th>
+              <th>{{ i18n.t('evs.viewRegPersonalTarget.col.target', 'Mục tiêu') }}</th>
+              <th nzWidth="90px" class="vrpt-col-center">{{ i18n.t('evs.viewRegPersonalTarget.col.ratio', 'Tỷ lệ(%)') }}</th>
+              @if (editable()) { <th nzWidth="80px" class="vrpt-col-center">{{ i18n.t('evs.viewRegPersonalTarget.col.action', 'Thao tác') }}</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of operationItems(); track row.seq; let idx = $index) {
+              <tr class="vrpt-data-row" (click)="editable() && openEditModal(row)">
+                <td class="vrpt-col-center">{{ idx + 1 }}</td>
+                <td>{{ row.itemName }}</td>
+                <td class="vrpt-rich-content" [innerHTML]="row.itemContent"></td>
+                <td class="vrpt-col-center">{{ row.itemScore }}</td>
+                @if (editable()) {
+                  <td class="vrpt-col-center">
+                    <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteItem(row)"><span nz-icon nzType="delete"></span></button>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr><td [attr.colspan]="editable() ? 5 : 4" class="vrpt-col-center">0</td></tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr class="vrpt-total-row">
+              <td colspan="3" class="vrpt-total-label">{{ i18n.t('common.total', 'Tổng') }}</td>
+              <td class="vrpt-col-center">{{ operationTotal() }}</td>
+              @if (editable()) { <td></td> }
+            </tr>
+          </tfoot>
+        </nz-table>
+
+        <div class="vrpt-grand-total">
+          <span class="vrpt-grand-total-label">{{ i18n.t('common.total', 'Tổng') }}</span>
+          <span class="vrpt-grand-total-value" [class.vrpt-total-ok]="grandTotal() === 100" [class.vrpt-total-err]="grandTotal() !== 100">{{ grandTotal() }}</span>
+        </div>
+      </div>
+
+      <!-- Phần 2: Ý kiến người đánh giá -->
+      <div class="vrpt-card">
+        <div class="vrpt-card-title">{{ i18n.t('evs.viewRegPersonalTarget.part2', 'Phần 2') }}</div>
+        <table class="vrpt-opinion-table">
+          <thead><tr><th style="width:160px"></th><th>{{ i18n.t('evs.viewRegPersonalTarget.col.opinion', 'Ý kiến') }}</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.appraiser1Comment', 'Người đánh giá cấp 1') }}</td>
+              <td><textarea nz-input rows="4" readonly [ngModel]="d.affirmComment1 ?? ''"></textarea></td>
+            </tr>
+            <tr>
+              <td class="vrpt-info-label">{{ i18n.t('evs.viewRegPersonalTarget.appraiser2Comment', 'Người đánh giá cấp 2') }}</td>
+              <td><textarea nz-input rows="4" readonly [ngModel]="d.affirmComment2 ?? ''"></textarea></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+}
+
+<!-- Modal Thêm/Sửa mục tiêu -->
+<nz-modal
+  [nzVisible]="itemModalVisible()"
+  [nzTitle]="formSeq() ? i18n.t('evs.viewRegPersonalTarget.modal.editTitle', 'Chỉnh sửa mục tiêu') : i18n.t('evs.viewRegPersonalTarget.modal.addTitle', 'Thêm mới mục tiêu')"
+  (nzOnCancel)="itemModalVisible.set(false)"
+  (nzVisibleChange)="itemModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="itemSaving()"
+  (nzOnOk)="saveItemModal()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <label class="vrpt-field-label">{{ i18n.t('evs.viewRegPersonalTarget.col.evalCategory', 'Hạng mục đánh giá') }} <span class="vrpt-required"></span></label>
+    <input id="vrpt-item-name" nz-input nzSize="small" maxlength="200" [ngModel]="formItemName()" (ngModelChange)="formItemName.set($event)" />
+
+    <label class="vrpt-field-label" style="margin-top:10px">{{ i18n.t('evs.viewRegPersonalTarget.modal.targetContent', 'Nội dung mục tiêu') }} <span class="vrpt-required"></span></label>
+    <textarea nz-input rows="5" [ngModel]="formItemContent()" (ngModelChange)="formItemContent.set($event)"></textarea>
+
+    <label class="vrpt-field-label" style="margin-top:10px">{{ i18n.t('evs.viewRegPersonalTarget.col.ratio', 'Tỷ lệ(%)') }} <span class="vrpt-required"></span></label>
+    <nz-input-number [ngModel]="formItemScore()" (ngModelChange)="formItemScore.set($event)" [nzMin]="0" [nzMax]="100" style="width:140px"></nz-input-number>
+  </ng-container>
+</nz-modal>

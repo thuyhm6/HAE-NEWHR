@@ -1,0 +1,15 @@
+.hcv-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hcv-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hcv-col-center {
+  text-align: center;
+}

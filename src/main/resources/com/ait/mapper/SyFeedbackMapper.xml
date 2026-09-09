@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.sy.feedback.mapper.SyFeedbackMapper">
+
+    <resultMap id="SyFeedbackResultMap" type="com.ait.sy.feedback.dto.SyFeedbackDto">
+        <id     column="FEEDBACK_ID"      property="feedbackId"      jdbcType="VARCHAR" />
+        <result column="FEEDBACK_TITLE"   property="feedbackTitle"   jdbcType="VARCHAR" />
+        <result column="FEEDBACK_CONTENT" property="feedbackContent" jdbcType="VARCHAR" />
+        <result column="ACTIVITY"         property="activity"        jdbcType="NUMERIC" />
+        <result column="CREATE_DATE"      property="createDate"      jdbcType="VARCHAR" />
+        <result column="CREATED_IP"       property="createdIp"       jdbcType="VARCHAR" />
+        <result column="CREATED_BY"       property="createdBy"       jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- ── Điều kiện WHERE dùng chung ─────────────────────────────────────────── -->
+    <sql id="whereCondition">
+        WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+            AND (UPPER(FEEDBACK_TITLE) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+              OR UPPER(FEEDBACK_CONTENT) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%')
+        </if>
+    </sql>
+
+    <!-- ── Đếm tổng bản ghi ───────────────────────────────────────────────────── -->
+    <select id="countList" parameterType="com.ait.sy.feedback.dto.SyFeedbackDto" resultType="long">
+        SELECT COUNT(1) FROM SY_FEEDBACK
+        <include refid="whereCondition"/>
+    </select>
+
+    <!-- ── Phân trang phía server – Oracle ROWNUM ─────────────────────────────── -->
+    <select id="selectListPage" parameterType="com.ait.sy.feedback.dto.SyFeedbackDto"
+            resultMap="SyFeedbackResultMap">
+        SELECT FEEDBACK_ID, FEEDBACK_TITLE, FEEDBACK_CONTENT, ACTIVITY,
+               CREATE_DATE, CREATED_IP, CREATED_BY
+          FROM (
+              SELECT a.*, ROWNUM AS RN
+                FROM (
+                    SELECT FEEDBACK_ID,
+                           FEEDBACK_TITLE,
+                           FEEDBACK_CONTENT,
+                           ACTIVITY,
+                           TO_CHAR(CREATE_DATE, 'YYYY/MM/DD HH24:MI') AS CREATE_DATE,
+                           CREATED_IP,
+                           CREATED_BY
+                      FROM SY_FEEDBACK
+                    <include refid="whereCondition"/>
+                    ORDER BY CREATE_DATE DESC
+                ) a
+               WHERE ROWNUM &lt;= #{start, jdbcType=NUMERIC} + #{length, jdbcType=NUMERIC}
+          )
+         WHERE RN > #{start, jdbcType=NUMERIC}
+    </select>
+
+    <!-- ── Thêm mới góp ý (gửi từ trang login, không cần đăng nhập) ──────────── -->
+    <insert id="insert" parameterType="com.ait.sy.feedback.dto.SyFeedbackDto">
+        INSERT INTO SY_FEEDBACK (
+            FEEDBACK_ID, FEEDBACK_TITLE, FEEDBACK_CONTENT, ACTIVITY,
+            CREATE_DATE, CREATED_IP, CREATED_BY
+        ) VALUES (
+            SY_FEEDBACK_SEQ.NEXTVAL,
+            #{feedbackTitle, jdbcType=VARCHAR},
+            #{feedbackContent, jdbcType=VARCHAR},
+            1,
+            SYSDATE,
+            #{adminIP, jdbcType=VARCHAR},
+            #{adminID, jdbcType=VARCHAR}
+        )
+    </insert>
+
+</mapper>

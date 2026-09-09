@@ -1,0 +1,19 @@
+.yuif-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.yuif-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.yuif-search-label {
+  font-weight: 600;
+}
+
+.yuif-col-center {
+  text-align: center;
+}

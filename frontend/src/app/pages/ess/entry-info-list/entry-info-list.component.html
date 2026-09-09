@@ -1,0 +1,194 @@
+<div class="veil-page">
+  <nz-card class="veil-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="veil-keyword"
+                nz-input
+                [ngModel]="keyword()"
+                (ngModelChange)="keyword.set($event)"
+                (keydown.enter)="search()"
+                name="veilKeyword"
+                [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã nhân viên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="veil-from-date"
+                [ngModel]="fromDate()"
+                (ngModelChange)="fromDate.set($event)"
+                name="veilFromDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="veil-to-date"
+                [ngModel]="toDate()"
+                (ngModelChange)="toDate.set($event)"
+                name="veilToDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="veil-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="veilDeptNos"
+                [nzPlaceHolder]="i18n.t('common.select', 'Chọn')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.shiftType', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="veil-shift"
+                [ngModel]="shiftNoFilter()"
+                (ngModelChange)="shiftNoFilter.set($event)"
+                name="veilShiftNoFilter"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of shiftOptions()"
+                  [nzValue]="opt.shiftNo"
+                  [nzLabel]="opt.nameVi || opt.shiftName || opt.shiftNo || ''"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('acrd.col.missingCard', 'Trạng thái thiếu thẻ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="veil-missing-card"
+                [ngModel]="missingCard()"
+                (ngModelChange)="missingCard.set($event)"
+                name="veilMissingCard"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('acrd.missingCard.all', 'Tất cả')"
+              >
+                <nz-option nzValue="1" [nzLabel]="i18n.t('acrd.missingCard.yes', 'Thiếu thẻ')"></nz-option>
+                <nz-option nzValue="2" [nzLabel]="i18n.t('acrd.missingCard.no', 'Đủ thẻ')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row>
+        <div nz-col [nzSpan]="24" class="veil-search-actions">
+          <button id="veil-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="veil-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="veil-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="veil-table-card">
+    <nz-table
+      id="veil-data-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="veil-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="veil-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th class="veil-col-center">{{ i18n.t('acrd.col.team', 'TEAM') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+          <th class="veil-col-center">{{ i18n.t('attSearch.workDate', 'Ngày công') }}</th>
+          <th class="veil-col-center">{{ i18n.t('acrd.col.inDay', 'Ngày vào') }}</th>
+          <th class="veil-col-center">{{ i18n.t('acrd.col.inTime', 'Thời gian vào') }}</th>
+          <th class="veil-col-center">{{ i18n.t('acrd.col.outDay', 'Ngày ra') }}</th>
+          <th class="veil-col-center">{{ i18n.t('acrd.col.outTime', 'Thời gian ra') }}</th>
+          <th>{{ i18n.t('acr.col.remark', 'Ghi chú') }}</th>
+          <th class="veil-col-center">{{ i18n.t('acrd.col.shiftName', 'Ca làm') }}</th>
+          <th>{{ i18n.t('acrd.col.changeShiftPerson', 'Người thay đổi Ca làm') }}</th>
+          <th class="veil-col-center">{{ i18n.t('acrd.col.eatTime', 'Eat time') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index; let idx = $index) {
+          <tr>
+            <td class="veil-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="veil-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td class="veil-col-center">{{ row.deptTeam }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeNoName }}</td>
+            <td class="veil-col-center">{{ row.arDateStr }}</td>
+            <td class="veil-col-center">{{ row.inDay }}</td>
+            <td class="veil-col-center">{{ row.inTime }}</td>
+            <td class="veil-col-center">{{ row.outDay }}</td>
+            <td class="veil-col-center">{{ row.outTime }}</td>
+            <td>{{ row.leaveContent }}</td>
+            <td class="veil-col-center">{{ shiftLabel(row) }}</td>
+            <td>{{ row.changeShiftPerson }}</td>
+            <td class="veil-col-center">{{ row.eatTimes }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="15" class="veil-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

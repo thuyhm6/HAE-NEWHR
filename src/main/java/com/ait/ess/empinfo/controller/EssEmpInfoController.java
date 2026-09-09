@@ -29,12 +29,12 @@ import com.ait.hrm.empinfo.service.HrFamilyService;
 import com.ait.hrm.empinfo.service.HrQualificationService;
 import com.ait.hrm.empinfo.service.HrRewardService;
 import com.ait.hrm.empinfo.service.HrWorkExperienceService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,6 +52,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -61,12 +62,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/ess/empinfo")
 public class EssEmpInfoController {
 
     private static final Logger log = LoggerFactory.getLogger(EssEmpInfoController.class);
+
+    @Autowired
+    private AngularIndexService angularIndexService;
 
     @Value("${app.file.upload.path:D:/source/VHR/HAE_HR/resources/fileUpload}")
     private String fileUploadPath;
@@ -105,8 +110,9 @@ public class EssEmpInfoController {
      * Mở giao diện Tra cứu chi tiết thay đổi thông tin
      */
     @GetMapping("/viewEssApplyInfo")
-    public String viewEssApplyInfo(Model model, HttpSession session) {
-        return "ess/empinfo/viewEssApplyInfo";
+    public String viewEssApplyInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -153,16 +159,18 @@ public class EssEmpInfoController {
      * Mở giao diện xem thông tin cá nhân
      */
     @GetMapping("/viewPersonalInfoForEss")
-    public String viewPersonalInfoForEss(Model model, HttpSession session) {
-        return "ess/empinfo/viewPersonalInfoForEss";
+    public String viewPersonalInfoForEss(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
      * Mở giao diện Thông tin Công việc
      */
     @GetMapping("/viewEssPersonalInfo")
-    public String viewEssPersonalInfo(Model model, HttpSession session) {
-        return "ess/empinfo/viewEssPersonalInfo";
+    public String viewEssPersonalInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // ==================== Thông tin công việc ====================
@@ -250,8 +258,9 @@ public class EssEmpInfoController {
     // ==================== Thông tin chứng chỉ ====================
 
     @GetMapping("/viewQualificationInfo")
-    public String viewQualificationInfo(Model model, HttpSession session) {
-        return "ess/empinfo/viewQualificationInfo";
+    public String viewQualificationInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/qualInfo/myEducation")

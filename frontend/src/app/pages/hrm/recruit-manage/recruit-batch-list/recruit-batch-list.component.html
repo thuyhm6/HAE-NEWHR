@@ -1,0 +1,385 @@
+<div class="rbl-page">
+  <div class="rbl-toolbar">
+    <label class="rbl-label">{{ i18n.t('rbl.label.registerDate', 'Ngày đăng ký') }}</label>
+    <nz-select
+      id="rbl-register-seq"
+      style="min-width:220px"
+      [ngModel]="selectedRegisterSeq()"
+      (ngModelChange)="onRegisterChange($event)"
+      nzAllowClear
+      [nzPlaceHolder]="i18n.t('common.placeholder.select', '-- Chọn --')"
+    >
+      @for (r of registerList(); track r.registerSeq) {
+        <nz-option [nzValue]="r.registerSeq" [nzLabel]="(r.registerDate || '') + (r.registerRemark ? ' - ' + r.registerRemark : '')"></nz-option>
+      }
+    </nz-select>
+    <button id="rbl-register-btn" nz-button nzType="primary" nzSize="small" (click)="openRegisterModal()">
+      <span nz-icon nzType="plus"></span> {{ i18n.t('rbl.btn.register', 'Đăng ký') }}
+    </button>
+
+    <div class="rbl-toolbar-actions">
+      @if (!allProcessed()) {
+        <button id="rbl-template-btn" nz-button nzSize="small" (click)="downloadTemplate()">
+          <span nz-icon nzType="download"></span> {{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+        </button>
+        <button id="rbl-confirm-btn" nz-button nzType="primary" nzSize="small" (click)="confirmExecute()">
+          <span nz-icon nzType="check-circle"></span> {{ i18n.t('common.confirm', 'Xác nhận') }}
+        </button>
+      }
+      <button id="rbl-search-btn" nz-button nzSize="small" (click)="reload()">
+        <span nz-icon nzType="search"></span> {{ i18n.t('common.search', 'Tìm kiếm') }}
+      </button>
+      @if (!allProcessed()) {
+        <button id="rbl-delete-btn" nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+          <span nz-icon nzType="delete"></span> {{ i18n.t('common.delete', 'Xóa') }}
+        </button>
+      }
+      <button id="rbl-export-btn" nz-button nzSize="small" (click)="exportExcel()">
+        <span nz-icon nzType="file-excel"></span> {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+      </button>
+      @if (!allProcessed()) {
+        <button id="rbl-import-btn" nz-button nzSize="small" (click)="openImportModal()">
+          <span nz-icon nzType="upload"></span> {{ i18n.t('rbl.btn.insertFile', 'Chèn file') }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="rbl-total-count">Total:<span>{{ total() }}</span></div>
+
+  <nz-table
+    id="rbl-data-table"
+    [nzData]="rows()"
+    [nzLoading]="listLoading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzShowSizeChanger]="true"
+    [nzPageSizeOptions]="[20, 50, 100]"
+    (nzQueryParams)="onQueryParamsChange($event)"
+    [nzScroll]="{ x: '3200px', y: 'calc(100vh - 320px)' }"
+    nzSize="small"
+  >
+    <thead>
+      <tr>
+        <th nzWidth="44px" nzLeft class="rbl-col-center">No.</th>
+        <th nzWidth="36px" nzLeft class="rbl-col-center">
+          @if (!allProcessed()) {
+            <input type="checkbox" (change)="toggleSelectAll($any($event.target).checked)" />
+          }
+        </th>
+        <th nzWidth="80px" nzLeft class="rbl-col-center">{{ i18n.t('rbl.col.processed', 'Đã xử lý') }}</th>
+        <th nzWidth="150px" nzLeft>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+        <th nzWidth="110px">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+        <th nzWidth="150px">{{ i18n.t('recruit.list.field.englishName', 'Tên tiếng Anh') }}</th>
+        <th nzWidth="100px">{{ i18n.t('recruit.list.field.dob', 'Ngày sinh') }}</th>
+        <th nzWidth="110px">{{ i18n.t('rbl.col.dateStarted', 'Ngày vào làm') }}</th>
+        <th nzWidth="120px">{{ i18n.t('recruit.list.field.endProbationDate', 'Ngày hết thử việc') }}</th>
+        <th nzWidth="120px">{{ i18n.t('rbl.col.joinType', 'Loại nhập') }}</th>
+        <th nzWidth="150px">{{ i18n.t('rbl.col.joinDetailType', 'Chi tiết') }}</th>
+        <th nzWidth="150px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+        <th nzWidth="120px">{{ i18n.t('rbl.col.postGrade', 'Chức vụ') }}</th>
+        <th nzWidth="130px">{{ i18n.t('rbl.col.postFamily', 'Nhóm nhân viên') }}</th>
+        <th nzWidth="180px">{{ i18n.t('rbl.col.mainBusiness', 'Công việc') }}</th>
+        <th nzWidth="120px">{{ i18n.t('rbl.col.empType', 'Loại nhân viên') }}</th>
+        <th nzWidth="130px">{{ i18n.t('rbl.col.position', 'Chức danh') }}</th>
+        <th nzWidth="100px">{{ i18n.t('rbl.col.costCenter', 'Mã chi phí') }}</th>
+        <th nzWidth="80px">{{ i18n.t('recruit.list.field.sexcode', 'Giới tính') }}</th>
+        <th nzWidth="100px">{{ i18n.t('recruit.list.field.nationalityCode', 'Quốc tịch') }}</th>
+        <th nzWidth="100px">{{ i18n.t('recruit.list.field.nationCode', 'Dân tộc') }}</th>
+        <th nzWidth="130px">{{ i18n.t('recruit.list.field.maritalStatusCode', 'Tình trạng hôn nhân') }}</th>
+        <th nzWidth="130px">{{ i18n.t('recruit.list.edu.finalDegree', 'Học vị cuối') }}</th>
+        <th nzWidth="110px">{{ i18n.t('recruit.list.edu.endDate', 'Đến ngày TN') }}</th>
+        <th nzWidth="200px">{{ i18n.t('recruit.list.edu.institutionName', 'Tên trường') }}</th>
+        <th nzWidth="150px">{{ i18n.t('recruit.list.edu.subject', 'Chuyên ngành') }}</th>
+        <th nzWidth="130px">{{ i18n.t('recruit.list.field.idcardNo', 'Số CMND/CCCD') }}</th>
+        <th nzWidth="100px">{{ i18n.t('recruit.list.field.idcardStartDate', 'Ngày cấp') }}</th>
+        <th nzWidth="150px">{{ i18n.t('recruit.list.field.issuingAuthority', 'Nơi cấp') }}</th>
+        <th nzWidth="160px">{{ i18n.t('rbl.col.emailSecond', 'Email cá nhân') }}</th>
+        <th nzWidth="100px">{{ i18n.t('recruit.list.field.homePhone', 'ĐT nhà') }}</th>
+        <th nzWidth="110px">{{ i18n.t('rbl.col.telephone', 'Điện thoại') }}</th>
+        <th nzWidth="200px">{{ i18n.t('recruit.list.field.addressContent', 'Địa chỉ') }}</th>
+        <th nzWidth="150px">{{ i18n.t('rbl.col.regPlace', 'Hộ khẩu') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.seq; let idx = $index) {
+        <tr (click)="openEditModal(row)" class="rbl-data-row">
+          <td nzLeft class="rbl-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td nzLeft class="rbl-col-center">
+            @if (row.activity !== '1') {
+              <input type="checkbox" [checked]="isRowSelected(row.seq)" (click)="$event.stopPropagation()" (change)="toggleRowSelected(row.seq!, $any($event.target).checked)" />
+            }
+          </td>
+          <td nzLeft class="rbl-col-center">
+            @if (row.activity === '1') {
+              <span class="rbl-badge-done">&#10003;</span>
+            } @else {
+              <span class="rbl-badge-pending">-</span>
+            }
+          </td>
+          <td nzLeft>{{ row.vietnamName }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.englishName }}</td>
+          <td>{{ row.dob }}</td>
+          <td>{{ row.dateStarted }}</td>
+          <td>{{ row.endProbationDate }}</td>
+          <td>{{ row.joinTypeName }}</td>
+          <td>{{ row.joinDetailTypeName }}</td>
+          <td>{{ row.deptName }}</td>
+          <td>{{ row.postGradeName }}</td>
+          <td>{{ row.postFamilyName }}</td>
+          <td>{{ row.mainBusinessName }}</td>
+          <td>{{ row.empTypeName }}</td>
+          <td>{{ row.positionNoName }}</td>
+          <td>{{ row.costCenter }}</td>
+          <td>{{ row.sexName }}</td>
+          <td>{{ row.nationalityName }}</td>
+          <td>{{ row.nationName }}</td>
+          <td>{{ row.maritalStatusName }}</td>
+          <td>{{ row.finalDegreeName }}</td>
+          <td>{{ row.endDate }}</td>
+          <td>{{ row.institutionName }}</td>
+          <td>{{ row.subjectName }}</td>
+          <td>{{ row.idcardNo }}</td>
+          <td>{{ row.idcardSDate }}</td>
+          <td>{{ row.issuingAuthority }}</td>
+          <td>{{ row.emailSecond }}</td>
+          <td>{{ row.homePhone }}</td>
+          <td>{{ row.telephone }}</td>
+          <td>{{ row.addressContent }}</td>
+          <td>{{ row.regPlace }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="33" class="rbl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</div>
+
+<!-- Modal Đăng ký ngày -->
+<nz-modal
+  [nzVisible]="registerModalVisible()"
+  [nzTitle]="i18n.t('rbl.modal.register.title', 'Đăng ký ngày')"
+  (nzOnCancel)="registerModalVisible.set(false)"
+  (nzVisibleChange)="registerModalVisible.set($event)"
+  nzWidth="400px"
+  [nzOkLoading]="savingRegister()"
+  (nzOnOk)="saveRegisterModal()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <label class="rbl-field-label rbl-required">{{ i18n.t('rbl.modal.register.date', 'Ngày đăng ký') }}</label>
+    <nz-date-picker id="rbl-reg-date" [ngModel]="formRegDate()" (ngModelChange)="formRegDate.set($event)" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+    <label class="rbl-field-label" style="margin-top:10px">{{ i18n.t('rbl.modal.register.remark', 'Ghi chú') }}</label>
+    <textarea nz-input rows="2" maxlength="2000" [ngModel]="formRegRemark()" (ngModelChange)="formRegRemark.set($event)"></textarea>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Chỉnh sửa dòng -->
+<nz-modal
+  [nzVisible]="editModalVisible()"
+  [nzTitle]="i18n.t('rbl.modal.edit.title', 'Chỉnh sửa thông tin')"
+  (nzOnCancel)="editModalVisible.set(false)"
+  (nzVisibleChange)="editModalVisible.set($event)"
+  nzWidth="1000px"
+  [nzOkLoading]="editSaving()"
+  [nzOkDisabled]="editReadOnly()"
+  (nzOnOk)="saveEditModal()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div class="rbl-modal-body">
+      <div class="rbl-section-title">{{ i18n.t('rbl.modal.edit.section.personal', 'Thông tin cá nhân') }}</div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('common.empId', 'Mã nhân viên') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditEmpId()" disabled />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('common.empName', 'Họ tên') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditVietnamName()" (ngModelChange)="formEditVietnamName.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.englishName', 'Tên tiếng Anh') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditEnglishName()" (ngModelChange)="formEditEnglishName.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.dob', 'Ngày sinh') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditDob()" (ngModelChange)="formEditDob.set($event)" placeholder="YYYY/MM/DD" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.sexcode', 'Giới tính') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditSexcode()" (ngModelChange)="formEditSexcode.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of sexOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.nationalityCode', 'Quốc tịch') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditNationalityCode()" (ngModelChange)="formEditNationalityCode.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of nationalityOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.nationCode', 'Dân tộc') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditNationCode()" (ngModelChange)="formEditNationCode.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of nationOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.maritalStatusCode', 'Tình trạng hôn nhân') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditMaritalStatusCode()" (ngModelChange)="formEditMaritalStatusCode.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of maritalStatusOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+      </div>
+
+      <div class="rbl-section-title">{{ i18n.t('rbl.modal.edit.section.work', 'Thông tin công việc') }}</div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.dateStarted', 'Ngày vào làm') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditDateStarted()" (ngModelChange)="formEditDateStarted.set($event)" placeholder="YYYY/MM/DD" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.endProbation', 'Ngày hết thử việc') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditEndProbationDate()" (ngModelChange)="formEditEndProbationDate.set($event)" placeholder="YYYY/MM/DD" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.joinType', 'Loại nhập') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditJoinType()" (ngModelChange)="onEditJoinTypeChange($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of joinTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.joinDetailType', 'Chi tiết loại nhập') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditJoinDetailType()" (ngModelChange)="formEditJoinDetailType.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of joinDetailTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.dept', 'Phòng ban') }}</label>
+          <nz-tree-select [nzNodes]="deptTreeNodes()" [ngModel]="formEditDeptno()" (ngModelChange)="onDeptnoChange($event)" nzSize="small" nzShowSearch style="width:100%" [nzDisabled]="editReadOnly()"></nz-tree-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.postFamily', 'Nhóm nhân viên') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditPostFamily()" (ngModelChange)="onEditPostFamilyChange($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of postFamilyOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.postGrade', 'Chức vụ') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditPostGradeNo()" (ngModelChange)="formEditPostGradeNo.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of postGradeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.position', 'Chức danh') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditPositionNo()" (ngModelChange)="formEditPositionNo.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of positionNoOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.empType', 'Loại nhân viên') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditEmpTypeCode()" (ngModelChange)="formEditEmpTypeCode.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of empTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.mainBusiness', 'Công việc') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditMainBusiness()" (ngModelChange)="formEditMainBusiness.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of mainBusinessOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.costCenter', 'Mã chi phí') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditCostCenter()" (ngModelChange)="formEditCostCenter.set($event)" [disabled]="editReadOnly()" />
+        </div>
+      </div>
+
+      <div class="rbl-section-title">{{ i18n.t('rbl.modal.edit.section.id', 'Giấy tờ tùy thân') }}</div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.idcardNo', 'Số CMND/CCCD') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditIdcardNo()" (ngModelChange)="formEditIdcardNo.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.idcardSDate', 'Ngày cấp') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditIdcardSDate()" (ngModelChange)="formEditIdcardSDate.set($event)" placeholder="YYYY/MM/DD" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.issuingAuthority', 'Nơi cấp') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditIssuingAuthority()" (ngModelChange)="formEditIssuingAuthority.set($event)" [disabled]="editReadOnly()" />
+        </div>
+      </div>
+
+      <div class="rbl-section-title">{{ i18n.t('rbl.modal.edit.section.education', 'Thông tin học vấn') }}</div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.finalDegreeCode', 'Học vị cuối') }}</label>
+          <nz-select nzSize="small" [ngModel]="formEditFinalDegreeCode()" (ngModelChange)="formEditFinalDegreeCode.set($event)" style="width:100%" nzAllowClear [nzDisabled]="editReadOnly()">
+            @for (opt of degreeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.endDate', 'Ngày tốt nghiệp') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditEndDate()" (ngModelChange)="formEditEndDate.set($event)" placeholder="YYYY/MM/DD" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.institutionName', 'Tên trường') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditInstitutionName()" (ngModelChange)="formEditInstitutionName.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="6">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.subjectName', 'Chuyên ngành') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditSubjectName()" (ngModelChange)="formEditSubjectName.set($event)" [disabled]="editReadOnly()" />
+        </div>
+      </div>
+
+      <div class="rbl-section-title">{{ i18n.t('rbl.modal.edit.section.contact', 'Liên hệ & Địa chỉ') }}</div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.emailSecond', 'Email cá nhân') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditEmailSecond()" (ngModelChange)="formEditEmailSecond.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.homePhone', 'ĐT nhà') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditHomePhone()" (ngModelChange)="formEditHomePhone.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.telephone', 'Điện thoại cá nhân') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditTelephone()" (ngModelChange)="formEditTelephone.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="12">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.addressContent', 'Địa chỉ hiện tại') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditAddressContent()" (ngModelChange)="formEditAddressContent.set($event)" [disabled]="editReadOnly()" />
+        </div>
+        <div nz-col [nzSpan]="12">
+          <label class="rbl-field-label">{{ i18n.t('rbl.modal.edit.regPlace', 'Hộ khẩu thường trú') }}</label>
+          <input nz-input nzSize="small" [ngModel]="formEditRegPlace()" (ngModelChange)="formEditRegPlace.set($event)" [disabled]="editReadOnly()" />
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Chèn file (Import Excel) -->
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('rbl.btn.insertFile', 'Chèn file')"
+  (nzOnCancel)="importModalVisible.set(false)"
+  (nzVisibleChange)="importModalVisible.set($event)"
+  nzWidth="420px"
+  [nzOkLoading]="importing()"
+  [nzOkDisabled]="!importFile()"
+  (nzOnOk)="submitImport()"
+  [nzOkText]="i18n.t('rbl.btn.insertFile', 'Chèn file')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <input id="rbl-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+</nz-modal>

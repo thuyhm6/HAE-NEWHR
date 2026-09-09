@@ -5,11 +5,14 @@ import com.ait.ess.empinfo.mapper.EssFileMapper;
 import com.ait.hrm.approve.dto.HrmApproveApplyDto;
 import com.ait.hrm.approve.service.HrmApproveService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import com.ait.util.AngularIndexService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,12 +28,16 @@ public class HrmApproveController {
     @Autowired
     private EssFileMapper essFileMapper;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     /**
      * Trang danh sách phê duyệt thay đổi thông tin cá nhân nhân viên
      */
     @GetMapping("/viewEssApplyInfo")
-    public String viewEssApplyInfo() {
-        return "hrm/approve/viewEssApplyInfo";
+    public String viewEssApplyInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**

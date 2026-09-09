@@ -1,0 +1,165 @@
+<div class="vesp-page">
+  <div class="vesp-search-card">
+    <span class="vesp-inline-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.search.evaluationName', 'Tên đánh giá') }}</span>
+    <nz-select style="min-width: 280px" [ngModel]="searchResumeSeq()" (ngModelChange)="onResumeChange($event)">
+      <nz-option *ngFor="let opt of resumeOptions()" [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option>
+    </nz-select>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>
+      {{ i18n.t('evs.manage.viewEvsSchedulePanel.btn.search', 'Tra cứu') }}
+    </button>
+  </div>
+
+  <div class="vesp-table-card">
+    <nz-tabs>
+      <nz-tab *ngFor="let type of types" [nzTitle]="tabTitle(type)">
+          <div class="vesp-toolbar">
+            <div class="vesp-toolbar-left">
+              <span class="vesp-total-label">Total: {{ filteredRows(type).length }}</span>
+              <span class="vesp-inline-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.filter.quickFilter', 'Lọc nhanh') }}</span>
+              <input
+                nz-input
+                nzSize="small"
+                style="width: 160px"
+                [ngModel]="quickFilter(type)"
+                (ngModelChange)="setQuickFilter(type, $event)"
+              />
+            </div>
+            <div class="vesp-toolbar-right">
+              <button nz-button nzType="primary" nzSize="small" (click)="openAddModal(type)">
+                <span nz-icon nzType="plus"></span>
+                {{ i18n.t('evs.manage.viewEvsSchedulePanel.btn.addNew', 'Thêm mới') }}
+              </button>
+              <button nz-button nzDanger nzSize="small" [nzLoading]="deleting()" (click)="deleteSelected(type)">
+                <span nz-icon nzType="delete"></span>
+                {{ i18n.t('common.delete', 'Xóa') }}
+              </button>
+            </div>
+          </div>
+
+          <nz-table [nzData]="filteredRows(type)" [nzLoading]="loading(type)" [nzPageSize]="25" [nzShowSizeChanger]="true" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }">
+            <thead>
+              <tr>
+                <th nzWidth="36px" class="vesp-col-center">
+                  <input
+                    type="checkbox"
+                    [checked]="filteredRows(type).length > 0 && checkedSeqs(type).size === filteredRows(type).length"
+                    (change)="toggleAllChecked(type, $any($event.target).checked)"
+                  />
+                </th>
+                <th nzWidth="48px">No.</th>
+                <th>{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.evsStep', 'Giai đoạn thực hiện') }}</th>
+                <ng-container *ngIf="type === 'DEPT' || type === 'EMP'">
+                  <th nzWidth="100px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.deptNo', 'Mã phòng ban') }}</th>
+                  <th nzWidth="160px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.deptName', 'Tên phòng ban') }}</th>
+                </ng-container>
+                <th nzWidth="120px" *ngIf="type === 'DEPT'">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.deptType', 'Loại phòng ban') }}</th>
+                <ng-container *ngIf="type === 'EMP'">
+                  <th nzWidth="100px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.postGradeNo', 'Mã chức danh') }}</th>
+                  <th nzWidth="140px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.postGradeName', 'Tên chức danh') }}</th>
+                  <th nzWidth="120px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.personId', 'Mã cá nhân') }}</th>
+                </ng-container>
+                <th nzWidth="110px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.startDate', 'Ngày bắt đầu') }}</th>
+                <th nzWidth="110px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.endDate', 'Ngày kết thúc') }}</th>
+                <th nzWidth="70px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.active', 'Sử dụng') }}</th>
+                <th nzWidth="180px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.updatedBy', 'Người thay đổi') }}</th>
+                <th nzWidth="130px">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.updateDate', 'Thời gian thay đổi') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of filteredRows(type); let idx = index" class="vesp-clickable" (click)="openEditModal(type, row)">
+                <td class="vesp-col-center" (click)="$event.stopPropagation()">
+                  <input
+                    type="checkbox"
+                    [checked]="isChecked(type, row.seq)"
+                    (change)="toggleChecked(type, row.seq, $any($event.target).checked)"
+                  />
+                </td>
+                <td class="vesp-col-center">{{ idx + 1 }}</td>
+                <td>{{ row.evsStepName || row.evsStep }}</td>
+                <ng-container *ngIf="type === 'DEPT' || type === 'EMP'">
+                  <td class="vesp-col-center">{{ row.deptNo }}</td>
+                  <td>{{ row.deptName }}</td>
+                </ng-container>
+                <td class="vesp-col-center" *ngIf="type === 'DEPT'">{{ row.deptType }}</td>
+                <ng-container *ngIf="type === 'EMP'">
+                  <td class="vesp-col-center">{{ row.postGradeNo }}</td>
+                  <td>{{ row.postGradeName }}</td>
+                  <td class="vesp-col-center">{{ row.personId }}</td>
+                </ng-container>
+                <td class="vesp-col-center">{{ row.startDate }}</td>
+                <td class="vesp-col-center">{{ row.endDate }}</td>
+                <td class="vesp-col-center">
+                  <input type="checkbox" [checked]="row.activity === '1' || row.activity === 'Y'" disabled />
+                </td>
+                <td class="vesp-col-center vesp-small">{{ row.updatedBy }}</td>
+                <td class="vesp-col-center vesp-small">{{ row.updateDate }}</td>
+              </tr>
+            </tbody>
+          </nz-table>
+      </nz-tab>
+    </nz-tabs>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa lịch đánh giá -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formSeq() ? i18n.t('common.edit', 'Sửa') : i18n.t('evs.manage.viewEvsSchedulePanel.btn.addNew', 'Thêm mới')"
+  [nzOkLoading]="formSaving()"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vesp-form-row">
+      <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.evsStep', 'Giai đoạn thực hiện') }}</label>
+      <nz-select style="width: 100%" [ngModel]="formEvsStep()" (ngModelChange)="formEvsStep.set($event)" nzAllowClear>
+        <nz-option *ngFor="let opt of evsStepOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+      </nz-select>
+    </div>
+
+    <ng-container *ngIf="formType() === 'DEPT' || formType() === 'EMP'">
+      <div class="vesp-form-row">
+        <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.deptNo', 'Mã phòng ban') }}</label>
+        <input nz-input [ngModel]="formDeptNo()" (ngModelChange)="formDeptNo.set($event)" maxlength="20" />
+      </div>
+      <div class="vesp-form-row">
+        <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.deptName', 'Tên phòng ban') }}</label>
+        <input nz-input [ngModel]="formDeptName()" (ngModelChange)="formDeptName.set($event)" maxlength="60" />
+      </div>
+    </ng-container>
+
+    <div class="vesp-form-row" *ngIf="formType() === 'DEPT'">
+      <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.deptType', 'Loại phòng ban') }}</label>
+      <input nz-input [ngModel]="formDeptType()" (ngModelChange)="formDeptType.set($event)" maxlength="20" />
+    </div>
+
+    <ng-container *ngIf="formType() === 'EMP'">
+      <div class="vesp-form-row">
+        <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.postGradeNo', 'Mã chức danh') }}</label>
+        <input nz-input [ngModel]="formPostGradeNo()" (ngModelChange)="formPostGradeNo.set($event)" maxlength="20" />
+      </div>
+      <div class="vesp-form-row">
+        <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.postGradeName', 'Tên chức danh') }}</label>
+        <input nz-input [ngModel]="formPostGradeName()" (ngModelChange)="formPostGradeName.set($event)" maxlength="60" />
+      </div>
+      <div class="vesp-form-row">
+        <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.personId', 'Mã cá nhân') }}</label>
+        <input nz-input [ngModel]="formPersonId()" (ngModelChange)="formPersonId.set($event)" maxlength="20" />
+      </div>
+    </ng-container>
+
+    <div class="vesp-form-row">
+      <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.startDate', 'Ngày bắt đầu') }}</label>
+      <nz-date-picker style="width: 100%" [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vesp-form-row">
+      <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.endDate', 'Ngày kết thúc') }}</label>
+      <nz-date-picker style="width: 100%" [ngModel]="formEndDate()" (ngModelChange)="formEndDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vesp-form-row">
+      <label class="vesp-form-label">{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.active', 'Sử dụng') }}</label>
+      <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+    </div>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,59 @@
+.lc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lc-search-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lc-col-center {
+  text-align: center;
+}
+
+.lc-name-link {
+  color: #0d2bff;
+  cursor: pointer;
+}
+
+.lc-name-link:hover {
+  text-decoration: underline;
+}
+
+.lc-detail-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.lc-detail-info-table th,
+.lc-detail-info-table td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.lc-detail-info-table th {
+  background: #f8fafc;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.lc-approval-table {
+  margin-bottom: 16px;
+}
+
+.lc-section-title {
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+
+.lc-form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}

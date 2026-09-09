@@ -14,10 +14,18 @@ import com.ait.sy.sys.service.PerformanceMonitoringService;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
 /**
- * LoggingAspect - AOP để tự động log tất cả method trong service layer
+ * LoggingAspect - AOP để tự động log tất cả method trong service layer.
+ *
+ * Bug có thật đã sửa: buildParameterString/buildResultString ép kiểu mọi
+ * mảng sang Object[] (Arrays.asList((Object[]) arg)) để lấy độ dài - mảng
+ * kiểu nguyên thủy (byte[], int[]...) không thể ép kiểu này (ClassCastException),
+ * khiến MỌI method @Service trả về/nhận byte[] (ví dụ các hàm exportExcel
+ * trả về byte[] file .xlsx) bị lỗi 500 dù logic nghiệp vụ đã chạy đúng - lỗi
+ * xảy ra ngay trong log thành công rồi bị catch/throw lại như thể method
+ * đó thất bại. Đã sửa dùng java.lang.reflect.Array.getLength() (hoạt động
+ * với mọi loại mảng, kể cả mảng nguyên thủy).
  */
 @Aspect
 @Component
@@ -221,7 +229,7 @@ public class LoggingAspect {
             } else if (arg instanceof java.util.Collection) {
                 sb.append("Collection[").append(((java.util.Collection<?>) arg).size()).append("]");
             } else if (arg.getClass().isArray()) {
-                sb.append("Array[").append(Arrays.asList((Object[]) arg).size()).append("]");
+                sb.append("Array[").append(java.lang.reflect.Array.getLength(arg)).append("]");
             } else {
                 sb.append(arg.toString());
             }
@@ -238,7 +246,7 @@ public class LoggingAspect {
         } else if (result instanceof java.util.Collection) {
             return "Collection[" + ((java.util.Collection<?>) result).size() + " items]";
         } else if (result.getClass().isArray()) {
-            return "Array[" + Arrays.asList((Object[]) result).size() + " items]";
+            return "Array[" + java.lang.reflect.Array.getLength(result) + " items]";
         } else if (result instanceof Boolean) {
             return result.toString();
         } else if (result instanceof Number) {

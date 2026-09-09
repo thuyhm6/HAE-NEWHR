@@ -1,0 +1,175 @@
+<div class="ak-page" nz-row [nzGutter]="16">
+  <!-- Left Pane: Supervisor List -->
+  <div nz-col [nzSpan]="8">
+    <nz-card class="ak-left-card">
+      <div class="ak-left-header">
+        <h4 class="ak-title">{{ i18n.t('arSupervisor.pageTitle', 'Nhân viên Phân quyền') }}</h4>
+        <button id="ak-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="user-add"></span>
+          {{ i18n.t('arSupervisor.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <input
+        id="ak-search-input"
+        nz-input
+        [ngModel]="searchFilter()"
+        (ngModelChange)="searchFilter.set($event)"
+        [placeholder]="i18n.t('arSupervisor.placeholder.search', 'Tìm kiếm nhân viên...')"
+        class="ak-search-input"
+      />
+      <div class="ak-list-container">
+        @if (listLoading()) {
+          <div class="ak-list-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+        } @else if (!filteredSupervisors().length) {
+          <div class="ak-list-empty">{{ i18n.t('arSupervisor.js.noSupervisor', 'Không có nhân viên phân quyền nào') }}</div>
+        } @else {
+          @for (row of filteredSupervisors(); track row.personId) {
+            <div class="ak-list-item" [class.ak-list-item-active]="selectedPersonId() === row.personId" (click)="selectSupervisor(row)">
+              <div class="ak-list-item-row">
+                <span class="ak-list-item-name">{{ displayName(row) }}</span>
+                <button nz-button nzSize="small" nzDanger (click)="deleteSupervisor(row.personId, $event)">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </div>
+              @if (row.deptName) {
+                <div class="ak-list-item-dept"><span nz-icon nzType="bank"></span> {{ row.deptName }}</div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Right Pane: Department Tree -->
+  <div nz-col [nzSpan]="16">
+    <nz-card class="ak-right-card">
+      <div class="ak-right-header">
+        <h4 class="ak-title">
+          @if (selectedPersonId()) {
+            {{ i18n.t('arSupervisor.js.configDeptFor', 'Cấu hình nhóm phòng ban cho: ') }}<span class="ak-selected-name">{{ selectedEmpName() }}</span>
+          } @else {
+            {{ i18n.t('arSupervisor.orgChart', 'Sơ đồ Tổ chức Phân quyền') }}
+          }
+        </h4>
+        <button id="ak-save-depts-btn" nz-button nzType="primary" nzSize="small" [disabled]="!selectedPersonId()" [nzLoading]="savingDepts()" (click)="saveDepartments()">
+          <span nz-icon nzType="save"></span>
+          {{ i18n.t('arSupervisor.saveDepts', 'Lưu phân quyền phòng ban') }}
+        </button>
+      </div>
+      <div class="ak-info-bar">
+        @if (!selectedPersonId()) {
+          <span nz-icon nzType="info-circle"></span> {{ i18n.t('arSupervisor.hint', 'Vui lòng chọn một nhân viên bên trái để xem/cấu hình thông tin.') }}
+        } @else if (deptTreeLoading()) {
+          <span nz-icon nzType="loading" nzSpin></span> {{ i18n.t('arSupervisor.js.loading', 'Đang tải thông tin...') }}
+        } @else {
+          <span nz-icon nzType="check-circle" class="ak-info-success"></span>
+          {{ i18n.t('arSupervisor.js.deptLoaded', 'Đã tải dữ liệu phòng ban mà') }} <b>{{ selectedEmpName() }}</b>{{ i18n.t('arSupervisor.js.deptLoadedSuf', ' được quản lý.') }}
+        }
+      </div>
+      @if (selectedPersonId() && !deptTreeLoading()) {
+        <div class="ak-dept-tree">
+          @if (deptTreeNodes().length) {
+            <nz-tree
+              [nzData]="deptTreeNodes()"
+              nzCheckable
+              nzMultiple
+              [nzCheckedKeys]="checkedDeptKeys()"
+              [nzExpandAll]="true"
+              (nzCheckboxChange)="onDeptCheckboxChange($event)"
+            ></nz-tree>
+          } @else {
+            <div class="ak-list-empty">{{ i18n.t('arSupervisor.js.noDeptData', 'Không có dữ liệu phòng ban.') }}</div>
+          }
+        </div>
+      }
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa Cán bộ Phân quyền -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="i18n.t('arSupervisor.js.titleAdd', 'Thêm mới Nhân sự Phân quyền')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ i18n.t('arSupervisor.field.emp', 'Nhân viên') }}</nz-form-label>
+        <nz-form-control>
+          <div class="ak-emp-field">
+            <input id="ak-f-emp-display" nz-input [ngModel]="formEmpNameDisplay()" name="akFEmpDisplay" readonly [placeholder]="i18n.t('arSupervisor.placeholder.selectEmp', 'Chọn nhân viên...')" />
+            <button nz-button type="button" (click)="openEmpPicker()">
+              <span nz-icon nzType="search"></span> {{ i18n.t('arSupervisor.btn.select', 'Chọn') }}
+            </button>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('arSupervisor.field.orderno', 'Sắp xếp (Orderno)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="ak-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="akFOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('arSupervisor.field.modifyYn', 'Quyền sửa đổi (Modify_YN)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ak-f-modify-yn" [ngModel]="formModifyYn()" (ngModelChange)="formModifyYn.set($event)" name="akFModifyYn">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('arSupervisor.opt.allow', '1 - Cho phép')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('arSupervisor.opt.disallow', '0 - Không')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('arSupervisor.field.activity', 'Trạng thái (Activity)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ak-f-activity" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)" name="akFActivity">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('arSupervisor.opt.active', '1 - Hoạt động')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('arSupervisor.opt.inactive', '0 - Ngừng')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('arSupervisor.btn.close', 'Đóng') }}</button>
+    <button id="ak-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('arSupervisor.btn.saveData', 'Lưu dữ liệu') }}
+    </button>
+  </div>
+</nz-modal>
+
+<!-- Modal tìm nhân viên -->
+<nz-modal
+  [nzVisible]="empPickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm nhân viên')"
+  (nzOnCancel)="closeEmpPicker()"
+  (nzVisibleChange)="empPickerVisible.set($event)"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      id="ak-emp-picker-search"
+      [ngModel]="null"
+      (ngModelChange)="onEmpPickerSelected($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã hoặc tên nhân viên')"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="empPickerSearching()"
+      (nzOnSearch)="onEmpPickerSearch($event)"
+      style="width: 100%"
+    >
+      <nz-option *ngFor="let emp of empPickerSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
+    </nz-select>
+  </ng-container>
+</nz-modal>

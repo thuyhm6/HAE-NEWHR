@@ -1,0 +1,110 @@
+<div class="vlu-page">
+  <div class="vlu-left">
+    <div class="vlu-search-card">
+      <div class="vlu-search-row">
+        <div class="vlu-field">
+          <label class="vlu-inline-label">{{ i18n.t('sys.role.viewLoginUser.search.keyword', 'Từ khóa (ID, Tên)') }}</label>
+          <input
+            nz-input
+            [ngModel]="searchKeyword()"
+            (ngModelChange)="searchKeyword.set($event)"
+            (keydown.enter)="search()"
+            [placeholder]="i18n.t('sys.role.viewLoginUser.search.keyword.placeholder', 'Nhập ID, Mã NV hoặc Tên')"
+          />
+        </div>
+        <div class="vlu-search-actions">
+          <button nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close-circle"></span>{{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <a nz-button [href]="exportUrl">
+            <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="vlu-table-card">
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }" #vluTable>
+        <thead>
+          <tr>
+            <th nzWidth="48px" class="vlu-col-center">{{ i18n.t('sys.role.viewLoginUser.col.no', 'STT') }}</th>
+            <th>{{ i18n.t('sys.role.viewLoginUser.col.loginId', 'ID Đăng nhập') }}</th>
+            <th>{{ i18n.t('sys.role.viewLoginUser.col.fullName', 'Họ tên') }}</th>
+            <th>{{ i18n.t('sys.role.viewLoginUser.col.dept', 'Phòng ban') }}</th>
+            <th>{{ i18n.t('sys.role.viewLoginUser.col.empCode', 'Mã NV') }}</th>
+            <th>{{ i18n.t('sys.role.viewLoginUser.col.accountType', 'Loại TK') }}</th>
+            <th class="vlu-col-center" nzWidth="60px">{{ i18n.t('sys.role.viewLoginUser.col.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let row of vluTable.data; let idx = index"
+            class="vlu-clickable"
+            [class.vlu-row-selected]="selectedUserNo() === row.userNo"
+            (click)="selectUser(row)"
+          >
+            <td class="vlu-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.userName }}</td>
+            <td>{{ displayName(row) }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.personId }}</td>
+            <td>{{ row.userType }}</td>
+            <td class="vlu-col-center">
+              <button nz-button nzSize="small" nzType="text" (click)="openResetPasswordModal(row, $event)" [title]="'Reset Password'">
+                <span nz-icon nzType="key"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+
+  <div class="vlu-right">
+    <div class="vlu-right-header">
+      <span class="vlu-selected-label">
+        {{ selectedLabel() ? (i18n.t('sys.role.viewLoginUser.rolePanel.titlePrefix', 'Nhóm quyền -') + ' ' + selectedLabel()) : i18n.t('sys.role.viewLoginUser.rolePanel.title', 'Nhóm quyền') }}
+      </span>
+      <button nz-button nzType="primary" nzSize="small" [nzLoading]="savingRelations()" [disabled]="!selectedUserNo()" (click)="saveRelations()">
+        <span nz-icon nzType="save"></span>{{ i18n.t('sys.role.viewLoginUser.btn.saveRoleGroup', 'Lưu nhóm quyền') }}
+      </button>
+    </div>
+
+    <div class="vlu-role-list">
+      <ng-container *ngIf="selectedUserNo(); else vluNoUser">
+        <div *ngIf="!allRoleGroups().length" class="vlu-empty">{{ i18n.t('sys.role.viewLoginUser.noRoleData', 'Không có dữ liệu nhóm quyền.') }}</div>
+        <label class="vlu-role-item" *ngFor="let group of allRoleGroups()">
+          <input type="checkbox" [checked]="isRoleGroupChecked(group.roleGroupNo)" (change)="toggleRoleGroup(group.roleGroupNo, $any($event.target).checked)" />
+          <span>{{ group.nameVi || group.roleGroupNo }} <small class="vlu-role-id">({{ group.roleGroupId }})</small></span>
+        </label>
+      </ng-container>
+      <ng-template #vluNoUser>
+        <div class="vlu-empty">{{ i18n.t('sys.role.viewLoginUser.hint.selectUser', 'Vui lòng chọn một người dùng bên trái để phân nhóm quyền.') }}</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Reset Mật khẩu -->
+<nz-modal
+  [(nzVisible)]="resetModalVisible"
+  [nzTitle]="i18n.t('sys.role.viewLoginUser.modal.resetPassword.title', 'Reset Mật khẩu')"
+  [nzOkLoading]="resetSaving()"
+  (nzOnOk)="confirmReset()"
+  (nzOnCancel)="resetModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vlu-form-row">
+      <label class="vlu-form-label">{{ i18n.t('sys.role.viewLoginUser.modal.resetPassword.loginId', 'ID Đăng nhập') }}</label>
+      <input nz-input [ngModel]="resetUserName()" disabled />
+    </div>
+    <div class="vlu-form-row">
+      <label class="vlu-form-label vlu-required">{{ i18n.t('sys.role.viewLoginUser.modal.resetPassword.newPassword', 'Mật khẩu mới') }}</label>
+      <input nz-input [ngModel]="resetNewPassword()" (ngModelChange)="resetNewPassword.set($event)" />
+      <div class="vlu-form-hint">{{ i18n.t('sys.role.viewLoginUser.modal.resetPassword.defaultNote', 'Mật khẩu mặc định là 123456A@. Bạn có thể tự thay đổi.') }}</div>
+    </div>
+  </ng-container>
+</nz-modal>

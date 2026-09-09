@@ -5,18 +5,19 @@ import com.ait.org.orgManage.model.OrgInfo;
 import com.ait.org.orgManage.service.OrgStructureService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,18 +29,19 @@ public class OrgComposeController {
     @Autowired
     private OrgStructureService orgStructureService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/orgManage/viewComposeOrg")
-    public String viewComposeOrg(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewComposeOrg";
+    public String viewComposeOrg(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/orgManage/viewHistoryOrgInfo")
-    public String viewHistoryOrgInfo(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewHistoryOrgInfo";
+    public String viewHistoryOrgInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/compose/structure")
@@ -131,11 +133,9 @@ public class OrgComposeController {
     }
 
     @GetMapping("/orgManage/viewDeptManagerCheck")
-    public String viewDeptManagerCheck(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Kiểm tra trưởng bộ phận");
-        return "org/orgManage/viewDeptManagerCheck";
+    public String viewDeptManagerCheck(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/compose/manager-check")

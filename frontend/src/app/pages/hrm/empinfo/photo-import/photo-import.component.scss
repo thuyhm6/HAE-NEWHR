@@ -1,0 +1,83 @@
+.phi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.phi-title {
+  margin: 0 0 12px;
+}
+
+.phi-instruction {
+  margin-bottom: 16px;
+}
+
+.phi-instruction-list {
+  margin: 4px 0 0;
+  padding-left: 20px;
+}
+
+.phi-upload-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.phi-file-input-wrap {
+  flex: 1;
+  min-width: 300px;
+}
+
+.phi-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.phi-file-input {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--ant-color-border, #d9d9d9);
+  border-radius: 4px;
+}
+
+.phi-file-count {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary, #999);
+}
+
+.phi-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.phi-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.phi-success-count {
+  color: #52c41a;
+  font-weight: 700;
+}
+
+.phi-fail-count {
+  color: #ff4d4f;
+  font-weight: 700;
+}
+
+.phi-col-center {
+  text-align: center;
+}
+
+.phi-error-text {
+  color: #ff4d4f;
+  font-size: 12px;
+}

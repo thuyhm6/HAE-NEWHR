@@ -12,11 +12,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.ui.Model;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/pa/salary")
@@ -27,12 +27,13 @@ public class PaInputItemDataController {
     @Autowired
     private PaInputItemDataService paInputItemDataService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/viewPaInputItemData")
-    public String viewPaInputItemData(
-            @RequestParam(required = false, defaultValue = "") String itemType,
-            Model model) {
-        model.addAttribute("itemType", itemType);
-        return "pa/salary/viewPaInputItemData";
+    public String viewPaInputItemData(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/inputItemData/api/itemList")
@@ -150,8 +151,9 @@ public class PaInputItemDataController {
     }
 
     @GetMapping("/viewImportExcelTempPaParamList")
-    public String viewImportExcelTempPaParamList() {
-        return "pa/salary/viewImportExcelTempPaParamList";
+    public String viewImportExcelTempPaParamList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @PostMapping("/inputItemData/api/importExcel")

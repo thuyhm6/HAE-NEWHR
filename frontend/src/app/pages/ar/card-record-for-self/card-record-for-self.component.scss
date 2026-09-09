@@ -1,0 +1,48 @@
+.acrcfs-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acrcfs-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.acrcfs-col-center {
+  text-align: center;
+}
+
+.acrcfs-modal-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.acrcfs-import-spinner {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.acrcfs-muted {
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 8px;
+}
+
+.acrcfs-import-result {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.acrcfs-result-success {
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+}
+
+.acrcfs-result-error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+}

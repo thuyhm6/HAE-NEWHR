@@ -59,6 +59,6 @@ public class SyUserRelation {
      * Kiểm tra có hoạt động không
      */
     public boolean isActive() {
-        return this.activity != null || this.activity == 1;
+        return this.activity != null && this.activity == 1;
     }
 }

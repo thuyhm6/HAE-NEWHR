@@ -1,0 +1,181 @@
+.vpid-page {
+  display: flex;
+  /*
+   * Ép lại flex-direction: row (ghi đè global [class$="-page"]:has([class*="-table-card"]) ở
+   * styles.scss - rule đó có specificity cao hơn class thường nên tự ép flex-direction: column cho
+   * mọi trang có "-table-card", trong khi trang này vẫn cần giữ layout 2 cột trái/phải).
+   */
+  flex-direction: row !important;
+  gap: 10px;
+  height: calc(100vh - 160px);
+}
+
+.vpid-left {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vpid-left-header {
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  background: var(--ant-color-fill-tertiary, #fafafa);
+}
+
+.vpid-item-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.vpid-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.vpid-item-row:hover {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+}
+
+.vpid-item-active {
+  background: var(--ant-color-primary, #1677ff);
+  color: #fff;
+}
+
+.vpid-item-icon {
+  color: #faad14;
+  flex-shrink: 0;
+}
+
+.vpid-item-active .vpid-item-icon {
+  color: #fff;
+}
+
+.vpid-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vpid-empty {
+  padding: 16px;
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+}
+
+.vpid-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.vpid-search-card {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.vpid-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vpid-search-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.vpid-inline-label {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.vpid-right-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vpid-selected-label {
+  font-weight: 600;
+  color: var(--ant-color-primary, #1677ff);
+}
+
+.vpid-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.vpid-col-center {
+  text-align: center;
+}
+
+.vpid-col-right {
+  text-align: right;
+}
+
+.vpid-clickable {
+  cursor: pointer;
+}
+
+.vpid-config-info {
+  background: var(--ant-color-info-bg, #e6f4ff);
+  border: 1px solid var(--ant-color-info-border, #91caff);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.vpid-form-row {
+  margin-bottom: 12px;
+  flex: 1;
+}
+
+.vpid-form-row-group {
+  display: flex;
+  gap: 12px;
+}
+
+.vpid-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.vpid-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.vpid-plaintext {
+  padding: 4px 0;
+  font-size: 13px;
+}

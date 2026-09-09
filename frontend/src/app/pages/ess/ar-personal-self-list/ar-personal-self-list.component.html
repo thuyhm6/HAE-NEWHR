@@ -1,0 +1,148 @@
+<div class="apsl-page">
+  <nz-card class="apsl-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('apsl.label.startDate', 'Ngày bắt đầu') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker
+            id="apsl-start-date"
+            [ngModel]="startDate()"
+            (ngModelChange)="startDate.set($event)"
+            name="apslStartDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('apsl.label.endDate', 'Ngày kết thúc') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker
+            id="apsl-end-date"
+            [ngModel]="endDate()"
+            (ngModelChange)="endDate.set($event)"
+            name="apslEndDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <button id="apsl-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="apsl-export-btn" nz-button nzType="default" (click)="exportExcel()" class="apsl-export-btn">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="apsl-table-card">
+    <nz-table
+      id="apsl-data-table"
+      #apslTable
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="apsl-col-center">{{ i18n.t('apsl.msg.stt', 'STT') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('apsl.msg.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('apsl.msg.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('apsl.msg.deptName', 'Phòng ban') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('apsl.msg.total', 'Tổng') }}</th>
+          @for (item of items(); track item.itemNo) {
+            <th class="apsl-col-center">{{ item.itemName }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of apslTable.data; track row.personId; let idx = $index) {
+          <tr>
+            <td class="apsl-col-center">{{ idx + 1 }}</td>
+            <td class="apsl-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td class="apsl-col-center apsl-col-bold">{{ row.total }}</td>
+            @for (item of items(); track item.itemNo) {
+              <td class="apsl-col-center">
+                @if ((row.items[item.itemNo ?? ''] ?? 0) > 0) {
+                  <a class="apsl-detail-link" (click)="openDetail(row, item)">{{ row.items[item.itemNo ?? ''] }}</a>
+                } @else {
+                  <span class="apsl-col-muted">0</span>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="5 + items().length" class="apsl-col-center">
+              {{ i18n.t('apsl.msg.noData', 'Không có dữ liệu') }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="apsl-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="detailTitle()"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="apslDetailFooter"
+>
+  <ng-container *nzModalContent>
+    <nz-table id="apsl-detail-table" [nzData]="detailRows()" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="apsl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('apsl.detail.col.shift', 'Ca') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('apsl.detail.col.date', 'Ngày') }}</th>
+          <th>{{ i18n.t('apsl.detail.col.leaveType', 'Loại nghỉ phụ lục') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('apsl.detail.col.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('apsl.detail.col.endTime', 'Thời gian kết thúc') }}</th>
+          <th class="apsl-col-center">{{ i18n.t('apsl.detail.col.duration', 'Thời lượng') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of detailRows(); track $index; let idx = $index) {
+          <tr>
+            <td class="apsl-col-center">{{ idx + 1 }}</td>
+            <td class="apsl-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td class="apsl-col-center">{{ row.shiftName || row.shiftNo }}</td>
+            <td class="apsl-col-center">{{ row.arDateStr }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="apsl-col-center">{{ row.fromTimeStr }}</td>
+            <td class="apsl-col-center">{{ row.toTimeStr }}</td>
+            <td class="apsl-col-center">{{ row.quantity }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="apsl-col-center">{{ i18n.t('apsl.msg.noDataDetail', 'Không có dữ liệu.') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<ng-template #apslDetailFooter>
+  <button id="apsl-detail-close-btn" nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>

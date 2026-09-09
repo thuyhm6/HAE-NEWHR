@@ -1,0 +1,113 @@
+<div class="vcp-page">
+  <div class="vcp-company-bar">
+    <label class="vcp-company-label">{{ i18n.t('sys.codeParam.companyLabel', 'Công ty (Company):') }}</label>
+    <nz-select
+      style="min-width: 320px"
+      [ngModel]="selectedCompanyId()"
+      (ngModelChange)="onCompanyChange($event)"
+      nzShowSearch
+      nzAllowClear
+      [nzPlaceHolder]="i18n.t('sys.codeParam.companyPlaceholder', '-- Chọn công ty --')"
+    >
+      <nz-option *ngFor="let c of companyOptions()" [nzValue]="c.cpnyId" [nzLabel]="(c.nameVi ?? '') + ' (' + c.cpnyId + ')'"></nz-option>
+    </nz-select>
+  </div>
+
+  <div class="vcp-body">
+    <div class="vcp-left">
+      <div class="vcp-left-header">{{ i18n.t('sys.codeManage.treeTitle', 'Danh sách Code') }}</div>
+      <input
+        nz-input
+        class="vcp-search-input"
+        [ngModel]="searchTreeValue()"
+        (ngModelChange)="searchTreeValue.set($event)"
+        [placeholder]="i18n.t('sys.codeManage.searchPlaceholder', 'Tìm kiếm...')"
+      />
+      <div class="vcp-tree-container">
+        <div *ngIf="treeLoading()" class="vcp-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+        <nz-tree
+          *ngIf="!treeLoading()"
+          [nzData]="treeNodes()"
+          [nzSearchValue]="searchTreeValue()"
+          (nzClick)="onTreeClick($event)"
+          [nzExpandedKeys]="expandedKeys()"
+          (nzExpandedKeysChange)="expandedKeys.set($event)"
+        ></nz-tree>
+      </div>
+    </div>
+
+    <div class="vcp-right">
+      <div class="vcp-right-header">
+        <span class="vcp-selected-label">
+          {{ selectedLabel() ? (i18n.t('sys.codeManage.rightPaneTitlePrefix', 'Danh sách mã con của:') + ' ' + selectedLabel()) : i18n.t('sys.codeManage.rightPaneDefaultTitle', 'Danh sách mã con') }}
+        </span>
+        <div class="vcp-btn-group">
+          <button nz-button nzType="primary" nzSize="small" [nzLoading]="saving()" [disabled]="!selectedCompanyId()" (click)="saveDirty()">
+            <span nz-icon nzType="save"></span>{{ i18n.t('common.save', 'Lưu') }}
+          </button>
+          <button nz-button nzSize="small" (click)="exportExcel()">
+            <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" nzBordered #vcpTable>
+        <thead>
+          <tr>
+            <th nzWidth="48px" class="vcp-col-center">{{ i18n.t('sys.codeManage.no', 'STT') }}</th>
+            <th nzWidth="48px" class="vcp-col-center">
+              <input type="checkbox" [disabled]="!selectedCompanyId()" [checked]="allChecked()" (change)="toggleAll($any($event.target).checked)" />
+            </th>
+            <th>{{ i18n.t('sys.codeManage.codeNo', 'Mã Code') }}</th>
+            <th>{{ i18n.t('sys.codeManage.nameViShort', 'Tên TV') }}</th>
+            <th>{{ i18n.t('sys.codeManage.nameEnShort', 'Tên TA') }}</th>
+            <th class="vcp-col-center">{{ i18n.t('sys.codeParam.paramOrderNo', 'Thứ tự (Param)') }}</th>
+            <th class="vcp-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+            <th class="vcp-col-center" nzWidth="80px">{{ i18n.t('sys.codeManage.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vcpTable.data; let idx = index">
+            <td class="vcp-col-center">{{ idx + 1 }}</td>
+            <td class="vcp-col-center">
+              <input type="checkbox" [disabled]="!selectedCompanyId()" [checked]="isChecked(row)" (change)="toggleChecked(row, $any($event.target).checked)" />
+            </td>
+            <td>{{ row.codeNo }}</td>
+            <td>{{ row.nameVi }}</td>
+            <td>{{ row.nameEn }}</td>
+            <td class="vcp-col-center">{{ row.paramOrderNo ?? '-' }}</td>
+            <td class="vcp-col-center">
+              <nz-tag *ngIf="row.paramActivity === '1'" nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              <nz-tag *ngIf="row.paramActivity === '0'">{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+            </td>
+            <td class="vcp-col-center">
+              <button nz-button nzSize="small" [disabled]="!row.assigned" (click)="openEditModal(row)">
+                <span nz-icon nzType="edit"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cập nhật tham số -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="i18n.t('sys.codeParam.editParamTitle', 'Cập nhật tham số')"
+  [nzOkLoading]="formSaving()"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vcp-form-row">
+      <label class="vcp-form-label">{{ i18n.t('sys.codeParam.orderNoLabel', 'Thứ tự sắp xếp') }}</label>
+      <nz-input-number style="width: 100%" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)"></nz-input-number>
+    </div>
+    <div class="vcp-form-row">
+      <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+      <span class="vcp-switch-label">{{ i18n.t('common.active', 'Hoạt động') }}</span>
+    </div>
+  </ng-container>
+</nz-modal>

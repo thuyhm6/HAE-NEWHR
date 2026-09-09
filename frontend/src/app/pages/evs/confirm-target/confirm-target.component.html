@@ -1,0 +1,204 @@
+<div class="vct-page" *ngIf="hasAnyResume(); else emptyNotice">
+  <div class="vct-search-card">
+    <span class="vct-inline-label">{{ t('evalName', 'Tên đánh giá') }}</span>
+    <nz-select style="min-width: 280px" [(ngModel)]="searchResumeSeq" (ngModelChange)="search()">
+      <nz-option *ngFor="let opt of resumeOptions()" [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option>
+    </nz-select>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>
+      {{ t('btnSearch', 'Tra cứu') }}
+    </button>
+  </div>
+
+  <div class="vct-table-card">
+    <div class="vct-summary-line">
+      {{ t('currentEmp', 'Nhân viên hiện tại') }}: <strong>{{ recordsFiltered() }}</strong>
+      <span class="mx-1">/</span>
+      {{ t('totalEmp', 'Nhân viên đánh giá đối tượng') }}: <strong>{{ recordsTotal() }}</strong>
+    </div>
+
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[50, 100, 200]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="48px" class="vct-col-center">{{ t('col.no', 'No') }}</th>
+          <th>{{ t('col.fullName', 'Họ tên') }}</th>
+          <th nzWidth="110px">{{ t('col.empid', 'Mã NV') }}</th>
+          <th nzWidth="140px">{{ t('col.dept', 'Phòng ban') }}</th>
+          <th nzWidth="120px">{{ t('col.position', 'Chức vụ') }}</th>
+          <th nzWidth="100px" class="vct-col-center">{{ t('col.objectType', 'Đối tượng') }}</th>
+          <th nzWidth="170px" class="vct-col-center">{{ t('col.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let row of rows(); let idx = index"
+          [class.vct-active]="activeSeq() === row.seq"
+          [class.vct-clickable]="isConfirmable(row)"
+          (click)="openDetail(row)"
+        >
+          <td class="vct-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td [class.vct-blue-name]="isConfirmable(row)">{{ row.localName }}</td>
+          <td class="vct-col-center">{{ row.empid }}</td>
+          <td>{{ row.deptname }}</td>
+          <td>{{ row.postGradeName }}</td>
+          <td class="vct-col-center">{{ row.objectTypeName }}</td>
+          <td class="vct-col-center">{{ row.activityName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<ng-template #emptyNotice>
+  <div class="vct-empty-notice">
+    <span nz-icon nzType="exclamation-circle" class="vct-empty-icon"></span>
+    <p class="vct-empty-text">{{ t('msg.notInEvalPeriod', 'Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!') }}</p>
+  </div>
+</ng-template>
+
+<!-- Modal chi tiết xác nhận mục tiêu -->
+<nz-modal
+  [(nzVisible)]="detailVisible"
+  [nzTitle]="t('modalTitle', 'Xác nhận mục tiêu')"
+  nzWidth="1100px"
+  (nzOnCancel)="closeDetail()"
+>
+  <ng-container *nzModalContent>
+    <div class="vct-card-title">{{ t('personalInfo', 'Thông tin cá nhân') }}</div>
+    <div class="vct-info-grid">
+      <table class="vct-info-table">
+        <thead>
+          <tr><th colspan="2">{{ t('basicInfo', 'Thông tin cơ bản') }}</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="vct-info-label">{{ t('fullName', 'Họ tên') }}</td><td>{{ detail()?.localName }}</td></tr>
+          <tr><td class="vct-info-label">{{ t('position', 'Chức vụ') }}</td><td>{{ detail()?.postGradeName }}</td></tr>
+          <tr><td class="vct-info-label">{{ t('dept', 'Phòng ban') }}</td><td>{{ detail()?.deptname }}</td></tr>
+          <tr><td class="vct-info-label">{{ t('hireDate', 'Ngày vào làm') }}</td><td>{{ detail()?.dateStarted }}</td></tr>
+        </tbody>
+      </table>
+      <table class="vct-info-table">
+        <thead>
+          <tr><th colspan="2">{{ t('evalCategory', 'Hạng mục đánh giá') }}</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="vct-info-label">{{ t('evalYear', 'Năm đánh giá') }}</td><td>{{ detail()?.evsYear }}</td></tr>
+          <tr><td class="vct-info-label">{{ t('period', 'Thời gian') }}</td><td>{{ period() }}</td></tr>
+          <tr><td class="vct-info-label">{{ t('appraiser1', 'Người đánh giá lần 1') }}</td><td>{{ detail()?.localName1 }}</td></tr>
+          <tr><td class="vct-info-label">{{ t('appraiser2', 'Người đánh giá lần 2') }}</td><td>{{ detail()?.localName2 }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="vct-section-title">{{ t('objectiveConfirm', 'Objective Confirm') }}</div>
+
+    <div class="vct-section-header">
+      <span class="vct-section-title">{{ t('strategicTarget', 'Mục tiêu chiến lược') }}</span>
+    </div>
+    <table class="vct-info-table mb-2">
+      <thead>
+        <tr>
+          <th nzWidth="48px">{{ t('col.no', 'No') }}</th>
+          <th nzWidth="220px">{{ t('col.evalItem', 'Hạng mục đánh giá') }}</th>
+          <th>{{ t('col.target', 'Mục tiêu') }}</th>
+          <th nzWidth="90px">{{ t('col.ratio', 'Tỷ lệ(%)') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!strategicItems().length"><td colspan="4" class="vct-col-center">0</td></tr>
+        <tr *ngFor="let r of strategicItems(); let idx = index">
+          <td class="vct-col-center">{{ idx + 1 }}</td>
+          <td>{{ r.itemName }}</td>
+          <td class="vct-rich-content" [innerHTML]="r.itemContent"></td>
+          <td class="vct-col-center">{{ r.itemScore }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="vct-total-row">
+          <td colspan="3" class="vct-total-label">{{ tc('common.total', 'Tổng') }}</td>
+          <td class="vct-col-center">{{ strategicTotal() }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="vct-section-header">
+      <span class="vct-section-title">{{ t('operationTarget', 'Mục tiêu vận hành') }}</span>
+    </div>
+    <table class="vct-info-table mb-2">
+      <thead>
+        <tr>
+          <th nzWidth="48px">{{ t('col.no', 'No') }}</th>
+          <th nzWidth="220px">{{ t('col.evalItem', 'Hạng mục đánh giá') }}</th>
+          <th>{{ t('col.target', 'Mục tiêu') }}</th>
+          <th nzWidth="90px">{{ t('col.ratio', 'Tỷ lệ(%)') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!operationItems().length"><td colspan="4" class="vct-col-center">0</td></tr>
+        <tr *ngFor="let r of operationItems(); let idx = index">
+          <td class="vct-col-center">{{ idx + 1 }}</td>
+          <td>{{ r.itemName }}</td>
+          <td class="vct-rich-content" [innerHTML]="r.itemContent"></td>
+          <td class="vct-col-center">{{ r.itemScore }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="vct-total-row">
+          <td colspan="3" class="vct-total-label">{{ tc('common.total', 'Tổng') }}</td>
+          <td class="vct-col-center">{{ operationTotal() }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="vct-grand-total">
+      <span>{{ tc('common.total', 'Tổng') }}</span>
+      <span>{{ grandTotal() }}</span>
+    </div>
+
+    <div class="vct-card-title">{{ t('part2', 'Phần 2') }}</div>
+    <table class="vct-opinion-table">
+      <thead>
+        <tr><th nzWidth="160px"></th><th>{{ t('col.opinion', 'Ý kiến') }}</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="vct-info-label">{{ t('appraiser1Comment', 'Người đánh giá cấp 1') }}</td>
+          <td>
+            <textarea nz-input rows="4" [(ngModel)]="affirmComment1" [readOnly]="!comment1Editable()"></textarea>
+          </td>
+        </tr>
+        <tr>
+          <td class="vct-info-label">{{ t('appraiser2Comment', 'Người đánh giá cấp 2') }}</td>
+          <td>
+            <textarea nz-input rows="4" [(ngModel)]="affirmComment2" [readOnly]="!comment2Editable()"></textarea>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+  <ng-container *nzModalFooter>
+    <button nz-button nzType="primary" [nzLoading]="confirming()" (click)="confirmOrReject('1')">
+      {{ t('btnConfirm', 'Xác nhận') }}
+    </button>
+    <button nz-button nzDanger [nzLoading]="confirming()" (click)="confirmOrReject('0')">
+      {{ t('btnReject', 'Từ chối') }}
+    </button>
+    <button nz-button (click)="closeDetail()">
+      {{ t('btnClose', 'Đóng') }}
+    </button>
+  </ng-container>
+</nz-modal>

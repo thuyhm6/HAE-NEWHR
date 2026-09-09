@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HR System</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <app-root></app-root>
+  <!-- jQuery global - cần cho script trong <template id="fragmentScripts"> của các trang Thymeleaf
+       chưa migrate chạy được khi nhúng qua ExternalTabComponent (xem shell/external-tab.component.ts).
+       Giới hạn đã biết: trang phụ thuộc DataTables/jsTree/toastr/daterangepicker/Quill... cần nạp
+       thêm thư viện tương ứng ở các đợt sau, chưa nạp global trong đợt này. -->
+  <script src="/assets/js/jquery-3.6.0.min.js"></script>
+</body>
+</html>

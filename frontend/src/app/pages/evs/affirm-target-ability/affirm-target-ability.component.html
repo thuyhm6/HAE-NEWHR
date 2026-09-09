@@ -1,0 +1,294 @@
+<div class="vata-page" *ngIf="hasAnyResume(); else emptyNotice">
+  <div class="vata-search-card">
+    <span class="vata-inline-label">{{ t('evalName', 'Tên đánh giá') }}</span>
+    <nz-select style="min-width: 280px" [(ngModel)]="searchResumeSeq" (ngModelChange)="search()">
+      <nz-option *ngFor="let opt of resumeOptions()" [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option>
+    </nz-select>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>
+      {{ t('btnSearch', 'Tra cứu') }}
+    </button>
+  </div>
+
+  <div class="vata-card" *ngIf="distributionVisible()">
+    <div class="vata-card-title">{{ t('gradeDistribution', 'Phân bổ cấp đánh giá') }}</div>
+    <table class="vata-dist-table mb-2">
+      <thead>
+        <tr>
+          <th></th>
+          <th>{{ t('col.total', 'Tổng') }}</th>
+          <th>{{ t('col.notEntered', 'Chưa nhập') }}</th>
+          <th colspan="2">EX</th><th colspan="2">VG</th><th colspan="2">GD</th><th colspan="2">NI</th><th colspan="2">UN</th>
+        </tr>
+        <tr>
+          <th></th><th></th><th></th>
+          <th>{{ t('col.numPeople', 'Số người') }}</th><th>{{ t('col.rate', 'Tỷ lệ') }}</th>
+          <th>{{ t('col.numPeople', 'Số người') }}</th><th>{{ t('col.rate', 'Tỷ lệ') }}</th>
+          <th>{{ t('col.numPeople', 'Số người') }}</th><th>{{ t('col.rate', 'Tỷ lệ') }}</th>
+          <th>{{ t('col.numPeople', 'Số người') }}</th><th>{{ t('col.rate', 'Tỷ lệ') }}</th>
+          <th>{{ t('col.numPeople', 'Số người') }}</th><th>{{ t('col.rate', 'Tỷ lệ') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="vata-row-label">{{ t('stdRate', 'Tỷ lệ tiêu chuẩn') }}</td>
+          <td>{{ recordsTotal() }}</td>
+          <td>-</td>
+          <td>{{ stdCount('EX') }}</td><td>{{ stdPct('EX') }}</td>
+          <td>{{ stdCount('VG') }}</td><td>{{ stdPct('VG') }}</td>
+          <td>{{ stdCount('GD') }}</td><td>{{ stdPct('GD') }}</td>
+          <td>{{ stdCount('NI') }}</td><td>{{ stdPct('NI') }}</td>
+          <td>{{ stdCount('UN') }}</td><td>{{ stdPct('UN') }}</td>
+        </tr>
+        <tr>
+          <td class="vata-row-label">{{ t('currentEmp', 'Nhân viên hiện tại') }}</td>
+          <td>{{ recordsTotal() }}</td>
+          <td>{{ curNotEntered() }}</td>
+          <td>{{ curCount('EX') }}</td><td>{{ curPct('EX') }}</td>
+          <td>{{ curCount('VG') }}</td><td>{{ curPct('VG') }}</td>
+          <td>{{ curCount('GD') }}</td><td>{{ curPct('GD') }}</td>
+          <td>{{ curCount('NI') }}</td><td>{{ curPct('NI') }}</td>
+          <td>{{ curCount('UN') }}</td><td>{{ curPct('UN') }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="vata-dist-table">
+      <thead>
+        <tr>
+          <th>{{ t('gradeLevel', 'Cấp đánh giá') }}</th>
+          <th colspan="2">EX</th><th colspan="2">VG</th><th colspan="2">GD</th><th colspan="2">NI</th><th colspan="2">UN</th>
+        </tr>
+        <tr>
+          <th></th>
+          <th>{{ t('col.maxScore', 'Điểm lớn nhất') }}</th><th>{{ t('col.minScore', 'Điểm nhỏ nhất') }}</th>
+          <th>{{ t('col.maxScore', 'Điểm lớn nhất') }}</th><th>{{ t('col.minScore', 'Điểm nhỏ nhất') }}</th>
+          <th>{{ t('col.maxScore', 'Điểm lớn nhất') }}</th><th>{{ t('col.minScore', 'Điểm nhỏ nhất') }}</th>
+          <th>{{ t('col.maxScore', 'Điểm lớn nhất') }}</th><th>{{ t('col.minScore', 'Điểm nhỏ nhất') }}</th>
+          <th>{{ t('col.maxScore', 'Điểm lớn nhất') }}</th><th>{{ t('col.minScore', 'Điểm nhỏ nhất') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>{{ gradeRange('EX').max }}</td><td>{{ gradeRange('EX').min }}</td>
+          <td>{{ gradeRange('VG').max }}</td><td>{{ gradeRange('VG').min }}</td>
+          <td>{{ gradeRange('GD').max }}</td><td>{{ gradeRange('GD').min }}</td>
+          <td>{{ gradeRange('NI').max }}</td><td>{{ gradeRange('NI').min }}</td>
+          <td>{{ gradeRange('UN').max }}</td><td>{{ gradeRange('UN').min }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="vata-table-card">
+    <div class="vata-list-header">
+      <div class="vata-summary-line">
+        {{ t('currentEmp', 'Nhân viên hiện tại') }}: <strong>{{ recordsFiltered() }}</strong>
+        <span class="mx-1">/</span>
+        {{ t('totalEmp', 'Nhân viên đánh giá đối tượng') }}: <strong>{{ recordsTotal() }}</strong>
+      </div>
+      <div class="vata-quick-filter">
+        <span class="vata-inline-label">{{ t('quickFilter', 'Lọc nhanh') }}</span>
+        <input nz-input nzSize="small" style="width: 160px" [ngModel]="quickFilter()" (ngModelChange)="quickFilter.set($event)" />
+      </div>
+    </div>
+
+    <nz-table
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[50, 100, 200]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th rowspan="2" class="vata-col-center">{{ t('col.no', 'No') }}</th>
+          <th rowspan="2">{{ t('col.fullName', 'Họ tên') }}</th>
+          <th rowspan="2">{{ t('col.empid', 'Mã NV') }}</th>
+          <th rowspan="2">{{ t('col.dept', 'Phòng ban') }}</th>
+          <th rowspan="2">{{ t('col.position', 'Chức vụ') }}</th>
+          <th rowspan="2">{{ t('col.objectType', 'Đối tượng') }}</th>
+          <th rowspan="2">{{ t('col.hireDate', 'Ngày vào làm') }}</th>
+          <th colspan="2" class="vata-col-center">{{ t('col.self', 'Bản thân') }}</th>
+          <th colspan="2" class="vata-col-center">{{ t('col.affirm1', 'Lần 1') }}</th>
+          <th colspan="2" class="vata-col-center" *ngIf="config.level === '2'">{{ t('col.affirm2', 'Lần 2') }}</th>
+          <th rowspan="2">{{ t('col.status', 'Trạng thái') }}</th>
+        </tr>
+        <tr>
+          <th>{{ t('col.score', 'Điểm số') }}</th>
+          <th>{{ t('col.grade', 'Cấp ĐG') }}</th>
+          <th>{{ t('col.score', 'Điểm số') }}</th>
+          <th>{{ t('col.grade', 'Cấp ĐG') }}</th>
+          <ng-container *ngIf="config.level === '2'">
+            <th>{{ t('col.score', 'Điểm số') }}</th>
+            <th>{{ t('col.grade', 'Cấp ĐG') }}</th>
+          </ng-container>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of filteredRows(); let idx = index">
+          <td class="vata-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td class="vata-blue-name" (click)="openDetail(row)">{{ row.localName }}</td>
+          <td class="vata-col-center">{{ row.empid }}</td>
+          <td>{{ row.deptname }}</td>
+          <td>{{ row.postGradeName }}</td>
+          <td class="vata-col-center">{{ row.objectTypeName }}</td>
+          <td class="vata-col-center">{{ row.dateStarted }}</td>
+          <td class="vata-col-center">{{ rowScore(row, 0) }}</td>
+          <td class="vata-col-center">{{ rowGradeName(row, 0) }}</td>
+          <td class="vata-col-center">{{ rowScore(row, 1) }}</td>
+          <td class="vata-col-center">{{ rowGradeName(row, 1) }}</td>
+          <ng-container *ngIf="config.level === '2'">
+            <td class="vata-col-center">{{ rowScore(row, 2) }}</td>
+            <td class="vata-col-center">{{ rowGradeName(row, 2) }}</td>
+          </ng-container>
+          <td class="vata-col-center vata-status-cell">{{ row.activityName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<ng-template #emptyNotice>
+  <div class="vata-empty-notice">
+    <span nz-icon nzType="exclamation-circle" class="vata-empty-icon"></span>
+    <p class="vata-empty-text">{{ tc('evs.viewConfirmTarget1.msg.notInEvalPeriod', 'Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!') }}</p>
+  </div>
+</ng-template>
+
+<!-- Modal chi tiết đánh giá năng lực -->
+<nz-modal [(nzVisible)]="detailVisible" [nzTitle]="t('modal.personalInfo', 'Thông tin cá nhân')" nzWidth="1150px" (nzOnCancel)="closeDetail()">
+  <ng-container *nzModalContent>
+    <div class="vata-info-grid">
+      <table class="vata-info-table">
+        <thead><tr><th colspan="2">{{ t('modal.basicInfo', 'Thông tin cơ bản') }}</th></tr></thead>
+        <tbody>
+          <tr><td class="vata-info-label">{{ t('modal.fullName', 'Họ tên') }}</td><td>{{ detail()?.localName }}</td></tr>
+          <tr><td class="vata-info-label">{{ t('modal.position', 'Chức vụ') }}</td><td>{{ detail()?.postGradeName }}</td></tr>
+          <tr><td class="vata-info-label">{{ t('modal.dept', 'Phòng ban') }}</td><td>{{ detail()?.deptname }}</td></tr>
+          <tr><td class="vata-info-label">{{ t('modal.hireDate', 'Ngày vào làm') }}</td><td>{{ detail()?.dateStarted }}</td></tr>
+        </tbody>
+      </table>
+      <table class="vata-info-table">
+        <thead><tr><th colspan="2">{{ t('modal.evalCategory', 'Hạng mục đánh giá') }}</th></tr></thead>
+        <tbody>
+          <tr><td class="vata-info-label">{{ t('modal.evalYear', 'Năm đánh giá') }}</td><td>{{ detail()?.evsYear }}</td></tr>
+          <tr><td class="vata-info-label">{{ t('modal.period', 'Thời gian') }}</td><td>{{ period() }}</td></tr>
+          <tr><td class="vata-info-label">{{ t('modal.appraiser1', 'Người đánh giá lần 1') }}</td><td>{{ detail()?.localName1 }}</td></tr>
+          <tr><td class="vata-info-label">{{ t('modal.appraiser2', 'Người đánh giá lần 2') }}</td><td>{{ detail()?.localName2 }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="vata-card-title">{{ t('modal.abilityTitle', 'Đánh giá năng lực') }}</div>
+    <table class="vata-info-table mb-2">
+      <thead>
+        <tr>
+          <th>{{ t('modal.col.no', 'No') }}</th>
+          <th>{{ t('modal.col.distinction', 'Phân biệt') }}</th>
+          <th>{{ t('modal.col.evalItem', 'Hạng mục đánh giá') }}</th>
+          <th>{{ t('modal.col.criterion', 'Chỉ tiêu đánh giá') }}</th>
+          <th>{{ t('modal.col.itemScore', 'Điểm chỉ tiêu') }}</th>
+          <th>{{ t('modal.col.selfScore', 'Tự đánh giá') }}</th>
+          <th *ngIf="config.level === '2'">{{ t('modal.col.affirm1Score', 'Đánh giá lần 1') }}</th>
+          <th>{{ config.level === '2' ? t('modal.col.affirm2Score', 'Đánh giá lần 2') : t('modal.col.affirm1Score', 'Đánh giá lần 1') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!items().length"><td [attr.colspan]="config.level === '2' ? 8 : 7" class="vata-col-center">-</td></tr>
+        <tr *ngFor="let item of items(); let idx = index">
+          <td class="vata-col-center">{{ idx + 1 }}</td>
+          <td>{{ item.groupName }}</td>
+          <td>{{ item.itemName }}</td>
+          <td class="vata-small">{{ item.remark }}</td>
+          <td class="vata-col-center">{{ item.itemScore || '0' }}</td>
+          <td class="vata-col-center">{{ item.evsScore0 }}</td>
+          <td class="vata-col-center" *ngIf="config.level === '2'">{{ itemReadonlyScore(item) }}</td>
+          <td class="vata-col-center">
+            <nz-select
+              nzSize="small"
+              style="min-width: 120px"
+              [ngModel]="itemScoreValue(item)"
+              (ngModelChange)="onItemScoreChange(item, $event)"
+              [nzDisabled]="!canInputDetail()"
+              nzAllowClear
+            >
+              <nz-option *ngFor="let opt of scoreOptions()" [nzValue]="opt.evsScore" [nzLabel]="opt.codeName ?? opt.evsScore ?? ''"></nz-option>
+            </nz-select>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="vata-total-row">
+          <td colspan="4" class="vata-total-label">{{ tc('common.total', 'Tổng') }}</td>
+          <td class="vata-col-center">{{ detailTotals().totalItem }}</td>
+          <td class="vata-col-center">{{ detailTotals().totalSelf > 0 ? detailTotals().totalSelf : '-' }}</td>
+          <td class="vata-col-center" *ngIf="config.level === '2'"></td>
+          <td class="vata-col-center">{{ detailTotals().hasInput ? detailTotals().totalInput : '-' }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <table class="vata-info-table mb-2">
+      <thead>
+        <tr><th>{{ t('modal.selfOpinion', 'Ý kiến cá nhân') }}</th><th>{{ t('modal.col.totalScore', 'Điểm số') }}</th><th>{{ t('col.grade', 'Cấp') }}</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td [innerHTML]="detail()?.affirmContent0"></td>
+          <td class="vata-col-center">{{ detail()?.evsPoint0 || '-' }}</td>
+          <td class="vata-col-center">{{ gradeNameFor(detail()?.evsGrade0) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="vata-info-table mb-2" *ngIf="config.level === '2'">
+      <thead>
+        <tr><th>{{ t('modal.affirm1Opinion', 'Ý kiến đánh giá lần 1') }}</th><th>{{ t('modal.col.totalScore', 'Điểm số') }}</th><th>{{ t('col.grade', 'Cấp') }}</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td [innerHTML]="detail()?.affirmContent1"></td>
+          <td class="vata-col-center">{{ detail()?.evsPoint1 || '-' }}</td>
+          <td class="vata-col-center">{{ gradeNameFor(detail()?.evsGrade1) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="vata-opinion-table">
+      <thead>
+        <tr>
+          <th>{{ config.level === '2' ? t('modal.affirm2Opinion', 'Ý kiến đánh giá lần 2') : t('modal.affirm1Opinion', 'Ý kiến đánh giá lần 1') }}</th>
+          <th>{{ t('modal.col.totalScore', 'Điểm số') }}</th>
+          <th>{{ t('col.grade', 'Cấp') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <textarea nz-input rows="4" [ngModel]="affirmContent()" (ngModelChange)="affirmContent.set($event)" [readOnly]="!canInputDetail()"></textarea>
+          </td>
+          <td class="vata-col-center">{{ detailTotals().hasInput ? detailTotals().totalInput : '-' }}</td>
+          <td class="vata-col-center">{{ detailGrade()?.evsGradeName || '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+  <ng-container *nzModalFooter>
+    <ng-container *ngIf="canInputDetail()">
+      <button nz-button [nzLoading]="dmSaving()" (click)="submitDetail('draft')">{{ t('btnSaveDraft', 'Lưu tạm thời') }}</button>
+      <button nz-button nzType="primary" [nzLoading]="dmSaving()" (click)="submitDetail('confirm')">{{ t('modal.btnConfirm', 'Xác nhận') }}</button>
+      <button nz-button nzDanger (click)="rejectDetail()">{{ t('modal.btnReject', 'Từ chối') }}</button>
+    </ng-container>
+    <button nz-button (click)="closeDetail()">{{ t('btnClose', 'Đóng') }}</button>
+  </ng-container>
+</nz-modal>

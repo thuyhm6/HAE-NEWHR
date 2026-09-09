@@ -1,0 +1,123 @@
+<div class="veai-page">
+  <nz-card class="veai-search-card">
+    <div class="veai-search-row">
+      <span class="veai-label">{{ i18n.t('common.time', 'Thời gian') }}</span>
+      <nz-date-picker [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      <span>~</span>
+      <nz-date-picker [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+
+      <span class="veai-label veai-status-label">{{ i18n.t('common.status', 'Trạng thái') }}</span>
+      <nz-radio-group [ngModel]="activity()" (ngModelChange)="activity.set($event)">
+        <label nz-radio nzValue="">{{ i18n.t('veai.filter.all', 'Tất cả') }}</label>
+        <label nz-radio nzValue="1">{{ i18n.t('veai.status.submitted', 'Gửi') }}</label>
+        <label nz-radio nzValue="2">{{ i18n.t('veai.status.approved', 'Duyệt') }}</label>
+        <label nz-radio nzValue="3">{{ i18n.t('veai.status.rejected', 'Từ chối') }}</label>
+      </nz-radio-group>
+
+      <button id="veai-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()" [nzLoading]="loading()">
+        <span nz-icon nzType="search"></span>
+        {{ i18n.t('common.search', 'Tra cứu') }}
+      </button>
+      <button id="veai-reset-btn" nz-button nzSize="small" (click)="clearSearch()">
+        <span nz-icon nzType="close"></span>
+        {{ i18n.t('common.reset', 'Đặt lại') }}
+      </button>
+    </div>
+  </nz-card>
+
+  <div class="veai-split">
+    <nz-card class="veai-table-card">
+      <div class="veai-list-toolbar">
+        <span class="veai-toolbar-label">{{ i18n.t('veai.filter.quickFilter', 'Lọc nhanh') }}</span>
+        <input
+          id="veai-quick-filter"
+          nz-input
+          nzSize="small"
+          [ngModel]="quickFilter()"
+          (ngModelChange)="onQuickFilterChange($event)"
+          style="max-width: 160px"
+        />
+      </div>
+
+      <nz-table
+        id="veai-data-table"
+        [nzData]="filteredRows()"
+        [nzLoading]="loading()"
+        [nzPageSize]="50"
+        [nzShowSizeChanger]="true"
+        [nzPageSizeOptions]="[25, 50, 100]"
+        [nzScroll]="{ x: 'max-content', y: '100%' }"
+        nzSize="small"
+        #veaiTable
+      >
+        <thead>
+          <tr>
+            <th>{{ i18n.t('veai.col.content', 'Nội dung') }}</th>
+            <th class="veai-col-center">{{ i18n.t('common.time', 'Thời gian') }}</th>
+            <th class="veai-col-center">{{ i18n.t('veai.col.distinction', 'Phân biệt') }}</th>
+            <th class="veai-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+            <th>{{ i18n.t('veai.col.manager', 'Người quản lý') }}</th>
+            <th>{{ i18n.t('veai.col.feedback', 'Phản hồi') }}</th>
+            <th>{{ i18n.t('veai.col.error', 'Nội dung lỗi') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of veaiTable.data; track row.applyNo) {
+            <tr class="veai-row" [class.veai-row-active]="selectedRow() === row" (click)="selectRow(row)">
+              <td class="veai-col-content">{{ typeLabel(row.applyTableType) }}</td>
+              <td class="veai-col-center veai-col-nowrap">{{ row.createDate }}</td>
+              <td class="veai-col-center">{{ distinctionLabel(row.applyType) }}</td>
+              <td class="veai-col-center">
+                <nz-tag [nzColor]="activityColor(row.activity)">{{ activityLabel(row.activity) }}</nz-tag>
+              </td>
+              <td class="veai-col-nowrap">{{ row.managerInfo }}</td>
+              <td>{{ row.callback }}</td>
+              <td>{{ row.earror }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="veai-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-card>
+
+    <nz-card class="veai-detail-card" [nzTitle]="i18n.t('veai.detail.title', 'Chi tiết thay đổi')">
+      @if (!selectedRow()) {
+        <div class="veai-placeholder">
+          <span nz-icon nzType="select" nzTheme="outline" style="font-size: 32px"></span>
+          <div>{{ i18n.t('veai.detail.placeholder', 'Chọn một thay đổi để xem chi tiết') }}</div>
+        </div>
+      } @else {
+        <table class="veai-detail-table">
+          <tbody>
+            @for (row of detailRows(); track row.labelKey + row.labelFallback) {
+              <tr>
+                <th>{{ i18n.t(row.labelKey, row.labelFallback) }}</th>
+                <td>{{ row.value }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <h4 class="veai-section-title">
+          <span nz-icon nzType="paper-clip"></span>
+          {{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}
+        </h4>
+        @if (!files().length) {
+          <div class="veai-no-file">{{ i18n.t('veai.msg.noFile', 'Không có file đính kèm') }}</div>
+        } @else {
+          <ul class="veai-file-list">
+            @for (f of files(); track f.fileNo) {
+              <li>
+                <span nz-icon nzType="file"></span>
+                <a [href]="'/ess/empinfo/api/files/download/' + f.fileNo" target="_blank">{{ f.fileName }}</a>
+              </li>
+            }
+          </ul>
+        }
+      }
+    </nz-card>
+  </div>
+</div>

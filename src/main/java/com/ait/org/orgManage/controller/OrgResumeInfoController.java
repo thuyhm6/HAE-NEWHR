@@ -8,19 +8,28 @@ import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.util.DataTablesSearchUtil;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
-import java.text.SimpleDateFormat;
 
 @Controller
 @RequestMapping("/org")
@@ -30,18 +39,19 @@ public class OrgResumeInfoController {
     @Autowired
     private OrgResumeInfoService resumeService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/orgManage/viewResumeList")
-    public String viewResumeList(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewResumeList";
+    public String viewResumeList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/orgManage/viewResumeProcess")
-    public String viewResumeProcess(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "org/orgManage/viewResumeProcess";
+    public String viewResumeProcess(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/resume/dropdown")
@@ -194,48 +204,52 @@ public class OrgResumeInfoController {
 
         List<OrgResumeInfo> list = resumeService.getResumeListForExport(request);
 
-        response.setContentType("text/csv; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=org_resume_list.csv");
-        response.setCharacterEncoding("UTF-8");
+        response.setContentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").toString());
+        response.setHeader("Content-Disposition", "attachment; filename=org_resume_list.xlsx");
 
-        PrintWriter writer = response.getWriter();
-        writer.write('\ufeff'); // BOM
-        writer.println("Mã thay đổi,Tên thay đổi,Ngày hiệu lực,Nguyên nhân,Trạng thái,Người tạo,Ngày tạo");
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("DanhSachThayDoiToChuc");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        for (OrgResumeInfo item : list) {
-            String changeDateStr = item.getChangeDate() != null ? sdf.format(item.getChangeDate()) : "";
-            String createDateStr = item.getCreateDate() != null ? sdf.format(item.getCreateDate()) : "";
-            writer.println(String.format("%s,%s,%s,%s,%s,%s,%s",
-                    escapeCsv(item.getNo()),
-                    escapeCsv(item.getResumeName()),
-                    escapeCsv(changeDateStr),
-                    escapeCsv(item.getChangeReason()),
-                    escapeCsv(item.getActivity()),
-                    escapeCsv(item.getCreatedBy()),
-                    escapeCsv(createDateStr)));
-        }
-        writer.flush();
-    }
+            CellStyle headerStyle = wb.createCellStyle();
+            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
 
-    private String escapeCsv(String val) {
-        if (val == null)
-            return "";
-        if (isPotentialFormula(val)) {
-            val = "'" + val;
-        }
-        if (val.contains(",") || val.contains("\n") || val.contains("\"")) {
-            return "\"" + val.replace("\"", "\"\"") + "\"";
-        }
-        return val;
-    }
+            String[] cols = { "Mã thay đổi", "Tên thay đổi", "Ngày hiệu lực", "Nguyên nhân", "Trạng thái",
+                    "Người tạo", "Ngày tạo" };
+            Row header = sheet.createRow(0);
+            for (int i = 0; i < cols.length; i++) {
+                Cell c = header.createCell(i);
+                c.setCellValue(cols[i]);
+                c.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 5000);
+            }
 
-    private boolean isPotentialFormula(String value) {
-        if (value.isEmpty()) {
-            return false;
+            int rowIdx = 1;
+            for (OrgResumeInfo item : list) {
+                String changeDateStr = item.getChangeDate() != null ? item.getChangeDate() : "";
+                String createDateStr = item.getCreateDate() != null ? item.getCreateDate().format(dtf) : "";
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(item.getNo());
+                row.createCell(1).setCellValue(item.getResumeName());
+                row.createCell(2).setCellValue(changeDateStr);
+                row.createCell(3).setCellValue(item.getChangeReason());
+                row.createCell(4).setCellValue(item.getActivity());
+                row.createCell(5).setCellValue(item.getCreatedBy());
+                row.createCell(6).setCellValue(createDateStr);
+            }
+
+            wb.write(response.getOutputStream());
         }
-        char firstChar = value.charAt(0);
-        return firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@';
     }
 
     private HrUserInfo getAuthenticatedUser(HttpSession session) {

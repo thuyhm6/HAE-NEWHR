@@ -34,7 +34,12 @@ public class HrContract {
     private String workHourType;
     private String totalPeriod;
     private String contractName;
-    private LocalDate changeDate;
+    // CHANGE_DATE trong bảng HR_CONTRACT thực tế là cột VARCHAR2 (không phải
+    // DATE) - dùng LocalDate trước đây khiến MyBatis/driver Oracle ném
+    // "Invalid conversion requested" mỗi khi đọc cột này, làm hỏng TOÀN BỘ
+    // danh sách hợp đồng (getContractsForDataTables luôn lỗi, trả về rỗng).
+    // Đây là bug có thật ở bản gốc, không phải do migrate sang Angular.
+    private String changeDate;
     private String contractType;
     private String totalPeriod08;
 
@@ -57,7 +62,7 @@ public class HrContract {
             String workPosition, String workContent, BigDecimal salary,
             String deptNo, String positionNo, String postGradeNo,
             String workHourType, String totalPeriod, String contractName,
-            LocalDate changeDate, String contractType, String totalPeriod08) {
+            String changeDate, String contractType, String totalPeriod08) {
         this.contractNo = contractNo;
         this.personId = personId;
         this.contractTypeCode = contractTypeCode;
@@ -289,11 +294,11 @@ public class HrContract {
         this.contractName = contractName;
     }
 
-    public LocalDate getChangeDate() {
+    public String getChangeDate() {
         return changeDate;
     }
 
-    public void setChangeDate(LocalDate changeDate) {
+    public void setChangeDate(String changeDate) {
         this.changeDate = changeDate;
     }
 

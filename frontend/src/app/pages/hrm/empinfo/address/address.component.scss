@@ -1,0 +1,15 @@
+.addr-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.addr-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.addr-col-center {
+  text-align: center;
+}

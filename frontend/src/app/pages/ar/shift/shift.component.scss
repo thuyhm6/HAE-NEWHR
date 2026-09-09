@@ -1,0 +1,50 @@
+.shift-page {
+  display: flex;
+}
+
+.shift-tree-card,
+.shift-table-card {
+  height: 100%;
+}
+
+.shift-title {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.shift-tree-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.shift-tree-toolbar input {
+  flex: 1;
+}
+
+.shift-tree-container {
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+.shift-tree-loading {
+  text-align: center;
+  padding: 24px 0;
+  font-size: 20px;
+}
+
+.shift-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.shift-table-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.shift-col-center {
+  text-align: center;
+}

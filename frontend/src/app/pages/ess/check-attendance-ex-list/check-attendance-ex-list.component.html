@@ -1,0 +1,146 @@
+<div class="ck-page">
+  <nz-card class="ck-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ck.label.keyword', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ck-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="ckKeyword" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ck.label.deptNo', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="ck-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="ckDeptNos"
+                [nzPlaceHolder]="i18n.t('ck.placeholder.deptNo', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ck.label.fromDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ck-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="ckFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ck.label.toDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ck-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="ckToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ck.label.postFamily', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ck-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="ckPostFamily" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ck.select.allOption', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of postFamilyOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ck.label.shiftNo', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ck-shift" [ngModel]="shiftNo()" (ngModelChange)="shiftNo.set($event)" name="ckShiftNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ck.select.allOption', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="shiftLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ck.label.itemNo', 'Loại nghỉ phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ck-item" [ngModel]="itemNo()" (ngModelChange)="itemNo.set($event)" name="ckItemNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ck.select.choose', 'Lựa chọn')">
+                <nz-option *ngFor="let opt of itemNoOptions" [nzValue]="opt.value" [nzLabel]="i18n.t(opt.labelKey, opt.labelFallback)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12" class="ck-search-actions">
+          <button id="ck-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ck.btn.search', 'Tra cứu') }}
+          </button>
+          <button id="ck-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('ck.btn.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="ck-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('ck.btn.exportExcel', 'Xuất excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="ck-table-card">
+    <nz-table id="ck-data-table" #ckTable [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="ck-col-center">{{ i18n.t('ck.col.no', 'No.') }}</th>
+          <th class="ck-col-center">{{ i18n.t('ck.col.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ck.col.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ck.col.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('ck.col.postGradeName', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('ck.col.postFamilyName', 'Nhóm nhân viên') }}</th>
+          <th class="ck-col-center">{{ i18n.t('ck.col.shiftName', 'Ca làm việc') }}</th>
+          <th>{{ i18n.t('ck.col.itemNoName', 'Loại nghỉ phép') }}</th>
+          <th class="ck-col-center">{{ i18n.t('ck.col.arDate', 'Ngày công') }}</th>
+          <th class="ck-col-center">{{ i18n.t('ck.col.fromDateTime', 'Từ thời gian') }}</th>
+          <th class="ck-col-center">{{ i18n.t('ck.col.toDateTime', 'Đến thời gian') }}</th>
+          <th>{{ i18n.t('ck.col.remark', 'Lý do') }}</th>
+          <th>{{ i18n.t('ck.col.createdName', 'Người tạo') }}</th>
+          <th class="ck-col-center">{{ i18n.t('ck.col.createDate', 'Ngày tạo') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ckTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="ck-col-center">{{ idx + 1 }}</td>
+            <td class="ck-col-center">{{ row.empId }}</td>
+            <td>
+              <a class="ck-name-link" (click)="openDetail(row)">{{ row.localName }}</a>
+            </td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.postFamilyName }}</td>
+            <td class="ck-col-center">{{ row.shiftName }}</td>
+            <td>{{ row.itemNoName }}</td>
+            <td class="ck-col-center">{{ row.arDateStr }}</td>
+            <td class="ck-col-center">{{ row.fromDateTime }}</td>
+            <td class="ck-col-center">{{ row.toDateTime }}</td>
+            <td>{{ row.remark }}</td>
+            <td>{{ row.createdName }}</td>
+            <td class="ck-col-center">{{ row.createDate }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="14" class="ck-col-center">{{ i18n.t('atpi.js.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #detailModal variant="attendanceEx"></app-apply-detail-modal>

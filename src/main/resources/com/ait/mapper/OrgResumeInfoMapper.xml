@@ -5,7 +5,9 @@
     <resultMap id="OrgResumeInfoResultMap" type="com.ait.org.orgManage.model.OrgResumeInfo">
         <result column="SEQ" property="seq" jdbcType="VARCHAR" />
         <result column="NO" property="no" jdbcType="VARCHAR" />
-        <result column="CHANGE_DATE" property="changeDate" jdbcType="DATE" />
+        <!-- CHANGE_DATE thực tế lưu VARCHAR2 trong DB, không phải DATE thật - dùng jdbcType=VARCHAR để
+             tránh lỗi "Invalid conversion requested" khi driver Oracle đọc cột bằng CharCommonAccessor. -->
+        <result column="CHANGE_DATE" property="changeDate" jdbcType="VARCHAR" />
         <result column="RESUME_NAME" property="resumeName" jdbcType="VARCHAR" />
         <result column="IS_CURRENT_ORG" property="isCurrentOrg" jdbcType="CHAR" />
         <result column="CHANGE_REASON" property="changeReason" jdbcType="VARCHAR" />
@@ -95,7 +97,7 @@
             CREATE_DATE, CREATED_BY, ACTIVITY, CPNY_ID, FROM_NO, REMARK, 
             CREATED_IP, EXPERIENCE_TYPE
         ) VALUES (
-            ORG_RESUME_INFO_SEQ.NEXTVAL, #{no}, #{changeDate, jdbcType=DATE}, #{resumeName}, #{isCurrentOrg}, #{changeReason},
+            ORG_RESUME_INFO_SEQ.NEXTVAL, #{no}, #{changeDate, jdbcType=VARCHAR}, #{resumeName}, #{isCurrentOrg}, #{changeReason},
             SYSDATE, #{adminID, jdbcType=VARCHAR}, #{activity}, #{cpnyId, jdbcType=VARCHAR}, #{fromNo}, #{remark},
             #{createdIp}, #{experienceType}
         )
@@ -104,7 +106,7 @@
     <update id="updateResume" parameterType="com.ait.org.orgManage.model.OrgResumeInfo">
         UPDATE ORG_RESUME_INFO
         SET 
-            CHANGE_DATE = #{changeDate, jdbcType=DATE},
+            CHANGE_DATE = #{changeDate, jdbcType=VARCHAR},
             RESUME_NAME = #{resumeName},
             IS_CURRENT_ORG = #{isCurrentOrg},
             CHANGE_REASON = #{changeReason},

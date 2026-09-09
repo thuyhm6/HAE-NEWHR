@@ -1,0 +1,193 @@
+<div class="vedr-page">
+  <div class="vedr-search-card">
+    <div class="vedr-search-row">
+      <label class="vedr-inline-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.search.evaluationName', 'Tên đánh giá') }}</label>
+      <nz-select id="vedr-resume-seq" nzSize="small" style="width:240px" [ngModel]="searchResumeSeq()" (ngModelChange)="searchResumeSeq.set($event); search()">
+        @for (opt of resumeOptions(); track opt.seq) { <nz-option [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option> }
+      </nz-select>
+
+      <label class="vedr-inline-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.search.type', 'Loại') }}</label>
+      <nz-select id="vedr-search-type" nzSize="small" style="width:160px" [ngModel]="searchScoreType()" (ngModelChange)="searchScoreType.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewEvsDistributionRatePanel.search.allOption', '-- Tất cả --')">
+        <nz-option nzValue="CPNY" nzLabel="CPNY"></nz-option>
+        <nz-option nzValue="DEPT" nzLabel="DEPT"></nz-option>
+        <nz-option nzValue="EMP" nzLabel="EMP"></nz-option>
+      </nz-select>
+
+      <label class="vedr-inline-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.search.status', 'Trạng thái') }}</label>
+      <nz-select id="vedr-search-status" nzSize="small" style="width:160px" [ngModel]="searchActivity()" (ngModelChange)="searchActivity.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewEvsDistributionRatePanel.search.allOption', '-- Tất cả --')">
+        <nz-option nzValue="1" [nzLabel]="i18n.t('evs.manage.viewEvsDistributionRatePanel.search.active', 'Sử dụng')"></nz-option>
+        <nz-option nzValue="0" [nzLabel]="i18n.t('evs.manage.viewEvsDistributionRatePanel.search.inactive', 'Không sử dụng')"></nz-option>
+      </nz-select>
+
+      <button id="vedr-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span> {{ i18n.t('evs.manage.viewEvsDistributionRatePanel.btn.search', 'Tra cứu') }}
+      </button>
+      <button id="vedr-clear-btn" nz-button nzSize="small" (click)="clearSearch()">
+        <span nz-icon nzType="close-circle"></span> {{ i18n.t('evs.manage.viewEvsDistributionRatePanel.btn.clearFilter', 'Xóa lọc') }}
+      </button>
+      <button id="vedr-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+        <span nz-icon nzType="plus-circle"></span> {{ i18n.t('evs.manage.viewEvsDistributionRatePanel.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="vedr-table-card">
+    <nz-table id="vedr-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="44px" class="vedr-col-center">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.col.no', 'No.') }}</th>
+          <th nzWidth="110px" class="vedr-col-center">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.col.type', 'Loại') }}</th>
+          <th nzWidth="80px" class="vedr-col-center">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.col.orderNo', 'NO') }}</th>
+          <th nzWidth="160px">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.col.name', 'Tên') }}</th>
+          <th nzWidth="60px" class="vedr-col-center">EX(A)</th>
+          <th nzWidth="60px" class="vedr-col-center">VG(B)</th>
+          <th nzWidth="60px" class="vedr-col-center">GD(C)</th>
+          <th nzWidth="60px" class="vedr-col-center">NI(D)</th>
+          <th nzWidth="60px" class="vedr-col-center">UN(E)</th>
+          <th nzWidth="60px" class="vedr-col-center">SUM</th>
+          <th nzWidth="90px" class="vedr-col-center">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.col.status', 'Trạng thái') }}</th>
+          <th nzWidth="80px" class="vedr-col-center">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.col.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.seq; let idx = $index) {
+          <tr class="vedr-data-row" (click)="openEditModal(row)">
+            <td class="vedr-col-center">{{ idx + 1 }}</td>
+            <td class="vedr-col-center">{{ row.scoreType }}</td>
+            <td class="vedr-col-center">{{ row.no }}</td>
+            <td>{{ row.name }}</td>
+            <td class="vedr-col-center">{{ row.a || 0 }}</td>
+            <td class="vedr-col-center">{{ row.b || 0 }}</td>
+            <td class="vedr-col-center">{{ row.c || 0 }}</td>
+            <td class="vedr-col-center">{{ row.d || 0 }}</td>
+            <td class="vedr-col-center">{{ row.e || 0 }}</td>
+            <td class="vedr-col-center">
+              <span [class.vedr-sum-ok]="isRowSumOk(row)" [class.vedr-sum-error]="!isRowSumOk(row)">{{ row.sum || 0 }}</span>
+            </td>
+            <td class="vedr-col-center">
+              <nz-tag [nzColor]="row.activity === '1' ? 'green' : 'default'">{{ activityLabel(row.activity) }}</nz-tag>
+            </td>
+            <td class="vedr-col-center">
+              <button nz-button nzSize="small" (click)="$event.stopPropagation(); openEditModal(row)"><span nz-icon nzType="edit"></span></button>
+              <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); openDeleteModal(row)"><span nz-icon nzType="delete"></span></button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="12" class="vedr-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+        }
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="detailModalVisible()"
+  [nzTitle]="isEditMode() ? i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.editTitle', 'Chỉnh sửa tỷ lệ phân bổ') : i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.addTitle', 'Thêm mới tỷ lệ phân bổ')"
+  (nzOnCancel)="detailModalVisible.set(false)"
+  (nzVisibleChange)="detailModalVisible.set($event)"
+  nzWidth="700px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.type', 'Loại') }} <span class="vedr-required"></span></label>
+        <nz-select id="vedr-score-type" nzSize="small" style="width:100%" [ngModel]="formScoreType()" (ngModelChange)="onScoreTypeChange($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.selectOption', '-- Chọn --')">
+          <nz-option nzValue="CPNY" nzLabel="CPNY"></nz-option>
+          <nz-option nzValue="DEPT" nzLabel="DEPT"></nz-option>
+          <nz-option nzValue="EMP" nzLabel="EMP"></nz-option>
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.status', 'Trạng thái') }}</label>
+        <div><nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch> <span class="vedr-switch-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.activeLabel', 'Sử dụng') }}</span></div>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.orderNo', 'NO') }}</label>
+        <input nz-input nzSize="small" maxlength="20" [ngModel]="formNo()" (ngModelChange)="formNo.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.name', 'Tên') }} <span class="vedr-required"></span></label>
+        <input nz-input nzSize="small" maxlength="100" [ngModel]="formName()" (ngModelChange)="formName.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.deptCode', 'Mã phòng ban') }}</label>
+        <input nz-input nzSize="small" maxlength="20" [ngModel]="formDeptNo()" (ngModelChange)="formDeptNo.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.deptName', 'Tên phòng ban') }}</label>
+        <input nz-input nzSize="small" maxlength="60" [ngModel]="formDeptName()" (ngModelChange)="formDeptName.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.gradeCode', 'Mã cấp bậc') }}</label>
+        <input nz-input nzSize="small" maxlength="20" [ngModel]="formPostGradeNo()" (ngModelChange)="formPostGradeNo.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.gradeName', 'Tên cấp bậc') }}</label>
+        <input nz-input nzSize="small" maxlength="60" [ngModel]="formPostGradeName()" (ngModelChange)="formPostGradeName.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="24">
+        <div class="vedr-ratio-header">
+          <span>{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.ratioLabel', 'Tỷ lệ phân bổ (EX + VG + GD + NI + UN = 100)') }}</span>
+          <nz-tag [nzColor]="sumOk() ? 'green' : 'red'">SUM = {{ sum() }}</nz-tag>
+        </div>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">EX (A)</label>
+        <nz-input-number [ngModel]="formA()" (ngModelChange)="formA.set($event)" [nzMin]="0" [nzMax]="100" [nzStep]="0.01" style="width:100%"></nz-input-number>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">VG (B)</label>
+        <nz-input-number [ngModel]="formB()" (ngModelChange)="formB.set($event)" [nzMin]="0" [nzMax]="100" [nzStep]="0.01" style="width:100%"></nz-input-number>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">GD (C)</label>
+        <nz-input-number [ngModel]="formC()" (ngModelChange)="formC.set($event)" [nzMin]="0" [nzMax]="100" [nzStep]="0.01" style="width:100%"></nz-input-number>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">NI (D)</label>
+        <nz-input-number [ngModel]="formD()" (ngModelChange)="formD.set($event)" [nzMin]="0" [nzMax]="100" [nzStep]="0.01" style="width:100%"></nz-input-number>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vedr-field-label">UN (E)</label>
+        <nz-input-number [ngModel]="formE()" (ngModelChange)="formE.set($event)" [nzMin]="0" [nzMax]="100" [nzStep]="0.01" style="width:100%"></nz-input-number>
+      </div>
+      @if (!sumOk()) {
+        <div nz-col [nzSpan]="24">
+          <div class="vedr-sum-warning">
+            <span nz-icon nzType="warning"></span>
+            {{ i18n.t('evs.manage.viewEvsDistributionRatePanel.msg.sumWarning', 'Tổng tỷ lệ phân bổ phải bằng 100. Giá trị hiện tại:') }} <strong>{{ sum() }}</strong>
+          </div>
+        </div>
+      }
+      @if (formAuditDisplay()) {
+        <div nz-col [nzSpan]="24">
+          <label class="vedr-field-label">{{ i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.auditInfo', 'Thông tin cập nhật') }}</label>
+          <div class="vedr-audit-display">{{ formAuditDisplay() }}</div>
+        </div>
+      }
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Xác nhận xóa -->
+<nz-modal
+  [nzVisible]="deleteModalVisible()"
+  [nzTitle]="i18n.t('evs.manage.viewEvsDistributionRatePanel.modal.deleteTitle', 'Xác nhận xóa')"
+  (nzOnCancel)="deleteModalVisible.set(false)"
+  (nzVisibleChange)="deleteModalVisible.set($event)"
+  nzWidth="420px"
+  (nzOnOk)="confirmDelete()"
+  [nzOkText]="i18n.t('common.delete', 'Xóa')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+  nzOkType="primary"
+  [nzOkDanger]="true"
+>
+  <ng-container *nzModalContent>
+    <p>{{ deleteConfirmMsg() }}</p>
+  </ng-container>
+</nz-modal>

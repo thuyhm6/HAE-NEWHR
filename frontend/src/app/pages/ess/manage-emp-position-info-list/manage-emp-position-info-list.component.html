@@ -1,0 +1,338 @@
+<div class="mepil-page">
+
+  <nz-card id="mepil-search-card" class="mepil-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('essDept.keyword', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="mepil-keyword"
+                nz-input
+                [ngModel]="keyword()"
+                (ngModelChange)="keyword.set($event)"
+                name="mepilKeyword"
+                [placeholder]="i18n.t('vdp.search.empKeyword.placeholder', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="mepil-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="mepilDeptNos"
+                [nzPlaceHolder]="i18n.t('vdp.search.dept.placeholder', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('essDept.fromDate', 'Ngày vào làm từ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="mepil-from-date"
+                [ngModel]="fromDate()"
+                (ngModelChange)="fromDate.set($event)"
+                name="mepilFromDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('essDept.toDate', 'Ngày vào làm đến') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="mepil-to-date"
+                [ngModel]="toDate()"
+                (ngModelChange)="toDate.set($event)"
+                name="mepilToDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empGroup', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="mepil-post-family"
+                [ngModel]="postFamily()"
+                (ngModelChange)="postFamily.set($event)"
+                name="mepilPostFamily"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of postFamilyOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empType', 'Loại nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="mepil-emp-type"
+                [ngModel]="empTypeCode()"
+                (ngModelChange)="empTypeCode.set($event)"
+                name="mepilEmpTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="mepil-emp-office"
+                [ngModel]="empOffice()"
+                (ngModelChange)="empOffice.set($event)"
+                name="mepilEmpOffice"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empOfficeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        @if (showAsOfDate()) {
+          <div nz-col [nzSpan]="3">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t('mep.field.asOfDate', 'Ngày tra cứu') }}</nz-form-label>
+              <nz-form-control>
+                <nz-date-picker
+                  id="mepil-as-of-date"
+                  [ngModel]="asOfDate()"
+                  (ngModelChange)="asOfDate.set($event)"
+                  name="mepilAsOfDate"
+                  nzFormat="dd/MM/yyyy"
+                  style="width: 100%"
+                ></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('mep.field.nationality', 'Quốc tịch') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="mepil-nationality"
+                [ngModel]="nationalityCode()"
+                (ngModelChange)="nationalityCode.set($event)"
+                name="mepilNationalityCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of nationalityOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12" class="mepil-search-actions">
+          <button id="mepil-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('essDept.search', 'Tra cứu') }}
+          </button>
+          <button id="mepil-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('essDept.clearFilter', 'Xóa lọc') }}
+          </button>
+          <a id="mepil-export-btn" nz-button nzType="default" [href]="exportUrl">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('essDept.exportExcel', 'Xuất excel') }}
+          </a>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="mepil-table-card">
+    <nz-table
+      id="mepil-data-table"
+      #mepilTable
+      [nzData]="list()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzScroll]="{ x: '1600px', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="mepil-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('common.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('common.empGroup', 'Nhóm NV') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('common.empType', 'Loại NV') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('mep.col.duty', 'Chức vụ') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('mep.col.jobTitle', 'Chức danh') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('mep.col.positionTitle', 'Vị trí') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('mep.field.nationality', 'Quốc tịch') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th class="mepil-col-center">{{ i18n.t('mep.col.dateJoined', 'Ngày vào làm') }}</th>
+          <th>{{ i18n.t('mep.col.manager', 'Quản lý') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of mepilTable.data; track row.personId; let idx = $index) {
+          <tr>
+            <td class="mepil-col-center">{{ idx + 1 }}</td>
+            <td class="mepil-col-center">{{ row.empId }}</td>
+            <td>
+              <a class="mepil-emp-link" (click)="openDetail(row)">{{ row.localName }}</a>
+            </td>
+            <td>{{ row.deptName }}</td>
+            <td class="mepil-col-center">{{ row.postFamilyName }}</td>
+            <td class="mepil-col-center">{{ row.empTypeName }}</td>
+            <td class="mepil-col-center">{{ row.dutyName }}</td>
+            <td class="mepil-col-center">{{ row.postGradeNo }}</td>
+            <td class="mepil-col-center">{{ row.positionNoName || row.positionName }}</td>
+            <td class="mepil-col-center">{{ row.nationalityName }}</td>
+            <td class="mepil-col-center">{{ row.empOfficeName }}</td>
+            <td class="mepil-col-center">{{ row.dateStarted }}</td>
+            <td>{{ row.managerName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="13" class="mepil-col-center">{{ i18n.t('mep.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="mepil-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="i18n.t('mep.modal.detailTitle', 'Chi tiết nhân viên')"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="mepilDetailFooter"
+>
+  <ng-container *nzModalContent>
+    @if (selectedRow(); as row) {
+      <div class="mepil-detail-body">
+        <div class="mepil-detail-photo-box">
+          @if (resolvePhotoUrl(row.photoPath); as photoUrl) {
+            <img [src]="photoUrl" alt="Employee photo" class="mepil-detail-photo-img" />
+          } @else {
+            <div class="mepil-detail-photo-fallback">{{ i18n.t('mep.detail.noImage', 'Không có ảnh') }}</div>
+          }
+        </div>
+
+        <nz-descriptions [nzColumn]="2" nzBordered nzSize="small" class="mepil-detail-descriptions">
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empId', 'Mã nhân viên')">{{ row.empId }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empName', 'Họ tên')">{{ row.localName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.deptName', 'Phòng ban')">{{ row.deptName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.detail.orgNameLocal', 'Tên phòng local')">{{ row.orgNameLocal }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.col.duty', 'Chức vụ')">{{ row.dutyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.col.jobTitle', 'Chức danh')">{{ row.postGradeNo }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.col.positionTitle', 'Vị trí')">{{ row.positionNoName || row.positionName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empGroup', 'Nhóm nhân viên')">{{ row.postFamilyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empType', 'Loại nhân viên')">{{ row.empTypeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.status', 'Trạng thái')">{{ row.empOfficeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.field.nationality', 'Quốc tịch')">{{ row.nationalityName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.col.dateJoined', 'Ngày vào làm')">{{ row.dateStarted }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.detail.mainBusiness', 'Nghiệp vụ chính')">{{ row.mainBusiness }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.detail.employeeOwned', 'Khối sở hữu')">{{ row.employeeOwned }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.detail.manager', 'Quản lý hiển thị')">{{ row.managerName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('mep.detail.managerEmp', 'Quản lý cập nhật')">{{ row.managerEmpName }}</nz-descriptions-item>
+        </nz-descriptions>
+
+        <h4 class="mepil-inside-title">{{ i18n.t('mep.section.insideProcess', 'Quá trình nội bộ') }}</h4>
+        <nz-table
+          id="mepil-inside-table"
+          [nzData]="insideExperienceList()"
+          [nzLoading]="insideExperienceLoading()"
+          [nzShowPagination]="false"
+          nzSize="small"
+        >
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="mepil-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th nzWidth="140px" class="mepil-col-center">{{ i18n.t('essDept.attStartDate', 'Ngày bắt đầu') }}</th>
+              <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+              <th>{{ i18n.t('mep.col.mainBusiness', 'Nghiệp vụ chính') }}</th>
+              <th>{{ i18n.t('mep.col.jobTitle', 'Chức danh') }}</th>
+              <th>{{ i18n.t('mep.col.transType', 'Loại điều chuyển') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of insideExperienceList(); track $index; let idx = $index) {
+              <tr>
+                <td class="mepil-col-center">{{ idx + 1 }}</td>
+                <td class="mepil-col-center">{{ item.startDate }}</td>
+                <td>{{ item.deptName }}</td>
+                <td>{{ item.mainBusiness }}</td>
+                <td>{{ item.postGrade }}</td>
+                <td>{{ item.transCode }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="mepil-col-center">
+                  {{ row.personId ? i18n.t('mep.msg.noInsideExp', 'Không có dữ liệu quá trình nội bộ.') : i18n.t('mep.msg.noPersonId', 'Không lấy được PERSON_ID để xem quá trình nội bộ.') }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<ng-template #mepilDetailFooter>
+  <button id="mepil-detail-close-btn" nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>

@@ -3,6 +3,7 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.dto.ArEmpGroupDto;
 import com.ait.ar.attendanceSettings.model.ArEmpGroup;
 import com.ait.ar.attendanceSettings.service.ArEmpGroupService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +25,13 @@ public class ArEmpGroupController {
     @Autowired
     private ArEmpGroupService service;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewDynamicGroup")
-    public String viewDynamicGroup() {
-        return "ar/attendanceSettings/viewDynamicGroup";
+    public String viewDynamicGroup(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/dynamicGroup/list")

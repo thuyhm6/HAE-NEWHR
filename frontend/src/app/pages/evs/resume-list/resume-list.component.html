@@ -1,0 +1,166 @@
+<div class="erl-page">
+  <div class="erl-search-card">
+    <div class="erl-search-row">
+      <label class="erl-inline-label">{{ i18n.t('evs.manage.viewResumeList.label.evsYear', 'Năm đánh giá') }}</label>
+      <nz-input-number id="erl-search-year" [ngModel]="searchYear()" (ngModelChange)="searchYear.set($event)" [nzMin]="2000" [nzMax]="2099" style="width:110px"></nz-input-number>
+
+      <label class="erl-inline-label">{{ i18n.t('evs.manage.viewResumeList.label.evsCycle', 'Chu kỳ') }}</label>
+      <nz-select id="erl-search-cycle" [ngModel]="searchCycle()" (ngModelChange)="searchCycle.set($event)" style="width:180px" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewResumeList.label.allOption', '-- Tất cả --')">
+        @for (opt of cycleOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+      </nz-select>
+
+      <button id="erl-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span> {{ i18n.t('evs.manage.viewResumeList.btn.search', 'Tra cứu') }}
+      </button>
+      <button id="erl-clear-btn" nz-button nzSize="small" (click)="clearSearch()">
+        <span nz-icon nzType="close-circle"></span> {{ i18n.t('evs.manage.viewResumeList.btn.clearFilter', 'Xóa lọc') }}
+      </button>
+      <button id="erl-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+        <span nz-icon nzType="plus-circle"></span> {{ i18n.t('evs.manage.viewResumeList.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="erl-table-card">
+  <nz-table id="erl-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" [nzScroll]="{ x: 'max-content', y: '100%' }">
+    <thead>
+      <tr>
+        <th nzWidth="50px" class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.no', 'NO') }}</th>
+        <th>{{ i18n.t('evs.manage.viewResumeList.col.resumeName', 'Tên đánh giá') }}</th>
+        <th class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.evsCycle', 'Chu kỳ') }}</th>
+        <th class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.evsYear', 'Năm đánh giá') }}</th>
+        <th class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.evsMonth', 'Tháng đánh giá') }}</th>
+        <th class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.standardDate', 'Ngày tiêu chuẩn') }}</th>
+        <th class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.startDate', 'Thời gian bắt đầu') }}</th>
+        <th class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.endDate', 'Thời gian kết thúc') }}</th>
+        <th class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.status', 'Trạng thái') }}</th>
+        <th nzWidth="70px" class="erl-col-center">{{ i18n.t('evs.manage.viewResumeList.col.action', 'Thao tác') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.seq; let idx = $index) {
+        <tr class="erl-data-row" (click)="openEditModal(row)">
+          <td class="erl-col-center">{{ idx + 1 }}</td>
+          <td>{{ row.resumeName }}</td>
+          <td class="erl-col-center">{{ row.evsCycleName || row.evsCycle }}</td>
+          <td class="erl-col-center">{{ row.evsYear }}</td>
+          <td class="erl-col-center">{{ row.evsMonthName || row.evsMonth }}</td>
+          <td class="erl-col-center">{{ row.standardDate }}</td>
+          <td class="erl-col-center">{{ row.evsStartDate }}</td>
+          <td class="erl-col-center">{{ row.evsEndDate }}</td>
+          <td class="erl-col-center">
+            <nz-tag [nzColor]="activityColor(row.activity)">{{ row.activityName || row.activity }}</nz-tag>
+          </td>
+          <td class="erl-col-center">
+            <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); openDeleteModal(row)">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="10" class="erl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+      }
+    </tbody>
+  </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="detailModalVisible()"
+  [nzTitle]="isEditMode() ? i18n.t('evs.manage.viewResumeList.modal.titleEdit', 'Chỉnh sửa đánh giá') : i18n.t('evs.manage.viewResumeList.modal.titleAdd', 'Thêm mới đánh giá')"
+  (nzOnCancel)="detailModalVisible.set(false)"
+  (nzVisibleChange)="detailModalVisible.set($event)"
+  nzWidth="700px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  [nzOkText]="i18n.t('evs.manage.viewResumeList.btn.save', 'Lưu')"
+  [nzCancelText]="i18n.t('evs.manage.viewResumeList.btn.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <table class="erl-modal-table">
+      <tbody>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.resumeName', 'Tên đánh giá') }} <span class="erl-required"></span></th>
+          <td><input id="erl-resume-name" nz-input nzSize="small" maxlength="200" [ngModel]="formResumeName()" (ngModelChange)="formResumeName.set($event)" /></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.remark', 'Giải thích') }}</th>
+          <td><textarea nz-input rows="3" maxlength="2000" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.evsCycle', 'Chu kỳ') }}</th>
+          <td>
+            <nz-select id="erl-evs-cycle" nzSize="small" style="width:200px" [ngModel]="formEvsCycle()" (ngModelChange)="onCycleChange($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewResumeList.option.selectDefault', '-- Chọn --')">
+              @for (opt of cycleOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.evsYear', 'Năm đánh giá') }}</th>
+          <td><nz-input-number nzSize="small" [ngModel]="formEvsYear()" (ngModelChange)="formEvsYear.set($event)" [nzMin]="2000" [nzMax]="2099" style="width:120px"></nz-input-number></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.evsMonth', 'Tháng đánh giá') }}</th>
+          <td>
+            <nz-select nzSize="small" style="width:200px" [ngModel]="formEvsMonth()" (ngModelChange)="formEvsMonth.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewResumeList.option.selectDefault', '-- Chọn --')">
+              @for (opt of monthOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.standardDate', 'Ngày tiêu chuẩn') }} <span class="erl-required"></span></th>
+          <td><nz-date-picker id="erl-standard-date" nzSize="small" [ngModel]="formStandardDate()" (ngModelChange)="formStandardDate.set($event)" nzFormat="dd/MM/yyyy" style="width:140px"></nz-date-picker></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.duration', 'Thời gian') }}</th>
+          <td class="erl-duration-cell">
+            <nz-date-picker nzSize="small" [ngModel]="formEvsStartDate()" (ngModelChange)="formEvsStartDate.set($event)" nzFormat="dd/MM/yyyy" style="width:140px"></nz-date-picker>
+            <span>~</span>
+            <nz-date-picker nzSize="small" [ngModel]="formEvsEndDate()" (ngModelChange)="formEvsEndDate.set($event)" nzFormat="dd/MM/yyyy" style="width:140px"></nz-date-picker>
+          </td>
+        </tr>
+        @if (formActivityName()) {
+          <tr>
+            <th>{{ i18n.t('evs.manage.viewResumeList.field.activityStatus', 'Trạng thái thực hiện') }}</th>
+            <td class="erl-activity-display">{{ formActivityName() }}</td>
+          </tr>
+        }
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.evsLevel', 'Số lần đánh giá') }}</th>
+          <td>
+            <nz-select nzSize="small" style="width:200px" [ngModel]="formEvsLevel()" (ngModelChange)="formEvsLevel.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewResumeList.option.selectDefault', '-- Chọn --')">
+              @for (opt of evsLevelOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewResumeList.field.copyObject', 'Sao chép đối tượng') }}</th>
+          <td>
+            <nz-select nzSize="small" style="width:300px" [ngModel]="formCopyObject()" (ngModelChange)="formCopyObject.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewResumeList.option.noCopy', '-- Không sao chép --')">
+              @for (opt of copyOptions(); track opt.seq) { <nz-option [nzValue]="opt.seq" [nzLabel]="opt.resumeName + (opt.evsYear ? ' (' + opt.evsYear + ')' : '')"></nz-option> }
+            </nz-select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Xác nhận xóa -->
+<nz-modal
+  [nzVisible]="deleteModalVisible()"
+  [nzTitle]="i18n.t('evs.manage.viewResumeList.modal.deleteTitle', 'Xác nhận xóa')"
+  (nzOnCancel)="deleteModalVisible.set(false)"
+  (nzVisibleChange)="deleteModalVisible.set($event)"
+  nzWidth="420px"
+  (nzOnOk)="confirmDelete()"
+  [nzOkText]="i18n.t('evs.manage.viewResumeList.btn.delete', 'Xóa')"
+  [nzCancelText]="i18n.t('evs.manage.viewResumeList.btn.cancel', 'Hủy')"
+  nzOkType="primary"
+  [nzOkDanger]="true"
+>
+  <ng-container *nzModalContent>
+    <p>{{ deleteConfirmMsg() }}</p>
+  </ng-container>
+</nz-modal>

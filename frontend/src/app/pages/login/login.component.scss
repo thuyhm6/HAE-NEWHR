@@ -1,0 +1,259 @@
+:host {
+  display: block;
+}
+
+.hae-login-wrapper {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: #d05800;
+}
+
+/* ===== LEFT PANEL ===== */
+.hae-login-left {
+  flex: 0 0 66.6667%;
+  max-width: 66.6667%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+  background-image: url('/assets/images/backgroud.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+.hae-login-left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(208, 88, 0, 0.55);
+}
+
+.hae-login-brand {
+  position: absolute;
+  top: 2rem;
+  left: 2.5rem;
+  z-index: 2;
+}
+
+.hae-login-brand img {
+  max-height: 42px;
+  border-radius: 6px;
+}
+
+.hae-login-image-wrap {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hae-login-image-wrap img {
+  max-height: 65vh;
+  object-fit: contain;
+  border-radius: 12px;
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+  animation: hae-login-float-img 4s ease-in-out infinite;
+}
+
+@keyframes hae-login-float-img {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.hae-login-tagline {
+  margin-top: 1.8rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hae-login-tagline small {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 400;
+  margin-top: 0.4rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ===== RIGHT PANEL ===== */
+.hae-login-right {
+  flex: 0 0 33.3333%;
+  max-width: 33.3333%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+.hae-login-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  padding: 2.2rem 2rem;
+  width: 100%;
+  max-width: 380px;
+}
+
+.hae-login-card-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.hae-login-icon-wrap {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #f4731f, #ff9a4d);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 20px rgba(244, 115, 31, 0.35);
+  font-size: 1.6rem;
+  color: #fff;
+}
+
+.hae-login-card-header h4 {
+  font-weight: 700;
+  color: #2d2d2d;
+  margin-bottom: 0.25rem;
+}
+
+.hae-login-card-header p {
+  color: #888;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.hae-login-lang-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.hae-login-lang-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #555;
+  cursor: pointer;
+  border: 1px solid #eee;
+}
+
+.hae-login-lang-trigger:hover {
+  border-color: #f4731f;
+  color: #f4731f;
+}
+
+.hae-login-alert {
+  margin-bottom: 1rem;
+}
+
+.hae-login-attempts {
+  color: #d4380d;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.hae-login-remember {
+  display: flex;
+  align-items: center;
+}
+
+.hae-login-copyright {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.78rem;
+  color: #bbb;
+}
+
+button[nz-button][nzType='primary'] {
+  background: linear-gradient(135deg, #f4731f 0%, #ff9a4d 100%);
+  border: none;
+}
+
+button[nz-button][nzType='primary']:not(:disabled):hover {
+  background: linear-gradient(135deg, #e05e0a 0%, #f4731f 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hae-login-left {
+    display: none;
+  }
+
+  .hae-login-right {
+    flex: 0 0 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    padding: 2rem 1.2rem;
+  }
+}
+
+/* ===== Nút nổi Hòm thư góp ý ===== */
+.hae-login-feedback-fab {
+  position: fixed;
+  bottom: 1.75rem;
+  right: 1.75rem;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: auto;
+  padding: 0.75rem 1.2rem;
+  box-shadow: 0 8px 24px rgba(244, 115, 31, 0.45);
+  animation: hae-login-feedback-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes hae-login-feedback-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 24px rgba(244, 115, 31, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 8px 24px rgba(244, 115, 31, 0.75),
+      0 0 0 10px rgba(244, 115, 31, 0.12);
+  }
+}
+
+@media (max-width: 768px) {
+  .hae-login-feedback-fab {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    padding: 0.75rem;
+    border-radius: 50%;
+  }
+
+  .hae-login-feedback-fab-label {
+    display: none;
+  }
+}
+
+.hae-login-feedback-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.hae-login-required {
+  color: #d4380d;
+}

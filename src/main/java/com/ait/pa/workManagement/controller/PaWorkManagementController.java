@@ -19,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -43,29 +45,37 @@ public class PaWorkManagementController {
     @Autowired
     private PaPayStubService paPayStubService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/viewPaPaySchedule")
-    public String viewPaPaySchedule() {
-        return "pa/workManagement/viewPaPaySchedule";
+    public String viewPaPaySchedule(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewPaPayObj")
-    public String viewPaPayObj() {
-        return "pa/workManagement/viewPaPayObj";
+    public String viewPaPayObj(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewPaWorkFlow")
-    public String viewPaWorkFlow() {
-        return "pa/workManagement/viewPaWorkFlow";
+    public String viewPaWorkFlow(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewPaEmpAccount")
-    public String viewPaEmpAccount() {
-        return "pa/workManagement/viewPaEmpAccount";
+    public String viewPaEmpAccount(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/payStub")
-    public String payStub() {
-        return "pa/workManagement/payStub";
+    public String payStub(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // ── API Phiếu lương ────────────────────────────────────────────────────────
@@ -343,6 +353,32 @@ public class PaWorkManagementController {
             log.error("Lỗi khi lấy danh sách đối tượng nhận lương: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
                     .body(new DataTablesResponse<>(draw, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/payObj/export")
+    public ResponseEntity<byte[]> exportPayObj(
+            @RequestParam(required = false) String empSearch,
+            @RequestParam(required = false) String payScheduleNo,
+            @RequestParam(required = false) String includeType,
+            @RequestParam(required = false) String empOffice) {
+        try {
+            PaPayObjDto params = new PaPayObjDto();
+            params.setEmpSearch(empSearch);
+            params.setPayScheduleNo(payScheduleNo);
+            if (includeType != null && !includeType.isEmpty()) {
+                params.setIncludeType(Integer.parseInt(includeType));
+            }
+            params.setEmpOfficeCond(empOffice);
+            byte[] data = paPayObjService.exportExcel(params);
+            String filename = java.net.URLEncoder.encode("PaPayObj.xlsx", java.nio.charset.StandardCharsets.UTF_8);
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
+                    .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(data);
+        } catch (Exception e) {
+            log.error("Lỗi khi xuất Excel đối tượng nhận lương: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 

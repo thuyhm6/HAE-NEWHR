@@ -1,0 +1,188 @@
+<div class="acrm-page">
+  <nz-card class="acrm-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="acrm-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="acrmKeyword" [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã hoặc họ tên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="acrm-dept"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="acrmDept"
+                nzMultiple
+                nzCheckable
+                nzShowSearch
+                [nzPlaceHolder]="i18n.t('common.select', 'Chọn phòng ban')"
+                style="width: 100%"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="acrm-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="acrmFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="acrm-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="acrmToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('acrm.filter.eatDate', 'Phân loại') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="acrm-eat-date" [ngModel]="eatDate()" (ngModelChange)="eatDate.set($event)" name="acrmEatDate" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('acrm.eatDate.all', 'Tất cả')">
+                <nz-option nzValue="BREAKFAST" [nzLabel]="i18n.t('acrm.eatDate.breakfast', 'Bữa sáng')"></nz-option>
+                <nz-option nzValue="LUNCH" [nzLabel]="i18n.t('acrm.eatDate.lunch', 'Bữa trưa')"></nz-option>
+                <nz-option nzValue="DINNER" [nzLabel]="i18n.t('acrm.eatDate.dinner', 'Bữa tối')"></nz-option>
+                <nz-option nzValue="NIGHT" [nzLabel]="i18n.t('acrm.eatDate.night', 'Ca đêm')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="acrm-toolbar-actions">
+        <button id="acrm-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="acrm-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="acrm-export-btn" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="export"></span>
+          {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+        </button>
+        <button id="acrm-import-btn" nz-button nzType="default" (click)="openImportModal()">
+          <span nz-icon nzType="coffee"></span>
+          {{ i18n.t('acrm.imp.title', 'Đọc dữ liệu suất ăn từ máy chủ') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="acrm-table-card">
+    <nz-table
+      id="acrm-data-table"
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="acrm-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="acrm-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+          <th class="acrm-col-center">{{ i18n.t('acrm.col.attendanceDate', 'Ngày công') }}</th>
+          <th class="acrm-col-center">{{ i18n.t('acrm.col.rDate', 'Ngày quẹt thẻ') }}</th>
+          <th class="acrm-col-center">{{ i18n.t('acrm.col.rTime', 'Thời gian quẹt thẻ') }}</th>
+          <th>{{ i18n.t('acrm.col.eatName', 'Tên món ăn') }}</th>
+          <th class="acrm-col-center">{{ i18n.t('acrm.col.eatDate', 'Phân loại') }}</th>
+          <th class="acrm-col-center">{{ i18n.t('acrm.col.amount', 'Số lượng') }}</th>
+          <th class="acrm-col-center">{{ i18n.t('acrm.col.outdoorTime', 'Thời gian ra') }}</th>
+          <th>{{ i18n.t('acrm.col.remark', 'Ghi chú') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index; let idx = $index) {
+          <tr>
+            <td class="acrm-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="acrm-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="acrm-col-center">{{ row.attendanceDate }}</td>
+            <td class="acrm-col-center">{{ row.rDate }}</td>
+            <td class="acrm-col-center">{{ row.rTime }}</td>
+            <td>{{ row.eatName }}</td>
+            <td class="acrm-col-center">{{ row.eatDate }}</td>
+            <td class="acrm-col-center">{{ row.amount }}</td>
+            <td class="acrm-col-center">{{ row.outdoorTime }}</td>
+            <td>{{ row.remark }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="13" class="acrm-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('acrm.imp.title', 'Đọc dữ liệu suất ăn từ máy chủ')"
+  (nzOnCancel)="closeImportModal()"
+  (nzVisibleChange)="importModalVisible.set($event)"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12">
+        <label class="acrm-modal-label">{{ i18n.t('common.fromDate', 'Từ ngày') }}</label>
+        <nz-date-picker id="acrm-imp-from-date" [ngModel]="importFromDate()" (ngModelChange)="importFromDate.set($event)" name="acrmImpFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="acrm-modal-label">{{ i18n.t('common.toDate', 'Đến ngày') }}</label>
+        <nz-date-picker id="acrm-imp-to-date" [ngModel]="importToDate()" (ngModelChange)="importToDate.set($event)" name="acrmImpToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+      </div>
+    </div>
+    @if (importing()) {
+      <div class="acrm-import-spinner">
+        <span nz-icon nzType="loading" nzSpin></span>
+        <div class="acrm-muted">{{ i18n.t('acrm.imp.processing', 'Đang kết nối và đọc dữ liệu suất ăn...') }}</div>
+      </div>
+    }
+    @if (importResult(); as res) {
+      <div class="acrm-import-result" [class.acrm-result-success]="res.success" [class.acrm-result-error]="!res.success">
+        @if (res.success) {
+          <strong>{{ res.message }}</strong>
+          <ul>
+            <li>{{ i18n.t('acr.imp.result.total', 'Tổng bản ghi từ máy chủ') }}: <strong>{{ res.total || 0 }}</strong></li>
+            <li>{{ i18n.t('acr.imp.result.imported', 'Đã lưu mới') }}: <strong>{{ res.imported || 0 }}</strong></li>
+            <li>{{ i18n.t('acr.imp.result.skipped', 'Bỏ qua (trùng)') }}: <strong>{{ res.skipped || 0 }}</strong></li>
+            <li>{{ i18n.t('acrm.imp.result.invalid', 'Không hợp lệ') }}: <strong>{{ res.notFound || 0 }}</strong></li>
+          </ul>
+        } @else {
+          {{ res.message || i18n.t('acr.imp.result.unknownError', 'Lỗi không xác định') }}
+        }
+      </div>
+    }
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeImportModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="acrm-imp-run-btn" nz-button nzType="primary" [nzLoading]="importing()" (click)="runImport()">
+      <span nz-icon nzType="cloud-download"></span>
+      {{ i18n.t('acrm.imp.btnRun', 'Thực hiện') }}
+    </button>
+  </div>
+</nz-modal>

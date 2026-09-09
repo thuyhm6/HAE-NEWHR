@@ -1,0 +1,441 @@
+<nz-layout class="hae-dashboard-layout">
+  <nz-sider nzCollapsible [(nzCollapsed)]="siderCollapsed" [nzWidth]="240">
+    <div class="hae-dashboard-logo">{{ sysType() === '0' ? 'HR Management' : 'HR System' }}</div>
+    <ul nz-menu nzMode="inline" nzTheme="dark" class="hae-dashboard-menu">
+      <app-menu-node [nodes]="menuTree()" [activePath]="activeMenuPath()" (select)="onMenuSelect($event)"></app-menu-node>
+    </ul>
+  </nz-sider>
+
+  <nz-layout>
+    <nz-header class="hae-dashboard-header">
+      <ul nz-menu nzMode="horizontal" id="hae-dashboard-header-menu" class="hae-dashboard-header-menu">
+        @for (root of menuTree(); track root.menuNo) {
+          @if (root.children && root.children.length) {
+            <li
+              nz-submenu
+              [nzTitle]="root.menuName"
+              [class.hae-dashboard-header-menu-active]="activeRootMenuNo() === root.menuNo"
+            >
+              <ul>
+                @for (child of root.children; track child.menuNo) {
+                  <li nz-menu-item (click)="onHeaderChildSelect(child, root.menuNo)">
+                    {{ child.menuName }}
+                  </li>
+                }
+              </ul>
+            </li>
+          } @else {
+            <li nz-menu-item [nzSelected]="activeRootMenuNo() === root.menuNo" (click)="onHeaderRootSelect(root)">
+              {{ root.menuName }}
+            </li>
+          }
+        }
+      </ul>
+      <div class="hae-dashboard-header-actions" *ngIf="user() as u">
+        <ng-container *ngIf="sysType() === '1'; else hrmNotif">
+          <span
+            id="hae-dashboard-notif-btn"
+            nz-dropdown
+            [nzDropdownMenu]="notifMenu"
+            nzTrigger="click"
+            class="hae-dashboard-notif"
+          >
+            <nz-badge [nzCount]="pendingCounts().total" [nzOverflowCount]="99">
+              <i nz-icon nzType="bell" nzTheme="outline" class="hae-dashboard-notif-icon"></i>
+            </nz-badge>
+          </span>
+          <nz-dropdown-menu #notifMenu="nzDropdownMenu">
+            <ul nz-menu class="hae-dashboard-notif-menu">
+              <li class="hae-dashboard-notif-header">
+                <i nz-icon nzType="bell" nzTheme="outline"></i>
+                <span>{{ i18n.t('topbar.notifications', 'Thông báo') }}</span>
+              </li>
+              <li
+                nz-menu-item
+                (click)="openLink('/ess/infoApply/viewApprovalEmail?applyTypeCode=21', i18n.t('topbar.notification.leave', 'Nghỉ phép'))"
+              >
+                <span class="hae-dashboard-notif-item-row">
+                  <span class="hae-dashboard-notif-item-label">
+                    <i nz-icon nzType="calendar" nzTheme="outline"></i>
+                    <span>{{ i18n.t('topbar.notification.leave', 'Nghỉ phép') }}</span>
+                  </span>
+                  <nz-badge [nzCount]="pendingCounts().leave" [nzOverflowCount]="99"></nz-badge>
+                </span>
+              </li>
+              <li
+                nz-menu-item
+                (click)="openLink('/ess/infoApply/viewApprovalEmail?applyTypeCode=31', i18n.t('topbar.notification.ot', 'Tăng ca'))"
+              >
+                <span class="hae-dashboard-notif-item-row">
+                  <span class="hae-dashboard-notif-item-label">
+                    <i nz-icon nzType="field-time" nzTheme="outline"></i>
+                    <span>{{ i18n.t('topbar.notification.ot', 'Tăng ca') }}</span>
+                  </span>
+                  <nz-badge [nzCount]="pendingCounts().ot" [nzOverflowCount]="99"></nz-badge>
+                </span>
+              </li>
+              <li
+                nz-menu-item
+                (click)="
+                  openLink('/ess/infoApply/viewApprovalEmail?applyTypeCode=218197', i18n.t('topbar.notification.anomaly', 'Nghỉ bất thường'))
+                "
+              >
+                <span class="hae-dashboard-notif-item-row">
+                  <span class="hae-dashboard-notif-item-label">
+                    <i nz-icon nzType="exclamation-circle" nzTheme="outline"></i>
+                    <span>{{ i18n.t('topbar.notification.anomaly', 'Nghỉ bất thường') }}</span>
+                  </span>
+                  <nz-badge [nzCount]="pendingCounts().anomaly" [nzOverflowCount]="99"></nz-badge>
+                </span>
+              </li>
+              <li
+                nz-menu-item
+                (click)="openLink('/sys/viewFeedback', i18n.t('topbar.notification.feedback', 'Thông tin góp ý'))"
+              >
+                <span class="hae-dashboard-notif-item-label">
+                  <i nz-icon nzType="message" nzTheme="outline"></i>
+                  <span>{{ i18n.t('topbar.notification.feedback', 'Thông tin góp ý') }}</span>
+                </span>
+              </li>
+              <li
+                nz-menu-item
+                class="hae-dashboard-notif-footer"
+                (click)="openLink('/ess/infoApply/viewApprovalEmail', i18n.t('topbar.viewAllNotification', 'Xem tất cả thông báo'))"
+              >
+                <span>{{ i18n.t('topbar.viewAllNotification', 'Xem tất cả thông báo') }}</span>
+                <i nz-icon nzType="arrow-right"></i>
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </ng-container>
+        <ng-template #hrmNotif>
+          <span
+            id="hae-hrm-notif-btn"
+            nz-dropdown
+            [nzDropdownMenu]="hrmNotifMenu"
+            nzTrigger="click"
+            class="hae-dashboard-notif"
+          >
+            <nz-badge [nzCount]="hrmPendingCounts().total" [nzOverflowCount]="99">
+              <i nz-icon nzType="bell" nzTheme="outline" class="hae-dashboard-notif-icon"></i>
+            </nz-badge>
+          </span>
+          <nz-dropdown-menu #hrmNotifMenu="nzDropdownMenu">
+            <ul nz-menu class="hae-dashboard-notif-menu">
+              <li class="hae-dashboard-notif-header">
+                <i nz-icon nzType="bell" nzTheme="outline"></i>
+                <span>{{ i18n.t('topbar.notifications', 'Thông báo') }}</span>
+              </li>
+              <li
+                nz-menu-item
+                (click)="
+                  openLink('/hrm/approve/viewEssApplyInfo', i18n.t('topbar.notification.personalChange', 'Chi tiết thay đổi thông tin'))
+                "
+              >
+                <span class="hae-dashboard-notif-item-label">
+                  <i nz-icon nzType="idcard" nzTheme="outline"></i>
+                  <span>{{ i18n.t('topbar.notification.personalChange', 'Chi tiết thay đổi thông tin') }}</span>
+                </span>
+                <nz-badge [nzCount]="hrmPendingCounts().personalChange" [nzOverflowCount]="99"></nz-badge>
+              </li>
+              <li
+                nz-menu-item
+                (click)="openLink('/ess/arConfirm/viewLeaveConfirmList', i18n.t('topbar.notification.leave', 'Nghỉ phép'))"
+              >
+                <span class="hae-dashboard-notif-item-label">
+                  <i nz-icon nzType="calendar" nzTheme="outline"></i>
+                  <span>{{ i18n.t('topbar.notification.leave', 'Nghỉ phép') }}</span>
+                </span>
+                <nz-badge [nzCount]="hrmPendingCounts().leave" [nzOverflowCount]="99"></nz-badge>
+              </li>
+              <li
+                nz-menu-item
+                (click)="
+                  openLink('/ess/arConfirm/viewAttendanceExConfirm', i18n.t('topbar.notification.anomaly', 'Nghỉ bất thường'))
+                "
+              >
+                <span class="hae-dashboard-notif-item-label">
+                  <i nz-icon nzType="exclamation-circle" nzTheme="outline"></i>
+                  <span>{{ i18n.t('topbar.notification.anomaly', 'Nghỉ bất thường') }}</span>
+                </span>
+                <nz-badge [nzCount]="hrmPendingCounts().anomalous" [nzOverflowCount]="99"></nz-badge>
+              </li>
+              <li
+                nz-menu-item
+                (click)="openLink('/sys/viewFeedback', i18n.t('topbar.notification.feedback', 'Thông tin góp ý'))"
+              >
+                <span class="hae-dashboard-notif-item-label">
+                  <i nz-icon nzType="message" nzTheme="outline"></i>
+                  <span>{{ i18n.t('topbar.notification.feedback', 'Thông tin góp ý') }}</span>
+                </span>
+              </li>
+              <li
+                nz-menu-item
+                class="hae-dashboard-notif-footer"
+                (click)="openLink('/ess/arConfirm/viewLeaveConfirmList', i18n.t('topbar.viewAllNotification', 'Xem tất cả thông báo'))"
+              >
+                <span>{{ i18n.t('topbar.viewAllNotification', 'Xem tất cả thông báo') }}</span>
+                <i nz-icon nzType="arrow-right"></i>
+              </li>
+            </ul>
+          </nz-dropdown-menu>
+        </ng-template>
+
+        <span
+          id="hae-dashboard-lang"
+          nz-dropdown
+          [nzDropdownMenu]="langMenu"
+          class="hae-dashboard-lang"
+        >
+          <i nz-icon nzType="global"></i>
+        </span>
+        <nz-dropdown-menu #langMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item (click)="changeLanguage('vi')">Tiếng Việt</li>
+            <li nz-menu-item (click)="changeLanguage('en')">English</li>
+            <li nz-menu-item (click)="changeLanguage('ko')">한국어</li>
+            <li nz-menu-item (click)="changeLanguage('zh')">中文</li>
+          </ul>
+        </nz-dropdown-menu>
+
+        <span
+          id="hae-dashboard-user-menu"
+          nz-dropdown
+          [nzDropdownMenu]="userMenu"
+          class="hae-dashboard-user"
+        >
+          <nz-avatar [nzSrc]="u.photoUrl" [nzText]="u.employeeName?.charAt(0)"></nz-avatar>
+          <span class="hae-dashboard-user-name">{{ u.employeeName || u.username }}</span>
+        </span>
+        <nz-dropdown-menu #userMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li
+              *ngIf="u.hasSysTypeZeroMenus"
+              nz-menu-item
+              id="hae-dashboard-hrm-link"
+              (click)="openHrmManagementSystem()"
+            >
+              HR Management System
+            </li>
+            <li nz-menu-item id="hae-dashboard-cpwd-btn" (click)="openVoluntaryCpwdModal()">
+              {{ i18n.t('topbar.changePassword', 'Cập nhật mật khẩu') }}
+            </li>
+            <li nz-menu-divider></li>
+            <li nz-menu-item id="hae-dashboard-logout-btn" (click)="logout()">
+              {{ i18n.t('topbar.logout', 'Đăng xuất') }}
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+    </nz-header>
+
+    <nz-content class="hae-dashboard-content">
+      <!-- Tab-strip: mỗi menu bấm vào mở 1 tab - 'route' (Angular) hoặc 'external' (Thymeleaf
+           AJAX-fetch), thay cho innerTab.js gốc (xem shell/tab.service.ts) -->
+      <ul class="hae-tab-strip" *ngIf="tabs.tabs().length > 1">
+        <li *ngFor="let tab of tabs.tabs(); trackBy: trackByPath" class="hae-tab-strip-item">
+          <a
+            href="javascript:void(0)"
+            class="hae-tab-strip-link"
+            [class.active]="tabs.activePath() === tab.path"
+            (click)="tabs.switchTab(tab.path)"
+            (contextmenu)="onTabContextMenu($event, tab, tabCtxMenu)"
+          >
+            <span>{{ tab.title }}</span>
+            <i
+              *ngIf="tab.closable"
+              nz-icon
+              nzType="close"
+              class="hae-tab-strip-close"
+              (click)="closeTab($event, tab.path)"
+            ></i>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Menu chuột phải trên tab-strip: dùng chung 1 dropdown, xác định tab đang bấm qua
+           contextMenuTab - tương đương tab-context-menu của innerTab.js gốc. -->
+      <nz-dropdown-menu #tabCtxMenu="nzDropdownMenu">
+        <ul nz-menu id="hae-tab-strip-ctx-menu">
+          <li
+            nz-menu-item
+            id="hae-tab-strip-ctx-close"
+            [nzDisabled]="!contextMenuTab()?.closable"
+            (click)="closeContextTab()"
+          >
+            <i nz-icon nzType="close"></i>
+            {{ i18n.t('topbar.tab.close', 'Đóng tab') }}
+          </li>
+          <li
+            nz-menu-item
+            id="hae-tab-strip-ctx-close-left"
+            (click)="closeContextTabsToLeft()"
+          >
+            <i nz-icon nzType="left"></i>
+            {{ i18n.t('topbar.tab.closeLeft', 'Đóng tab bên trái') }}
+          </li>
+          <li
+            nz-menu-item
+            id="hae-tab-strip-ctx-close-right"
+            (click)="closeContextTabsToRight()"
+          >
+            <i nz-icon nzType="right"></i>
+            {{ i18n.t('topbar.tab.closeRight', 'Đóng tab bên phải') }}
+          </li>
+          <li nz-menu-divider></li>
+          <li
+            nz-menu-item
+            id="hae-tab-strip-ctx-close-all"
+            (click)="tabs.closeAllTabs()"
+          >
+            <i nz-icon nzType="close-circle"></i>
+            {{ i18n.t('topbar.tab.closeAll', 'Đóng toàn bộ tab') }}
+          </li>
+        </ul>
+      </nz-dropdown-menu>
+
+      <!-- Vùng cuộn duy nhất của khung - header + tab-strip đứng yên bên ngoài, chỉ nội dung trang
+           bên trong đây cuộn (xem .hae-dashboard-content-body trong app-shell.component.scss). -->
+      <div class="hae-dashboard-content-body">
+        <!-- Tab 'route' đang mở - luôn giữ mounted (chỉ ẩn/hiện) để TabRouteReuseStrategy không huỷ
+             component khi chuyển sang tab 'external'. -->
+        <div class="hae-route-body" [hidden]="tabs.activeTabKind() !== 'route'">
+          <router-outlet></router-outlet>
+        </div>
+        <!-- Mỗi tab 'external' là 1 instance riêng, giữ nguyên DOM khi ẩn/hiện qua lại giữa các tab. -->
+        <app-external-tab
+          *ngFor="let tab of tabs.externalTabs(); trackBy: trackByPath"
+          [hidden]="tabs.activePath() !== tab.path"
+          [url]="tab.path"
+          [reloadToken]="tab.reloadToken"
+        ></app-external-tab>
+      </div>
+    </nz-content>
+  </nz-layout>
+</nz-layout>
+
+<!-- Modal đổi mật khẩu bắt buộc (mật khẩu chưa mã hoá lần đầu) -->
+<nz-modal
+  id="hae-dashboard-cpwd-modal"
+  [(nzVisible)]="showChangePasswordModal"
+  nzTitle="Yêu cầu đổi mật khẩu"
+  [nzClosable]="false"
+  [nzMaskClosable]="false"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <p>Mật khẩu hiện tại chưa được mã hoá an toàn, vui lòng đổi mật khẩu mới để tiếp tục.</p>
+    <form nz-form (ngSubmit)="submitChangePassword()">
+      <nz-form-item>
+        <nz-form-control>
+          <input
+            id="hae-dashboard-cpwd-new"
+            nz-input
+            type="password"
+            placeholder="Mật khẩu mới"
+            [ngModel]="newPassword()"
+            (ngModelChange)="newPassword.set($event)"
+            name="newPassword"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <input
+            id="hae-dashboard-cpwd-confirm"
+            nz-input
+            type="password"
+            placeholder="Xác nhận mật khẩu mới"
+            [ngModel]="confirmPassword()"
+            (ngModelChange)="confirmPassword.set($event)"
+            name="confirmPassword"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <p *ngIf="changePasswordError()" class="hae-dashboard-cpwd-error">
+        {{ changePasswordError() }}
+      </p>
+      <button
+        id="hae-dashboard-cpwd-submit"
+        nz-button
+        nzType="primary"
+        nzBlock
+        type="submit"
+        [nzLoading]="changePasswordLoading()"
+      >
+        Xác nhận
+      </button>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal đổi mật khẩu tự nguyện (topbar - yêu cầu mật khẩu cũ) -->
+<nz-modal
+  id="hae-dashboard-voluntary-cpwd-modal"
+  [(nzVisible)]="showVoluntaryCpwdModal"
+  [nzTitle]="i18n.t('topbar.changePassword', 'Cập nhật mật khẩu')"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <form nz-form (ngSubmit)="submitVoluntaryChangePassword()">
+      <nz-form-item>
+        <nz-form-control>
+          <input
+            id="hae-dashboard-vcpwd-old"
+            nz-input
+            type="password"
+            [placeholder]="i18n.t('pwd.oldPassword', 'Mật khẩu cũ')"
+            [ngModel]="voluntaryOldPassword()"
+            (ngModelChange)="voluntaryOldPassword.set($event)"
+            name="oldPassword"
+            autocomplete="current-password"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <input
+            id="hae-dashboard-vcpwd-new"
+            nz-input
+            type="password"
+            [placeholder]="i18n.t('pwd.newPassword', 'Mật khẩu mới')"
+            [ngModel]="voluntaryNewPassword()"
+            (ngModelChange)="voluntaryNewPassword.set($event)"
+            name="newPassword"
+            autocomplete="new-password"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <input
+            id="hae-dashboard-vcpwd-confirm"
+            nz-input
+            type="password"
+            [placeholder]="i18n.t('pwd.confirmPassword', 'Xác nhận mật khẩu mới')"
+            [ngModel]="voluntaryConfirmPassword()"
+            (ngModelChange)="voluntaryConfirmPassword.set($event)"
+            name="confirmPassword"
+            autocomplete="new-password"
+          />
+        </nz-form-control>
+      </nz-form-item>
+      <p *ngIf="voluntaryCpwdError()" class="hae-dashboard-cpwd-error">
+        {{ voluntaryCpwdError() }}
+      </p>
+      <button
+        id="hae-dashboard-vcpwd-submit"
+        nz-button
+        nzType="primary"
+        nzBlock
+        type="submit"
+        [nzLoading]="voluntaryCpwdLoading()"
+      >
+        {{ i18n.t('pwd.update', 'Cập nhật mật khẩu') }}
+      </button>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Overlay khoá màn hình sau 30 phút không thao tác (xem IdleLockService) -->
+<app-lock-screen *ngIf="idleLock.locked()"></app-lock-screen>

@@ -1,0 +1,53 @@
+.ab-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ab-search-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.ab-search-emp-field input {
+  flex: 1;
+}
+
+.ab-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.ab-col-center {
+  text-align: center;
+}
+
+.ab-muted {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.ab-name-link {
+  color: #0d2bff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ab-name-link:hover {
+  text-decoration: underline;
+}
+
+.ab-approver-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.ab-approver-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

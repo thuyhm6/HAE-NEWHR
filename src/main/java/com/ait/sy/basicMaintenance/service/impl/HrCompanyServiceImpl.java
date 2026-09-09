@@ -7,11 +7,19 @@ import com.ait.sy.basicMaintenance.service.HrCompanyService;
 import com.ait.sy.sys.mapper.SyGlobalNameMapper;
 import com.ait.sy.sys.model.SyGlobalName;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -116,26 +124,49 @@ public class HrCompanyServiceImpl implements HrCompanyService {
 
     @Override
     public byte[] exportExcel() {
-        List<HrCompanyDto> list = hrCompanyMapper.findAllWithNames(null);
-        StringBuilder sb = new StringBuilder();
-        sb.append('\uFEFF');
-        sb.append("Company ID,Name (VI),Name (EN),Name (ZH),Name (KO),Address,Tel,Web\n");
-        for (HrCompanyDto dto : list) {
-            sb.append(escapeCsv(dto.getCpnyId())).append(",");
-            sb.append(escapeCsv(dto.getNameVi())).append(",");
-            sb.append(escapeCsv(dto.getNameEn())).append(",");
-            sb.append(escapeCsv(dto.getNameZh())).append(",");
-            sb.append(escapeCsv(dto.getNameKo())).append(",");
-            sb.append(escapeCsv(dto.getCpnyAddr())).append(",");
-            sb.append(escapeCsv(dto.getCpnyTelNo())).append(",");
-            sb.append(escapeCsv(dto.getCpnyWebAddr())).append("\n");
-        }
-        return sb.toString().getBytes(StandardCharsets.UTF_8);
-    }
+        try {
+            List<HrCompanyDto> list = hrCompanyMapper.findAllWithNames(null);
 
-    private String escapeCsv(String s) {
-        if (s == null)
-            return "";
-        return "\"" + s.replace("\"", "\"\"") + "\"";
+            try (XSSFWorkbook wb = new XSSFWorkbook()) {
+                XSSFSheet sheet = wb.createSheet("HR_COMPANY");
+
+                CellStyle headerStyle = wb.createCellStyle();
+                headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+                List<String> headers = Arrays.asList(
+                        "Company ID", "Name (VI)", "Name (EN)", "Name (ZH)", "Name (KO)", "Address", "Tel", "Web");
+                XSSFRow headerRow = sheet.createRow(0);
+                for (int col = 0; col < headers.size(); col++) {
+                    XSSFCell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers.get(col));
+                    cell.setCellStyle(headerStyle);
+                }
+
+                int rowIdx = 1;
+                for (HrCompanyDto dto : list) {
+                    XSSFRow dataRow = sheet.createRow(rowIdx++);
+                    int c = 0;
+                    dataRow.createCell(c++).setCellValue(dto.getCpnyId() != null ? dto.getCpnyId() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameVi() != null ? dto.getNameVi() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameEn() != null ? dto.getNameEn() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameZh() != null ? dto.getNameZh() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameKo() != null ? dto.getNameKo() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getCpnyAddr() != null ? dto.getCpnyAddr() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getCpnyTelNo() != null ? dto.getCpnyTelNo() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getCpnyWebAddr() != null ? dto.getCpnyWebAddr() : "");
+                }
+
+                for (int i = 0; i < headers.size(); i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                wb.write(bos);
+                return bos.toByteArray();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

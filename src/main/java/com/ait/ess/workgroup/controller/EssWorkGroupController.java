@@ -4,6 +4,7 @@ import com.ait.ess.deptEmpAtt.dto.ArShiftGroupManagementDto;
 import com.ait.ess.deptEmpAtt.service.ArShiftGroupManagementService;
 import com.ait.ess.workgroup.dto.PersonShiftDto;
 import com.ait.ess.workgroup.service.PersonShiftService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,14 +33,19 @@ public class EssWorkGroupController {
     @Autowired
     private PersonShiftService personShiftService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewWorkGroupExperList")
-    public String viewWorkGroupExperList() {
-        return "ess/workgroup/viewWorkGroupExperList";
+    public String viewWorkGroupExperList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewPersonShiftList")
-    public String viewPersonShiftList() {
-        return "ess/workgroup/viewPersonShiftList";
+    public String viewPersonShiftList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/personShift/myList")

@@ -1,0 +1,21 @@
+.ve-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ve-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.ve-col-center {
+  text-align: center;
+}
+
+.ve-col-right {
+  text-align: right;
+}

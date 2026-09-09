@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/pa/wagebase")
@@ -22,9 +24,13 @@ public class PaSupervisorController {
     @Autowired
     private PaSupervisorService paSupervisorService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/viewPaSupervisor")
-    public String viewPaSupervisor() {
-        return "pa/wagebase/viewPaSupervisor";
+    public String viewPaSupervisor(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // ── Danh sách phân trang (DataTables) ─────────────────────────────────

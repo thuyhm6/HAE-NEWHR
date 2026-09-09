@@ -2,6 +2,7 @@ package com.ait.ar.attendanceSettings.controller;
 
 import com.ait.ar.attendanceSettings.model.ArStatisticDateParam;
 import com.ait.ar.attendanceSettings.service.ArStatisticDateParamService;
+import com.ait.util.AngularIndexService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +25,16 @@ public class ArStatisticDateParamController {
     @Autowired
     private ArStatisticDateParamService cycleParamService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     /**
      * Mở giao diện trang thông số chu kỳ chấm công
      */
     @GetMapping("/viewCycleParameter")
-    public String viewCycleParameter() {
-        return "ar/attendanceSettings/viewCycleParameter";
+    public String viewCycleParameter(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**

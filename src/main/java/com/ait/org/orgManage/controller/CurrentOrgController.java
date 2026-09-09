@@ -4,18 +4,17 @@ import com.ait.hrm.empinfo.model.HrEmployee;
 import com.ait.org.orgManage.dto.OrgNode;
 import com.ait.org.orgManage.model.HrDepartment;
 import com.ait.org.orgManage.service.CurrentOrgService;
-import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -25,26 +24,19 @@ public class CurrentOrgController {
     @Autowired
     private CurrentOrgService service;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/org/orgManage/viewCurrentOrgInfo")
-    public String viewCurrentOrgInfo(Model model, HttpSession session) {
-        HrUserInfo user = (HrUserInfo) session.getAttribute("currentHrUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-        model.addAttribute("currentHrUser", user);
-        model.addAttribute("title", "Sơ đồ tổ chức hiện tại");
-        return "org/orgManage/viewCurrentOrgInfo";
+    public String viewCurrentOrgInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/org/orgManage/viewOrgInfo")
-    public String viewOrgInfo(Model model, HttpSession session) {
-        HrUserInfo user = (HrUserInfo) session.getAttribute("currentHrUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-        model.addAttribute("currentHrUser", user);
-        model.addAttribute("title", "Cấu trúc tổ chức");
-        return "org/orgManage/viewOrgInfo";
+    public String viewOrgInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/org/api/current/structure")

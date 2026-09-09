@@ -194,43 +194,35 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Handle RuntimeException
+     * Handle RuntimeException. Trước đây phân nhánh browser/AJAX để trả về view Thymeleaf "error" cho
+     * request từ browser - nay toàn bộ giao diện đều là Angular gọi JSON API, không còn view nào để
+     * render, nên luôn trả JSON.
      */
     @ExceptionHandler(RuntimeException.class)
-    public Object handleRuntimeException(RuntimeException ex, WebRequest request) {
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex, WebRequest request) {
         logger.error("Runtime exception occurred", ex);
 
-        if (isAjaxRequest(request)) {
-            Map<String, Object> response = createErrorResponse(
-                    "RUNTIME_ERROR",
-                    "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.",
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    request.getDescription(false));
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        } else {
-            // For browser requests, return error view
-            return new org.springframework.web.servlet.ModelAndView("error");
-        }
+        Map<String, Object> response = createErrorResponse(
+                "RUNTIME_ERROR",
+                "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.",
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                request.getDescription(false));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     /**
-     * Handle all other exceptions
+     * Handle all other exceptions - luôn trả JSON, xem ghi chú ở handleRuntimeException.
      */
     @ExceptionHandler(Exception.class)
-    public Object handleGenericException(Exception ex, WebRequest request) {
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex, WebRequest request) {
         logger.error("Unexpected exception occurred", ex);
 
-        if (isAjaxRequest(request)) {
-            Map<String, Object> response = createErrorResponse(
-                    "INTERNAL_ERROR",
-                    "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.",
-                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    request.getDescription(false));
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        } else {
-            // For browser requests, return error view
-            return new org.springframework.web.servlet.ModelAndView("error");
-        }
+        Map<String, Object> response = createErrorResponse(
+                "INTERNAL_ERROR",
+                "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.",
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                request.getDescription(false));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     /**
@@ -244,15 +236,6 @@ public class GlobalExceptionHandler {
         response.put("message", message);
         response.put("path", path);
         return response;
-    }
-
-    /**
-     * Check if the request is an AJAX request or expects JSON
-     */
-    private boolean isAjaxRequest(WebRequest request) {
-        String requestedWith = request.getHeader("X-Requested-With");
-        String accept = request.getHeader("Accept");
-        return "XMLHttpRequest".equals(requestedWith) || (accept != null && accept.contains("application/json"));
     }
 
     /**

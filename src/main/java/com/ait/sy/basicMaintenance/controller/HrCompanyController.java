@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/sys")
@@ -24,9 +26,13 @@ public class HrCompanyController {
     @Autowired
     private HrCompanyService hrCompanyService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/basicMaintenance/viewCompany")
-    public String viewCompany() {
-        return "sys/basicMaintenance/viewCompany";
+    public String viewCompany(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/company/list")
@@ -71,8 +77,8 @@ public class HrCompanyController {
     public ResponseEntity<byte[]> exportExcel() {
         byte[] data = hrCompanyService.exportExcel();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"company_list.csv\"")
-                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"company_list.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(data);
     }
 }

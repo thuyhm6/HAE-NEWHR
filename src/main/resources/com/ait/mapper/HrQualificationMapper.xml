@@ -123,8 +123,8 @@
         SET ACTIVITY = 0,
             UPDATE_DATE = SYSDATE,
             UPDATED_BY = #{adminID, jdbcType=VARCHAR},
-            UPDATED_IP = #{updatedIp}
-        WHERE QUAL_NO = #{qualNo}
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE QUAL_NO = #{qualNo, jdbcType=NUMERIC}
     </update>
 
 </mapper>

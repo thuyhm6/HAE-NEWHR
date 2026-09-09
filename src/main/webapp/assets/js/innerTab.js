@@ -21,6 +21,10 @@
         const tabId = event.target.id ? event.target.id.replace('-tab', '') : null;
         if (tabId && this.tabs.has(tabId)) {
         this.activeTabId = tabId;
+        const tab = this.tabs.get(tabId);
+        if (typeof window.updateTopbarMenuContext === 'function') {
+        window.updateTopbarMenuContext(tab.menuNo || null);
+    }
     }
     });
     }
@@ -36,6 +40,7 @@
         id: tabId,
         url: dashboardUrl,
         title: dashboardTitle,
+        menuNo: null,
         content: null,
         loaded: true
     };
@@ -238,16 +243,18 @@
         e.preventDefault();
         const url = link.getAttribute('href') || link.getAttribute('data-tab');
         const title = link.getAttribute('data-title') || link.textContent.trim();
-        this.openTab(url, title);
+        const menuNo = link.getAttribute('data-menu-no') || null;
+        this.openTab(url, title, menuNo);
     }
     });
     }
 
-        openTab(url, title) {
+        openTab(url, title, menuNo) {
         // Check if tab already exists: chuyển tới tab đó và load lại dữ liệu/view mới nhất
         // (chỉ bấm menu mới load lại, bấm chuyển qua lại giữa các tab thì không load lại)
         const existingTab = this.findTabByUrl(url);
         if (existingTab) {
+        if (menuNo) existingTab.menuNo = menuNo;
         this.activateTab(existingTab.id);
         this.loadTabContent(existingTab);
         return;
@@ -259,6 +266,7 @@
         id: tabId,
         url: url,
         title: title,
+        menuNo: menuNo || null,
         content: null,
         loaded: false
     };
@@ -432,6 +440,26 @@
     }
     }
 
+        if (scripts.length === 0 && styles.length === 0) return;
+
+        // Style của tab: gắn thẳng vào content-pane của chính tab đó (không dùng
+        // container #dynamic-scripts dùng chung). Pane không bị remove khi chuyển
+        // tab qua lại (chỉ ẩn/hiện bằng class active), nên CSS gắn ở đây sẽ tồn tại
+        // bền vững theo pane, không bị tab khác load sau xóa mất (trước đây style
+        // nạp vào #dynamic-scripts dùng chung nên khi mở tab khác qua menu sẽ bị
+        // innerHTML = '' xóa sạch, quay lại tab cũ bằng cách bấm tab-header thì
+        // không có bước nạp lại nên giao diện mất hết css).
+        const activePane = document.getElementById(tabId);
+        styles.forEach(style => {
+        const newStyle = document.createElement('style');
+        newStyle.textContent = style.textContent;
+        if (activePane) {
+        activePane.appendChild(newStyle);
+    } else if (dynamicScripts) {
+        dynamicScripts.appendChild(newStyle);
+    }
+    });
+
         if (scripts.length === 0) return;
 
         // Gỡ toàn bộ jQuery event handler đã gắn trực tiếp lên các phần tử trong pane
@@ -451,14 +479,6 @@
         if (dynamicScripts) {
         dynamicScripts.appendChild(urlVarScript);
     }
-
-        styles.forEach(style => {
-        const newStyle = document.createElement('style');
-        newStyle.textContent = style.textContent;
-        if (dynamicScripts) {
-        dynamicScripts.appendChild(newStyle);
-    }
-    });
 
         scripts.forEach(script => {
         const newScript = document.createElement('script');

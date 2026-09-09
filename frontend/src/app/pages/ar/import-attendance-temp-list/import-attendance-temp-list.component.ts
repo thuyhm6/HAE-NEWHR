@@ -1,0 +1,76 @@
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzTableModule } from 'ng-zorro-antd/table';
+
+import { I18nService } from '../../../i18n/i18n.service';
+import { ImportAttendanceTempListService, ImportAttendanceTempRow } from './import-attendance-temp-list.service';
+
+/**
+ * Kết quả import Excel đơn nghỉ phép hàng loạt - port lại từ
+ * ar/attendanceMintenance/viewImportAttendanceTempList.html (đã xoá). Trang
+ * này được mở trong tab trình duyệt mới từ ApplyAttBatchComponent sau khi
+ * import Excel thành công (`window.open(...)`), nên sau khi "Lưu" thành công
+ * sẽ tự đóng tab (giống hành vi `window.close()` fallback ở bản gốc khi
+ * không có tabSystem nội bộ).
+ */
+@Component({
+  selector: 'app-import-attendance-temp-list',
+  standalone: true,
+  imports: [CommonModule, FormsModule, NzButtonModule, NzCardModule, NzFormModule, NzIconModule, NzSelectModule, NzTableModule],
+  templateUrl: './import-attendance-temp-list.component.html',
+  styleUrl: './import-attendance-temp-list.component.scss',
+})
+export class ImportAttendanceTempListComponent implements OnInit {
+  private readonly service = inject(ImportAttendanceTempListService);
+  private readonly message = inject(NzMessageService);
+  protected readonly i18n = inject(I18nService);
+
+  protected readonly errorOnly = signal<string | null>(null);
+  protected readonly loading = signal(false);
+  protected readonly saving = signal(false);
+  protected readonly rows = signal<ImportAttendanceTempRow[]>([]);
+
+  protected readonly totalRows = computed(() => this.rows().length);
+  protected readonly errorRows = computed(() => this.rows().filter((r) => (r.uploadErrorMsg ?? '').trim() !== '').length);
+
+  async ngOnInit(): Promise<void> {
+    await this.i18n.load();
+    await this.search();
+  }
+
+  async search(): Promise<void> {
+    this.loading.set(true);
+    try {
+      this.rows.set(await this.service.getList(this.errorOnly() ?? undefined));
+    } catch {
+      this.rows.set([]);
+      this.message.error(this.i18n.t('common.loadError', 'Lỗi tải dữ liệu'));
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async save(): Promise<void> {
+    this.saving.set(true);
+    try {
+      const res = await this.service.save();
+      if (res.success) {
+        this.message.success(res.message || this.i18n.t('common.saveSuccess', 'Lưu thành công!'));
+        window.close();
+      } else {
+        this.message.error(res.error || res.message || this.i18n.t('arOtf.msg.saveError', 'Lỗi khi gửi dữ liệu'));
+      }
+    } catch {
+      this.message.error(this.i18n.t('arOtf.msg.saveError', 'Lỗi khi gửi dữ liệu'));
+    } finally {
+      this.saving.set(false);
+    }
+  }
+}

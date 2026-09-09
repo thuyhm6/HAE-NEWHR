@@ -2,6 +2,7 @@ package com.ait.ar.attendanceMintenance.controller;
 
 import com.ait.ar.attendanceMintenance.dto.ArDetailCalculateDto;
 import com.ait.ar.attendanceMintenance.service.ArDetailCalculateService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,9 +28,13 @@ public class ArDetailCalculateController {
     @Autowired
     private ArDetailCalculateService arDetailCalculateService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewArDetailCalculate")
-    public String viewArDetailCalculate() {
-        return "ar/attendanceMintenance/viewArDetailCalculate";
+    public String viewArDetailCalculate(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @PostMapping("/api/detailCalculate/run")

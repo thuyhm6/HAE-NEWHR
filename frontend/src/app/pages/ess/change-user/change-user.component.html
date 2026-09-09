@@ -1,0 +1,28 @@
+<nz-card class="vcu-card">
+  <div class="vcu-row">
+    <span class="vcu-label">{{ i18n.t('ess.changeUser.empSearch', 'Mã nhân viên/Họ tên') }}</span>
+
+    <nz-select
+      id="vcu-emp-select"
+      class="vcu-select"
+      [ngModel]="selectedPersonId()"
+      (ngModelChange)="selectedPersonId.set($event)"
+      nzShowSearch
+      nzServerSearch
+      [nzLoading]="searching()"
+      [nzPlaceHolder]="i18n.t('ess.changeUser.empSearch', 'Mã nhân viên/Họ tên')"
+      (nzOnSearch)="onSearch($event)"
+    >
+      <nz-option
+        *ngFor="let opt of options()"
+        [nzValue]="opt.personId"
+        [nzLabel]="(opt.empId || '') + ' - ' + (opt.localName || '') + (opt.deptName ? ' (' + opt.deptName + ')' : '')"
+      ></nz-option>
+    </nz-select>
+
+    <button id="vcu-change-btn" nz-button nzType="primary" [nzLoading]="changing()" (click)="confirmChange()">
+      <span nz-icon nzType="swap"></span>
+      {{ i18n.t('ess.changeUser.changeBtn', 'Thay đổi người dùng') }}
+    </button>
+  </div>
+</nz-card>

@@ -1,0 +1,167 @@
+.vata-page {
+  padding: 4px 0;
+}
+
+.vata-empty-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+  padding: 24px;
+}
+
+.vata-empty-icon {
+  font-size: 48px;
+  color: var(--ant-color-text-tertiary, #999);
+  margin-bottom: 16px;
+}
+
+.vata-empty-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ant-color-warning, #faad14);
+  background: var(--ant-color-warning-bg, #fffbe6);
+  border: 1px solid var(--ant-color-warning-border, #ffe58f);
+  border-radius: 4px;
+  padding: 12px 20px;
+}
+
+.vata-search-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vata-inline-label {
+  font-size: 12px;
+  color: #555;
+}
+
+.vata-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.vata-card-title {
+  font-weight: 600;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.vata-dist-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 12px;
+}
+
+.vata-dist-table th,
+.vata-dist-table td {
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  padding: 4px 6px;
+}
+
+.vata-dist-table th {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+}
+
+.vata-row-label {
+  text-align: left;
+  color: #888;
+}
+
+.vata-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.vata-summary-line {
+  font-size: 12px;
+  color: #888;
+}
+
+.vata-quick-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vata-col-center {
+  text-align: center;
+}
+
+.vata-blue-name {
+  color: #0d6efd;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vata-status-cell {
+  font-size: 12px;
+}
+
+.vata-small {
+  font-size: 12px;
+}
+
+.vata-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.vata-info-table,
+.vata-opinion-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vata-info-table th,
+.vata-opinion-table th {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.vata-info-table td,
+.vata-opinion-table td {
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.vata-info-label {
+  color: #888;
+  font-size: 12px;
+  width: 35%;
+}
+
+.vata-total-row td {
+  font-weight: 600;
+}
+
+.vata-total-label {
+  text-align: right;
+}
+
+.mb-2 {
+  margin-bottom: 8px;
+}

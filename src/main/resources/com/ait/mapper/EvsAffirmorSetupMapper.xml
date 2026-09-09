@@ -65,7 +65,7 @@
                A.DEPTNO,
                GET_DEPT_NAME(A.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
                A.POST_GRADE_NO,
-               A.POST_GRADE_NAME,
+               GET_GLOBAL_NAME(A.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
                A.MAIN_BUSINESS,
                GET_GLOBAL_NAME(A.MAIN_BUSINESS, #{lang, jdbcType=VARCHAR}) MAIN_BUSINESS_NAME,
                A.OBJECT_TYPE,
@@ -115,7 +115,7 @@
                E.EMPID,
                E.LOCAL_NAME,
                GET_DEPT_NAME(E.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
-               E.POST_GRADE_NAME
+               GET_GLOBAL_NAME(E.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME
           FROM HR_EMPLOYEE E
          WHERE E.ACTIVITY = 1
         <if test="affirmorKeyword != null and affirmorKeyword != ''">
@@ -269,7 +269,7 @@
                E.EMPID,
                E.LOCAL_NAME,
                GET_DEPT_NAME(E.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
-               E.POST_GRADE_NAME
+               GET_GLOBAL_NAME(E.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME
           FROM HR_EMPLOYEE E
          WHERE E.ACTIVITY = 1
            AND E.EMPID = #{empId, jdbcType=VARCHAR}

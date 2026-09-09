@@ -1,0 +1,26 @@
+.voapl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.voapl-search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.voapl-col-center {
+  text-align: center;
+}
+
+.voapl-col-nowrap {
+  white-space: nowrap;
+}
+
+.voapl-col-muted {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.voapl-detail-link {
+  font-weight: 600;
+}

@@ -1,0 +1,15 @@
+.emer-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emer-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.emer-col-center {
+  text-align: center;
+}

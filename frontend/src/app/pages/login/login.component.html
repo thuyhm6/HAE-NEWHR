@@ -1,0 +1,180 @@
+<div class="hae-login-wrapper">
+  <!-- LEFT: ảnh minh họa -->
+  <div class="hae-login-left">
+    <div class="hae-login-brand">
+      <img src="/assets/images/Sign_logo.jpg" [alt]="i18n.t('login.title', 'Đăng nhập vào hệ thống')" />
+    </div>
+    <div class="hae-login-image-wrap">
+      <img src="/assets/images/login-img-1.jpg" [alt]="i18n.t('login.title', 'Đăng nhập vào hệ thống')" />
+      <div class="hae-login-tagline">
+        <span>{{ i18n.t('login.title', 'Đăng nhập vào hệ thống') }}</span>
+        <small>{{ i18n.t('login.copyright', '© 2026 HR System. Tất cả quyền được bảo lưu.') }}</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: form đăng nhập -->
+  <div class="hae-login-right">
+    <div class="hae-login-card">
+      <div class="hae-login-card-header">
+        <div class="hae-login-icon-wrap">
+          <i nz-icon nzType="login" nzTheme="outline"></i>
+        </div>
+        <h4>{{ i18n.t('login.button', 'Đăng nhập') }}</h4>
+        <p>{{ i18n.t('login.title', 'Đăng nhập vào hệ thống') }}</p>
+      </div>
+
+      <!-- Language Selector -->
+      <div class="hae-login-lang-row">
+        <span id="hae-login-lang" nz-dropdown [nzDropdownMenu]="langMenu" nzTrigger="click" class="hae-login-lang-trigger">
+          <i nz-icon nzType="global"></i>
+          <span>{{ currentLanguage().flag }} {{ currentLanguage().label }}</span>
+          <i nz-icon nzType="down"></i>
+        </span>
+        <nz-dropdown-menu #langMenu="nzDropdownMenu">
+          <ul nz-menu>
+            @for (lang of languages; track lang.code) {
+              <li nz-menu-item (click)="changeLanguage(lang.code)">{{ lang.flag }} {{ lang.label }}</li>
+            }
+          </ul>
+        </nz-dropdown-menu>
+      </div>
+
+      <!-- Alert lỗi -->
+      @if (errorMessage()) {
+        <nz-alert nzType="error" [nzMessage]="errorMessage()!" nzShowIcon class="hae-login-alert"></nz-alert>
+      }
+      @if (remainingAttempts(); as attempts) {
+        <p class="hae-login-attempts">{{ attempts }}</p>
+      }
+
+      <!-- Login Form -->
+      <form nz-form (ngSubmit)="submit()">
+        <nz-form-item>
+          <nz-form-control>
+            <nz-input-group nzPrefixIcon="user">
+              <input
+                id="hae-login-username"
+                nz-input
+                name="username"
+                [ngModel]="username()"
+                (ngModelChange)="username.set($event)"
+                [placeholder]="i18n.t('login.username', 'Tên đăng nhập')"
+                autocomplete="username"
+              />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control>
+            <nz-input-group nzPrefixIcon="lock">
+              <input
+                id="hae-login-password"
+                nz-input
+                type="password"
+                name="password"
+                [ngModel]="password()"
+                (ngModelChange)="password.set($event)"
+                [placeholder]="i18n.t('login.password', 'Mật khẩu')"
+                autocomplete="current-password"
+              />
+            </nz-input-group>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item class="hae-login-remember">
+          <label
+            id="hae-login-remember-me"
+            nz-checkbox
+            name="rememberMe"
+            [ngModel]="rememberMe()"
+            (ngModelChange)="onRememberMeChange($event)"
+          >
+            {{ i18n.t('login.remember', 'Ghi nhớ đăng nhập') }}
+          </label>
+        </nz-form-item>
+
+        <button id="hae-login-submit" nz-button nzType="primary" nzBlock [nzLoading]="loading()" type="submit">
+          <i nz-icon nzType="login"></i>
+          {{ i18n.t('login.button', 'Đăng nhập') }}
+        </button>
+      </form>
+
+      <p class="hae-login-copyright">{{ i18n.t('login.copyright', '© 2026 HR System. Tất cả quyền được bảo lưu.') }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Nút nổi Hòm thư góp ý -->
+<button
+  id="hae-login-feedback-fab"
+  nz-button
+  nzType="primary"
+  nzShape="round"
+  class="hae-login-feedback-fab"
+  [title]="i18n.t('login.feedback.btn', 'Hòm thư góp ý')"
+  (click)="openFeedbackModal()"
+>
+  <i nz-icon nzType="mail" nzTheme="outline"></i>
+  <span class="hae-login-feedback-fab-label">{{ i18n.t('login.feedback.btn', 'Hòm thư góp ý') }}</span>
+</button>
+
+<!-- Modal Góp ý -->
+<ng-template #feedbackFooter>
+  <button nz-button (click)="feedbackVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+  <button
+    id="hae-login-feedback-submit"
+    nz-button
+    nzType="primary"
+    [nzLoading]="feedbackSubmitting()"
+    (click)="submitFeedback()"
+  >
+    <i nz-icon nzType="send"></i>
+    {{ i18n.t('common.submit', 'Gửi') }}
+  </button>
+</ng-template>
+
+<nz-modal
+  id="hae-login-feedback-modal"
+  [(nzVisible)]="feedbackVisible"
+  [nzTitle]="i18n.t('login.feedback.modalTitle', 'Gửi góp ý')"
+  [nzFooter]="feedbackFooter"
+  (nzOnCancel)="feedbackVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <nz-form-item>
+      <label for="hae-login-feedback-title" class="hae-login-feedback-label">
+        {{ i18n.t('login.feedback.titleLabel', 'Tiêu đề') }}
+      </label>
+      <nz-form-control>
+        <input
+          id="hae-login-feedback-title"
+          nz-input
+          name="feedbackTitle"
+          [ngModel]="feedbackTitle()"
+          (ngModelChange)="feedbackTitle.set($event)"
+          [maxlength]="200"
+          [placeholder]="i18n.t('login.feedback.titlePlaceholder', 'Nhập tiêu đề góp ý (không bắt buộc)')"
+        />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <label for="hae-login-feedback-content" class="hae-login-feedback-label">
+        {{ i18n.t('login.feedback.contentLabel', 'Nội dung góp ý') }} <span class="hae-login-required">*</span>
+      </label>
+      <nz-form-control>
+        <textarea
+          id="hae-login-feedback-content"
+          nz-input
+          name="feedbackContent"
+          rows="4"
+          [maxlength]="4000"
+          [ngModel]="feedbackContent()"
+          (ngModelChange)="feedbackContent.set($event)"
+          [placeholder]="i18n.t('login.feedback.contentPlaceholder', 'Nhập nội dung góp ý của bạn...')"
+        ></textarea>
+      </nz-form-control>
+    </nz-form-item>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,216 @@
+<div class="vapl-page">
+  <nz-card class="vapl-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="vapl-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="vaplDeptNos"
+                [nzPlaceHolder]="i18n.t('ex.placeholder.dept', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.keyword', 'Mã NV / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="vapl-keyword"
+                nz-input
+                [ngModel]="keyword()"
+                (ngModelChange)="keyword.set($event)"
+                name="vaplKeyword"
+                [placeholder]="i18n.t('ex.placeholder.empIdOrName', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empType', 'Loại nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vapl-emp-type"
+                [ngModel]="empTypeCode()"
+                (ngModelChange)="empTypeCode.set($event)"
+                name="vaplEmpTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.startDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="vapl-start-date"
+                [ngModel]="startDate()"
+                (ngModelChange)="startDate.set($event)"
+                name="vaplStartDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.endDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="vapl-end-date"
+                [ngModel]="endDate()"
+                (ngModelChange)="endDate.set($event)"
+                name="vaplEndDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row>
+        <div nz-col [nzSpan]="24" class="vapl-search-actions">
+          <button id="vapl-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ex.btn.search', 'Tra cứu') }}
+          </button>
+          <button id="vapl-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('ex.btn.export', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="vapl-table-card">
+    <nz-table
+      id="vapl-data-table"
+      #vaplTable
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" [nzLeft]="true" class="vapl-col-center">{{ i18n.t('vapl.msg.stt', 'STT') }}</th>
+          <th nzWidth="90px" nzLeft="50px" class="vapl-col-center">{{ i18n.t('vapl.msg.empId', 'Mã NV') }}</th>
+          <th nzWidth="160px" nzLeft="140px">{{ i18n.t('vapl.msg.empName', 'Họ tên') }}</th>
+          <th nzWidth="150px" nzLeft="300px">{{ i18n.t('vapl.msg.deptName', 'Phòng ban') }}</th>
+          <th class="vapl-col-nowrap">{{ i18n.t('vapl.msg.position', 'Chức vụ') }}</th>
+          <th nzWidth="60px" class="vapl-col-center">{{ i18n.t('vapl.msg.normalWork', 'Tổng giờ công') }}</th>
+          <th nzWidth="70px" class="vapl-col-center">{{ i18n.t('vapl.msg.lateEarlyGoTotal', 'Tổng (muộn/sớm/ra ngoài)') }}</th>
+          @for (item of items(); track item.itemId) {
+            <th nzWidth="60px" class="vapl-col-center">{{ item.itemName }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of vaplTable.data; track $index; let idx = $index) {
+          <tr>
+            <td [nzLeft]="true" class="vapl-col-center">{{ idx + 1 }}</td>
+            <td nzLeft="50px" class="vapl-col-center">{{ row['EMPID'] }}</td>
+            <td nzLeft="140px">{{ row['LOCAL_NAME'] }}</td>
+            <td nzLeft="300px">{{ row['DEPT_NAME'] }}</td>
+            <td class="vapl-col-nowrap">{{ row['POSITION_NAME'] }}</td>
+            <td class="vapl-col-center vapl-col-bold">{{ formatQty(quantityOf(row, 'NORMAL_WORK')) }}</td>
+            <td class="vapl-col-center vapl-col-bold">{{ formatQty(quantityOf(row, 'LATE_EARLY_GO_TOTAL')) }}</td>
+            @for (item of items(); track item.itemId) {
+              <td class="vapl-col-center">
+                @if (quantityOf(row, item.itemId ?? '') > 0) {
+                  <a class="vapl-detail-link" (click)="openDetail(row, item)">{{ formatQty(quantityOf(row, item.itemId ?? '')) }}</a>
+                } @else {
+                  <span class="vapl-col-muted">0</span>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="7 + items().length" class="vapl-col-center">
+              {{ i18n.t('vapl.msg.noData', 'Không có dữ liệu') }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="vapl-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="detailTitle()"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="vaplDetailFooter"
+>
+  <ng-container *nzModalContent>
+    <nz-table id="vapl-detail-table" [nzData]="detailRows()" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="vapl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="vapl-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th class="vapl-col-center">{{ i18n.t('apsl.detail.col.shift', 'Ca') }}</th>
+          <th class="vapl-col-center">{{ i18n.t('apsl.detail.col.date', 'Ngày') }}</th>
+          <th>{{ i18n.t('apsl.detail.col.leaveType', 'Loại nghỉ phụ lục') }}</th>
+          <th class="vapl-col-center">{{ i18n.t('apsl.detail.col.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="vapl-col-center">{{ i18n.t('apsl.detail.col.endTime', 'Thời gian kết thúc') }}</th>
+          <th class="vapl-col-center">{{ i18n.t('apsl.detail.col.duration', 'Thời lượng') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of detailRows(); track $index; let idx = $index) {
+          <tr>
+            <td class="vapl-col-center">{{ idx + 1 }}</td>
+            <td class="vapl-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td class="vapl-col-center">{{ row.shiftName || row.shiftNo }}</td>
+            <td class="vapl-col-center">{{ row.arDateStr }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="vapl-col-center">{{ row.fromTimeStr }}</td>
+            <td class="vapl-col-center">{{ row.toTimeStr }}</td>
+            <td class="vapl-col-center">{{ row.quantity }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="vapl-col-center">{{ i18n.t('apsl.msg.noDataDetail', 'Không có dữ liệu.') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<ng-template #vaplDetailFooter>
+  <button id="vapl-detail-close-btn" nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>

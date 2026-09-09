@@ -1,0 +1,25 @@
+.rew-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rew-search-row {
+  margin-bottom: 16px;
+}
+
+.rew-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.rew-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rew-col-center {
+  text-align: center;
+}

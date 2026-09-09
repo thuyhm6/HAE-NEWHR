@@ -1,0 +1,209 @@
+/* Style nội dung card (.tf-nc/.dept-node/.manager-info/...) copy nguyên từ assets/css/style.css (khối
+   "Org Chart Visual Tree Styles", dùng cho bản Thymeleaf gốc org-chart) - giữ nguyên như bản CSS-tree cũ.
+   encapsulation: None ở component .ts để các class này áp dụng cho OrgChartCardComponent (component
+   con) - xem ghi chú ở org-info.component.ts.
+
+   Phần vẽ đường nối bằng ::before/::after của bản cũ (dựng cây bằng <ul>/<li> nổi trôi CSS float) đã bị
+   bỏ - toạ độ node giờ do d3-hierarchy/d3-tree tính (org-chart-layout.ts) và đường nối vẽ bằng
+   <svg><path> (.org-link), nên .org-viewport/.org-world/.org-links/.org-card-wrap thay cho
+   .org-container/.tf-tree/ul/li ở dưới. */
+
+.oin-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 0;
+  color: #999;
+  font-size: 24px;
+}
+
+.oin-status-error {
+  color: #ff4d4f;
+}
+
+.org-viewport {
+  width: 100%;
+  height: calc(100vh - 200px);
+  overflow: hidden;
+  background: #f8f9fa;
+  position: relative;
+  touch-action: none;
+  cursor: grab;
+}
+
+.org-viewport:active {
+  cursor: grabbing;
+}
+
+.org-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.org-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.org-link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+.org-card-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 220px;
+}
+
+.tf-nc {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+  text-decoration: none;
+  color: #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.tf-nc:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+}
+
+.dept-node {
+  border-top: 4px solid #007bff;
+}
+
+.dept-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #0056b3;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dept-info {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manager-info {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  border-top: 1px dashed #eee;
+  padding-top: 5px;
+  text-align: left;
+}
+
+.manager-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #eee;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+.manager-details {
+  min-width: 0;
+}
+
+.manager-details div {
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manager-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.emp-node {
+  border-top: 4px solid #28a745;
+  padding: 5px;
+  text-align: center;
+}
+
+.emp-name {
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ô gom nhóm nhân viên (EMP_GROUP, xem org-chart-layout.ts) - thay cho việc mỗi nhân viên là 1 ô xếp
+   ngang cạnh nhau: các nhân viên cùng cha giờ liệt kê thành 1 danh sách dọc bên trong 1 ô duy nhất. */
+.emp-group-node {
+  border-top: 4px solid #28a745;
+  padding: 6px 8px;
+  text-align: left;
+  cursor: default;
+}
+
+.emp-group-list {
+  max-height: 128px;
+  overflow-y: auto;
+}
+
+.emp-group-row {
+  font-size: 12px;
+  padding: 3px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px dashed #eee;
+}
+
+.emp-group-row:last-child {
+  border-bottom: none;
+}
+
+.toggle-btn {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 18px;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  z-index: 20;
+}
+
+.toggle-btn:hover {
+  background: #eee;
+  color: #000;
+}

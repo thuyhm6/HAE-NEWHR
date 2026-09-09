@@ -1,0 +1,189 @@
+<div class="si-page">
+  <nz-card class="si-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryItem.title.hangmuc', 'Hạng mục') }}</nz-form-label>
+            <nz-form-control>
+              <input id="si-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="siKeyword" [placeholder]="i18n.t('ar.viewSummaryItem.placeholder.search', 'Nhập mã / tên hạng mục tổng hợp')" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="si-toolbar-actions">
+        <button id="si-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="si-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="si-add-btn" nz-button nzType="default" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="si-table-card">
+    <nz-table #siTable id="si-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="si-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="si-col-center">{{ i18n.t('ar.viewSummaryItem.title.itemNo', 'Mã hạng mục (No)') }}</th>
+          <th>{{ i18n.t('ar.viewSummaryItem.title.itemName', 'Tên hạng mục') }}</th>
+          <th class="si-col-center">{{ i18n.t('common.unit', 'Đơn vị') }}</th>
+          <th class="si-col-center">{{ i18n.t('ar.viewSummaryItem.title.itemId', 'ID Hạng mục') }}</th>
+          <th class="si-col-center">{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</th>
+          <th class="si-col-center">{{ i18n.t('ar.viewSummaryItem.title.showYn', 'Hiển thị (Y/N)') }}</th>
+          <th class="si-col-center">{{ i18n.t('ar.viewSummaryItem.title.showOrder', 'Thứ tự hiển thị') }}</th>
+          <th class="si-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th nzWidth="100px" class="si-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of siTable.data; track row.itemNo; let idx = $index) {
+          <tr>
+            <td class="si-col-center">{{ idx + 1 }}</td>
+            <td class="si-col-center">{{ row.itemNo }}</td>
+            <td>{{ row.nameVi }}</td>
+            <td class="si-col-center">{{ row.unit }}</td>
+            <td class="si-col-center">{{ row.staItemId }}</td>
+            <td class="si-col-center">{{ row.orderno }}</td>
+            <td class="si-col-center">{{ row.showYn }}</td>
+            <td class="si-col-center">{{ row.showOrder }}</td>
+            <td class="si-col-center">
+              @if (row.activity === 1) {
+                <nz-tag nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+              }
+            </td>
+            <td class="si-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row.itemNo)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row.itemNo)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="si-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('ar.viewSummaryItem.modal.editTitle', 'Cập nhật Hạng mục tổng hợp') : i18n.t('ar.viewSummaryItem.modal.addTitle', 'Thêm mới Hạng mục tổng hợp')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="720px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <h4 class="si-section-title">{{ i18n.t('common.multilingualInfo', 'Thông tin Đa Ngôn Ngữ') }}</h4>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.nameVi', 'Tên Tiếng Việt') }}</nz-form-label>
+            <nz-form-control>
+              <input id="si-f-name-vi" nz-input [ngModel]="formNameVi()" (ngModelChange)="formNameVi.set($event)" name="siFNameVi" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.nameEn', 'Tên Tiếng Anh') }}</nz-form-label>
+            <nz-form-control>
+              <input id="si-f-name-en" nz-input [ngModel]="formNameEn()" (ngModelChange)="formNameEn.set($event)" name="siFNameEn" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.nameZh', 'Tên Tiếng Trung') }}</nz-form-label>
+            <nz-form-control>
+              <input id="si-f-name-zh" nz-input [ngModel]="formNameZh()" (ngModelChange)="formNameZh.set($event)" name="siFNameZh" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.nameKo', 'Tên Tiếng Hàn') }}</nz-form-label>
+            <nz-form-control>
+              <input id="si-f-name-ko" nz-input [ngModel]="formNameKo()" (ngModelChange)="formNameKo.set($event)" name="siFNameKo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <h4 class="si-section-title">{{ i18n.t('ar.viewSummaryItem.title.attrInfo', 'Thuộc Tính Hạng Mục') }}</h4>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.unit', 'Đơn vị (ngày, giờ, phút)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="si-f-unit" nz-input [ngModel]="formUnit()" (ngModelChange)="formUnit.set($event)" name="siFUnit" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryItem.title.itemId', 'ID Hạng mục (CODE)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="si-f-item-id" nz-input [ngModel]="formStaItemId()" (ngModelChange)="formStaItemId.set($event)" name="siFItemId" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="si-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="siFOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryItem.title.showYn', 'Có hiển thị (Y/N)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-switch id="si-f-show-yn" [ngModel]="formShowYn()" (ngModelChange)="formShowYn.set($event)" name="siFShowYn"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-switch id="si-f-active" [ngModel]="formActive()" (ngModelChange)="formActive.set($event)" name="siFActive"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryItem.title.showOrder', 'Thứ tự hiển thị') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="si-f-show-order" [ngModel]="formShowOrder()" (ngModelChange)="formShowOrder.set($event)" name="siFShowOrder" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="si-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>

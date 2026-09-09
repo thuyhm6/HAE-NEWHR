@@ -1,0 +1,286 @@
+<div class="ab-page">
+  <nz-card class="ab-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ab-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="abSearchEmpId" [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <div class="ab-search-emp-field">
+                <input id="ab-search-emp-name" nz-input [ngModel]="searchEmpName()" (ngModelChange)="searchEmpName.set($event)" name="abSearchEmpName" [placeholder]="i18n.t('common.placeholder.enterEmpName', 'Nhập tên nhân viên')" />
+                <button nz-button (click)="openSearchEmployeePicker()"><span nz-icon nzType="search"></span></button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ab-search-from-date" [ngModel]="searchFromDate()" (ngModelChange)="searchFromDate.set($event)" name="abSearchFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ab-search-to-date" [ngModel]="searchToDate()" (ngModelChange)="searchToDate.set($event)" name="abSearchToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('applyAtt.search.affirmFlag', 'Trạng thái đơn nghỉ phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ab-search-affirm-flag" [ngModel]="searchAffirmFlag()" (ngModelChange)="searchAffirmFlag.set($event)" name="abSearchAffirmFlag" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')">
+                <nz-option nzValue="14014309" [nzLabel]="i18n.t('applyAtt.affirmFlag.waiting', 'Chờ duyệt')"></nz-option>
+                <nz-option nzValue="14014308" [nzLabel]="i18n.t('applyAtt.affirmFlag.approved', 'Đã duyệt')"></nz-option>
+                <nz-option nzValue="14014307" [nzLabel]="i18n.t('applyAtt.affirmFlag.approving', 'Đang duyệt')"></nz-option>
+                <nz-option nzValue="14014306" [nzLabel]="i18n.t('applyAtt.affirmFlag.sent', 'Gửi')"></nz-option>
+                <nz-option nzValue="14014310" [nzLabel]="i18n.t('applyAtt.affirmFlag.cancelled', 'Đã hủy')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('applyAtt.search.confirmFlag', 'Trạng thái xác nhận') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ab-search-confirm-flag" [ngModel]="searchConfirmFlag()" (ngModelChange)="searchConfirmFlag.set($event)" name="abSearchConfirmFlag" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')">
+                <nz-option nzValue="0" [nzLabel]="i18n.t('applyAtt.confirmFlag.notConfirmed', 'Chưa xác nhận')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('applyAtt.confirmFlag.confirmed', 'Đã xác nhận')"></nz-option>
+                <nz-option nzValue="2" [nzLabel]="i18n.t('applyAtt.confirmFlag.rejected', 'Từ chối')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('applyAtt.leaveTypeFull', 'Loại nghỉ phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ab-search-leave-type" [ngModel]="searchLeaveTypeCode()" (ngModelChange)="searchLeaveTypeCode.set($event)" name="abSearchLeaveTypeCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of leaveTypeOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="ab-toolbar-actions">
+        <button id="ab-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="ab-clear-search-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="ab-add-row-btn" nz-button nzType="default" (click)="addEmptyRow()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <button id="ab-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="saveAll()">
+          <span nz-icon nzType="save"></span>
+          {{ i18n.t('common.save', 'Lưu') }}
+        </button>
+        <button id="ab-cancel-btn" nz-button nzDanger [nzLoading]="cancelling()" (click)="cancelSelected()">
+          <span nz-icon nzType="close-circle"></span>
+          {{ i18n.t('applyAtt.cancelLeave', 'Hủy đơn') }}
+        </button>
+        <button id="ab-download-template-btn" nz-button (click)="downloadTemplate()">
+          <span nz-icon nzType="download"></span>
+          {{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+        </button>
+        <button id="ab-import-btn" nz-button (click)="openImportModal()">
+          <span nz-icon nzType="upload"></span>
+          {{ i18n.t('common.importExcel', 'Import Excel') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="ab-table-card">
+    <nz-table
+      id="ab-data-table"
+      #abTable
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: '2000px', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="ab-col-center">No</th>
+          <th nzWidth="36px" class="ab-col-center">
+            <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAll($event)"></label>
+          </th>
+          <th nzWidth="220px">{{ i18n.t('common.empName', 'Nhân viên') }}</th>
+          <th nzWidth="140px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th nzWidth="70px" class="ab-col-center">{{ i18n.t('applyAtt.remainLeave', 'Phép còn') }}</th>
+          <th nzWidth="120px">{{ i18n.t('common.shift', 'Ca làm việc') }}</th>
+          <th nzWidth="160px">{{ i18n.t('applyAtt.leaveType', 'Loại nghỉ') }}</th>
+          <th nzWidth="190px">{{ i18n.t('common.startTime', 'Thời gian bắt đầu') }}</th>
+          <th nzWidth="190px">{{ i18n.t('common.endTime', 'Thời gian kết thúc') }}</th>
+          <th nzWidth="90px" class="ab-col-center">{{ i18n.t('applyAtt.leaveDuration', 'Thời lượng') }}</th>
+          <th nzWidth="200px">{{ i18n.t('common.reason', 'Lý do') }}</th>
+          <th nzWidth="110px" class="ab-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th nzWidth="130px">{{ i18n.t('common.creator', 'Người tạo') }}</th>
+          <th nzWidth="130px">{{ i18n.t('common.updater', 'Người sửa') }}</th>
+          <th nzWidth="200px">{{ i18n.t('common.approver', 'Người duyệt') }}</th>
+          <th nzWidth="70px" class="ab-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of abTable.data; track row.rowKey; let idx = $index) {
+          <tr>
+            <td class="ab-col-center">{{ idx + 1 }}</td>
+            <td class="ab-col-center">
+              @if (isCancelable(row)) {
+                <label nz-checkbox [ngModel]="row.checked" (ngModelChange)="updateRow(row.rowKey, { checked: $event })"></label>
+              }
+            </td>
+            <td>
+              @if (row.isNew) {
+                <nz-input-group nzCompact>
+                  <input nz-input style="width: calc(100% - 32px)" [ngModel]="row.empId ? row.empId + ' - ' + row.localName : ''" readonly [placeholder]="i18n.t('arOtf.selectEmp', 'Chọn NV...')" />
+                  <button nz-button (click)="openRowEmployeePicker(row.rowKey)"><span nz-icon nzType="search"></span></button>
+                </nz-input-group>
+              } @else {
+                <a class="ab-name-link" (click)="openDetail(row)">{{ row.empId }} - {{ row.localName }}</a>
+              }
+            </td>
+            <td>{{ row.deptName }}</td>
+            <td class="ab-col-center">{{ row.annualLeaveCount }}</td>
+            <td>{{ row.shiftName }}</td>
+            <td>
+              <nz-select [ngModel]="row.leaveTypeCode" (ngModelChange)="onLeaveTypeChange(row.rowKey, $event)" [nzPlaceHolder]="i18n.t('arOtf.selectEmp', '-- Loại nghỉ --')" style="width: 100%">
+                <nz-option *ngFor="let opt of leaveTypeOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </td>
+            <td>
+              <nz-date-picker [attr.id]="'ab-from-' + idx" [ngModel]="row.leaveFromTime" (ngModelChange)="onFromTimeChange(row.rowKey, $event)" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm" style="width: 100%"></nz-date-picker>
+            </td>
+            <td>
+              <nz-date-picker [attr.id]="'ab-to-' + idx" [ngModel]="row.leaveToTime" (ngModelChange)="onToTimeChange(row.rowKey, $event)" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm" style="width: 100%"></nz-date-picker>
+            </td>
+            <td class="ab-col-center">{{ formatDuration(row) }}</td>
+            <td>
+              <input [attr.id]="'ab-reason-' + idx" nz-input [ngModel]="row.leaveReason" (ngModelChange)="updateRow(row.rowKey, { leaveReason: $event })" />
+            </td>
+            <td class="ab-col-center">
+              @if (row.isNew) {
+                {{ i18n.t('arOtf.notSaved', 'Chưa lưu') }}
+              } @else if (row.affirmFlag === '14014306') {
+                <nz-tag nzColor="warning">{{ i18n.t('applyAtt.affirmFlag.sent', 'Gửi') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014307') {
+                <nz-tag nzColor="processing">{{ i18n.t('applyAtt.affirmFlag.approving', 'Đang duyệt') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014308') {
+                <nz-tag nzColor="success">{{ i18n.t('applyAtt.affirmFlag.approved', 'Đã duyệt') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014309') {
+                <nz-tag nzColor="error">{{ i18n.t('applyAtt.affirmFlag.waiting', 'Chờ duyệt') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014310') {
+                <nz-tag>{{ i18n.t('applyAtt.affirmFlag.cancelled', 'Đã hủy') }}</nz-tag>
+              }
+            </td>
+            <td>
+              @if (!row.isNew) {
+                {{ row.createdBy }}<br /><small class="ab-muted">{{ row.createDate }}</small>
+              }
+            </td>
+            <td>
+              @if (!row.isNew) {
+                {{ row.updatedBy }}<br /><small class="ab-muted">{{ row.updateDate }}</small>
+              }
+            </td>
+            <td>
+              @if (row.isNew) {
+                @for (a of row.approvers; track $index; let aIdx = $index) {
+                  <div class="ab-approver-item">
+                    <small class="ab-approver-text">{{ a.empId }} - {{ a.localName }}</small>
+                    <button nz-button nzDanger nzSize="small" (click)="removeApprover(row.rowKey, aIdx)">
+                      <span nz-icon nzType="close"></span>
+                    </button>
+                  </div>
+                }
+                <button nz-button nzSize="small" nzType="dashed" (click)="openApproverModal(row.rowKey)">
+                  <span nz-icon nzType="plus"></span>
+                </button>
+              } @else {
+                <span [innerHTML]="row.affirmStr"></span>
+              }
+            </td>
+            <td class="ab-col-center">
+              @if (row.isNew) {
+                <button nz-button nzDanger nzSize="small" (click)="removeNewRow(row.rowKey)">
+                  <span nz-icon nzType="minus"></span>
+                </button>
+              } @else if (row.affirmFlag === '14014308') {
+                <button nz-button nzType="primary" nzSize="small" (click)="resubmitLine(row.rowKey)">
+                  <span nz-icon nzType="save"></span>
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="16" class="ab-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #detailModal variant="leave"></app-apply-detail-modal>
+
+<nz-modal
+  [nzVisible]="pickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm nhân viên')"
+  (nzOnCancel)="closePicker()"
+  (nzVisibleChange)="pickerVisible.set($event)"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      id="ab-picker-search"
+      [ngModel]="null"
+      (ngModelChange)="onPickerSelected($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã hoặc tên nhân viên')"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="pickerSearching()"
+      (nzOnSearch)="onPickerSearch($event)"
+      style="width: 100%"
+    >
+      <nz-option *ngFor="let emp of pickerSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
+    </nz-select>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('common.importExcel', 'Import Excel')"
+  (nzOnCancel)="closeImportModal()"
+  (nzVisibleChange)="importModalVisible.set($event)"
+>
+  <ng-container *nzModalContent>
+    <input id="ab-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeImportModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="ab-import-submit-btn" nz-button nzType="primary" [nzLoading]="importing()" (click)="submitImport()">
+      {{ i18n.t('common.importExcel', 'Import Excel') }}
+    </button>
+  </div>
+</nz-modal>

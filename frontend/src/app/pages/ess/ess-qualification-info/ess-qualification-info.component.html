@@ -1,0 +1,316 @@
+<div class="qei-page">
+  <!-- ===== Trình độ học vấn ===== -->
+  <nz-card class="qei-card">
+    <div class="qei-card-header">
+      <strong>{{ i18n.t('qi.section.education', 'Trình độ học vấn') }}</strong>
+      <button id="qei-add-educ-btn" nz-button nzType="primary" nzSize="small" (click)="openEducModal(null)">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('epi.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+    <nz-table id="qei-educ-table" #qeiEducTable [nzData]="educationList()" [nzLoading]="educLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('qi.field.educLevel', 'Trình độ học vấn') }}</th>
+          <th nzWidth="120px">{{ i18n.t('qi.field.startDate', 'Ngày nhập học') }}</th>
+          <th nzWidth="120px">{{ i18n.t('qi.field.endDate', 'Ngày tốt nghiệp') }}</th>
+          <th>{{ i18n.t('qi.field.institution', 'Trường tốt nghiệp') }}</th>
+          <th>{{ i18n.t('qi.field.subject', 'Chuyên ngành') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of qeiEducTable.data; track row.educNo) {
+          <tr class="qei-row" (click)="openEducModal(row)">
+            <td><a class="qei-name-link">{{ row.degreeName }}</a></td>
+            <td>{{ row.startDate }}</td>
+            <td>{{ row.endDate }}</td>
+            <td>{{ row.institutionName }}</td>
+            <td>{{ row.subject }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="qei-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <!-- ===== Thông tin chứng chỉ ===== -->
+  <nz-card class="qei-card">
+    <div class="qei-card-header">
+      <strong>{{ i18n.t('qi.section.qualification', 'Thông tin chứng chỉ') }}</strong>
+      <button id="qei-add-qual-btn" nz-button nzType="primary" nzSize="small" (click)="openQualModal(null)">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('epi.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+    <nz-table id="qei-qual-table" #qeiQualTable [nzData]="qualificationList()" [nzLoading]="qualLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('qi.field.qualName', 'Chứng chỉ') }}</th>
+          <th>{{ i18n.t('qi.field.qualLevel', 'Cấp chứng chỉ') }}</th>
+          <th nzWidth="110px">{{ i18n.t('qi.field.dateObtained', 'Ngày cấp') }}</th>
+          <th nzWidth="110px">{{ i18n.t('qi.field.validityDate', 'Ngày hết hạn') }}</th>
+          <th>{{ i18n.t('qi.field.qualCardNo', 'Mã chứng chỉ') }}</th>
+          <th>{{ i18n.t('qi.field.qualInstitute', 'Nơi cấp') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of qeiQualTable.data; track row.qualNo) {
+          <tr class="qei-row" (click)="openQualModal(row)">
+            <td><a class="qei-name-link">{{ row.qualName }}</a></td>
+            <td>{{ row.qualLevel }}</td>
+            <td>{{ formatDisplayDate(row.dateObtained) }}</td>
+            <td>{{ formatDisplayDate(row.validityDate) }}</td>
+            <td>{{ row.qualCardNo }}</td>
+            <td>{{ row.qualInstitute }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="qei-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <!-- ===== Thông tin khen thưởng (chỉ xem) ===== -->
+  <nz-card class="qei-card">
+    <div class="qei-card-header">
+      <strong>{{ i18n.t('qi.section.reward', 'Thông tin khen thưởng') }}</strong>
+    </div>
+    <nz-table id="qei-reward-table" #qeiRewardTable [nzData]="rewardList()" [nzLoading]="rewardLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('qi.field.rewardType', 'Khen thưởng') }}</th>
+          <th nzWidth="120px">{{ i18n.t('qi.field.rewardDate', 'Ngày khen thưởng') }}</th>
+          <th>{{ i18n.t('qi.field.rewardCnpy', 'Đơn vị trao thưởng') }}</th>
+          <th>{{ i18n.t('qi.field.rewardAmount', 'Tiền thưởng') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of qeiRewardTable.data; track $index) {
+          <tr>
+            <td>{{ row.rewardType }}</td>
+            <td>{{ formatDisplayDate(row.rewardDate) }}</td>
+            <td>{{ row.rewardCnpy }}</td>
+            <td>{{ row.reward }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="qei-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- ===== Modal: Trình độ học vấn ===== -->
+<nz-modal
+  id="qei-educ-modal"
+  [nzVisible]="educModalVisible()"
+  [nzTitle]="i18n.t('qi.section.education', 'Trình độ học vấn')"
+  [nzWidth]="700"
+  (nzOnCancel)="closeEducModal()"
+  (nzVisibleChange)="educModalVisible.set($event)"
+  [nzOkLoading]="educSaving()"
+  [nzOkText]="i18n.t('epi.btn.submitRequest', 'Gửi yêu cầu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+  (nzOnOk)="saveEducation()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('qi.field.educLevel', 'Trình độ học vấn') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="qei-ed-degreeCode" [(ngModel)]="educForm.degreeCode" name="edDegreeCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of degreeOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.institution', 'Trường tốt nghiệp') }}</nz-form-label>
+            <nz-form-control><input id="qei-ed-institutionName" nz-input [(ngModel)]="educForm.institutionName" name="edInstitutionName" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.startMonth', 'Ngày nhập học (MM/YYYY)') }}</nz-form-label>
+            <nz-form-control><input id="qei-ed-startDate" nz-input [(ngModel)]="educForm.startDate" name="edStartDate" [placeholder]="i18n.t('qi.placeholder.mmyyyy', 'VD: 09/2015')" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.endMonth', 'Ngày tốt nghiệp (MM/YYYY)') }}</nz-form-label>
+            <nz-form-control><input id="qei-ed-endDate" nz-input [(ngModel)]="educForm.endDate" name="edEndDate" [placeholder]="i18n.t('qi.placeholder.mmyyyy', 'VD: 06/2019')" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.subject', 'Chuyên ngành') }}</nz-form-label>
+            <nz-form-control><input id="qei-ed-subject" nz-input [(ngModel)]="educForm.subject" name="edSubject" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.academicTitle', 'Học vị') }}</nz-form-label>
+            <nz-form-control><input id="qei-ed-degreesCode" nz-input [(ngModel)]="educForm.degreesCode" name="edDegreesCode" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.degreeNum', 'Số bằng cấp') }}</nz-form-label>
+            <nz-form-control><input id="qei-ed-eduDegNum" nz-input [(ngModel)]="educForm.eduDegNum" name="edEduDegNum" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control><textarea id="qei-ed-remark" nz-input rows="2" [(ngModel)]="educForm.remark" name="edRemark"></textarea></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      @if (educForm.updateEducNo) {
+        <div class="qei-file-list">
+          <label class="qei-file-list-label">
+            <span nz-icon nzType="paper-clip"></span>
+            {{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}
+          </label>
+          @if (educFilesLoading()) {
+            <div class="qei-file-item qei-file-muted">{{ i18n.t('common.loading', 'Đang tải...') }}</div>
+          } @else if (!educFiles().length) {
+            <div class="qei-file-item qei-file-muted">{{ i18n.t('veai.msg.noFile', 'Không có file đính kèm') }}</div>
+          } @else {
+            @for (f of educFiles(); track f.fileNo) {
+              <div class="qei-file-item">
+                <span nz-icon nzType="file" class="qei-file-icon"></span>
+                <a [href]="'/ess/empinfo/api/files/download/' + f.fileNo" target="_blank">{{ f.fileName }}</a>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <div class="qei-alert-note">
+        <span nz-icon nzType="info-circle"></span>
+        {{ i18n.t('epi.msg.applyNote', 'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.') }}
+      </div>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}</nz-form-label>
+        <nz-form-control>
+          <input id="qei-ed-attachFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onEducFilesChange($event)" />
+          <div class="qei-upload-hint">{{ i18n.t('epi.msg.uploadHint', 'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.') }}</div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Chứng chỉ ===== -->
+<nz-modal
+  id="qei-qual-modal"
+  [nzVisible]="qualModalVisible()"
+  [nzTitle]="i18n.t('qi.section.qualification', 'Thông tin chứng chỉ')"
+  [nzWidth]="700"
+  (nzOnCancel)="closeQualModal()"
+  (nzVisibleChange)="qualModalVisible.set($event)"
+  [nzOkLoading]="qualSaving()"
+  [nzOkText]="i18n.t('epi.btn.submitRequest', 'Gửi yêu cầu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+  (nzOnOk)="saveQualification()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('qi.field.qualName', 'Tên chứng chỉ') }}</nz-form-label>
+            <nz-form-control><input id="qei-ql-qualName" nz-input [(ngModel)]="qualForm.qualName" name="qlQualName" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.qualLevel', 'Cấp chứng chỉ') }}</nz-form-label>
+            <nz-form-control><input id="qei-ql-qualLevel" nz-input [(ngModel)]="qualForm.qualLevel" name="qlQualLevel" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.dateObtained', 'Ngày cấp') }}</nz-form-label>
+            <nz-form-control><nz-date-picker id="qei-ql-dateObtained" [(ngModel)]="qualForm.dateObtained" name="qlDateObtained" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.validityDate', 'Ngày hết hạn') }}</nz-form-label>
+            <nz-form-control><nz-date-picker id="qei-ql-validityDate" [(ngModel)]="qualForm.validityDate" name="qlValidityDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.qualCardNo', 'Mã chứng chỉ') }}</nz-form-label>
+            <nz-form-control><input id="qei-ql-qualCardNo" nz-input [(ngModel)]="qualForm.qualCardNo" name="qlQualCardNo" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.qualInstitute', 'Nơi cấp') }}</nz-form-label>
+            <nz-form-control><input id="qei-ql-qualInstitute" nz-input [(ngModel)]="qualForm.qualInstitute" name="qlQualInstitute" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('qi.field.qualGrade', 'Xếp loại') }}</nz-form-label>
+            <nz-form-control><input id="qei-ql-qualGrade" nz-input [(ngModel)]="qualForm.qualGrade" name="qlQualGrade" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control><textarea id="qei-ql-qualRemark" nz-input rows="2" [(ngModel)]="qualForm.qualRemark" name="qlQualRemark"></textarea></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      @if (qualForm.updateQualNo) {
+        <div class="qei-file-list">
+          <label class="qei-file-list-label">
+            <span nz-icon nzType="paper-clip"></span>
+            {{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}
+          </label>
+          @if (qualFilesLoading()) {
+            <div class="qei-file-item qei-file-muted">{{ i18n.t('common.loading', 'Đang tải...') }}</div>
+          } @else if (!qualFiles().length) {
+            <div class="qei-file-item qei-file-muted">{{ i18n.t('veai.msg.noFile', 'Không có file đính kèm') }}</div>
+          } @else {
+            @for (f of qualFiles(); track f.fileNo) {
+              <div class="qei-file-item">
+                <span nz-icon nzType="file" class="qei-file-icon"></span>
+                <a [href]="'/ess/empinfo/api/files/download/' + f.fileNo" target="_blank">{{ f.fileName }}</a>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <div class="qei-alert-note">
+        <span nz-icon nzType="info-circle"></span>
+        {{ i18n.t('epi.msg.applyNote', 'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.') }}
+      </div>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}</nz-form-label>
+        <nz-form-control>
+          <input id="qei-ql-attachFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onQualFilesChange($event)" />
+          <div class="qei-upload-hint">{{ i18n.t('epi.msg.uploadHint', 'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.') }}</div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

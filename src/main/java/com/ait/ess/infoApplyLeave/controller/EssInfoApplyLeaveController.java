@@ -2,6 +2,7 @@ package com.ait.ess.infoApplyLeave.controller;
 
 import com.ait.ess.infoApplyLeave.dto.EssCardApplyListDto;
 import com.ait.ess.infoApplyLeave.service.EssCardApplyListService;
+import com.ait.util.AngularIndexService;
 import com.ait.util.I18nUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +26,13 @@ public class EssInfoApplyLeaveController {
     @Autowired
     private EssCardApplyListService service;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewApplyLeaveInfoList")
-    public String viewApplyLeaveInfoList() {
-        return "ess/infoApplyLeave/viewApplyLeaveInfoList";
+    public String viewApplyLeaveInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/myCardApply/list")

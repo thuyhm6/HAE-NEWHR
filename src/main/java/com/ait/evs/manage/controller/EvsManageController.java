@@ -51,6 +51,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,9 @@ import java.util.Map;
 @Controller
 @RequestMapping("/evs/manage")
 public class EvsManageController {
+
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
 
     @Autowired
     private EvsResumeService evsResumeService;
@@ -123,8 +128,9 @@ public class EvsManageController {
     private EvsResultEmpService evsResultEmpService;
 
     @GetMapping("/viewResumeList")
-    public String viewResumeList() {
-        return "evs/manage/viewResumeList";
+    public String viewResumeList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/resume/list")
@@ -175,8 +181,9 @@ public class EvsManageController {
     // ── Quy trình đánh giá (EVS_SCHEDULE) ────────────────────────────────────
 
     @GetMapping("/viewEvsSchedulePanel")
-    public String viewEvsSchedulePanel() {
-        return "evs/manage/viewEvsSchedulePanel";
+    public String viewEvsSchedulePanel(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/schedule/list")
@@ -209,8 +216,9 @@ public class EvsManageController {
     // ── Tiêu chuẩn đánh giá (EVS_PARAM panel) ────────────────────────────────
 
     @GetMapping("/viewEvsParamPanel")
-    public String viewEvsParamPanel() {
-        return "evs/manage/viewEvsParamPanel";
+    public String viewEvsParamPanel(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // -- Cấp đánh giá (EVS_GRADE) --
@@ -331,8 +339,9 @@ public class EvsManageController {
     // ── Công thức đánh giá (EVS_FORMULA) ─────────────────────────────────────
 
     @GetMapping("/viewEvsFormulaList")
-    public String viewEvsFormulaList() {
-        return "evs/manage/viewEvsFormulaList";
+    public String viewEvsFormulaList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/evsFormula/formulaOptions")
@@ -377,8 +386,9 @@ public class EvsManageController {
     // ── Tỷ lệ phân bổ (EVS_SCORE) ────────────────────────────────────────────
 
     @GetMapping("/viewEvsDistributionRatePanel")
-    public String viewEvsDistributionRatePanel() {
-        return "evs/manage/viewEvsDistributionRatePanel";
+    public String viewEvsDistributionRatePanel(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/evsScore/list")
@@ -419,8 +429,9 @@ public class EvsManageController {
     // ── Đối tượng đánh giá và người đánh giá (EVS_OBJECT + EVS_AFFIRM) ────────
 
     @GetMapping("/viewEvsAffirmorSetup")
-    public String viewEvsAffirmorSetup() {
-        return "evs/manage/viewEvsAffirmorSetup";
+    public String viewEvsAffirmorSetup(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/affirmorSetup/list")
@@ -548,8 +559,9 @@ public class EvsManageController {
     // ── Kết quả đánh giá (EVS_OBJECT - viewEvsResult) ────────────────────────
 
     @GetMapping("/viewEvsResult")
-    public String viewEvsResult() {
-        return "evs/manage/viewEvsResult";
+    public String viewEvsResult(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/evsResult/list")
@@ -636,8 +648,9 @@ public class EvsManageController {
     // ── Chỉ tiêu đánh giá (EVS_ITEM) ─────────────────────────────────────────
 
     @GetMapping("/viewEvsItemPanel")
-    public String viewEvsItemPanel() {
-        return "evs/manage/viewEvsItemPanel";
+    public String viewEvsItemPanel(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/evsItem/list")
@@ -715,8 +728,9 @@ public class EvsManageController {
     // ── Đăng ký mục tiêu cá nhân (EVS_ITEM_SST) ──────────────────────────────
 
     @GetMapping("/viewRegPersonalTarget")
-    public String viewRegPersonalTarget() {
-        return "evs/manage/viewRegPersonalTarget";
+    public String viewRegPersonalTarget(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/personalTarget/objectInfo")
@@ -762,15 +776,17 @@ public class EvsManageController {
     // ── Xác nhận mục tiêu lần 1 (EVS_OBJECT + EVS_AFFIRM level 1) ────────────
 
     @GetMapping("/viewConfirmTarget1")
-    public String viewConfirmTarget1() {
-        return "evs/manage/viewConfirmTarget1";
+    public String viewConfirmTarget1(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // ── Xác nhận mục tiêu lần 2 (EVS_OBJECT + EVS_AFFIRM level 2) ────────────
 
     @GetMapping("/viewConfirmTarget2")
-    public String viewConfirmTarget2() {
-        return "evs/manage/viewConfirmTarget2";
+    public String viewConfirmTarget2(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/confirmTarget2/objectList")
@@ -813,8 +829,9 @@ public class EvsManageController {
     // ── Đánh giá bản thân HAE (EVS_OBJECT + EVS_ITEM_SST.EVS_SCORE) ─────────────
 
     @GetMapping("/viewEvsBySelfHTSV")
-    public String viewEvsBySelfHTSV() {
-        return "evs/manage/viewEvsBySelfHTSV";
+    public String viewEvsBySelfHTSV(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/evsBySelfHAE/objectList")
@@ -855,8 +872,9 @@ public class EvsManageController {
     // ── Đánh giá năng lực bản thân SST (EVS_ITEM_SCORE.EVS_SCORE) ────────────────
 
     @GetMapping("/viewEvsBySelfSSTAbility")
-    public String viewEvsBySelfSSTAbility() {
-        return "evs/manage/viewEvsBySelfSSTAbility";
+    public String viewEvsBySelfSSTAbility(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/evsBySelfSSTAbility/itemList")
@@ -883,8 +901,9 @@ public class EvsManageController {
     // ── Đánh giá lần 1 (EVS_AFFIRM level 1 - nhập điểm + cấp đánh giá) ─────────
 
     @GetMapping("/viewAffirmTarget1")
-    public String viewAffirmTarget1() {
-        return "evs/manage/viewAffirmTarget1";
+    public String viewAffirmTarget1(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/affirmTarget1/objectList")
@@ -1000,8 +1019,9 @@ public class EvsManageController {
     // ── Đánh giá năng lực lần 1 (EVS_AFFIRM level 1 - dropdown năng lực) ────────
 
     @GetMapping("/viewAffirmTarget1Ability")
-    public String viewAffirmTarget1Ability() {
-        return "evs/manage/viewAffirmTarget1Ability";
+    public String viewAffirmTarget1Ability(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/affirmTarget1Ability/itemList")
@@ -1052,8 +1072,9 @@ public class EvsManageController {
     // ── Đánh giá năng lực lần 2 (EVS_AFFIRM level 2 - dropdown năng lực) ────────
 
     @GetMapping("/viewAffirmTarget2Ability")
-    public String viewAffirmTarget2Ability() {
-        return "evs/manage/viewAffirmTarget2Ability";
+    public String viewAffirmTarget2Ability(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/affirmTarget2Ability/itemList")
@@ -1104,8 +1125,9 @@ public class EvsManageController {
     // ── Đánh giá lần 2 (EVS_AFFIRM level 2 - nhập điểm + cấp đánh giá) ─────────
 
     @GetMapping("/viewAffirmTarget2")
-    public String viewAffirmTarget2() {
-        return "evs/manage/viewAffirmTarget2";
+    public String viewAffirmTarget2(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/affirmTarget2/objectList")
@@ -1221,8 +1243,9 @@ public class EvsManageController {
     // ── Lịch sử kết quả đánh giá nhân viên (EVS_OBJECT) ──────────────────────
 
     @GetMapping("/viewEvsResultEmp")
-    public String viewEvsResultEmp() {
-        return "evs/manage/viewEvsResultEmp";
+    public String viewEvsResultEmp(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/evsResultEmp/list")

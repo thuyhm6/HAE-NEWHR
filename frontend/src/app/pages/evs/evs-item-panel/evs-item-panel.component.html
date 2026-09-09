@@ -1,0 +1,197 @@
+<div class="veitp-page">
+  <div class="veitp-search-card">
+    <label class="veitp-inline-label">{{ i18n.t('evs.manage.viewEvsItemPanel.search.evaluationName', 'Tên đánh giá') }}</label>
+    <nz-select id="veitp-resume-seq" nzSize="small" style="width:260px" [ngModel]="searchResumeSeq()" (ngModelChange)="searchResumeSeq.set($event)">
+      @for (opt of resumeOptions(); track opt.seq) { <nz-option [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option> }
+    </nz-select>
+
+    <label class="veitp-inline-label">{{ i18n.t('evs.manage.viewEvsItemPanel.search.criteriaGroup', 'Nhóm chỉ tiêu') }}</label>
+    <nz-select id="veitp-group-no" nzSize="small" style="width:200px" [ngModel]="searchGroupNo()" (ngModelChange)="searchGroupNo.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewEvsItemPanel.search.select', '-- Lựa chọn --')">
+      @for (opt of criteriaGroupOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.codeNo"></nz-option> }
+    </nz-select>
+
+    <label class="veitp-inline-label">{{ i18n.t('evs.manage.viewEvsItemPanel.search.evalGroup', 'Nhóm đánh giá') }}</label>
+    <div class="veitp-picker-group">
+      <input nz-input nzSize="small" readonly style="width:140px" />
+      <button nz-button nzSize="small" (click)="notImplemented()"><span nz-icon nzType="team"></span></button>
+    </div>
+
+    <label class="veitp-inline-label">{{ i18n.t('evs.manage.viewEvsItemPanel.search.occGroup', 'Nhóm chức vụ') }}</label>
+    <div class="veitp-picker-group">
+      <input nz-input nzSize="small" readonly style="width:140px" />
+      <button nz-button nzSize="small" (click)="notImplemented()"><span nz-icon nzType="team"></span></button>
+    </div>
+
+    <button id="veitp-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span> {{ i18n.t('common.search', 'Tìm kiếm') }}
+    </button>
+  </div>
+
+  <nz-tabs class="veitp-table-card" [nzSelectedIndex]="activeTabIndex()" (nzSelectChange)="activeTabIndex.set($event.index!)">
+    <!-- Tab 1: Chỉ tiêu đánh giá -->
+    <nz-tab [nzTitle]="i18n.t('evs.manage.viewEvsItemPanel.tab.item', 'Chỉ tiêu đánh giá')">
+      <div class="veitp-tab-toolbar">
+        <span class="veitp-total">Total: {{ itemRows().length }}</span>
+        <button id="veitp-item-add-btn" nz-button nzType="primary" nzSize="small" (click)="openItemAddModal()">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('common.add', 'Thêm') }}
+        </button>
+      </div>
+      <nz-table [nzData]="itemRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="veitp-col-center">{{ i18n.t('evs.manage.viewEvsItemPanel.col.no', 'No.') }}</th>
+            <th nzWidth="150px">{{ i18n.t('evs.manage.viewEvsItemPanel.col.criteriaGroup', 'Nhóm chỉ tiêu') }}</th>
+            <th nzWidth="100px" class="veitp-col-center">{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemCode', 'Mã chỉ tiêu') }}</th>
+            <th>{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemName', 'Tên chỉ tiêu') }}</th>
+            <th>{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemNameKo', 'Tên chỉ tiêu (Tiếng Hàn)') }}</th>
+            <th>{{ i18n.t('evs.manage.viewEvsItemPanel.col.remark', 'Giải thích') }}</th>
+            <th nzWidth="90px" class="veitp-col-center">{{ i18n.t('common.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of itemRows(); track row.seq; let idx = $index) {
+            <tr class="veitp-data-row" (click)="openItemEditModal(row)">
+              <td class="veitp-col-center">{{ idx + 1 }}</td>
+              <td>{{ row.groupName || row.groupNo }}</td>
+              <td class="veitp-col-center">{{ row.itemCode }}</td>
+              <td>{{ row.itemName }}</td>
+              <td>{{ row.itemNameKo }}</td>
+              <td>{{ row.remark }}</td>
+              <td class="veitp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteItem(row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="veitp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- Tab 2: Hạng mục chỉ tiêu chỉ định -->
+    <nz-tab [nzTitle]="i18n.t('evs.manage.viewEvsItemPanel.tab.param', 'Hạng mục chỉ tiêu chỉ định')">
+      <div class="veitp-tab-toolbar">
+        <span class="veitp-total">Total: {{ paramRows().length }}</span>
+        <button id="veitp-param-add-btn" nz-button nzType="primary" nzSize="small" (click)="openParamAddModal()">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('common.add', 'Thêm') }}
+        </button>
+      </div>
+      <nz-table [nzData]="paramRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="veitp-col-center">{{ i18n.t('evs.manage.viewEvsItemPanel.col.no', 'No.') }}</th>
+            <th>{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemName', 'Tên chỉ tiêu') }}</th>
+            <th nzWidth="100px" class="veitp-col-center">{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemCode', 'Mã chỉ tiêu') }}</th>
+            <th nzWidth="150px">{{ i18n.t('evs.manage.viewEvsItemPanel.col.criteriaGroup', 'Nhóm chỉ tiêu') }}</th>
+            <th nzWidth="160px">{{ i18n.t('evs.manage.viewEvsItemPanel.col.evalGroup', 'Nhóm nhân viên') }}</th>
+            <th nzWidth="160px">{{ i18n.t('evs.manage.viewEvsItemPanel.col.occGroup', 'Nhóm chức vụ') }}</th>
+            <th nzWidth="80px" class="veitp-col-center">{{ i18n.t('evs.manage.viewEvsItemPanel.col.score', 'Điểm') }}</th>
+            <th nzWidth="90px" class="veitp-col-center">{{ i18n.t('common.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of paramRows(); track row.seq; let idx = $index) {
+            <tr class="veitp-data-row" (click)="openParamEditModal(row)">
+              <td class="veitp-col-center">{{ idx + 1 }}</td>
+              <td>{{ row.itemName }}</td>
+              <td class="veitp-col-center">{{ row.itemCodeItem || row.itemCode }}</td>
+              <td>{{ row.groupName }}</td>
+              <td>{{ row.evsGroupName }}</td>
+              <td>{{ row.evsOccGroupName }}</td>
+              <td class="veitp-col-center">{{ row.itemScore }}</td>
+              <td class="veitp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteParam(row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="veitp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</div>
+
+<!-- Modal Chỉ tiêu đánh giá -->
+<nz-modal
+  [nzVisible]="itemModalVisible()"
+  [nzTitle]="i18n.t('evs.manage.viewEvsItemPanel.tab.item', 'Chỉ tiêu đánh giá')"
+  (nzOnCancel)="itemModalVisible.set(false)"
+  (nzVisibleChange)="itemModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="itemSaving()"
+  (nzOnOk)="saveItem()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('evsParam.btn.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.criteriaGroup', 'Nhóm chỉ tiêu') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formItemGroupNo()" (ngModelChange)="formItemGroupNo.set($event)" nzAllowClear>
+          @for (opt of groupNoOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemCode', 'Mã chỉ tiêu') }} <span class="veitp-required"></span></label>
+        <input nz-input nzSize="small" maxlength="20" [ngModel]="formItemCode()" (ngModelChange)="formItemCode.set($event)" [disabled]="!!formItemSeq()" />
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemName', 'Tên chỉ tiêu') }}</label>
+        <input nz-input nzSize="small" maxlength="400" [ngModel]="formItemName()" (ngModelChange)="formItemName.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemNameKo', 'Tên chỉ tiêu (Tiếng Hàn)') }}</label>
+        <input nz-input nzSize="small" maxlength="400" [ngModel]="formItemNameKo()" (ngModelChange)="formItemNameKo.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.remark', 'Giải thích') }}</label>
+        <textarea nz-input rows="2" maxlength="4000" [ngModel]="formItemRemark()" (ngModelChange)="formItemRemark.set($event)"></textarea>
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.remarkKo', 'Giải thích (Tiếng Hàn)') }}</label>
+        <textarea nz-input rows="2" maxlength="4000" [ngModel]="formItemRemarkKo()" (ngModelChange)="formItemRemarkKo.set($event)"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Hạng mục chỉ tiêu chỉ định -->
+<nz-modal
+  [nzVisible]="paramModalVisible()"
+  [nzTitle]="i18n.t('evs.manage.viewEvsItemPanel.tab.param', 'Hạng mục chỉ tiêu chỉ định')"
+  (nzOnCancel)="paramModalVisible.set(false)"
+  (nzVisibleChange)="paramModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="paramSaving()"
+  (nzOnOk)="saveParam()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('evsParam.btn.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="24">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.itemName', 'Tên chỉ tiêu') }} <span class="veitp-required"></span></label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formParamItemCode()" (ngModelChange)="formParamItemCode.set($event)" nzShowSearch>
+          @for (opt of itemCodeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.evalGroup', 'Nhóm nhân viên') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formParamEvsGroup()" (ngModelChange)="formParamEvsGroup.set($event)" nzAllowClear>
+          @for (opt of evsGroupOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.occGroup', 'Nhóm chức vụ') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formParamEvsOccGroup()" (ngModelChange)="formParamEvsOccGroup.set($event)" nzAllowClear>
+          @for (opt of evsOccGroupOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="veitp-field-label">{{ i18n.t('evs.manage.viewEvsItemPanel.col.score', 'Điểm') }}</label>
+        <nz-input-number [ngModel]="formParamItemScore()" (ngModelChange)="formParamItemScore.set($event)" style="width:100%"></nz-input-number>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

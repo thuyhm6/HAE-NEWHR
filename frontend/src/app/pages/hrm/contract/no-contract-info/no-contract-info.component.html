@@ -1,0 +1,251 @@
+<div class="nci-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.contractNo', 'Số hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-contract-no" nz-input [ngModel]="contractNo()" (ngModelChange)="contractNo.set($event)" name="nciContractNo" [placeholder]="i18n.t('hrm.viewContract.title.contractNoPlaceholder', 'Nhập số hợp đồng')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-emp-id" nz-input [ngModel]="empId()" (ngModelChange)="empId.set($event)" name="nciEmpId" [placeholder]="i18n.t('hrm.viewContract.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.contractType', 'Loại hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="nci-search-contract-type" [ngModel]="contractType()" (ngModelChange)="contractType.set($event)" name="nciContractType" [nzPlaceHolder]="i18n.t('hrm.viewContract.title.all', 'Tất cả')" nzAllowClear>
+                <nz-option nzValue="FULL_TIME" [nzLabel]="i18n.t('hrm.editContract.title.fullTime', 'Toàn thời gian')"></nz-option>
+                <nz-option nzValue="PART_TIME" [nzLabel]="i18n.t('hrm.editContract.title.partTime', 'Bán thời gian')"></nz-option>
+                <nz-option nzValue="INTERN" [nzLabel]="i18n.t('hrm.editContract.title.intern', 'Thực tập')"></nz-option>
+                <nz-option nzValue="CONSULTANT" [nzLabel]="i18n.t('hrm.editContract.title.consultant', 'Tư vấn')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-dept" nz-input [ngModel]="department()" (ngModelChange)="department.set($event)" name="nciDept" [placeholder]="i18n.t('hrm.viewContract.title.deptPlaceholder', 'Nhập phòng ban')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.startDateFrom', 'Ngày bắt đầu từ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-start-from" type="date" nz-input [ngModel]="startDateFrom()" (ngModelChange)="startDateFrom.set($event)" name="nciStartFrom" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.startDateTo', 'Ngày bắt đầu đến') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-start-to" type="date" nz-input [ngModel]="startDateTo()" (ngModelChange)="startDateTo.set($event)" name="nciStartTo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.endDateFrom', 'Ngày kết thúc từ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-end-from" type="date" nz-input [ngModel]="endDateFrom()" (ngModelChange)="endDateFrom.set($event)" name="nciEndFrom" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.endDateTo', 'Ngày kết thúc đến') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-end-to" type="date" nz-input [ngModel]="endDateTo()" (ngModelChange)="endDateTo.set($event)" name="nciEndTo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.activity', 'Hoạt động') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="nci-search-activity" [ngModel]="activity()" (ngModelChange)="activity.set($event)" name="nciActivity" [nzPlaceHolder]="i18n.t('hrm.viewContract.title.all', 'Tất cả')" nzAllowClear>
+                <nz-option nzValue="ACTIVE" [nzLabel]="i18n.t('hrm.editContract.title.active', 'Hoạt động')"></nz-option>
+                <nz-option nzValue="INACTIVE" [nzLabel]="i18n.t('hrm.editContract.title.inactive', 'Không hoạt động')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.workPosition', 'Vị trí làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-work-position" nz-input [ngModel]="workPosition()" (ngModelChange)="workPosition.set($event)" name="nciWorkPosition" [placeholder]="i18n.t('hrm.viewContract.title.workPositionPlaceholder', 'Nhập vị trí làm việc')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.salaryFrom', 'Lương từ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-salary-from" type="number" nz-input [ngModel]="salaryFrom()" (ngModelChange)="salaryFrom.set($event)" name="nciSalaryFrom" [placeholder]="i18n.t('hrm.viewContract.title.salaryFromPlaceholder', 'Nhập lương tối thiểu')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewContract.title.salaryTo', 'Lương đến') }}</nz-form-label>
+            <nz-form-control>
+              <input id="nci-search-salary-to" type="number" nz-input [ngModel]="salaryTo()" (ngModelChange)="salaryTo.set($event)" name="nciSalaryTo" [placeholder]="i18n.t('hrm.viewContract.title.salaryToPlaceholder', 'Nhập lương tối đa')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="nci-toolbar-actions">
+        <button id="nci-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('hrm.editContract.title.addNew', 'Thêm mới') }}
+        </button>
+        <button id="nci-search-btn" nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('hrm.viewContract.title.search', 'Tìm kiếm') }}
+        </button>
+        <button id="nci-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('hrm.viewContract.title.clearFilter', 'Xóa bộ lọc') }}
+        </button>
+        <button id="nci-export-btn" nz-button (click)="exportResults()">
+          <span nz-icon nzType="download"></span>
+          {{ i18n.t('hrm.viewContract.title.exportResult', 'Xuất kết quả') }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table
+      id="nci-data-table"
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 25, 50, 100]"
+      [nzShowSizeChanger]="true"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      nzSize="small"
+      [nzScroll]="{ x: '1200px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="nci-col-center">{{ i18n.t('hrm.viewContract.title.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.viewContract.title.contractNo', 'Số hợp đồng') }}</th>
+          <th>{{ i18n.t('hrm.viewContract.title.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('hrm.viewContract.title.contractName', 'Tên hợp đồng') }}</th>
+          <th>{{ i18n.t('hrm.viewContract.title.contractType', 'Loại hợp đồng') }}</th>
+          <th class="nci-col-center">{{ i18n.t('hrm.viewContract.title.startDate', 'Ngày bắt đầu') }}</th>
+          <th class="nci-col-center">{{ i18n.t('hrm.viewContract.title.endDate', 'Ngày kết thúc') }}</th>
+          <th>{{ i18n.t('hrm.viewContract.title.dept', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hrm.viewContract.title.position', 'Vị trí') }}</th>
+          <th class="nci-col-right">{{ i18n.t('hrm.viewContract.title.salary', 'Lương') }}</th>
+          <th class="nci-col-center">{{ i18n.t('hrm.viewContract.title.activity', 'Hoạt động') }}</th>
+          <th class="nci-col-center">{{ i18n.t('hrm.viewContract.title.createDate', 'Ngày tạo') }}</th>
+          <th nzWidth="120px" class="nci-col-center">{{ i18n.t('hrm.viewContract.title.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.contractNo; let idx = $index) {
+          <tr>
+            <td class="nci-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td><nz-tag nzColor="blue">{{ row.contractNo }}</nz-tag></td>
+            <td><nz-tag nzColor="cyan">{{ row.empId }}</nz-tag></td>
+            <td>{{ row.contractName }}</td>
+            <td>{{ row.contractTypeName }}</td>
+            <td class="nci-col-center">{{ row.startContractDate }}</td>
+            <td class="nci-col-center">{{ row.endContractDate }}</td>
+            <td>{{ row.deptNo }}</td>
+            <td>{{ row.workPosition }}</td>
+            <td class="nci-col-right">{{ row.salary }}</td>
+            <td class="nci-col-center">
+              @if (row.activity === 'ACTIVE') {
+                <nz-tag nzColor="success">{{ i18n.t('hrm.editContract.title.active', 'Hoạt động') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('hrm.editContract.title.inactive', 'Không hoạt động') }}</nz-tag>
+              }
+            </td>
+            <td class="nci-col-center">{{ row.createDate }}</td>
+            <td class="nci-col-center">
+              <button nz-button nzSize="small" (click)="viewDetail(row)" [title]="i18n.t('common.view', 'Xem')">
+                <span nz-icon nzType="eye"></span>
+              </button>
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="13" class="nci-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-contract-form-modal (saved)="search()"></app-contract-form-modal>
+
+<!-- Modal Xem chi tiết -->
+<nz-modal
+  [nzVisible]="viewModalVisible()"
+  [nzTitle]="(i18n.t('hrm.viewNOContract.modal.viewTitle', 'Chi tiết hợp đồng:') + ' ' + (viewRow()?.contractNo || ''))"
+  (nzOnCancel)="closeViewModal()"
+  (nzVisibleChange)="viewModalVisible.set($event)"
+  nzWidth="800px"
+>
+  <ng-container *nzModalContent>
+    @if (viewRow(); as v) {
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <h6 class="nci-detail-title">{{ i18n.t('hrm.editContract.title.basicInfo', 'Thông tin cơ bản') }}</h6>
+          <table class="nci-detail-table">
+            <tr><th>{{ i18n.t('hrm.viewContract.title.contractNo', 'Số hợp đồng') }}</th><td>{{ v.contractNo || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.contractName', 'Tên hợp đồng') }}</th><td>{{ v.contractName || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.empId', 'Mã nhân viên') }}</th><td>{{ v.empId || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.contractType', 'Loại hợp đồng') }}</th><td>{{ v.contractType || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.startDate', 'Ngày bắt đầu') }}</th><td>{{ v.startContractDate || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.endDate', 'Ngày kết thúc') }}</th><td>{{ v.endContractDate || '-' }}</td></tr>
+          </table>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <h6 class="nci-detail-title">{{ i18n.t('hrm.editContract.title.workInfo', 'Thông tin công việc') }}</h6>
+          <table class="nci-detail-table">
+            <tr><th>{{ i18n.t('hrm.viewContract.title.dept', 'Phòng ban') }}</th><td>{{ v.deptNo || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.position', 'Vị trí') }}</th><td>{{ v.workPosition || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.salary', 'Lương') }}</th><td>{{ v.salary || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.editContract.title.workTime', 'Thời gian làm việc') }}</th><td>{{ v.workTime || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.editContract.title.workHourType', 'Loại giờ làm việc') }}</th><td>{{ v.workHourType || '-' }}</td></tr>
+            <tr><th>{{ i18n.t('hrm.viewContract.title.activity', 'Hoạt động') }}</th><td>{{ v.activity || '-' }}</td></tr>
+          </table>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <h6 class="nci-detail-title">{{ i18n.t('hrm.editContract.title.workContent', 'Nội dung công việc') }}</h6>
+          <p class="nci-detail-text">{{ v.workContent || i18n.t('hrm.viewNOContract.detail.noInfo', 'Không có thông tin') }}</p>
+          <h6 class="nci-detail-title">{{ i18n.t('hrm.editContract.title.remark', 'Ghi chú') }}</h6>
+          <p class="nci-detail-text">{{ v.remark || i18n.t('hrm.viewNOContract.detail.noRemark', 'Không có ghi chú') }}</p>
+        </div>
+      </div>
+    }
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeViewModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </div>
+</nz-modal>

@@ -1,0 +1,200 @@
+<div class="sv-page">
+  <nz-card class="sv-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('addShift.month', 'Tháng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="sv-search-month" [ngModel]="searchMonth()" (ngModelChange)="searchMonth.set($event)" name="svSearchMonth" nzMode="month" nzFormat="MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('addShift.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="sv-search-emp" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="svSearchEmpId" [placeholder]="i18n.t('addShift.placeholder.empIdOrName', 'Nhập mã / tên nhân viên')" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="sv-toolbar-actions">
+        <button id="sv-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="sv-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="sv-add-btn" nz-button nzType="default" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <button id="sv-download-template-btn" nz-button (click)="downloadTemplate()">
+          <span nz-icon nzType="download"></span>
+          {{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+        </button>
+        <button id="sv-import-btn" nz-button (click)="openImportModal()">
+          <span nz-icon nzType="upload"></span>
+          {{ i18n.t('common.importExcel', 'Import Excel') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="sv-table-card">
+    <nz-table #svTable id="sv-shift-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="sv-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="sv-col-center">{{ i18n.t('common.date', 'Ngày') }}</th>
+          <th class="sv-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Tên nhân viên') }}</th>
+          <th>{{ i18n.t('addShift.shift', 'Ca quy định') }}</th>
+          <th>{{ i18n.t('addShift.dayType', 'Loại ngày') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th nzWidth="100px" class="sv-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of svTable.data; track row.pkNo; let idx = $index) {
+          <tr>
+            <td class="sv-col-center">{{ idx + 1 }}</td>
+            <td class="sv-col-center">{{ row.arDateStr }}</td>
+            <td class="sv-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.shiftName }}</td>
+            <td>{{ row.typeName }}</td>
+            <td>{{ row.remark }}</td>
+            <td class="sv-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row.pkNo)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row.pkNo)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="sv-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Import Excel -->
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('common.importExcel', 'Import Excel')"
+  (nzOnCancel)="closeImportModal()"
+  (nzVisibleChange)="importModalVisible.set($event)"
+>
+  <ng-container *nzModalContent>
+    <input id="sv-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeImportModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="sv-import-submit-btn" nz-button nzType="primary" [nzLoading]="importing()" (click)="submitImport()">
+      {{ i18n.t('common.importExcel', 'Import Excel') }}
+    </button>
+  </div>
+</nz-modal>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('addShift.modal.title.edit', 'Cập nhật Xếp ca làm việc') : i18n.t('addShift.modal.title.add', 'Thêm mới Xếp ca làm việc')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="640px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('addShift.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <div class="sv-emp-field">
+                <input id="sv-f-emp-display" nz-input [ngModel]="formEmpNameDisplay()" name="svFEmpDisplay" readonly [placeholder]="i18n.t('addShift.selectEmployee', 'Chọn nhân viên...')" />
+                <button nz-button type="button" (click)="openEmpPicker()"><span nz-icon nzType="search"></span></button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('addShift.shiftDate', 'Ngày công') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="sv-f-ar-date" [ngModel]="formArDate()" (ngModelChange)="formArDate.set($event)" name="svFArDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('addShift.shift', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="sv-f-shift-no" [ngModel]="formShiftNo()" (ngModelChange)="formShiftNo.set($event)" name="svFShiftNo" [nzPlaceHolder]="i18n.t('addShift.selectShift', '-- Chọn ca làm việc --')">
+                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="opt.nameVi || opt.shiftNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('addShift.dayType', 'Loại ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="sv-f-typeid" [ngModel]="formTypeid()" (ngModelChange)="formTypeid.set($event)" name="svFTypeid" [nzAllowClear]="true">
+                <nz-option *ngFor="let opt of dayTypeOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.nameVi || opt.codeName || opt.codeNo"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="sv-f-remark" nz-input [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)" name="svFRemark" rows="2"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="sv-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>
+
+<!-- Modal tìm nhân viên -->
+<nz-modal
+  [nzVisible]="empPickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm nhân viên')"
+  (nzOnCancel)="closeEmpPicker()"
+  (nzVisibleChange)="empPickerVisible.set($event)"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      id="sv-emp-picker-search"
+      [ngModel]="null"
+      (ngModelChange)="onEmpPickerSelected($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã hoặc tên nhân viên')"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="empPickerSearching()"
+      (nzOnSearch)="onEmpPickerSearch($event)"
+      style="width: 100%"
+    >
+      <nz-option *ngFor="let emp of empPickerSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
+    </nz-select>
+  </ng-container>
+</nz-modal>

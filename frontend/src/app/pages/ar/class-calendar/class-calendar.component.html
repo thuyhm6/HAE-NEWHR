@@ -1,0 +1,278 @@
+<div class="cccal-page">
+  <!-- Toolbar -->
+  <div class="ccal-toolbar">
+    <div class="ccal-nav">
+      <button class="ccal-nav-btn" id="cccal-prev-month" (click)="prevMonth()" [title]="i18n.t('ar.viewCompanyCalendar.prevMonth', 'Tháng trước')">
+        <span nz-icon nzType="left"></span>
+      </button>
+      <select id="cccal-month-sel" class="ccal-combo" [ngModel]="selectedMonth()" (ngModelChange)="selectedMonth.set($event); load()">
+        @for (m of months; track m) {
+          <option [ngValue]="m">{{ i18n.t('ar.viewCompanyCalendar.monthPrefix', 'Tháng') }} {{ m < 10 ? '0' + m : m }}</option>
+        }
+      </select>
+      <select id="cccal-year-sel" class="ccal-combo ccal-year" [ngModel]="selectedYear()" (ngModelChange)="selectedYear.set($event); load()">
+        @for (y of years; track y) {
+          <option [ngValue]="y">{{ y }}</option>
+        }
+      </select>
+      <button class="ccal-nav-btn" id="cccal-next-month" (click)="nextMonth()" [title]="i18n.t('ar.viewCompanyCalendar.nextMonth', 'Tháng sau')">
+        <span nz-icon nzType="right"></span>
+      </button>
+      <nz-select
+        id="cccal-group-filter"
+        style="min-width: 180px"
+        [ngModel]="selectedGroupId()"
+        (ngModelChange)="onGroupFilterChange($event)"
+        [nzPlaceHolder]="i18n.t('ar.viewClassCalendar.selectGroup', '-- Chọn nhóm ca --')"
+        nzAllowClear
+      >
+        <nz-option *ngFor="let g of groupOptions()" [nzValue]="g.codeNo" [nzLabel]="groupLabel(g)"></nz-option>
+      </nz-select>
+    </div>
+
+    <div class="ccal-actions">
+      <button nz-button (click)="load()">
+        <span nz-icon nzType="reload"></span>
+        {{ i18n.t('ar.viewCompanyCalendar.reload', 'Tra cứu') }}
+      </button>
+      <button id="cccal-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('common.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="ccal-grid-wrap">
+    <div class="ccal-hrow">
+      <div class="ccal-hcell ccal-col-sun">{{ i18n.t('ar.viewCompanyCalendar.sun', 'CN') }}</div>
+      <div class="ccal-hcell">{{ i18n.t('ar.viewCompanyCalendar.mon', 'T2') }}</div>
+      <div class="ccal-hcell">{{ i18n.t('ar.viewCompanyCalendar.tue', 'T3') }}</div>
+      <div class="ccal-hcell">{{ i18n.t('ar.viewCompanyCalendar.wed', 'T4') }}</div>
+      <div class="ccal-hcell">{{ i18n.t('ar.viewCompanyCalendar.thu', 'T5') }}</div>
+      <div class="ccal-hcell">{{ i18n.t('ar.viewCompanyCalendar.fri', 'T6') }}</div>
+      <div class="ccal-hcell ccal-col-sat">{{ i18n.t('ar.viewCompanyCalendar.sat', 'T7') }}</div>
+    </div>
+    <div id="cccal-body">
+      @if (loading()) {
+        <div class="ccal-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+      } @else if (weeks().length === 0) {
+        <div class="ccal-empty">{{ i18n.t('ar.viewClassCalendar.noData', 'Không có dữ liệu lịch nhóm ca trong khoảng thời gian này.') }}</div>
+      } @else {
+        @for (week of weeks(); track $index) {
+          <div class="ccal-week">
+            @for (cell of week; track $index) {
+              @if (cell.isEmpty) {
+                <div class="ccal-day is-empty"></div>
+              } @else {
+                <div
+                  class="ccal-day"
+                  [class.is-today]="cell.isToday"
+                  [class.is-work]="cell.hasWork && !cell.isToday"
+                  [class.is-rest]="!cell.hasWork && !cell.isToday"
+                  [class.ccal-selected]="selectedDdateStr() === cell.ddateStr"
+                  (click)="onDayClick(cell)"
+                >
+                  <div class="ccal-day-top">
+                    <span class="ccal-day-num" [class.is-sun]="cell.isSun" [class.is-sat]="cell.isSat">{{ cell.day }}</span>
+                    @if (cell.hasWork) {
+                      <span class="ccal-status s-work-text">{{ i18n.t('ar.viewCompanyCalendar.title.work', 'Làm việc') }}</span>
+                    } @else {
+                      <span class="ccal-status s-rest">{{ i18n.t('ar.viewCompanyCalendar.title.rest', 'Nghỉ') }}</span>
+                    }
+                  </div>
+                  <div class="ccal-tags">
+                    @if (!cell.items || cell.items.length === 0) {
+                      @if (cell.isSun || cell.isSat) {
+                        <span class="ccal-tag t-rest">{{ i18n.t('ar.viewCompanyCalendar.weekend', 'Cuối tuần') }}</span>
+                      } @else {
+                        <span class="ccal-tag t-wd">{{ i18n.t('ar.viewClassCalendar.tagNoData', 'Chưa có dữ liệu') }}</span>
+                      }
+                    } @else {
+                      @for (it of cell.items; track $index) {
+                        @if (it.shiftName || it.shiftNo) {
+                          <span class="ccal-tag t-sh">{{ it.shiftName || it.shiftNo }}</span>
+                        }
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="ccal-legend">
+    <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-work"></span> {{ i18n.t('ar.viewCompanyCalendar.option.work', 'Ngày làm việc') }}</span>
+    <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-rest"></span> {{ i18n.t('ar.viewCompanyCalendar.option.rest', 'Ngày nghỉ') }}</span>
+    <span class="ccal-legend-item"><span class="ccal-legend-dot ccal-lg-today"></span> {{ i18n.t('ar.viewCompanyCalendar.legendToday', 'Hôm nay') }}</span>
+  </div>
+</div>
+
+<!-- Modal Sửa 1 ngày -->
+<nz-modal [nzVisible]="modalVisible()" [nzTitle]="modalTitle()" (nzOnCancel)="closeModal()" (nzVisibleChange)="modalVisible.set($event)" nzWidth="700px">
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewCompanyCalendar.title.workdayflag', 'Ngày làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-f-workdayflag" [ngModel]="formWorkdayflag()" (ngModelChange)="formWorkdayflag.set($event)" name="cccalFWorkdayflag">
+                <nz-option [nzValue]="0" [nzLabel]="'0 — ' + i18n.t('ar.viewCompanyCalendar.option.rest', 'Ngày nghỉ')"></nz-option>
+                <nz-option [nzValue]="1" [nzLabel]="'1 — ' + i18n.t('ar.viewCompanyCalendar.option.work', 'Ngày làm việc')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewStatutoryHolidays.title.shift', 'Ca làm việc (Shift No)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-f-shift" [ngModel]="formShiftNo()" (ngModelChange)="formShiftNo.set($event)" name="cccalFShift" nzAllowClear>
+                <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>TypeID</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-f-typeid" [ngModel]="formTypeid()" (ngModelChange)="formTypeid.set($event)" name="cccalFTypeid" nzAllowClear>
+                <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="typeLabel(t)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>OvertypeID</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-f-overtypeid" [ngModel]="formOvertypeid()" (ngModelChange)="formOvertypeid.set($event)" name="cccalFOvertypeid" nzAllowClear>
+                <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="typeLabel(t)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewCompanyCalendar.title.typeidDefault', 'TypeID mặc định') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-f-typeid-default" [ngModel]="formTypeidDefault()" (ngModelChange)="formTypeidDefault.set($event)" name="cccalFTypeidDefault" nzAllowClear>
+                <nz-option *ngFor="let t of typeOptions()" [nzValue]="t.codeNo" [nzLabel]="typeLabel(t)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>Operation ID</nz-form-label>
+            <nz-form-control>
+              <input id="cccal-f-operation-id" nz-input [ngModel]="formOperationId()" (ngModelChange)="formOperationId.set($event)" name="cccalFOperationId" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="cccal-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="cccalFOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-f-activity" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)" name="cccalFActivity">
+                <nz-option [nzValue]="1" [nzLabel]="i18n.t('common.active', 'Hoạt động')"></nz-option>
+                <nz-option [nzValue]="0" [nzLabel]="i18n.t('common.inactive', 'Ngừng')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="cccal-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      <span nz-icon nzType="save"></span>
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>
+
+<!-- Modal Thêm mới hàng loạt -->
+<nz-modal
+  [nzVisible]="addModalVisible()"
+  [nzTitle]="i18n.t('ar.viewClassCalendar.modal.addTitle', 'Thêm Mới Lịch Nhóm Ca')"
+  (nzOnCancel)="closeAddModal()"
+  (nzVisibleChange)="addModalVisible.set($event)"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewClassCalendar.label.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="cccal-add-start-date" [ngModel]="addStartDate()" (ngModelChange)="addStartDate.set($event)" name="cccalAddStartDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewClassCalendar.label.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="cccal-add-end-date" [ngModel]="addEndDate()" (ngModelChange)="addEndDate.set($event)" name="cccalAddEndDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewClassCalendar.label.groupShift', 'Nhóm ca') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-add-group-id" [ngModel]="addGroupId()" (ngModelChange)="addGroupId.set($event)" name="cccalAddGroupId" [nzPlaceHolder]="i18n.t('ar.viewClassCalendar.selectGroup', '-- Chọn nhóm ca --')">
+                <nz-option *ngFor="let g of groupOptions()" [nzValue]="g.codeNo" [nzLabel]="groupLabel(g)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewClassCalendar.label.workShift', 'Ca làm việc (Work Shift)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-add-work-shift" [ngModel]="addWorkShift()" (ngModelChange)="addWorkShift.set($event)" name="cccalAddWorkShift">
+                <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewClassCalendar.label.restShift', 'Ca nghỉ ngơi (Rest Shift)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cccal-add-rest-shift" [ngModel]="addRestShift()" (ngModelChange)="addRestShift.set($event)" name="cccalAddRestShift">
+                <nz-option *ngFor="let s of shiftOptions()" [nzValue]="s.shiftNo" [nzLabel]="s.nameVi || s.shiftNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeAddModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="cccal-add-save-btn" nz-button nzType="primary" [nzLoading]="addSaving()" (click)="saveAddBatch()">
+      <span nz-icon nzType="save"></span>
+      {{ i18n.t('common.addNew', 'Thêm mới') }}
+    </button>
+  </div>
+</nz-modal>

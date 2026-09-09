@@ -1,0 +1,15 @@
+.wexp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wexp-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wexp-col-center {
+  text-align: center;
+}

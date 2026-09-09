@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/sys")
@@ -24,9 +26,13 @@ public class SyMenuParamController {
     @Autowired
     private SyMenuParamService syMenuParamService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/basicMaintenance/viewMenuParamList")
-    public String viewMenuParamList() {
-        return "sys/basicMaintenance/viewMenuParamList";
+    public String viewMenuParamList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/menu_param/list")
@@ -70,14 +76,13 @@ public class SyMenuParamController {
     }
 
     @GetMapping("/api/menu_param/export")
-    @SuppressWarnings("null")
     public ResponseEntity<byte[]> exportExcel(
             @RequestParam(required = false) String parentMenuNo,
             @RequestParam String cpnyId) {
         byte[] bytes = syMenuParamService.exportExcel(parentMenuNo, cpnyId);
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=MenuParams.csv")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"MenuParams.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(bytes);
     }
 }

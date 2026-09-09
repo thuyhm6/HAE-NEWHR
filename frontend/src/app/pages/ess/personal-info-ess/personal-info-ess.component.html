@@ -1,0 +1,390 @@
+<div class="pie-page">
+
+  <nz-card id="pie-search-card" class="pie-search-card">
+    <div class="pie-search-row">
+      <div class="pie-search-input-wrap">
+        <input
+          id="pie-search-keyword"
+          nz-input
+          [ngModel]="searchKeyword()"
+          (ngModelChange)="searchKeyword.set($event)"
+          (keyup.enter)="searchEmp()"
+          name="pieSearchKeyword"
+          [placeholder]="i18n.t('pa.inputItemData.empSearchPlaceholder', 'Nhập mã hoặc họ tên')"
+        />
+        @if (searchTouched() && searchResults().length) {
+          <div id="pie-search-dropdown" class="pie-search-dropdown">
+            @for (emp of searchResults(); track emp.personId) {
+              <div class="pie-search-dropdown-item" (click)="selectEmployee(emp)">
+                <strong>{{ emp.empId }}</strong> - {{ emp.localName }}
+                <span class="pie-search-dropdown-dept">{{ emp.deptName }}</span>
+              </div>
+            }
+          </div>
+        } @else if (searchTouched() && !searchLoading()) {
+          <div class="pie-search-dropdown">
+            <div class="pie-search-dropdown-empty">{{ i18n.t('vpie.search.noResult', 'Không tìm thấy nhân viên phù hợp.') }}</div>
+          </div>
+        }
+      </div>
+      <button id="pie-search-btn" nz-button nzType="primary" (click)="searchEmp()" [nzLoading]="searchLoading()">
+        <span nz-icon nzType="search"></span>
+        {{ i18n.t('common.search', 'Tìm') }}
+      </button>
+      <button id="pie-reset-btn" nz-button (click)="resetSearch()">
+        <span nz-icon nzType="undo"></span>
+      </button>
+    </div>
+  </nz-card>
+
+  <nz-card id="pie-info-card" class="pie-info-card" [nzLoading]="profileLoading()">
+    @if (profile(); as p) {
+      <div class="pie-info-body">
+        <div class="pie-photo-box">
+          @if (resolvePhotoUrl(p.photoPath); as photoUrl) {
+            <img [src]="photoUrl" alt="Employee photo" class="pie-photo-img" />
+          } @else {
+            <div class="pie-photo-fallback">{{ getInitials(p.localName) }}</div>
+          }
+        </div>
+        <nz-descriptions [nzColumn]="2" nzBordered nzSize="small" class="pie-info-descriptions">
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empName', 'Họ tên')">{{ p.localName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empId', 'Mã nhân viên')">{{ p.empId }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.deptName', 'Phòng ban')">{{ p.deptName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.position', 'Chức vụ')">{{ p.dutyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.jobTitle', 'Chức danh')">{{ p.positionNoName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vpie.field.salaryGrade', 'Bậc lương')">{{ p.postGradeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empType', 'Loại nhân viên')">{{ p.postFamilyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.card.dept', 'Trưởng phòng')">{{ p.headDepartment }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.dateStarted', 'Ngày vào làm')">{{ p.dateStarted }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.card.workDuration', 'Thời gian làm việc')">{{ calcWorkDuration(p.dateStarted) }}</nz-descriptions-item>
+        </nz-descriptions>
+      </div>
+    }
+  </nz-card>
+
+  <nz-card class="pie-tabs-card">
+    <nz-tabs (nzSelectChange)="onTabChange($event.index)">
+      <nz-tab [nzTitle]="i18n.t('vpie.tab.basicInfo', 'Thông tin cơ bản')">
+        <nz-collapse [nzBordered]="false" class="pie-collapse">
+          <nz-collapse-panel id="pie-panel-personal" [nzHeader]="i18n.t('vpie.section.personalInfo', 'Thông tin cá nhân')" [nzActive]="true">
+            @if (profile(); as p) {
+              <nz-descriptions [nzColumn]="4" nzBordered nzSize="small">
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.idcardNo', 'CMND')">{{ p.idcardNo }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.idcardDate', 'Ngày cấp')">{{ formatDate(p.idcardStartDate) }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.issuingAuthority', 'Nơi cấp')">{{ p.issuingAuthority }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.houseTp', 'Hộ khẩu')">{{ p.houseTp }}</nz-descriptions-item>
+
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.dob', 'Ngày sinh')">{{ formatDate(p.dob) }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.age', 'Độ tuổi')">{{ calcAge(p.dob) }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.birthPlace', 'Nơi sinh')">{{ p.regPlace }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.gender', 'Giới tính')">{{ p.sexName }}</nz-descriptions-item>
+
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.education', 'Trình độ học vấn')">{{ p.finalDegreeName }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.nationality', 'Quốc tịch')">{{ p.nationalityName }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.ethnicity', 'Dân tộc')">{{ p.nationName }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.phone', 'Điện thoại')">{{ p.cellphone }}</nz-descriptions-item>
+
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.email', 'Email')">{{ p.email }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.maritalStatus', 'Tình trạng hôn nhân')">{{ p.maritalStatusName }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.weddingDate', 'Ngày kết hôn')">{{ formatDate(p.weddingDate) }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.existSingle', 'EagleM')">{{ p.existSingle }}</nz-descriptions-item>
+
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.eagleMId', 'EagleM ID')">{{ p.singId }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.companyPhone', 'Điện thoại công ty')">{{ p.companyPhone }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.companyEmail', 'Email công ty')">{{ p.emailSecond }}</nz-descriptions-item>
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.homePhone', 'Điện thoại gia đình')">{{ p.homePhone }}</nz-descriptions-item>
+
+                <nz-descriptions-item [nzTitle]="i18n.t('epi.field.residence', 'Chỗ ở')">{{ p.residentialDistinction }}</nz-descriptions-item>
+              </nz-descriptions>
+            }
+          </nz-collapse-panel>
+
+          <nz-collapse-panel id="pie-panel-emergency" [nzHeader]="i18n.t('epi.section.emergency', 'Liên hệ khẩn cấp')" [nzActive]="true">
+            <nz-table id="pie-emergency-table" [nzData]="emergencyList()" [nzShowPagination]="false" nzSize="small">
+              <thead>
+                <tr>
+                  <th>{{ i18n.t('epi.field.relationship', 'Quan hệ') }}</th>
+                  <th>{{ i18n.t('epi.field.fullName', 'Họ tên') }}</th>
+                  <th>{{ i18n.t('epi.field.phone', 'Điện thoại') }}</th>
+                  <th>{{ i18n.t('vpie.field.phone2', 'Điện thoại 2') }}</th>
+                  <th>{{ i18n.t('epi.field.email', 'Email') }}</th>
+                  <th class="pie-col-center">{{ i18n.t('epi.field.primaryContact', 'Liên hệ chính') }}</th>
+                  <th>{{ i18n.t('epi.field.address', 'Địa chỉ') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of emergencyList(); track $index) {
+                  <tr>
+                    <td>{{ item.emerTypeName || item.emerTypeCode }}</td>
+                    <td>{{ item.emerName }}</td>
+                    <td>{{ item.emerPhone }}</td>
+                    <td>{{ item.emerPhoneSecond }}</td>
+                    <td>{{ item.emerEmail }}</td>
+                    <td class="pie-col-center">
+                      <input type="checkbox" disabled [checked]="item.isEmergencyAddress === '1' || item.mainLiaisonOffice === 'Y'" />
+                    </td>
+                    <td>{{ item.emerAddress }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-collapse-panel>
+
+          <nz-collapse-panel id="pie-panel-address" [nzHeader]="i18n.t('epi.section.address', 'Loại địa chỉ')" [nzActive]="true">
+            <nz-table id="pie-address-table" [nzData]="addressList()" [nzShowPagination]="false" nzSize="small">
+              <thead>
+                <tr>
+                  <th>{{ i18n.t('epi.field.addressType', 'Loại địa chỉ') }}</th>
+                  <th>{{ i18n.t('epi.field.effectiveDate', 'Ngày hiệu lực') }}</th>
+                  <th>{{ i18n.t('epi.field.address', 'Địa chỉ') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of addressList(); track $index) {
+                  <tr>
+                    <td>{{ item.addressTypeName || item.addressType }}</td>
+                    <td>{{ formatDate(item.effectiveStartDate) }}</td>
+                    <td>{{ item.addressContent }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-collapse-panel>
+
+          <nz-collapse-panel id="pie-panel-family" [nzHeader]="i18n.t('epi.section.family', 'Thông tin gia đình')" [nzActive]="true">
+            <nz-table id="pie-family-table" [nzData]="familyList()" [nzShowPagination]="false" nzSize="small">
+              <thead>
+                <tr>
+                  <th>{{ i18n.t('epi.field.relationship', 'Quan hệ') }}</th>
+                  <th>{{ i18n.t('epi.field.fullName', 'Họ tên') }}</th>
+                  <th>{{ i18n.t('epi.field.dob', 'Ngày sinh') }}</th>
+                  <th>{{ i18n.t('epi.field.gender', 'Giới tính') }}</th>
+                  <th>{{ i18n.t('epi.field.phone', 'Điện thoại') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of familyList(); track $index) {
+                  <tr>
+                    <td>{{ item.famTypeName || item.famTypeCode }}</td>
+                    <td>{{ item.famName }}</td>
+                    <td>{{ formatDate(item.famBorndate) }}</td>
+                    <td>{{ item.genderName }}</td>
+                    <td>{{ item.famPhone }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="5" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          </nz-collapse-panel>
+        </nz-collapse>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="i18n.t('vpie.tab.workInfo', 'Thông tin công việc')">
+        <h4 class="pie-section-title">{{ i18n.t('vdp.detail.insideProcess', 'Quá trình nội bộ') }}</h4>
+        <nz-table id="pie-inside-table" [nzData]="insideExperienceList()" [nzLoading]="insideExperienceLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="pie-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th nzWidth="140px" class="pie-col-center">{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th>
+              <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+              <th>{{ i18n.t('vdp.detail.mainBusiness', 'Nghiệp vụ chính') }}</th>
+              <th>{{ i18n.t('vdp.detail.jobTitle', 'Chức danh') }}</th>
+              <th>{{ i18n.t('vdp.detail.transType', 'Loại điều chuyển') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of insideExperienceList(); track $index; let idx = $index) {
+              <tr>
+                <td class="pie-col-center">{{ idx + 1 }}</td>
+                <td class="pie-col-center">{{ item.startDate }}</td>
+                <td>{{ item.deptName }}</td>
+                <td>{{ item.mainBusiness }}</td>
+                <td>{{ item.postGrade }}</td>
+                <td>{{ item.transCode }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="i18n.t('vpie.tab.education', 'Quá trình học tập')">
+        <nz-table id="pie-education-table" [nzData]="educationList()" [nzLoading]="educationLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="pie-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th>{{ i18n.t('epi.field.education', 'Trình độ') }}</th>
+              <th>{{ i18n.t('vpie.field.gradSchool', 'Trường') }}</th>
+              <th>{{ i18n.t('epi.field.birthPlace', 'Chuyên ngành') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('common.endDate', 'Ngày kết thúc') }}</th>
+              <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of educationList(); track $index; let idx = $index) {
+              <tr>
+                <td class="pie-col-center">{{ idx + 1 }}</td>
+                <td>{{ item.degreeName || item.degreeCode }}</td>
+                <td>{{ item.institutionName }}</td>
+                <td>{{ item.subject }}</td>
+                <td class="pie-col-center">{{ formatDate(item.startDate) }}</td>
+                <td class="pie-col-center">{{ formatDate(item.endDate) }}</td>
+                <td>{{ item.remark }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="i18n.t('vpie.tab.reward', 'Khen thưởng/Kỷ luật')">
+        <h4 class="pie-section-title">{{ i18n.t('common.reward', 'Khen thưởng') }}</h4>
+        <nz-table id="pie-reward-table" [nzData]="rewardList()" [nzLoading]="rewardPunishmentLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="pie-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('vpie.reward.date', 'Ngày khen thưởng') }}</th>
+              <th>{{ i18n.t('vpie.reward.type', 'Loại hình khen thưởng') }}</th>
+              <th>{{ i18n.t('vpie.reward.content', 'Nội dung khen thưởng') }}</th>
+              <th>{{ i18n.t('vpie.reward.agency', 'Cơ quan khen thưởng') }}</th>
+              <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of rewardList(); track $index; let idx = $index) {
+              <tr>
+                <td class="pie-col-center">{{ idx + 1 }}</td>
+                <td class="pie-col-center">{{ formatDate(item.rewardDate) }}</td>
+                <td>{{ item.rewardType || item.rewardTypeCode }}</td>
+                <td>{{ item.reward }}</td>
+                <td>{{ item.rewardCnpy }}</td>
+                <td>{{ item.remarks }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <h4 class="pie-section-title pie-section-title-spaced">{{ i18n.t('common.punishment', 'Kỷ luật') }}</h4>
+        <nz-table id="pie-punishment-table" [nzData]="punishmentList()" [nzLoading]="rewardPunishmentLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="pie-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('vpie.punish.date', 'Ngày kỷ luật') }}</th>
+              <th>{{ i18n.t('vpie.punish.type', 'Loại kỷ luật') }}</th>
+              <th>{{ i18n.t('vpie.punish.reason', 'Lý do') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('vpie.punish.releaseDate', 'Ngày hết hạn') }}</th>
+              <th>{{ i18n.t('vpie.punish.department', 'Bộ phận kỷ luật') }}</th>
+              <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of punishmentList(); track $index; let idx = $index) {
+              <tr>
+                <td class="pie-col-center">{{ idx + 1 }}</td>
+                <td class="pie-col-center">{{ formatDate(item.punishDate) }}</td>
+                <td>{{ item.punishCode }}</td>
+                <td>{{ item.punishReason }}</td>
+                <td class="pie-col-center">{{ formatDate(item.releaseDate) }}</td>
+                <td>{{ item.punishDepartment }}</td>
+                <td>{{ item.remarks }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="i18n.t('vpie.tab.evaluation', 'Thông tin đánh giá')">
+        <nz-table id="pie-evaluation-table" [nzData]="evsObjectList()" [nzLoading]="evsObjectLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="pie-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th class="pie-col-center">{{ i18n.t('vpie.eval.year', 'Năm đánh giá') }}</th>
+              <th>{{ i18n.t('vpie.eval.cycle', 'Kỳ đánh giá') }}</th>
+              <th>{{ i18n.t('vpie.eval.type', 'Loại đánh giá') }}</th>
+              <th>{{ i18n.t('vpie.eval.group', 'Nhóm đánh giá') }}</th>
+              <th class="pie-col-center">{{ i18n.t('vpie.eval.grade', 'Kết quả') }}</th>
+              <th>{{ i18n.t('vpie.eval.affirmContent', 'Nội dung xác nhận') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of evsObjectList(); track $index; let idx = $index) {
+              <tr>
+                <td class="pie-col-center">{{ idx + 1 }}</td>
+                <td class="pie-col-center">{{ item.evsYear }}</td>
+                <td>{{ item.evsCycleName }}</td>
+                <td>{{ item.evsTypeName }}</td>
+                <td>{{ item.evsGroupName }}</td>
+                <td class="pie-col-center">{{ item.finalGrade }}</td>
+                <td>{{ item.finalAffirmContent }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="i18n.t('vpie.tab.special', 'Ghi chép đặc biệt')">
+        <nz-table id="pie-special-table" [nzData]="specialMatterList()" [nzLoading]="specialMatterLoading()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="pie-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('vpie.special.regDate', 'Ngày đăng ký') }}</th>
+              <th>{{ i18n.t('vpie.special.type', 'Loại') }}</th>
+              <th>{{ i18n.t('vpie.special.title', 'Tiêu đề') }}</th>
+              <th>{{ i18n.t('vpie.special.content', 'Nội dung') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th>
+              <th nzWidth="130px" class="pie-col-center">{{ i18n.t('common.endDate', 'Ngày kết thúc') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of specialMatterList(); track $index; let idx = $index) {
+              <tr>
+                <td class="pie-col-center">{{ idx + 1 }}</td>
+                <td class="pie-col-center">{{ formatDate(item.registrationDate) }}</td>
+                <td>{{ item.inforDisCode }}</td>
+                <td>{{ item.generationTitle }}</td>
+                <td>{{ item.specialContent }}</td>
+                <td class="pie-col-center">{{ formatDate(item.startDate) }}</td>
+                <td class="pie-col-center">{{ formatDate(item.endDate) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="pie-col-center">{{ i18n.t('vpie.msg.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+</div>

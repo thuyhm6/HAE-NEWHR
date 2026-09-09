@@ -1,0 +1,44 @@
+.mci-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mci-search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mci-stats-row {
+  margin-bottom: 0;
+}
+
+.mci-stat-card,
+.mci-chart-card {
+  height: 100%;
+}
+
+.mci-total-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px 0;
+}
+
+.mci-total-label {
+  color: rgba(0, 0, 0, 0.55);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.mci-total-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #4e73df;
+}
+
+.mci-col-center {
+  text-align: center;
+}

@@ -1,0 +1,19 @@
+.shg-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shg-search-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.shg-col-center {
+  text-align: center;
+}
+
+.shg-full-width {
+  width: 100%;
+}

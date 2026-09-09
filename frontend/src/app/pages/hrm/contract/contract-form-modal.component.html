@@ -1,0 +1,198 @@
+<nz-modal
+  [nzVisible]="visible()"
+  [nzTitle]="isEdit() ? i18n.t('hrm.editContract.title.editTitle', 'Chỉnh sửa thông tin hợp đồng') : i18n.t('hrm.editContract.title.addTitle', 'Thêm mới hợp đồng')"
+  (nzOnCancel)="close()"
+  (nzVisibleChange)="visible.set($event)"
+  nzWidth="1000px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="16">
+        <div nz-col [nzSpan]="12">
+          <h6 class="cfm-section-title">{{ i18n.t('hrm.editContract.title.basicInfo', 'Thông tin cơ bản') }}</h6>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.editContract.title.contractNo', 'Số hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-contract-no" nz-input [ngModel]="formContractNo()" (ngModelChange)="formContractNo.set($event)" name="cfmContractNo" [readOnly]="isEdit()" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.editContract.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              @if (isEdit()) {
+                <input id="cfm-f-emp-id" nz-input [ngModel]="formEmpId()" (ngModelChange)="formEmpId.set($event)" name="cfmEmpId" />
+              } @else {
+                <nz-select
+                  id="cfm-f-emp-select"
+                  [ngModel]="formEmpId() || null"
+                  (ngModelChange)="onEmployeeSelected($event)"
+                  name="cfmEmpSelect"
+                  [nzPlaceHolder]="formEmpLabel() || i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                  [nzShowSearch]="true"
+                  [nzServerSearch]="true"
+                  [nzLoading]="employeeSearching()"
+                  (nzOnSearch)="onEmployeeSearch($event)"
+                >
+                  <nz-option *ngFor="let e of employeeOptions()" [nzValue]="e.empId" [nzLabel]="e.empId + ' - ' + e.localName"></nz-option>
+                </nz-select>
+              }
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.editContract.title.contractName', 'Tên hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-contract-name" nz-input [ngModel]="formContractName()" (ngModelChange)="formContractName.set($event)" name="cfmContractName" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.contractType', 'Loại hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cfm-f-contract-type" [ngModel]="formContractType()" (ngModelChange)="formContractType.set($event)" name="cfmContractType">
+                <nz-option nzValue="FULL_TIME" [nzLabel]="i18n.t('hrm.editContract.title.fullTime', 'Toàn thời gian')"></nz-option>
+                <nz-option nzValue="PART_TIME" [nzLabel]="i18n.t('hrm.editContract.title.partTime', 'Bán thời gian')"></nz-option>
+                <nz-option nzValue="INTERN" [nzLabel]="i18n.t('hrm.editContract.title.intern', 'Thực tập')"></nz-option>
+                <nz-option nzValue="CONSULTANT" [nzLabel]="i18n.t('hrm.editContract.title.consultant', 'Tư vấn')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.contractTypeCode', 'Mã loại hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-contract-type-code" nz-input [ngModel]="formContractTypeCode()" (ngModelChange)="formContractTypeCode.set($event)" name="cfmContractTypeCode" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.startContractDate', 'Ngày bắt đầu hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-start-date" type="date" nz-input [ngModel]="formStartContractDate()" (ngModelChange)="formStartContractDate.set($event)" name="cfmStartDate" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.endContractDate', 'Ngày kết thúc hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-end-date" type="date" nz-input [ngModel]="formEndContractDate()" (ngModelChange)="formEndContractDate.set($event)" name="cfmEndDate" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.changeDate', 'Ngày thay đổi') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-change-date" type="date" nz-input [ngModel]="formChangeDate()" (ngModelChange)="formChangeDate.set($event)" name="cfmChangeDate" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <h6 class="cfm-section-title">{{ i18n.t('hrm.editContract.title.workInfo', 'Thông tin công việc') }}</h6>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-dept" nz-input [ngModel]="formDeptNo()" (ngModelChange)="formDeptNo.set($event)" name="cfmDept" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.workPosition', 'Vị trí làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-work-position" nz-input [ngModel]="formWorkPosition()" (ngModelChange)="formWorkPosition.set($event)" name="cfmWorkPosition" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.positionNo', 'Mã chức vụ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-position-no" nz-input [ngModel]="formPositionNo()" (ngModelChange)="formPositionNo.set($event)" name="cfmPositionNo" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.postGradeNo', 'Mã cấp bậc') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-post-grade-no" nz-input [ngModel]="formPostGradeNo()" (ngModelChange)="formPostGradeNo.set($event)" name="cfmPostGradeNo" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.salary', 'Lương') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="cfm-f-salary" [ngModel]="formSalary()" (ngModelChange)="formSalary.set($event)" name="cfmSalary" [nzMin]="0" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.workTime', 'Thời gian làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-work-time" nz-input [ngModel]="formWorkTime()" (ngModelChange)="formWorkTime.set($event)" name="cfmWorkTime" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.workHourType', 'Loại giờ làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cfm-f-work-hour-type" [ngModel]="formWorkHourType()" (ngModelChange)="formWorkHourType.set($event)" name="cfmWorkHourType" [nzPlaceHolder]="i18n.t('hrm.editContract.title.selectWorkHourType', 'Chọn loại giờ làm việc')" nzAllowClear>
+                <nz-option nzValue="FULL_TIME" [nzLabel]="i18n.t('hrm.editContract.title.fullTime', 'Toàn thời gian')"></nz-option>
+                <nz-option nzValue="PART_TIME" [nzLabel]="i18n.t('hrm.editContract.title.partTime', 'Bán thời gian')"></nz-option>
+                <nz-option nzValue="OVERTIME" [nzLabel]="i18n.t('hrm.editContract.title.overtime', 'Tăng ca')"></nz-option>
+                <nz-option nzValue="FLEXIBLE" [nzLabel]="i18n.t('hrm.editContract.title.flexible', 'Linh hoạt')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.totalPeriod', 'Tổng thời gian') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-total-period" nz-input [ngModel]="formTotalPeriod()" (ngModelChange)="formTotalPeriod.set($event)" name="cfmTotalPeriod" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.totalPeriod08', 'Tổng thời gian 08') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cfm-f-total-period08" nz-input [ngModel]="formTotalPeriod08()" (ngModelChange)="formTotalPeriod08.set($event)" name="cfmTotalPeriod08" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.activity', 'Trạng thái hoạt động') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cfm-f-activity" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)" name="cfmActivity">
+                <nz-option nzValue="ACTIVE" [nzLabel]="i18n.t('hrm.editContract.title.active', 'Hoạt động')"></nz-option>
+                <nz-option nzValue="INACTIVE" [nzLabel]="i18n.t('hrm.editContract.title.inactive', 'Không hoạt động')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <h6 class="cfm-section-title">{{ i18n.t('hrm.editContract.title.contentAndRemark', 'Nội dung và ghi chú') }}</h6>
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.workContent', 'Nội dung công việc') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="cfm-f-work-content" nz-input [ngModel]="formWorkContent()" (ngModelChange)="formWorkContent.set($event)" name="cfmWorkContent" rows="3" [placeholder]="i18n.t('hrm.editContract.title.workContentPlaceholder', 'Mô tả chi tiết nội dung công việc...')"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.editContract.title.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="cfm-f-remark" nz-input [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)" name="cfmRemark" rows="2" [placeholder]="i18n.t('hrm.editContract.title.remarkPlaceholder', 'Ghi chú thêm về hợp đồng...')"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="close()">{{ i18n.t('hrm.editContract.title.cancel', 'Hủy') }}</button>
+    <button id="cfm-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">
+      {{ isEdit() ? i18n.t('hrm.editContract.title.saveChanges', 'Lưu thay đổi') : i18n.t('hrm.editContract.title.addNew', 'Thêm mới') }}
+    </button>
+  </div>
+</nz-modal>

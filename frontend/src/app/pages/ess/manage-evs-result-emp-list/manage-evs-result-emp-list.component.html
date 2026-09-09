@@ -1,0 +1,234 @@
+<div class="vmer-page">
+  <nz-card class="vmer-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vmer.field.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="vmer-keyword"
+                nz-input
+                [ngModel]="keyword()"
+                (ngModelChange)="keyword.set($event)"
+                name="vmerKeyword"
+                [placeholder]="i18n.t('vmer.placeholder.empIdOrName', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vmer.field.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="vmer-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="vmerDeptNos"
+                [nzPlaceHolder]="i18n.t('vmer.placeholder.dept', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vmer.field.joinDateFrom', 'Ngày vào làm từ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="vmer-from-date"
+                [ngModel]="fromDate()"
+                (ngModelChange)="fromDate.set($event)"
+                name="vmerFromDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vmer.field.joinDateTo', 'Ngày vào làm đến') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="vmer-to-date"
+                [ngModel]="toDate()"
+                (ngModelChange)="toDate.set($event)"
+                name="vmerToDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vmer.field.evalYear', 'Năm đánh giá') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number
+                id="vmer-year"
+                [ngModel]="year()"
+                (ngModelChange)="year.set($event)"
+                name="vmerYear"
+                [nzMin]="2000"
+                [nzMax]="2099"
+                [nzStep]="1"
+                [nzPrecision]="0"
+                style="width: 100%"
+              ></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empGroup', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vmer-post-family"
+                [ngModel]="postFamily()"
+                (ngModelChange)="postFamily.set($event)"
+                name="vmerPostFamily"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of postFamilyOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empType', 'Loại nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vmer-emp-type"
+                [ngModel]="empTypeCode()"
+                (ngModelChange)="empTypeCode.set($event)"
+                name="vmerEmpTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vmer-emp-office"
+                [ngModel]="empOffice()"
+                (ngModelChange)="empOffice.set($event)"
+                name="vmerEmpOffice"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empOfficeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="20" class="vmer-search-actions">
+          <button id="vmer-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('essDept.search', 'Tra cứu') }}
+          </button>
+          <button id="vmer-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('essDept.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="vmer-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('essDept.exportExcel', 'Xuất excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="vmer-table-card">
+    <nz-table
+      id="vmer-data-table"
+      #vmerTable
+      [nzData]="list()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="vmer-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('common.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('essDept.year', 'Năm') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.01', 'T1') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.02', 'T2') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.03', 'T3') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.04', 'T4') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.05', 'T5') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.06', 'T6') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.07', 'T7') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.08', 'T8') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.09', 'T9') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.10', 'T10') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.11', 'T11') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.month.12', 'T12') }}</th>
+          <th class="vmer-col-center">{{ i18n.t('vmer.col.competency', 'Năng lực') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of vmerTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="vmer-col-center">{{ idx + 1 }}</td>
+            <td class="vmer-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td class="vmer-col-center">{{ row.evsYear }}</td>
+            @for (field of monthFields; track field) {
+              <td class="vmer-col-center">
+                @if (monthValue(row, field); as grade) {
+                  <nz-tag [nzColor]="gradeColor(grade)">{{ grade }}</nz-tag>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="18" class="vmer-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

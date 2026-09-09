@@ -1,0 +1,123 @@
+.veai-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.veai-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.veai-label {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.veai-status-label {
+  margin-left: 8px;
+}
+
+.veai-split {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.veai-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.veai-toolbar-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.veai-col-center {
+  text-align: center;
+}
+
+.veai-col-nowrap {
+  white-space: nowrap;
+}
+
+.veai-col-content {
+  color: #0d2bff;
+  font-weight: 500;
+}
+
+.veai-row {
+  cursor: pointer;
+}
+
+.veai-row-active {
+  background: #e6f4ff;
+}
+
+.veai-detail-card {
+  min-height: 300px;
+  overflow-y: auto;
+}
+
+.veai-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(0, 0, 0, 0.35);
+  padding: 60px 0;
+}
+
+.veai-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.veai-detail-table th,
+.veai-detail-table td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.veai-detail-table th {
+  background: #f8fafc;
+  text-align: left;
+  width: 38%;
+  white-space: nowrap;
+}
+
+.veai-section-title {
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.veai-no-file {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+}
+
+.veai-file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.veai-file-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}

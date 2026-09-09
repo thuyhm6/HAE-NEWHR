@@ -1,0 +1,179 @@
+<div class="vps-page">
+  <div class="vps-search-card">
+    <div class="vps-search-row">
+      <div class="vps-field">
+        <label class="vps-inline-label">{{ i18n.t('pa.payStub.paySchedule', 'Kế hoạch trả lương') }}</label>
+        <nz-select style="width: 100%" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch>
+          <nz-option *ngFor="let sch of scheduleOptions()" [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+        </nz-select>
+      </div>
+      <div class="vps-field">
+        <label class="vps-inline-label">{{ i18n.t('pa.payStub.dept', 'Phòng ban') }}</label>
+        <nz-tree-select
+          style="width: 100%"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="searchDeptNos()"
+          (ngModelChange)="searchDeptNos.set($event)"
+          nzMultiple
+          nzCheckable
+          nzShowSearch
+          [nzPlaceHolder]="i18n.t('pa.payStub.deptPlaceholder', 'Chọn phòng ban')"
+        ></nz-tree-select>
+      </div>
+      <div class="vps-field">
+        <label class="vps-inline-label">{{ i18n.t('pa.payStub.empSearch', 'Họ tên / Mã NV') }}</label>
+        <input nz-input [ngModel]="searchEmpSearch()" (ngModelChange)="searchEmpSearch.set($event)" (keydown.enter)="search()" [placeholder]="i18n.t('pa.payStub.empSearchPlaceholder', 'Họ tên hoặc Mã nhân viên')" />
+      </div>
+      <div class="vps-field">
+        <label class="vps-inline-label">{{ i18n.t('pa.payStub.empOffice', 'Trạng thái làm việc') }}</label>
+        <nz-select style="width: 100%" [ngModel]="searchEmpOffice()" (ngModelChange)="searchEmpOffice.set($event)" nzAllowClear>
+          <nz-option *ngFor="let opt of empOfficeOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+        </nz-select>
+      </div>
+      <div class="vps-search-actions">
+        <button nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('pa.payStub.search', 'Tra cứu') }}
+        </button>
+        <button *ngIf="stubs().length" nz-button (click)="print()">
+          <span nz-icon nzType="printer"></span>{{ i18n.t('pa.payStub.print', 'In') }}
+        </button>
+        <button *ngIf="stubs().length" nz-button nzDanger [nzLoading]="recalcing()" (click)="recalcSalary()">
+          <span nz-icon nzType="reload"></span>{{ i18n.t('pa.payStub.recalcSalary', 'Tính lại lương') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="vps-loading" *ngIf="loading()">
+    <nz-spin nzSize="large"></nz-spin>
+    <div class="vps-loading-text">{{ i18n.t('pa.payStub.loading', 'Đang tải phiếu lương...') }}</div>
+  </div>
+
+  <div class="vps-no-data" *ngIf="!loading() && searched() && !stubs().length">
+    <span nz-icon nzType="inbox" class="vps-no-data-icon"></span>
+    <div>{{ i18n.t('pa.payStub.noData', 'Không có dữ liệu') }}</div>
+  </div>
+
+  <div id="vps-print-area">
+    <div class="vps-pay-stub" *ngFor="let stub of stubs()">
+      <div class="vps-stub-header">
+        <div class="vps-logo"><img src="/assets/images/logo.png" alt="Logo" /></div>
+        <div class="vps-title">{{ i18n.t('pa.payStub.slipTitle', 'PHIẾU LƯƠNG THÁNG') }} {{ monthYear(stub.hrEndDate) }}</div>
+      </div>
+
+      <div class="vps-section-title">{{ i18n.t('pa.payStub.basicInfo', 'Thông tin Cơ bản') }}</div>
+      <table class="vps-info-table">
+        <tr>
+          <th>{{ i18n.t('pa.payStub.empName', 'Họ tên') }}</th><td>{{ stub.localName }}</td>
+          <th>{{ i18n.t('pa.payStub.empId', 'Mã nhân viên') }}</th><td>{{ stub.empId }}</td>
+          <th>{{ i18n.t('pa.payStub.dept', 'Phòng ban') }}</th><td>{{ stub.deptName }}</td>
+          <th>{{ i18n.t('pa.payStub.empType', 'Loại nhân viên') }}</th><td>{{ stub.empTypeName }}</td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('pa.payStub.empGroup', 'Nhóm nhân viên') }}</th><td>{{ stub.postFamily }}</td>
+          <th>{{ i18n.t('pa.payStub.position', 'Chức vụ') }}</th><td>{{ stub.positionName }}</td>
+          <th>{{ i18n.t('pa.payStub.grade', 'Chức danh') }}</th><td>{{ stub.postGrade }}</td>
+          <th>{{ i18n.t('pa.payStub.workStatus', 'Loại hợp đồng') }}</th><td>{{ stub.empOfficeName }}</td>
+        </tr>
+        <tr>
+          <th colspan="2">{{ i18n.t('pa.payStub.dependent', 'Số người phụ thuộc') }}</th>
+          <td colspan="6">{{ stub.dependentCount || 0 }}</td>
+        </tr>
+        <tr>
+          <th colspan="2">{{ i18n.t('pa.payStub.socialInsuranceNo', 'Số thẻ bảo hiểm xã hội') }}</th>
+          <td colspan="6">{{ stub.socialInsuranceNo }}</td>
+        </tr>
+      </table>
+
+      <div class="vps-section-title">{{ i18n.t('pa.payStub.account', 'Tài khoản') }}</div>
+      <table class="vps-detail-table">
+        <thead>
+          <tr>
+            <th class="text-center">{{ i18n.t('pa.payStub.bankName', 'Ngân hàng') }}</th>
+            <th class="text-center">{{ i18n.t('pa.payStub.accountNo', 'Số tài khoản') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-center">{{ stub.bankName }}</td>
+            <td class="text-center">{{ stub.bankAccountNo || stub.accountNo }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-container *ngIf="stub.standardItems?.length">
+        <div class="vps-section-title">{{ i18n.t('pa.payStub.standardItems', 'Hạng mục tiêu chuẩn') }}</div>
+        <table class="vps-detail-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('pa.payStub.itemName', 'Hạng mục') }}</th>
+              <th class="text-end">{{ i18n.t('pa.payStub.amount', 'Số tiền') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of stub.standardItems">
+              <td>{{ item.itemName }}</td>
+              <td class="text-end">{{ formatNumber(item.itemValue) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+
+      <table class="vps-triple-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="text-center vps-att-header">■ {{ i18n.t('pa.payStub.attendanceItems', 'Chi tiết chấm công') }}</th>
+            <th colspan="2" class="text-center vps-sal-header">■ {{ i18n.t('pa.payStub.salaryItems', 'Chi tiết lương') }}</th>
+            <th colspan="2" class="text-center vps-ded-header">■ {{ i18n.t('pa.payStub.deductionItems', 'Chi tiết khoản trừ') }}</th>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('pa.payStub.attendanceItem', 'Hạng mục chấm công') }}</th><th class="text-end">{{ i18n.t('pa.payStub.value', 'Giá trị') }}</th>
+            <th>{{ i18n.t('pa.payStub.salaryItem', 'Hạng mục') }}</th><th class="text-end">{{ i18n.t('pa.payStub.amount', 'Số tiền') }}</th>
+            <th>{{ i18n.t('pa.payStub.deductionItem', 'Hạng mục') }}</th><th class="text-end">{{ i18n.t('pa.payStub.amount', 'Số tiền') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!tripleRows(stub).length"><td colspan="6" class="text-center vps-muted">-</td></tr>
+          <tr *ngFor="let row of tripleRows(stub)">
+            <td>{{ row.attName }}</td>
+            <td class="text-end">{{ row.attValue != null ? formatNumber(row.attValue) : '' }}</td>
+            <td>{{ row.salName }}</td>
+            <td class="text-end">{{ row.salValue != null ? formatNumber(row.salValue) : '' }}</td>
+            <td>{{ row.dedName }}</td>
+            <td class="text-end">{{ row.dedValue != null ? formatNumber(row.dedValue) : '' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"></td>
+            <td class="fw-bold">{{ i18n.t('pa.payStub.total', 'Tổng') }}</td>
+            <td class="text-end fw-bold">{{ formatNumber(totalSalary(stub)) }}</td>
+            <td class="fw-bold">{{ i18n.t('pa.payStub.total', 'Tổng') }}</td>
+            <td class="text-end fw-bold">{{ formatNumber(totalDeduction(stub)) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <table class="vps-net-table">
+        <tr>
+          <td class="fw-bold">{{ i18n.t('pa.payStub.netSalary', 'Lương thực lĩnh') }}</td>
+          <td class="text-end fw-bold">{{ formatNumber(netSalary(stub)) }}</td>
+        </tr>
+      </table>
+
+      <ng-container *ngIf="visibleOtherItems(stub).length">
+        <div class="vps-section-title">{{ i18n.t('pa.payStub.otherItems', 'Hạng mục khác') }}</div>
+        <table class="vps-detail-table">
+          <tbody>
+            <tr *ngFor="let item of visibleOtherItems(stub)">
+              <td>{{ item.remark }}</td>
+              <td class="text-end">{{ formatNumber(item.returnValue) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+
+      <div class="vps-note">{{ i18n.t('pa.payStub.note', '※ Mọi thắc mắc về nội dung trên phiếu lương, vui lòng liên hệ phòng Nhân sự!') }}</div>
+    </div>
+  </div>
+</div>

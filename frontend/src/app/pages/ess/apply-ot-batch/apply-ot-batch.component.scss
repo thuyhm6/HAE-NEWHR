@@ -1,0 +1,53 @@
+.pioab-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pioab-search-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.pioab-search-emp-field input {
+  flex: 1;
+}
+
+.pioab-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.pioab-col-center {
+  text-align: center;
+}
+
+.pioab-muted {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.pioab-name-link {
+  color: #0d2bff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pioab-name-link:hover {
+  text-decoration: underline;
+}
+
+.pioab-approver-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.pioab-approver-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

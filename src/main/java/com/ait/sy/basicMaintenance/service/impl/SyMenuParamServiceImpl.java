@@ -5,11 +5,19 @@ import com.ait.sy.basicMaintenance.mapper.SyMenuParamMapper;
 import com.ait.sy.basicMaintenance.model.SyMenuParam;
 import com.ait.sy.basicMaintenance.service.SyMenuParamService;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -61,24 +69,47 @@ public class SyMenuParamServiceImpl implements SyMenuParamService {
 
     @Override
     public byte[] exportExcel(String parentMenuNo, String cpnyId) {
-        List<SyMenuParamDto> list = findByParentMenuAndCpny(parentMenuNo, cpnyId);
-        StringBuilder sb = new StringBuilder();
-        sb.append('\uFEFF');
-        sb.append("Menu Code,Name (VI),Name (EN),Assigned,Order No,Activity\n");
-        for (SyMenuParamDto dto : list) {
-            sb.append(escapeCsv(dto.getMenuCode())).append(",");
-            sb.append(escapeCsv(dto.getNameVi())).append(",");
-            sb.append(escapeCsv(dto.getNameEn())).append(",");
-            sb.append(dto.isAssigned() ? "Yes" : "No").append(",");
-            sb.append(dto.getParamOrderNo() != null ? dto.getParamOrderNo() : "").append(",");
-            sb.append(dto.getParamActivity() != null ? dto.getParamActivity() : "").append("\n");
-        }
-        return sb.toString().getBytes(StandardCharsets.UTF_8);
-    }
+        try {
+            List<SyMenuParamDto> list = findByParentMenuAndCpny(parentMenuNo, cpnyId);
 
-    private String escapeCsv(String s) {
-        if (s == null)
-            return "";
-        return "\"" + s.replace("\"", "\"\"") + "\"";
+            try (XSSFWorkbook wb = new XSSFWorkbook()) {
+                XSSFSheet sheet = wb.createSheet("SY_MENU_PARAM");
+
+                CellStyle headerStyle = wb.createCellStyle();
+                headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+                List<String> headers = Arrays.asList("Menu Code", "Name (VI)", "Name (EN)", "Assigned", "Order No", "Activity");
+                XSSFRow headerRow = sheet.createRow(0);
+                for (int col = 0; col < headers.size(); col++) {
+                    XSSFCell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers.get(col));
+                    cell.setCellStyle(headerStyle);
+                }
+
+                int rowIdx = 1;
+                for (SyMenuParamDto dto : list) {
+                    if (!dto.isAssigned()) continue;
+                    XSSFRow dataRow = sheet.createRow(rowIdx++);
+                    int c = 0;
+                    dataRow.createCell(c++).setCellValue(dto.getMenuCode() != null ? dto.getMenuCode() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameVi() != null ? dto.getNameVi() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameEn() != null ? dto.getNameEn() : "");
+                    dataRow.createCell(c++).setCellValue(dto.isAssigned() ? "Yes" : "No");
+                    dataRow.createCell(c++).setCellValue(dto.getParamOrderNo() != null ? dto.getParamOrderNo() : 0);
+                    dataRow.createCell(c++).setCellValue(Integer.valueOf(1).equals(dto.getParamActivity()) ? "Active" : "Inactive");
+                }
+
+                for (int i = 0; i < headers.size(); i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                wb.write(bos);
+                return bos.toByteArray();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

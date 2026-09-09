@@ -1,0 +1,218 @@
+<div class="vpwf-page">
+  <div class="vpwf-header">
+    <label class="vpwf-label">{{ i18n.t('pa.workFlow.paySchedule', 'Kế hoạch trả lương') }}</label>
+    <nz-select style="min-width: 280px" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch>
+      <nz-option *ngFor="let sch of scheduleOptions()" [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+    </nz-select>
+
+    <ng-container *ngIf="workflow() as wf">
+      <span class="vpwf-period-info">
+        <span class="vpwf-muted">{{ i18n.t('pa.workFlow.hrPeriod', 'Thời gian (QĐ)') }}</span>
+        <strong>{{ wf.hrStartDate || '--' }} ~ {{ wf.hrEndDate || '--' }}</strong>
+        <span class="vpwf-muted">{{ i18n.t('pa.workFlow.arPeriod', 'Thời gian (CC)') }}</span>
+        <strong>{{ wf.arStartDate || '--' }} ~ {{ wf.arEndDate || '--' }}</strong>
+        <span class="vpwf-muted">{{ i18n.t('pa.workFlow.empCount', 'Số lượng') }}</span>
+        <strong class="vpwf-emp-count">{{ wf.empCount ?? '--' }}</strong>
+      </span>
+    </ng-container>
+
+    <div class="vpwf-header-actions">
+      <button nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span>{{ i18n.t('pa.workFlow.search', 'Tra cứu') }}
+      </button>
+      <button nz-button nzSize="small" [disabled]="!workflow()" [nzLoading]="executing()" (click)="execute()">
+        <span nz-icon nzType="play-circle"></span>{{ i18n.t('pa.workFlow.execute', 'Thực hiện') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="vpwf-diagram" *ngIf="workflow()">
+    <!-- Cột 1 -->
+    <div class="vpwf-col">
+      <div class="vpwf-group">
+        <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.objCreate', '* Tạo đối tượng tính lương *') }}</div>
+        <div class="vpwf-step vpwf-step-checkbox">
+          <label>
+            <input type="checkbox" [ngModel]="chkObjCreate()" (ngModelChange)="chkObjCreate.set($event)" />
+            {{ i18n.t('pa.workFlow.step.objCreate.label', 'Tạo đối tượng') }}
+          </label>
+          <button nz-button nzType="text" nzSize="small" (click)="openRecordsModal('objCreate')">
+            <span nz-icon [nzType]="workflow()!.objCreateFlag === 1 ? 'check-circle' : 'clock-circle'"></span>
+          </button>
+        </div>
+      </div>
+      <div class="vpwf-arrow-down"><span nz-icon nzType="arrow-down"></span></div>
+      <div class="vpwf-group">
+        <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.arMonthCal', '* Tạo dữ liệu chấm công tháng *') }}</div>
+        <div class="vpwf-step vpwf-step-checkbox">
+          <label>
+            <input type="checkbox" [ngModel]="chkArMonthCal()" (ngModelChange)="chkArMonthCal.set($event)" />
+            {{ i18n.t('pa.workFlow.step.arMonthCal.label', 'Tổng hợp chấm công tháng') }}
+          </label>
+          <button nz-button nzType="text" nzSize="small" (click)="openRecordsModal('arMonthCal')">
+            <span nz-icon [nzType]="workflow()!.arMonthCalFlag === 1 ? 'check-circle' : 'clock-circle'"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vpwf-connector"><span nz-icon nzType="arrow-right"></span></div>
+
+    <!-- Cột 2 -->
+    <div class="vpwf-col">
+      <div class="vpwf-group">
+        <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.paCal', '* Tạo dữ liệu lương tháng *') }}</div>
+        <div class="vpwf-step vpwf-step-checkbox">
+          <label>
+            <input type="checkbox" [ngModel]="chkPaCal()" (ngModelChange)="chkPaCal.set($event)" />
+            {{ i18n.t('pa.workFlow.step.paCal.label', 'Tính lương') }}
+          </label>
+          <button nz-button nzType="text" nzSize="small" (click)="openRecordsModal('paCal')">
+            <span nz-icon [nzType]="workflow()!.paCalFlag === 1 ? 'check-circle' : 'clock-circle'"></span>
+          </button>
+        </div>
+      </div>
+      <div class="vpwf-arrow-down"><span nz-icon nzType="arrow-up"></span></div>
+      <div class="vpwf-group">
+        <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.adjust', '* Điều chỉnh tiền lương *') }}</div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="goToAdjustPay()">{{ i18n.t('pa.workFlow.step.adjust.pay', 'Điều chỉnh trả lương') }}</button>
+        </div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="goToAdjustDeduct()">{{ i18n.t('pa.workFlow.step.adjust.deduct', 'Điều chỉnh khoản trừ') }}</button>
+        </div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="goToAccountInfo()">{{ i18n.t('pa.workFlow.step.adjust.account', 'Thông tin tài khoản') }}</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vpwf-connector"><span nz-icon nzType="arrow-right"></span></div>
+
+    <!-- Cột 3 -->
+    <div class="vpwf-group vpwf-col-single">
+      <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.reconcile', '* Đối chiếu lương *') }}</div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.emp', 'NV tham gia tính lương') }}</button>
+      </div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.pay', 'Các khoản chi trả') }}</button>
+      </div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.decision', 'Quyết định thực hiện') }}</button>
+      </div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.detail', 'Chi tiết lương') }}</button>
+      </div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.personal', 'Kiểm tra cá nhân') }}</button>
+      </div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.item', 'Đối chiếu hạng mục') }}</button>
+      </div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.change', 'Khoản tiền thay đổi') }}</button>
+      </div>
+      <div class="vpwf-step">
+        <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.reconcile.result', 'Đối chiếu kết quả') }}</button>
+      </div>
+    </div>
+
+    <div class="vpwf-connector"><span nz-icon nzType="arrow-right"></span></div>
+
+    <!-- Cột 4 -->
+    <div class="vpwf-col">
+      <div class="vpwf-group">
+        <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.confirm', '* Khóa lương tránh thực hiện lỗi *') }}</div>
+        <div class="vpwf-step vpwf-step-checkbox">
+          <label>
+            <input type="checkbox" [ngModel]="chkPaConfirm()" (ngModelChange)="chkPaConfirm.set($event)" />
+            {{ i18n.t('pa.workFlow.step.confirm.label', 'Chốt lương') }}
+          </label>
+          <button nz-button nzType="text" nzSize="small" (click)="openRecordsModal('confirm')">
+            <span nz-icon [nzType]="workflow()!.paConfirmFlag === 1 ? 'check-circle' : 'clock-circle'"></span>
+          </button>
+        </div>
+      </div>
+      <div class="vpwf-arrow-down"><span nz-icon nzType="arrow-down"></span></div>
+      <div class="vpwf-group">
+        <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.report', '* Tra cứu bảng lương *') }}</div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.report.monthly', 'Lương tháng chi tiết') }}</button>
+        </div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.report.yearly', 'Lương năm chi tiết') }}</button>
+        </div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.report.slip', 'Phiếu lương') }}</button>
+        </div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.report.totalEmp', 'Tổng lương (cá nhân)') }}</button>
+        </div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.report.totalDept', 'Tổng lương (phòng ban)') }}</button>
+        </div>
+        <div class="vpwf-step">
+          <button class="vpwf-active-step" (click)="openAllRecordsModal()">{{ i18n.t('pa.workFlow.step.report.table', 'Bảng lương') }}</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vpwf-connector"><span nz-icon nzType="arrow-right"></span></div>
+
+    <!-- Cột 5 -->
+    <div class="vpwf-group vpwf-col-single">
+      <div class="vpwf-group-header">{{ i18n.t('pa.workFlow.step.open', '* Mở lương *') }}</div>
+      <div class="vpwf-step vpwf-step-checkbox">
+        <label>
+          <input type="checkbox" [ngModel]="chkPaOpen()" (ngModelChange)="chkPaOpen.set($event)" />
+          {{ i18n.t('pa.workFlow.step.open.label', 'Mở lương') }}
+        </label>
+        <button nz-button nzType="text" nzSize="small" (click)="openRecordsModal('open')">
+          <span nz-icon [nzType]="workflow()!.paOpenFlag === 1 ? 'check-circle' : 'clock-circle'"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay khi thực hiện quy trình -->
+<div class="vpwf-loading-overlay" *ngIf="executing()">
+  <div class="vpwf-loading-box">
+    <nz-spin nzSize="large"></nz-spin>
+    <div class="vpwf-loading-title">{{ i18n.t('pa.workFlow.msgExecuting', 'Đang thực hiện...') }}</div>
+    <div class="vpwf-loading-step">{{ loadingStepText() }}</div>
+  </div>
+</div>
+
+<!-- Modal lịch sử thao tác -->
+<nz-modal
+  [(nzVisible)]="recordsModalVisible"
+  [nzTitle]="i18n.t('pa.workFlow.records.title', 'Lịch sử thao tác')"
+  [nzFooter]="null"
+  nzWidth="700px"
+  (nzOnCancel)="recordsModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <table class="vpwf-records-table">
+      <thead>
+        <tr>
+          <th style="width: 60px" class="vpwf-col-center">{{ i18n.t('pa.workFlow.records.no', 'No.') }}</th>
+          <th>{{ i18n.t('pa.workFlow.records.step', 'Bước') }}</th>
+          <th style="width: 180px" class="vpwf-col-center">{{ i18n.t('pa.workFlow.records.datetime', 'Thời gian thực hiện') }}</th>
+          <th style="width: 220px" class="vpwf-col-center">{{ i18n.t('pa.workFlow.records.operator', 'Người thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="recordsLoading()"><td colspan="4" class="vpwf-col-center"><span nz-icon nzType="loading" nzSpin></span></td></tr>
+        <tr *ngIf="!recordsLoading() && !records().length"><td colspan="4" class="vpwf-col-center vpwf-muted">{{ i18n.t('pa.workFlow.records.noData', 'Không có dữ liệu lịch sử') }}</td></tr>
+        <tr *ngFor="let rec of records(); let idx = index">
+          <td class="vpwf-col-center">{{ rec.rowNum || idx + 1 }}</td>
+          <td>{{ stepName(rec.flowStep) }}</td>
+          <td class="vpwf-col-center">{{ rec.createDate }}</td>
+          <td class="vpwf-col-center">{{ operatorOf(rec) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+</nz-modal>

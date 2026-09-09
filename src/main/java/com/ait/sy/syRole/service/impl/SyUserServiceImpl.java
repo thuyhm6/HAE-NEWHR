@@ -7,12 +7,20 @@ import com.ait.sy.syRole.model.SyUser;
 import com.ait.sy.syRole.model.SyUserRelation;
 import com.ait.sy.syRole.service.SyUserService;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -101,35 +109,47 @@ public class SyUserServiceImpl implements SyUserService {
 
     @Override
     public byte[] exportExcel() {
-        List<SyUser> list = syUserMapper.findAll();
-        StringBuilder sb = new StringBuilder();
-        sb.append('\uFEFF'); // BOM for UTF-8
-        sb.append("STT,ID Đăng nhập,Mã NV,Họ tên\n");
-        int rowIndex = 1;
+        try {
+            List<SyUserDto> list = searchUsers(null);
 
-        for (SyUser data : list) {
-            sb.append(rowIndex++).append(",");
-            sb.append(escapeCsv(data.getUserNo())).append(",");
-            sb.append(escapeCsv(data.getPersonId())).append(",");
-            sb.append(escapeCsv(data.getUserName())).append("\n");
-        }
-        return sb.toString().getBytes(StandardCharsets.UTF_8);
-    }
+            try (XSSFWorkbook wb = new XSSFWorkbook()) {
+                XSSFSheet sheet = wb.createSheet("SY_USER");
 
-    private String escapeCsv(String s) {
-        if (s == null)
-            return "";
-        if (isPotentialFormula(s)) {
-            s = "'" + s;
-        }
-        return "\"" + s.replace("\"", "\"\"") + "\"";
-    }
+                CellStyle headerStyle = wb.createCellStyle();
+                headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-    private boolean isPotentialFormula(String value) {
-        if (value.isEmpty()) {
-            return false;
+                List<String> headers = Arrays.asList("STT", "ID Đăng nhập", "Họ tên", "Phòng ban", "Mã NV", "Loại TK");
+                XSSFRow headerRow = sheet.createRow(0);
+                for (int col = 0; col < headers.size(); col++) {
+                    XSSFCell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers.get(col));
+                    cell.setCellStyle(headerStyle);
+                }
+
+                int rowIdx = 1;
+                for (SyUserDto dto : list) {
+                    XSSFRow dataRow = sheet.createRow(rowIdx);
+                    int c = 0;
+                    dataRow.createCell(c++).setCellValue(rowIdx);
+                    dataRow.createCell(c++).setCellValue(dto.getUserName() != null ? dto.getUserName() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getEmpName() != null ? dto.getEmpName() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getDeptName() != null ? dto.getDeptName() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getPersonId() != null ? dto.getPersonId() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getUserType() != null ? dto.getUserType() : "");
+                    rowIdx++;
+                }
+
+                for (int i = 0; i < headers.size(); i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                wb.write(bos);
+                return bos.toByteArray();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        char firstChar = value.charAt(0);
-        return firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@';
     }
 }

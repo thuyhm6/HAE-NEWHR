@@ -6,6 +6,7 @@ import com.ait.ar.attendanceMintenance.dto.EssLeaveApplyImportTempDto;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.ar.attendanceMintenance.service.EssLeaveApplyService;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import com.ait.util.AngularIndexService;
 import com.ait.util.MailSendApprovalManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,14 +37,19 @@ public class EssLeaveApplyController {
     @Autowired
     private MailSendApprovalManager mailSendApprovalManager;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewApplyAttManagentByAnyApproverList")
-    public String view() {
-        return "ar/attendanceMintenance/viewApplyAttManagentByAnyApproverList";
+    public String view(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewImportAttendanceTempList")
-    public String viewImportAttendanceTempList() {
-        return "ar/attendanceMintenance/viewImportAttendanceTempList";
+    public String viewImportAttendanceTempList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/leaveApply/list")

@@ -1,0 +1,44 @@
+.adm-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.adm-table th,
+.adm-table td {
+  border: 1px solid #f0f0f0;
+  padding: 6px 8px;
+}
+
+.adm-table thead th {
+  background: #fafafa;
+}
+
+.adm-table-plain th {
+  background: #fafafa;
+  width: 160px;
+}
+
+.adm-col-center {
+  text-align: center;
+}
+
+.adm-col-label {
+  text-align: center;
+  width: 140px;
+}
+
+.adm-muted {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.adm-section-title {
+  font-weight: 600;
+  margin: 0 0 8px;
+}

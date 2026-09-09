@@ -1,0 +1,26 @@
+.sv-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sv-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.sv-col-center {
+  text-align: center;
+}
+
+.sv-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.sv-emp-field input {
+  flex: 1;
+}

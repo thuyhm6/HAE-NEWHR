@@ -1,7 +1,6 @@
 package com.ait.sy.sys.controller;
 
 import com.ait.sy.sys.service.PasswordUpdateService;
-import com.ait.sy.sys.service.PasswordUpdateService.UserPasswordInfo;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,13 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Password update controller.
@@ -29,81 +25,6 @@ public class PasswordUpdateController {
 
     @Autowired
     private PasswordUpdateService passwordUpdateService;
-
-    @GetMapping("/update")
-    public String showPasswordUpdatePage(Model model, HttpSession session) {
-        try {
-            String userNo = getCurrentUserNo(session);
-            if (userNo == null || userNo.isEmpty()) {
-                return "redirect:/login";
-            }
-
-            UserPasswordInfo userInfo = passwordUpdateService.getUserPasswordInfo(userNo);
-            if (userInfo == null) {
-                return "redirect:/login";
-            }
-
-            model.addAttribute("userInfo", userInfo);
-            return "password/update-password";
-        } catch (Exception e) {
-            return "redirect:/login";
-        }
-    }
-
-    @PostMapping("/update")
-    public String updatePassword(
-            @RequestParam("oldPassword") String oldPassword,
-            @RequestParam("newPassword") String newPassword,
-            @RequestParam("confirmPassword") String confirmPassword,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-
-        try {
-            String currentUserNo = getCurrentUserNo(session);
-            if (currentUserNo == null || currentUserNo.isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Session expired. Please log in again.");
-                return "redirect:/login";
-            }
-
-            if (oldPassword == null || oldPassword.trim().isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Please enter current password");
-                return "redirect:/password/update";
-            }
-
-            if (newPassword == null || newPassword.trim().isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Please enter new password");
-                return "redirect:/password/update";
-            }
-
-            if (!newPassword.equals(confirmPassword)) {
-                redirectAttributes.addFlashAttribute("error", "New password and confirm password do not match");
-                return "redirect:/password/update";
-            }
-
-            if (!passwordUpdateService.isPasswordStrong(newPassword)) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Password must be at least 8 chars and include uppercase, lowercase, number, and special char");
-                return "redirect:/password/update";
-            }
-
-            if (!passwordUpdateService.verifyOldPassword(currentUserNo, oldPassword)) {
-                redirectAttributes.addFlashAttribute("error", "Current password is incorrect");
-                return "redirect:/password/update";
-            }
-
-            if (passwordUpdateService.updatePassword(currentUserNo, newPassword)) {
-                redirectAttributes.addFlashAttribute("success", "Password updated successfully");
-                return "redirect:/password/update";
-            }
-
-            redirectAttributes.addFlashAttribute("error", "Failed to update password");
-            return "redirect:/password/update";
-        } catch (Exception e) {
-            log.error("Failed to update password", e);
-            redirectAttributes.addFlashAttribute("error", "System error while updating password");
-            return "redirect:/password/update";
-        }
-    }
 
     @PostMapping("/api/verify-old-password")
     @ResponseBody

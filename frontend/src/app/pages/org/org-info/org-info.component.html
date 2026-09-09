@@ -1,0 +1,51 @@
+<nz-card [nzTitle]="i18n.t('org.orgManage.viewOrgInfo.title', 'Sơ đồ tổ chức (Visual Chart)')"
+         [nzExtra]="orgInfoExtra" [nzBodyStyle]="{ padding: '0' }">
+  <ng-template #orgInfoExtra>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnExpandAll" (click)="expandAll()">
+      <span nz-icon nzType="arrows-alt"></span> {{ i18n.t('org.orgManage.viewOrgInfo.expand', 'Mở rộng') }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnCollapseAll" (click)="collapseAll()">
+      <span nz-icon nzType="shrink"></span> {{ i18n.t('org.orgManage.viewOrgInfo.collapse', 'Thu gọn') }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnZoomIn" (click)="zoomIn()">
+      <span nz-icon nzType="zoom-in"></span> {{ i18n.t('org.orgManage.viewOrgInfo.zoomIn', 'Phóng to') }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnZoomOut" (click)="zoomOut()">
+      <span nz-icon nzType="zoom-out"></span> {{ i18n.t('org.orgManage.viewOrgInfo.zoomOut', 'Thu nhỏ') }}
+    </button>
+    <button nz-button nzSize="small" type="button" id="orgInfoBtnResetZoom" (click)="resetZoom()">
+      <span nz-icon nzType="reload"></span> {{ i18n.t('org.orgManage.viewOrgInfo.reset', 'Đặt lại') }}
+    </button>
+  </ng-template>
+
+  <div class="org-container">
+    <div *ngIf="loading()" class="oin-status">
+      <span nz-icon nzType="loading" nzSpin></span>
+      <div>{{ i18n.t('org.orgManage.viewOrgInfo.loading', 'Đang tải dữ liệu...') }}</div>
+    </div>
+
+    <div *ngIf="!loading() && loadError()" class="oin-status oin-status-error">
+      <div>{{ i18n.t('org.orgManage.viewOrgInfo.loadError', 'Lỗi tải dữ liệu') }}</div>
+      <button nz-button nzSize="small" type="button" id="orgInfoBtnRetry" (click)="loadTree()">
+        {{ i18n.t('org.orgManage.viewOrgInfo.retry', 'Thử lại') }}
+      </button>
+    </div>
+
+    <div *ngIf="!loading() && !loadError() && roots().length === 0" class="oin-status">
+      {{ i18n.t('org.orgManage.viewOrgInfo.noData', 'Không có dữ liệu') }}
+    </div>
+
+    <div *ngIf="!loading() && !loadError() && roots().length > 0" class="org-viewport" id="orgInfoChart" #viewport>
+      <div class="org-world" #world [style.width.px]="layout().width" [style.height.px]="layout().height">
+        <svg class="org-links" [attr.width]="layout().width" [attr.height]="layout().height">
+          <path *ngFor="let link of layout().links; trackBy: trackLink" class="org-link" [attr.d]="link.path"></path>
+        </svg>
+        <div class="org-card-wrap" *ngFor="let n of layout().nodes; trackBy: trackNode"
+             [style.transform]="'translate(' + n.x + 'px,' + n.y + 'px)'">
+          <app-org-chart-card [node]="n.data" [hasChildren]="n.hasChildren" [collapsed]="n.collapsed"
+                              [toggleFn]="toggleNode"></app-org-chart-card>
+        </div>
+      </div>
+    </div>
+  </div>
+</nz-card>

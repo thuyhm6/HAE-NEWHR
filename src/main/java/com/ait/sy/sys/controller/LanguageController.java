@@ -3,10 +3,17 @@ package com.ait.sy.sys.controller;
 import com.ait.util.I18nUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +22,8 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 
 @Controller
 public class LanguageController {
+
+    private static final Logger log = LoggerFactory.getLogger(LanguageController.class);
 
     @GetMapping("/change-language")
     public String changeLanguage(
@@ -71,6 +80,38 @@ public class LanguageController {
         }
 
         return supportedLanguages;
+    }
+
+    /**
+     * Dump toan bo key/value trong messages*.properties theo locale cho Angular
+     * dung (khong hardcode text hien thi, tai su dung file messages co san)
+     */
+    @GetMapping("/api/i18n/messages")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public Map<String, String> getI18nMessages(@RequestParam(required = false) String lang) {
+        String code = (lang != null && I18nUtil.isLanguageSupported(lang))
+                ? lang
+                : I18nUtil.getCurrentLanguageCode();
+        Locale locale = I18nUtil.createLocale(code);
+        String resourceName = "messages_" + locale.getLanguage() + "_" + locale.getCountry() + ".properties";
+
+        ClassPathResource resource = new ClassPathResource(resourceName);
+        if (!resource.exists()) {
+            resource = new ClassPathResource("messages.properties");
+        }
+
+        Properties props = new Properties();
+        try (InputStreamReader reader = new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)) {
+            props.load(reader);
+        } catch (IOException e) {
+            log.error("Loi doc file message bundle {}", resourceName, e);
+        }
+
+        Map<String, String> result = new HashMap<>();
+        for (String name : props.stringPropertyNames()) {
+            result.put(name, props.getProperty(name));
+        }
+        return result;
     }
 
     private String resolveSafeRedirectTarget(HttpServletRequest request) {

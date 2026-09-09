@@ -1,0 +1,21 @@
+.impmac-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.impmac-col-center {
+  text-align: center;
+}
+
+.impmac-row-error {
+  background: #fff2f0;
+}
+
+.impmac-ok {
+  color: #389e0d;
+}
+
+.impmac-error-text {
+  color: #cf1322;
+}

@@ -2,6 +2,7 @@ package com.ait.ar.attendanceSettings.controller;
 
 import com.ait.ar.attendanceSettings.dto.ArStaItemDto;
 import com.ait.ar.attendanceSettings.service.ArStaItemService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +24,13 @@ public class ArStaItemController {
     @Autowired
     private ArStaItemService arStaItemService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewSummaryItem")
-    public String viewSummaryItem() {
-        return "ar/attendanceSettings/viewSummaryItem";
+    public String viewSummaryItem(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/arStaItem")

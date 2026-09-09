@@ -17,6 +17,7 @@ import com.ait.ar.attendanceMintenance.service.ArCardRecordService;
 import com.ait.ar.attendanceMintenance.service.ArMacRecordEatService;
 import com.ait.ar.attendanceMintenance.service.ArMacRecordTempService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import com.ait.util.AngularIndexService;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.poi.ss.usermodel.Cell;
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -71,14 +71,19 @@ public class ArAttendanceSearchController {
     @Autowired
     private ArCardRecordDayService arCardRecordDayService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewAttendanceManagentForSerchInfoList")
-    public String viewAttendanceManagentForSerchInfoList() {
-        return "ar/attendanceMintenance/viewAttendanceManagentForSerchInfoList";
+    public String viewAttendanceManagentForSerchInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewSearchApplyOtInfoList")
-    public String viewSearchApplyOtInfoList() {
-        return "ar/attendanceMintenance/viewSearchApplyOtInfoList";
+    public String viewSearchApplyOtInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/attendanceSearch/list")
@@ -124,10 +129,9 @@ public class ArAttendanceSearchController {
     }
 
     @GetMapping("/viewArCardRecord")
-    public String viewArCardRecord(HttpSession session, Model model) {
-        String sysMode = (String) session.getAttribute("sysMode");
-        model.addAttribute("sysMode", sysMode != null ? sysMode : "hrm");
-        return "ar/attendanceMintenance/viewArCardRecord";
+    public String viewArCardRecord(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     private boolean isEssMode(HttpSession session) {
@@ -231,8 +235,9 @@ public class ArAttendanceSearchController {
     }
 
     @GetMapping("/viewImportExcelTempMacRecordsList")
-    public String viewImportExcelTempMacRecordsList() {
-        return "ar/attendanceMintenance/viewImportExcelTempMacRecordsList";
+    public String viewImportExcelTempMacRecordsList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @PostMapping("/api/macRecordTemp/uploadExcel")
@@ -251,8 +256,9 @@ public class ArAttendanceSearchController {
     }
 
     @GetMapping("/viewArCardRecordForSelf")
-    public String viewArCardRecordForSelf() {
-        return "ar/attendanceMintenance/viewArCardRecordForSelf";
+    public String viewArCardRecordForSelf(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/cardRecordForSelf/list")
@@ -360,8 +366,9 @@ public class ArAttendanceSearchController {
     }
 
     @GetMapping("/viewArCardRecordDay")
-    public String viewArCardRecordDay() {
-        return "ar/attendanceMintenance/viewArCardRecordDay";
+    public String viewArCardRecordDay(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/cardRecordDay/list")
@@ -390,8 +397,9 @@ public class ArAttendanceSearchController {
     }
 
     @GetMapping("/viewArCardRecordMeal")
-    public String viewArCardRecordMeal() {
-        return "ar/attendanceMintenance/viewArCardRecordMeal";
+    public String viewArCardRecordMeal(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @PostMapping("/api/macRecordEat/importFromDevice")

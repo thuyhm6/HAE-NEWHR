@@ -200,10 +200,13 @@ public class HrDepartment {
     private String deptTypeName;
 
     /**
-     * Kiểm tra phòng ban có hoạt động không
+     * Kiểm tra phòng ban có hoạt động không.
+     * Sửa lỗi logic: code cũ dùng "activity != null || activity == 1" nên luôn trả về true với mọi
+     * activity khác null (kể cả 0), khiến HrAuthenticationServiceImpl không thể chặn đăng nhập khi
+     * phòng ban đã bị vô hiệu hóa - phải dùng "&&" mới đúng ý nghĩa "chỉ hoạt động khi activity = 1".
      */
     public boolean isActive() {
-        return this.activity != null || this.activity == 1;
+        return this.activity != null && this.activity == 1;
     }
 
     /**

@@ -5,6 +5,7 @@ import com.ait.ess.arConfirm.dto.EssLeaveConfirmDto;
 import com.ait.ess.arConfirm.service.EssAttendanceExConfirmService;
 import com.ait.ess.arConfirm.service.EssLeaveConfirmService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +32,13 @@ public class EssLeaveConfirmController {
     @Autowired
     private EssAttendanceExConfirmService attendanceExConfirmService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewAttendanceExConfirm")
-    public String viewAttendanceExConfirm() {
-        return "ess/arConfirm/viewAttendanceExConfirm";
+    public String viewAttendanceExConfirm(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/attendanceExConfirm/list")
@@ -119,8 +126,9 @@ public class EssLeaveConfirmController {
     }
 
     @GetMapping("/viewLeaveConfirmList")
-    public String viewLeaveConfirmList() {
-        return "ess/arConfirm/viewLeaveConfirmList";
+    public String viewLeaveConfirmList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/leaveConfirm/list")

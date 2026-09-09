@@ -1,0 +1,139 @@
+<div class="orl-page">
+  <div class="orl-search-card">
+    <div class="orl-search-row">
+      <div class="orl-field">
+        <label class="orl-inline-label">{{ i18n.t('org.resume.no', 'Mã thay đổi') }}</label>
+        <input nz-input [ngModel]="searchNo()" (ngModelChange)="searchNo.set($event)" (keydown.enter)="search()" [placeholder]="i18n.t('org.resume.noPlaceholder', 'Nhập mã thay đổi')" />
+      </div>
+      <div class="orl-field">
+        <label class="orl-inline-label">{{ i18n.t('org.resume.resumeName', 'Tên thay đổi') }}</label>
+        <input nz-input [ngModel]="searchResumeName()" (ngModelChange)="searchResumeName.set($event)" (keydown.enter)="search()" [placeholder]="i18n.t('org.resume.resumeNamePlaceholder', 'Nhập tên thay đổi')" />
+      </div>
+      <div class="orl-field">
+        <label class="orl-inline-label">{{ i18n.t('org.resume.changeDateFrom', 'Ngày hiệu lực từ') }}</label>
+        <nz-date-picker style="width: 100%" [ngModel]="searchChangeDateFrom()" (ngModelChange)="searchChangeDateFrom.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="orl-field">
+        <label class="orl-inline-label">{{ i18n.t('org.resume.changeDateTo', 'Ngày hiệu lực đến') }}</label>
+        <nz-date-picker style="width: 100%" [ngModel]="searchChangeDateTo()" (ngModelChange)="searchChangeDateTo.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      </div>
+      <div class="orl-field">
+        <label class="orl-inline-label">{{ i18n.t('common.status', 'Trạng thái') }}</label>
+        <nz-select style="width: 100%" [ngModel]="searchActivity()" (ngModelChange)="searchActivity.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')">
+          <nz-option [nzValue]="activeCode" [nzLabel]="i18n.t('common.active', 'Hoạt động')"></nz-option>
+          <nz-option [nzValue]="inactiveCode" [nzLabel]="i18n.t('common.inactive', 'Không hoạt động')"></nz-option>
+        </nz-select>
+      </div>
+      <div class="orl-search-actions">
+        <button nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <button nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close-circle"></span>{{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <a nz-button [href]="exportUrl()">
+          <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất kết quả') }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="orl-table-card">
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsFiltered()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[25, 50, 100, 200]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      nzSize="small"
+      nzBordered
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="orl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('org.resume.no', 'Mã thay đổi') }}</th>
+          <th>{{ i18n.t('org.resume.resumeName', 'Tên thay đổi') }}</th>
+          <th>{{ i18n.t('org.resume.changeDate', 'Ngày hiệu lực') }}</th>
+          <th>{{ i18n.t('org.resume.changeReason', 'Nguyên nhân') }}</th>
+          <th class="orl-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th>{{ i18n.t('common.createdBy', 'Người tạo') }}</th>
+          <th>{{ i18n.t('common.createDate', 'Ngày tạo') }}</th>
+          <th class="orl-col-center" nzWidth="100px">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index">
+          <td class="orl-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td>{{ row.no }}</td>
+          <td>{{ row.resumeName }}</td>
+          <td>{{ formatDisplayDate(row.changeDate) }}</td>
+          <td>{{ row.changeReason }}</td>
+          <td class="orl-col-center">
+            <span class="orl-badge" [class.orl-badge-success]="row.activity === activeCode" [class.orl-badge-secondary]="row.activity !== activeCode">
+              {{ row.activity === activeCode ? i18n.t('common.active', 'Hoạt động') : i18n.t('common.inactive', 'Không hoạt động') }}
+            </span>
+          </td>
+          <td>{{ row.createdBy }}</td>
+          <td>{{ formatDisplayDateTime(row.createDate) }}</td>
+          <td class="orl-col-center">
+            <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+              <span nz-icon nzType="edit"></span>
+            </button>
+            <button nz-button nzSize="small" nzDanger (click)="deleteRow(row)" [title]="i18n.t('common.delete', 'Xóa')">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa thay đổi tổ chức -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('org.resume.modalAddTitle', 'Thêm mới thay đổi tổ chức') : (i18n.t('org.resume.modalEditTitle', 'Cập nhật thay đổi tổ chức') + ': ' + form.no)"
+  [nzOkLoading]="formSaving()"
+  nzWidth="700px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="orl-form-row">
+      <label class="orl-form-label">{{ i18n.t('org.resume.no', 'Mã thay đổi') }}</label>
+      <input nz-input [ngModel]="form.no" disabled [placeholder]="i18n.t('sys.codeManage.autoGenerated', 'Tự động sinh')" />
+    </div>
+    <div class="orl-form-row">
+      <label class="orl-form-label orl-required">{{ i18n.t('org.resume.resumeName', 'Tên thay đổi') }}</label>
+      <input nz-input [(ngModel)]="form.resumeName" />
+    </div>
+    <div class="orl-form-row">
+      <label class="orl-form-label orl-required">{{ i18n.t('org.resume.changeDate', 'Ngày hiệu lực') }}</label>
+      <nz-date-picker style="width: 100%" [(ngModel)]="form.changeDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="orl-form-row">
+      <label class="orl-form-label">{{ i18n.t('org.resume.changeReason', 'Nguyên nhân') }}</label>
+      <textarea nz-input rows="3" [(ngModel)]="form.changeReason"></textarea>
+    </div>
+    <div class="orl-form-row">
+      <label class="orl-form-label">{{ i18n.t('common.remark', 'Ghi chú') }}</label>
+      <textarea nz-input rows="2" [(ngModel)]="form.remark"></textarea>
+    </div>
+    <div class="orl-form-row">
+      <label class="orl-form-label">{{ i18n.t('common.status', 'Trạng thái') }}</label>
+      <nz-select style="width: 100%" [(ngModel)]="form.activity">
+        <nz-option [nzValue]="activeCode" [nzLabel]="i18n.t('common.active', 'Hoạt động')"></nz-option>
+        <nz-option [nzValue]="inactiveCode" [nzLabel]="i18n.t('common.inactive', 'Không hoạt động')"></nz-option>
+      </nz-select>
+    </div>
+  </ng-container>
+</nz-modal>

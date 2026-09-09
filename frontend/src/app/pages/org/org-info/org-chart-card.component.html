@@ -1,0 +1,27 @@
+<div class="tf-nc" [class.dept-node]="node.type === 'DEPT'" [class.emp-group-node]="node.type === 'EMP_GROUP'"
+     [class.emp-node]="node.type !== 'DEPT' && node.type !== 'EMP_GROUP'" (click)="onToggle()">
+  <ng-container [ngSwitch]="node.type">
+    <ng-container *ngSwitchCase="'DEPT'">
+      <div class="dept-header">{{ node.name || node.code }}</div>
+      <div class="dept-info">{{ node.code }}</div>
+      <div class="manager-info" *ngIf="node.managerId">
+        <img [src]="node.imageUrl || defaultAvatar" (error)="onImgError($event)" class="manager-img" alt="">
+        <div class="manager-details">
+          <div class="manager-name">{{ node.managerName }}</div>
+          <div>ID: {{ node.managerId }}</div>
+        </div>
+      </div>
+      <div class="toggle-btn" *ngIf="hasChildren">{{ collapsed ? '+' : '-' }}</div>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'EMP_GROUP'">
+      <div class="emp-group-list">
+        <div class="emp-group-row" *ngFor="let emp of node.children">{{ emp.code }} - {{ emp.name }}</div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngSwitchDefault>
+      <div class="emp-name">{{ node.code }} - {{ node.name }}</div>
+    </ng-container>
+  </ng-container>
+</div>

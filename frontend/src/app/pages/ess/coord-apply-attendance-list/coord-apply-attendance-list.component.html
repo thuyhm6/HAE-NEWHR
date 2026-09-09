@@ -1,0 +1,150 @@
+<div class="cai-page">
+  <nz-card class="cai-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.empIdOrName', 'Mã NV / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cai-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="caiKeyword" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="cai-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="caiDeptNos"
+                [nzPlaceHolder]="i18n.t('ex.placeholder.dept', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.fromDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="cai-start-date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" name="caiStartDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.toDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="cai-end-date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" name="caiEndDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.postFamily', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cai-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="caiPostFamily" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of postFamilyOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.shiftNo', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cai-shift" [ngModel]="shiftNo()" (ngModelChange)="shiftNo.set($event)" name="caiShiftNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="shiftLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('cai.field.category', 'Phân loại') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="cai-item" [ngModel]="itemNoSearch()" (ngModelChange)="itemNoSearch.set($event)" name="caiItemNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="opt.itemName || opt.itemNo"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row>
+        <div nz-col [nzSpan]="24" class="cai-search-actions">
+          <button id="cai-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ex.btn.search', 'Tra cứu') }}
+          </button>
+          <button id="cai-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="cai-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('ex.btn.export', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="cai-table-card">
+    <nz-table
+      id="cai-data-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzShowSizeChanger]="true"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="cai-col-center">{{ i18n.t('ex.col.no', 'No.') }}</th>
+          <th class="cai-col-center">{{ i18n.t('ex.col.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ex.col.fullName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ex.col.dept', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('ex.col.position', 'Chức vụ') }}</th>
+          <th class="cai-col-center">{{ i18n.t('cai.col.shift', 'Ca') }}</th>
+          <th>{{ i18n.t('cai.col.category', 'Phân loại') }}</th>
+          <th class="cai-col-center">{{ i18n.t('cai.col.duration', 'Thời lượng') }}</th>
+          <th class="cai-col-center">{{ i18n.t('cai.col.workDate', 'Ngày công') }}</th>
+          <th class="cai-col-center">{{ i18n.t('cai.col.fromTime', 'Thời gian bắt đầu') }}</th>
+          <th class="cai-col-center">{{ i18n.t('cai.col.toTime', 'Thời gian kết thúc') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index; let idx = $index) {
+          <tr>
+            <td class="cai-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="cai-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="cai-col-center">{{ row.shiftName }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="cai-col-center">{{ row.quantity }}{{ row.unit ? ' ' + row.unit : '' }}</td>
+            <td class="cai-col-center">{{ row.arDateStr }}</td>
+            <td class="cai-col-center">{{ row.fromDate }}</td>
+            <td class="cai-col-center">{{ row.toTime }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="cai-col-center">{{ i18n.t('atpi.js.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

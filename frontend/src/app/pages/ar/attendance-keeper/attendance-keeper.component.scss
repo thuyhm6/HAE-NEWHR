@@ -1,0 +1,120 @@
+.ak-page {
+  height: 100%;
+}
+
+.ak-left-card,
+.ak-right-card {
+  height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+
+  ::ng-deep .ant-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+}
+
+.ak-left-header,
+.ak-right-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ak-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1677ff;
+}
+
+.ak-selected-name {
+  color: #1677ff;
+}
+
+.ak-search-input {
+  margin-bottom: 12px;
+}
+
+.ak-list-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ak-list-loading,
+.ak-list-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.ak-list-item {
+  padding: 10px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+.ak-list-item:hover {
+  background: #fafafa;
+}
+
+.ak-list-item-active {
+  background: #e6f4ff;
+  border-color: #91caff;
+}
+
+.ak-list-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ak-list-item-name {
+  font-weight: 600;
+}
+
+.ak-list-item-dept {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}
+
+.ak-info-bar {
+  padding: 8px 12px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.ak-info-success {
+  color: #389e0d;
+}
+
+.ak-dept-tree {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+}
+
+.ak-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.ak-emp-field input {
+  flex: 1;
+}

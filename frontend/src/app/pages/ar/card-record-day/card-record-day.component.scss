@@ -1,0 +1,25 @@
+.acrd-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acrd-search-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.acrd-search-emp-field input {
+  flex: 1;
+}
+
+.acrd-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.acrd-col-center {
+  text-align: center;
+}

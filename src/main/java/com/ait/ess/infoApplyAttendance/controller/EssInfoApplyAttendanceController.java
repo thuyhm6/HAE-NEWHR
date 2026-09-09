@@ -11,9 +11,11 @@ import com.ait.ess.infoApplyAttendance.service.EssAttendanceExForBatchService;
 import com.ait.ess.infoApplyAttendance.service.EssAttendancePersonalInfoService;
 import com.ait.ess.infoApplyAttendance.service.EssCoordApplyAttendanceService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import com.ait.util.AngularIndexService;
 import com.ait.util.MailSendApprovalManager;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +45,16 @@ public class EssInfoApplyAttendanceController {
 
     @Autowired
     private EssCoordApplyAttendanceService coordApplyAttendanceService;
-    @Autowired    
+    @Autowired
     private MailSendApprovalManager mailSendApprovalManager;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewSSTApplyAttendance")
-    public String viewSSTApplyAttendance() {
-        return "ess/infoApplyAttendance/viewSSTApplyAttendance";
+    public String viewSSTApplyAttendance(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/vacationInfo")
@@ -67,13 +74,15 @@ public class EssInfoApplyAttendanceController {
     }
 
     @GetMapping("/viewAttendanceExForBatchInfoList")
-    public String viewAttendanceExForBatchInfoList() {
-        return "ess/infoApplyAttendance/viewAttendanceExForBatchInfoList";
+    public String viewAttendanceExForBatchInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewCheckAttencetanceExForBatchList")
-    public String viewCheckAttencetanceExForBatchList() {
-        return "ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList";
+    public String viewCheckAttencetanceExForBatchList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/attendanceEx/list")
@@ -127,13 +136,15 @@ public class EssInfoApplyAttendanceController {
     }
 
     @GetMapping("/viewApplyAttendanceInfoList")
-    public String viewApplyAttendanceInfoList() {
-        return "ess/infoApplyAttendance/viewApplyAttendanceInfoList";
+    public String viewApplyAttendanceInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewApplyAttBatchByAnyApproverList")
-    public String viewApplyAttBatchByAnyApproverList() {
-        return "ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList";
+    public String viewApplyAttBatchByAnyApproverList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/myLeaveApply/list")
@@ -174,8 +185,9 @@ public class EssInfoApplyAttendanceController {
     }
 
     @GetMapping("/viewAttendancePersonalInfoList")
-    public String viewAttendancePersonalInfoList() {
-        return "ess/infoApplyAttendance/viewAttendancePersonalInfoList";
+    public String viewAttendancePersonalInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/attendancePersonal/list")
@@ -198,8 +210,9 @@ public class EssInfoApplyAttendanceController {
     }
 
     @GetMapping("/viewCoordApplyAttendanceInfoList")
-    public String viewCoordApplyAttendanceInfoList() {
-        return "ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList";
+    public String viewCoordApplyAttendanceInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/coordApply/list")

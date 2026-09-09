@@ -1,0 +1,87 @@
+<div class="voci-page">
+  <div class="voci-left">
+    <div class="voci-left-header">{{ i18n.t('org.orgManage.title.orgHorizView', 'Sơ đồ tổ chức') }}</div>
+    <input
+      nz-input
+      class="voci-search-input"
+      [ngModel]="searchTreeValue()"
+      (ngModelChange)="searchTreeValue.set($event)"
+      [placeholder]="i18n.t('org.compose.searchTreePlaceholder', 'Tìm kiếm phòng ban...')"
+    />
+    <div class="voci-tree-actions">
+      <button nz-button nzSize="small" (click)="expandAllNodes()">{{ i18n.t('org.compose.expandAll', 'Mở tất cả') }}</button>
+      <button nz-button nzSize="small" (click)="collapseAllNodes()">{{ i18n.t('org.compose.collapseAll', 'Đóng tất cả') }}</button>
+    </div>
+    <div class="voci-tree-container">
+      <div *ngIf="loadingTree()" class="voci-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+      <nz-tree
+        *ngIf="!loadingTree()"
+        [nzData]="treeNodes()"
+        [nzSearchValue]="searchTreeValue()"
+        [nzSelectedKeys]="selectedDeptKey() ? [selectedDeptKey()!] : []"
+        (nzClick)="onTreeClick($event)"
+        [nzExpandedKeys]="expandedKeys()"
+        (nzExpandedKeysChange)="expandedKeys.set($event)"
+      ></nz-tree>
+      <div *ngIf="!loadingTree() && treeNodes().length === 0" class="voci-tree-empty">
+        {{ i18n.t('org.compose.msg.noOrgData', 'Không có dữ liệu tổ chức') }}
+      </div>
+    </div>
+  </div>
+
+  <div class="voci-right">
+    <div class="voci-card-header">
+      <span class="voci-card-title">
+        {{ selectedDept() ? (i18n.t('org.title.DEPT_INFO', 'Thông tin phòng ban') + ' - ' + (selectedDept()?.orgNameLocal || selectedDept()?.deptNo)) : i18n.t('org.title.DEPT_INFO', 'Thông tin phòng ban') }}
+      </span>
+      <button nz-button nzSize="small" (click)="exportExcel()">
+        <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+      </button>
+    </div>
+
+    <div class="voci-dept-info" *ngIf="selectedDept() as dept">
+      <div class="voci-info-item">
+        <strong>{{ i18n.t('evs.manage.viewEvsSchedulePanel.col.deptName', 'Tên phòng ban') }}:</strong>
+        <span class="voci-info-highlight">{{ dept.orgNameLocal }}</span>
+      </div>
+      <div class="voci-info-item">
+        <strong>{{ i18n.t('org.title.DEPT_ID', 'ID phòng ban') }}:</strong> <span>{{ dept.deptNo }}</span>
+      </div>
+      <div class="voci-info-item">
+        <strong>{{ i18n.t('org.orgManage.DEPARTMENT_INFORMATION.Z', 'Trưởng phòng') }}:</strong>
+        <span>{{ managerDisplay(dept) }}</span>
+      </div>
+      <div class="voci-info-item">
+        <strong>{{ i18n.t('org.orgManage.title.deptType', 'Loại hình phòng ban') }}:</strong> <span>{{ deptTypeDisplay(dept) }}</span>
+      </div>
+      <div class="voci-info-item">
+        <strong>{{ i18n.t('org.compose.costCenter', 'Mã chi phí') }}:</strong> <span>{{ costCenterDisplay(dept) }}</span>
+      </div>
+    </div>
+
+    <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="20" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" nzBordered #vociEmpTable>
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="voci-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('org.title.EMPID', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('sys.affirm.title.personName', 'Tên nhân viên') }}</th>
+          <th>{{ i18n.t('org.title.ORG_NAME_ENG', 'Tên tiếng Anh') }}</th>
+          <th>{{ i18n.t('hrm.empinfo.workexp.position', 'Vị trí') }}</th>
+          <th>{{ i18n.t('org.title.DATE_STARTED', 'Ngày vào làm') }}</th>
+          <th class="voci-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of vociEmpTable.data; let idx = index">
+          <td class="voci-col-center">{{ idx + 1 }}</td>
+          <td>{{ emp.empId }}</td>
+          <td>{{ emp.localName }}</td>
+          <td>{{ emp.englishName }}</td>
+          <td>{{ emp.position }}</td>
+          <td>{{ formatDateStarted(emp.dateStarted) }}</td>
+          <td class="voci-col-center">{{ isActiveEmp(emp) ? i18n.t('common.active', 'Hoạt động') : i18n.t('common.inactive', 'Không hoạt động') }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>

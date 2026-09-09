@@ -1,0 +1,233 @@
+<div class="rew-page">
+  <nz-card>
+    <div nz-row [nzGutter]="12" class="rew-search-row">
+      <div nz-col [nzSpan]="6">
+        <label class="rew-label">{{ i18n.t('hrm.recognitionSearch.title.empId', 'Mã nhân viên') }}</label>
+        <input id="rew-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="rewSearchEmpId" [placeholder]="i18n.t('hrm.recognitionSearch.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+      </div>
+      <div nz-col [nzSpan]="6">
+        <label class="rew-label">{{ i18n.t('hrm.recognitionSearch.title.localName', 'Họ tên') }}</label>
+        <input id="rew-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="rewSearchLocalName" [placeholder]="i18n.t('hrm.recognitionSearch.title.localNamePlaceholder', 'Nhập họ tên')" />
+      </div>
+      <div nz-col [nzSpan]="6">
+        <label class="rew-label">{{ i18n.t('hrm.recognitionSearch.title.rewardType', 'Loại hình khen thưởng') }}</label>
+        <input id="rew-search-type" nz-input [ngModel]="searchRewardType()" (ngModelChange)="searchRewardType.set($event)" name="rewSearchType" [placeholder]="i18n.t('hrm.recognitionSearch.title.rewardTypePlaceholder', 'Nhập loại hình')" />
+      </div>
+      <div nz-col [nzSpan]="6">
+        <label class="rew-label">&nbsp;</label>
+        <div class="rew-toolbar-actions">
+          <button id="rew-search-btn" nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="rew-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('common.addNew', 'Thêm mới') }}
+          </button>
+          <button id="rew-export-btn" nz-button (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <nz-table
+      id="rew-data-table"
+      #rewTable
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="20"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[20, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: '1300px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="rew-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.recognitionSearch.title.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('hrm.recognitionSearch.title.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.recognitionSearch.title.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hrm.recognitionSearch.title.rewardType', 'Loại hình') }}</th>
+          <th class="rew-col-center">{{ i18n.t('hrm.recognitionSearch.title.rewardDate', 'Ngày KT') }}</th>
+          <th>{{ i18n.t('hrm.recognitionSearch.title.rewardCnpy', 'Cơ quan KT') }}</th>
+          <th>{{ i18n.t('hrm.recognitionSearch.title.reward', 'Phần thưởng') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th nzWidth="100px" class="rew-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rewTable.data; track row.rewardNo; let idx = $index) {
+          <tr>
+            <td class="rew-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.rewardType }}</td>
+            <td class="rew-col-center">{{ row.rewardDate }}</td>
+            <td>{{ row.rewardCnpy }}</td>
+            <td>{{ row.reward }}</td>
+            <td>{{ row.remarks }}</td>
+            <td class="rew-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="rew-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.recognitionSearch.title.editTitle', 'Cập nhật khen thưởng') : i18n.t('hrm.recognitionSearch.title.addTitle', 'Thêm mới khen thưởng')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="800px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="rew-form-emp"
+                [ngModel]="formPersonId()"
+                (ngModelChange)="onEmployeeSelected($event)"
+                name="rewFormEmp"
+                nzShowSearch
+                [nzServerSearch]="true"
+                (nzOnSearch)="onEmployeeSearch($event)"
+                [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                [nzLoading]="employeeSearching()"
+              >
+                @if (formEmpLabel() && formPersonId()) {
+                  <nz-option [nzValue]="formPersonId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                }
+                @for (emp of employeeOptions(); track emp.personId) {
+                  <nz-option [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.rewardType', 'Loại hình khen thưởng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="rew-form-type" nz-input [ngModel]="formRewardType()" (ngModelChange)="formRewardType.set($event)" name="rewFormType" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.rewardDate', 'Ngày khen thưởng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="rew-form-date" [ngModel]="formRewardDate()" (ngModelChange)="formRewardDate.set($event)" name="rewFormDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.rewardCnpy', 'Cơ quan khen thưởng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="rew-form-cnpy" nz-input [ngModel]="formRewardCnpy()" (ngModelChange)="formRewardCnpy.set($event)" name="rewFormCnpy" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.reward', 'Phần thưởng/Hiện vật') }}</nz-form-label>
+            <nz-form-control>
+              <input id="rew-form-reward" nz-input [ngModel]="formReward()" (ngModelChange)="formReward.set($event)" name="rewFormReward" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.rewardTypeCode', 'Mã loại thưởng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="rew-form-type-code" nz-input [ngModel]="formRewardTypeCode()" (ngModelChange)="formRewardTypeCode.set($event)" name="rewFormTypeCode" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.rewardPayDate', 'Ngày chi trả') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="rew-form-pay-date" [ngModel]="formRewardPayDate()" (ngModelChange)="formRewardPayDate.set($event)" name="rewFormPayDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.personnelCardInquiry', 'Hiển thị thẻ nhân sự') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="rew-form-card" [ngModel]="formPersonnelCardInquiry()" (ngModelChange)="formPersonnelCardInquiry.set($event)" name="rewFormCard">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.payAppearIsnot', 'Phản ánh lương') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="rew-form-pay-appear" [ngModel]="formPayAppearIsnot()" (ngModelChange)="formPayAppearIsnot.set($event)" name="rewFormPayAppear">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.lineId', 'LINE ID') }}</nz-form-label>
+            <nz-form-control>
+              <input id="rew-form-line" nz-input [ngModel]="formLineId()" (ngModelChange)="formLineId.set($event)" name="rewFormLine" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recognitionSearch.title.otherType', 'Loại khác') }}</nz-form-label>
+            <nz-form-control>
+              <input id="rew-form-other" nz-input [ngModel]="formOtherType()" (ngModelChange)="formOtherType.set($event)" name="rewFormOther" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="rew-form-remarks" nz-input rows="2" [ngModel]="formRemarks()" (ngModelChange)="formRemarks.set($event)" name="rewFormRemarks"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

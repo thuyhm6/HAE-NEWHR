@@ -1,0 +1,26 @@
+.si-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.si-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.si-col-center {
+  text-align: center;
+}
+
+.si-section-title {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1677ff;
+  border-bottom: 1px solid #f0f0f0;
+}

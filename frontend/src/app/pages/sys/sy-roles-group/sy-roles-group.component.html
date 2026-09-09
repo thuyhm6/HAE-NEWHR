@@ -1,0 +1,139 @@
+<div class="vrsg-page">
+  <div class="vrsg-left">
+    <div class="vrsg-search-card">
+      <div class="vrsg-search-row">
+        <div class="vrsg-field">
+          <label class="vrsg-inline-label">{{ i18n.t('sys.role.viewRolesGroup.search.keyword', 'Keyword (ID, Name)') }}</label>
+          <input
+            nz-input
+            [ngModel]="searchKeyword()"
+            (ngModelChange)="searchKeyword.set($event)"
+            (keydown.enter)="search()"
+            [placeholder]="i18n.t('sys.role.viewRolesGroup.search.keyword.placeholder', 'Enter role ID or name')"
+          />
+        </div>
+        <div class="vrsg-search-actions">
+          <button nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close-circle"></span>{{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button nz-button nzType="primary" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+          </button>
+          <a nz-button [href]="exportUrl">
+            <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="vrsg-table-card">
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }" #vrsgTable>
+        <thead>
+          <tr>
+            <th nzWidth="48px" class="vrsg-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th>{{ i18n.t('sys.role.viewRolesGroup.col.roleId', 'Role ID') }}</th>
+            <th>{{ i18n.t('sys.role.viewRolesGroup.col.nameVi', 'Name (VI)') }}</th>
+            <th class="vrsg-col-center">{{ i18n.t('sys.role.viewRolesGroup.col.sysType', 'System') }}</th>
+            <th class="vrsg-col-center" nzWidth="90px">{{ i18n.t('common.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let row of vrsgTable.data; let idx = index"
+            class="vrsg-clickable"
+            [class.vrsg-row-selected]="selectedRoleNo() === row.roleNo"
+            (click)="selectRole(row)"
+          >
+            <td class="vrsg-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.roleId }}</td>
+            <td>{{ row.nameVi }}</td>
+            <td class="vrsg-col-center">
+              <nz-tag [nzColor]="row.sysType === '0' ? 'blue' : 'orange'">{{ row.sysType === '0' ? 'Hub' : 'Partner' }}</nz-tag>
+            </td>
+            <td class="vrsg-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row, $event)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteRow(row, $event)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+
+  <div class="vrsg-right">
+    <div class="vrsg-right-header">
+      <span class="vrsg-selected-label">
+        {{ selectedLabel() ? (i18n.t('sys.role.viewRolesGroup.msg.menuPanelPrefix', 'Phân quyền Menu -') + ' ' + selectedLabel()) : i18n.t('sys.role.viewRolesGroup.menuPanel.title', 'Phân quyền Menu') }}
+      </span>
+      <button nz-button nzType="primary" nzSize="small" [nzLoading]="savingRelations()" [disabled]="!selectedRoleNo()" (click)="saveRelations()">
+        <span nz-icon nzType="save"></span>{{ i18n.t('sys.role.viewRolesGroup.btn.savePermission', 'Lưu quyền') }}
+      </button>
+    </div>
+
+    <div class="vrsg-tree-container">
+      <ng-container *ngIf="selectedRoleNo(); else vrsgNoRole">
+        <nz-tree [nzData]="treeNodes()" nzCheckable [nzCheckedKeys]="checkedKeys()" (nzCheckedKeysChange)="checkedKeys.set($event)"></nz-tree>
+      </ng-container>
+      <ng-template #vrsgNoRole>
+        <div class="vrsg-empty">{{ i18n.t('sys.role.viewRolesGroup.hint.selectRole', 'Please select a role group from the left to assign permissions.') }}</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa Role -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="i18n.t('sys.role.viewRolesGroup.title', 'Role Group')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="700px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vrsg-form-row">
+      <label class="vrsg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.roleId', 'Role ID') }}</label>
+      <input nz-input [ngModel]="formRoleId()" disabled [placeholder]="i18n.t('sys.role.viewRolesGroup.label.roleId.placeholder', 'Auto generated on save')" />
+    </div>
+    <div class="vrsg-form-grid">
+      <div class="vrsg-form-row">
+        <label class="vrsg-form-label vrsg-required">{{ i18n.t('sys.role.viewRolesGroup.label.nameVi', 'Vietnamese Name') }}</label>
+        <input nz-input [ngModel]="formNameVi()" (ngModelChange)="formNameVi.set($event)" />
+      </div>
+      <div class="vrsg-form-row">
+        <label class="vrsg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.nameEn', 'English Name') }}</label>
+        <input nz-input [ngModel]="formNameEn()" (ngModelChange)="formNameEn.set($event)" />
+      </div>
+      <div class="vrsg-form-row">
+        <label class="vrsg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.nameZh', 'Chinese Name') }}</label>
+        <input nz-input [ngModel]="formNameZh()" (ngModelChange)="formNameZh.set($event)" />
+      </div>
+      <div class="vrsg-form-row">
+        <label class="vrsg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.nameKo', 'Korean Name') }}</label>
+        <input nz-input [ngModel]="formNameKo()" (ngModelChange)="formNameKo.set($event)" />
+      </div>
+      <div class="vrsg-form-row">
+        <label class="vrsg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.sysType', 'System Type') }}</label>
+        <nz-select style="width: 100%" [ngModel]="formSysType()" (ngModelChange)="formSysType.set($event)">
+          <nz-option nzValue="0" nzLabel="Hub"></nz-option>
+          <nz-option nzValue="1" nzLabel="Partner"></nz-option>
+        </nz-select>
+      </div>
+      <div class="vrsg-form-row">
+        <label class="vrsg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.orderNo', 'Order') }}</label>
+        <nz-input-number style="width: 100%" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="vrsg-form-row vrsg-switch-row">
+        <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+        <span class="vrsg-switch-label">{{ i18n.t('sys.role.viewRolesGroup.label.activity', 'Active') }}</span>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

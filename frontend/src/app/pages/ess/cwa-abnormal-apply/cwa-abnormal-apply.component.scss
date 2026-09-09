@@ -1,0 +1,40 @@
+.sca-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sca-submit-item {
+  margin-left: auto;
+}
+
+.sca-toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sca-col-center {
+  text-align: center;
+}
+
+.sca-small {
+  font-size: 12px;
+}
+
+.sca-time-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.sca-time-row:last-child {
+  margin-bottom: 0;
+}
+
+.sca-time-label {
+  flex-shrink: 0;
+  width: 26px;
+  font-size: 12px;
+}

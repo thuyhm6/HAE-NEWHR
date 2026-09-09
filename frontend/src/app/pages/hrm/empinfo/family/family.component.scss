@@ -1,0 +1,15 @@
+.fam-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fam-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fam-col-center {
+  text-align: center;
+}

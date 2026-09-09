@@ -1,0 +1,321 @@
+<div class="lc-page">
+  <nz-card class="lc-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="lc-search-emp-id"
+                nz-input
+                [ngModel]="searchEmpId()"
+                (ngModelChange)="searchEmpId.set($event)"
+                name="lcSearchEmpId"
+                [placeholder]="i18n.t('common.placeholder.empId', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="lc-from-date"
+                [ngModel]="fromDate()"
+                (ngModelChange)="fromDate.set($event)"
+                name="lcFromDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="lc-to-date"
+                [ngModel]="toDate()"
+                (ngModelChange)="toDate.set($event)"
+                name="lcToDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('applyAtt.leaveTypeFull', 'Loại nghỉ phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="lc-search-leave-type"
+                [ngModel]="searchLeaveTypeCode()"
+                (ngModelChange)="searchLeaveTypeCode.set($event)"
+                name="lcSearchLeaveTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of leaveTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('applyAtt.search.confirmFlag', 'Trạng thái xác nhận') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="lc-search-confirm-flag"
+                [ngModel]="confirmFlag()"
+                (ngModelChange)="confirmFlag.set($event)"
+                name="lcConfirmFlag"
+              >
+                <nz-option nzValue="" [nzLabel]="i18n.t('common.selectAll', '-- Tất cả --')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('applyAtt.confirmFlag.notConfirmed', 'Chưa xác nhận')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('applyAtt.confirmFlag.confirmed', 'Đã xác nhận')"></nz-option>
+                <nz-option nzValue="2" [nzLabel]="i18n.t('applyAtt.confirmFlag.rejected', 'Từ chối')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row>
+        <div nz-col [nzSpan]="24" class="lc-search-actions">
+          <button id="lc-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="lc-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="lc-batch-approve-btn" nz-button nzType="primary" (click)="batchAction('1')">
+            <span nz-icon nzType="check-circle"></span>
+            {{ i18n.t('lc.btn.batchApprove', 'Duyệt hàng loạt') }}
+          </button>
+          <button id="lc-batch-reject-btn" nz-button nzDanger (click)="batchAction('2')">
+            <span nz-icon nzType="close-circle"></span>
+            {{ i18n.t('lc.btn.batchReject', 'Từ chối hàng loạt') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="lc-table-card">
+    <nz-table
+      id="lc-data-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="lc-col-center">
+            <label nz-checkbox [ngModel]="checkAll()" (ngModelChange)="toggleCheckAll($event)"></label>
+          </th>
+          <th nzWidth="50px" class="lc-col-center">{{ i18n.t('common.no.serial', 'NO.') }}</th>
+          <th class="lc-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('applyAtt.applicant', 'Người xin phép') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+          <th class="lc-col-center">{{ i18n.t('lc.col.applyDate', 'Ngày xin phép') }}</th>
+          <th>{{ i18n.t('applyAtt.leaveTypeFull', 'Loại nghỉ phép') }}</th>
+          <th>{{ i18n.t('lc.col.leaveTime', 'Thời gian') }}</th>
+          <th class="lc-col-center">{{ i18n.t('ess.viewApply.title.length', 'Thời lượng') }}</th>
+          <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+          <th>{{ i18n.t('lc.col.representative', 'Người đại diện') }}</th>
+          <th class="lc-col-center">{{ i18n.t('lc.col.affirmStatus', 'Trạng thái duyệt') }}</th>
+          <th>{{ i18n.t('lc.col.hrComment', 'Ý kiến nhân sự') }}</th>
+          <th class="lc-col-center">{{ i18n.t('lc.col.hrConfirm', 'Nhân sự xác nhận') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.applyNo; let idx = $index) {
+          <tr>
+            <td class="lc-col-center">
+              <label nz-checkbox [(ngModel)]="row.checked"></label>
+            </td>
+            <td class="lc-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="lc-col-center">{{ row.empId }}</td>
+            <td>
+              <a class="lc-name-link" (click)="openDetail(row)">{{ row.localName }}</a>
+            </td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="lc-col-center">{{ row.applyTime }}</td>
+            <td>{{ row.leaveTypeCodeName }}</td>
+            <td>{{ row.leaveFromTime }} ~ {{ row.leaveToTime }}</td>
+            <td class="lc-col-center">{{ formatDuration(row.applyLength, row.dayHours) }}</td>
+            <td>{{ row.leaveReason }}</td>
+            <td>{{ row.createdName }}</td>
+            <td class="lc-col-center">
+              <nz-tag nzColor="success">{{ i18n.t('lc.status.approved', 'Đã duyệt') }}</nz-tag>
+            </td>
+            <td>
+              <input nz-input nzSize="small" [(ngModel)]="row.editHrComment" placeholder="Nhập ý kiến..." />
+            </td>
+            <td class="lc-col-center">
+              <button nz-button nzType="primary" nzSize="small" (click)="confirmLine(row, '1')">
+                <span nz-icon nzType="check"></span>
+              </button>
+              <button nz-button nzDanger nzSize="small" (click)="confirmLine(row, '2')">
+                <span nz-icon nzType="close"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="15" class="lc-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="lc-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="i18n.t('applyAtt.applyTitle', 'Thông tin phê duyệt')"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="lcDetailFooter"
+>
+  <ng-container *nzModalContent>
+    @if (detail(); as d) {
+      <div class="lc-detail-body">
+        <table class="lc-detail-info-table">
+          <tr>
+            <th>{{ i18n.t('applyAtt.subject', 'Tiêu đề') }}</th>
+            <td>{{ d.leaveInfo?.leaveTypeName }}</td>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('applyAtt.applicant', 'Người xin phép') }}</th>
+            <td>{{ (d.employeeInfo?.localName || d.leaveInfo?.localName) }} / {{ d.employeeInfo?.postGradeName || d.leaveInfo?.postGradeName }} / {{ d.employeeInfo?.deptName || d.leaveInfo?.deptName }}</td>
+          </tr>
+        </table>
+
+        <nz-table [nzData]="d.approvalList ?? []" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small" class="lc-approval-table">
+          <thead>
+            <tr>
+              <th nzWidth="50px" class="lc-col-center">{{ i18n.t('common.no.serial', 'STT') }}</th>
+              <th nzWidth="90px" class="lc-col-center">{{ i18n.t('applyAtt.approvalSeq', 'Trình tự duyệt') }}</th>
+              <th nzWidth="110px" class="lc-col-center">{{ i18n.t('applyAtt.approvalStatus', 'Trạng thái duyệt') }}</th>
+              <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+              <th>{{ i18n.t('applyAtt.opinion', 'Ý kiến') }}</th>
+              <th nzWidth="170px" class="lc-col-center">{{ i18n.t('applyAtt.actionTime', 'Thời gian thực hiện') }}</th>
+              <th nzWidth="120px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of d.approvalList; track $index; let idx = $index) {
+              <tr>
+                <td class="lc-col-center">{{ approvalStt(item, idx) }}</td>
+                <td class="lc-col-center">{{ item.affirmTypeName }}</td>
+                <td class="lc-col-center">{{ item.affirmFlagName }}</td>
+                <td>{{ item.affirmName }}</td>
+                <td>{{ item.affirmContent }}</td>
+                <td class="lc-col-center">{{ item.updateDate }}</td>
+                <td>{{ item.deptName }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="lc-col-center">{{ i18n.t('applyAtt.noApprovalData', 'Không có dữ liệu phê duyệt') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <h4 class="lc-section-title">{{ i18n.t('applyAtt.empInfo', 'Thông tin nhân viên') }}</h4>
+        <table class="lc-detail-info-table">
+          <tr>
+            <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+            <td>{{ d.employeeInfo?.localName }}</td>
+            <th>{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+            <td>{{ d.employeeInfo?.empId }}</td>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+            <td>{{ d.employeeInfo?.deptName }}</td>
+            <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+            <td>{{ d.employeeInfo?.postGradeName }}</td>
+          </tr>
+        </table>
+
+        <h4 class="lc-section-title">{{ i18n.t('applyAtt.leaveInfo', 'Thông tin xin phép') }}</h4>
+        <table class="lc-detail-info-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('applyAtt.leaveTypeFull', 'Loại nghỉ phép') }}</th>
+              <th>{{ i18n.t('common.startTime', 'Thời gian bắt đầu') }}</th>
+              <th>{{ i18n.t('common.endTime', 'Thời gian kết thúc') }}</th>
+              <th>{{ i18n.t('applyAtt.leaveDuration', 'Thời lượng') }}</th>
+              <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="lc-col-center">{{ d.leaveInfo?.leaveTypeName }}</td>
+              <td class="lc-col-center">{{ d.leaveInfo?.leaveFromTime }}</td>
+              <td class="lc-col-center">{{ d.leaveInfo?.leaveToTime }}</td>
+              <td class="lc-col-center">{{ formatDuration(d.leaveInfo?.applyLength, d.leaveInfo?.dayHours) }}</td>
+              <td class="lc-col-center">{{ d.leaveInfo?.leaveReason }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<ng-template #lcDetailFooter>
+  <button nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>
+
+<nz-modal
+  id="lc-reject-modal"
+  [nzVisible]="showRejectModal()"
+  [nzTitle]="i18n.t('lc.btn.batchReject', 'Từ chối hàng loạt')"
+  (nzOnCancel)="closeRejectModal()"
+  (nzVisibleChange)="showRejectModal.set($event)"
+  [nzFooter]="lcRejectFooter"
+>
+  <ng-container *nzModalContent>
+    <label class="lc-form-label">{{ i18n.t('lc.dialog.hrComment', 'Nhập ý kiến') }}</label>
+    <textarea
+      nz-input
+      rows="3"
+      [ngModel]="rejectComment()"
+      (ngModelChange)="rejectComment.set($event)"
+      placeholder="Nhập ý kiến từ chối..."
+    ></textarea>
+  </ng-container>
+</nz-modal>
+
+<ng-template #lcRejectFooter>
+  <button nz-button (click)="closeRejectModal()">{{ i18n.t('common.no', 'Không') }}</button>
+  <button nz-button nzType="primary" nzDanger (click)="confirmBatchReject()">{{ i18n.t('lc.btn.reject', 'Từ chối') }}</button>
+</ng-template>

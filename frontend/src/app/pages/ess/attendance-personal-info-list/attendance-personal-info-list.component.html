@@ -1,0 +1,114 @@
+<div class="atpi-page">
+  <nz-card class="atpi-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('atpi.label.category', 'Phân loại') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            id="atpi-item-select"
+            [ngModel]="itemNo()"
+            (ngModelChange)="itemNo.set($event)"
+            name="atpiItemNo"
+            style="width: 200px"
+            [nzAllowClear]="true"
+            [nzPlaceHolder]="i18n.t('atpi.select.allOption', '-- Tất cả --')"
+          >
+            <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="opt.itemName || opt.itemNo"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('atpi.label.time', 'Thời gian') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker
+            id="atpi-start-date"
+            [ngModel]="startDate()"
+            (ngModelChange)="startDate.set($event)"
+            name="atpiStartDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <span class="atpi-tilde">~</span>
+      <nz-form-item>
+        <nz-form-control>
+          <nz-date-picker
+            id="atpi-end-date"
+            [ngModel]="endDate()"
+            (ngModelChange)="endDate.set($event)"
+            name="atpiEndDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <button id="atpi-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('atpi.btn.search', 'Tra cứu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="atpi-table-card">
+    <div class="atpi-toolbar">
+      <input
+        id="atpi-quick-filter"
+        nz-input
+        [ngModel]="quickFilter()"
+        (ngModelChange)="onQuickFilterChange($event)"
+        [placeholder]="i18n.t('atpi.placeholder.quickFilter', 'Lọc nhanh...')"
+        style="max-width: 240px"
+      />
+    </div>
+
+    <nz-table
+      id="atpi-data-table"
+      #atpiTable
+      [nzData]="filteredRows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="atpi-col-center">NO</th>
+          <th>{{ i18n.t('atpi.col.fullName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('atpi.col.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('atpi.col.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('atpi.col.category', 'Phân loại') }}</th>
+          <th class="atpi-col-center">{{ i18n.t('atpi.col.duration', 'Thời lượng') }}</th>
+          <th class="atpi-col-center">{{ i18n.t('atpi.col.time', 'Thời gian') }}</th>
+          <th class="atpi-col-center">{{ i18n.t('atpi.col.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="atpi-col-center">{{ i18n.t('atpi.col.endTime', 'Thời gian kết thúc') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of atpiTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="atpi-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="atpi-col-center">{{ row.workHour }}</td>
+            <td class="atpi-col-center">{{ row.arDateStr }}</td>
+            <td class="atpi-col-center">{{ row.indoorTime }}</td>
+            <td class="atpi-col-center">{{ row.outdoorTime }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="atpi-col-center">{{ i18n.t('atpi.js.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

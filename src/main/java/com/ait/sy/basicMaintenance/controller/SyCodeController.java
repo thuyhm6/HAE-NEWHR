@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/sys")
@@ -24,9 +26,13 @@ public class SyCodeController {
     @Autowired
     private SyCodeService syCodeService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/basicMaintenance/viewCodeManage")
-    public String viewCodeManage() {
-        return "sys/basicMaintenance/viewCodeManage";
+    public String viewCodeManage(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/code/tree")
@@ -85,8 +91,8 @@ public class SyCodeController {
     public ResponseEntity<byte[]> exportExcel() {
         byte[] data = syCodeService.exportExcel();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"code_list.csv\"")
-                .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"code_list.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(data);
     }
 }

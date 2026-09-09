@@ -1,0 +1,113 @@
+<div class="vpps-page">
+  <div class="vpps-search-card">
+    <span class="vpps-inline-label">{{ i18n.t('pa.paySchedule.timeRange', 'Thời gian') }}</span>
+    <nz-date-picker [ngModel]="searchFromDate()" (ngModelChange)="searchFromDate.set($event)" nzFormat="dd/MM/yyyy" style="width: 130px"></nz-date-picker>
+    <span>-</span>
+    <nz-date-picker [ngModel]="searchToDate()" (ngModelChange)="searchToDate.set($event)" nzFormat="dd/MM/yyyy" style="width: 130px"></nz-date-picker>
+    <span class="vpps-inline-label">{{ i18n.t('pa.paySchedule.salaryDistinNo', 'Phân loại lương') }}</span>
+    <nz-select style="min-width: 200px" [ngModel]="searchSalaryDistinNo()" (ngModelChange)="searchSalaryDistinNo.set($event)" nzAllowClear>
+      <nz-option *ngFor="let opt of salaryDistinOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+    </nz-select>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>{{ i18n.t('pa.paySchedule.search', 'Tra cứu') }}
+    </button>
+    <button nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+      <span nz-icon nzType="plus-circle"></span>{{ i18n.t('pa.paySchedule.addNew', 'Thêm mới') }}
+    </button>
+  </div>
+
+  <div class="vpps-table-card">
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" nzShowSizeChanger [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="vpps-col-center">{{ i18n.t('pa.paySchedule.no', 'No') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.payDate', 'Ngày phát') }}</th>
+          <th>{{ i18n.t('pa.paySchedule.salaryDistinNo', 'Phân loại lương') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.hrStartDate', 'Ngày bắt đầu quyết định') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.hrEndDate', 'Ngày kết thúc quyết định') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.arStartDate', 'Ngày bắt đầu chấm công') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.arEndDate', 'Ngày kết thúc chấm công') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.paOpenDate', 'Ngày mở lương') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.paTransDate', 'Ngày chuyển hóa đơn') }}</th>
+          <th>{{ i18n.t('pa.paySchedule.empOpinion', 'Ý kiến') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.updatedBy', 'Người thay đổi') }}</th>
+          <th class="vpps-col-center">{{ i18n.t('pa.paySchedule.updateDate', 'Thời gian thay đổi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" class="vpps-clickable" (click)="openEditModal(row)">
+          <td class="vpps-col-center">{{ idx + 1 }}</td>
+          <td class="vpps-col-center">{{ row.payDate }}</td>
+          <td>{{ row.salaryDistinName }}</td>
+          <td class="vpps-col-center">{{ row.hrStartDate }}</td>
+          <td class="vpps-col-center">{{ row.hrEndDate }}</td>
+          <td class="vpps-col-center">{{ row.arStartDate }}</td>
+          <td class="vpps-col-center">{{ row.arEndDate }}</td>
+          <td class="vpps-col-center">{{ row.paOpenDate }}</td>
+          <td class="vpps-col-center">{{ row.paTransDate }}</td>
+          <td>{{ row.empOpinion }}</td>
+          <td class="vpps-col-center">{{ row.updatedBy }}</td>
+          <td class="vpps-col-center">{{ row.updateDate }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa kế hoạch trả lương -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('pa.paySchedule.addTitle', 'Thêm mới kế hoạch trả lương') : i18n.t('pa.paySchedule.editTitle', 'Cập nhật kế hoạch trả lương')"
+  nzWidth="600px"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label vpps-required">{{ i18n.t('pa.paySchedule.payDate', 'Ngày phát') }}</label>
+      <nz-date-picker style="width: 200px" [ngModel]="formPayDate()" (ngModelChange)="formPayDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label vpps-required">{{ i18n.t('pa.paySchedule.salaryDistinNo', 'Phân loại lương') }}</label>
+      <nz-select style="width: 100%" [ngModel]="formSalaryDistinNo()" (ngModelChange)="formSalaryDistinNo.set($event)">
+        <nz-option *ngFor="let opt of salaryDistinOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label">{{ i18n.t('pa.paySchedule.hrStartDate', 'Ngày bắt đầu quyết định') }}</label>
+      <nz-date-picker style="width: 200px" [ngModel]="formHrStartDate()" (ngModelChange)="formHrStartDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label">{{ i18n.t('pa.paySchedule.hrEndDate', 'Ngày kết thúc quyết định') }}</label>
+      <nz-date-picker style="width: 200px" [ngModel]="formHrEndDate()" (ngModelChange)="formHrEndDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label">{{ i18n.t('pa.paySchedule.arStartDate', 'Ngày bắt đầu chấm công') }}</label>
+      <nz-date-picker style="width: 200px" [ngModel]="formArStartDate()" (ngModelChange)="formArStartDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label">{{ i18n.t('pa.paySchedule.arEndDate', 'Ngày kết thúc chấm công') }}</label>
+      <nz-date-picker style="width: 200px" [ngModel]="formArEndDate()" (ngModelChange)="formArEndDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label">{{ i18n.t('pa.paySchedule.paOpenDate', 'Ngày mở lương') }}</label>
+      <nz-date-picker style="width: 200px" [ngModel]="formPaOpenDate()" (ngModelChange)="formPaOpenDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label">{{ i18n.t('pa.paySchedule.paTransDate', 'Ngày chuyển hóa đơn') }}</label>
+      <nz-date-picker style="width: 200px" [ngModel]="formPaTransDate()" (ngModelChange)="formPaTransDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+    </div>
+    <div class="vpps-form-row">
+      <label class="vpps-form-label">{{ i18n.t('pa.paySchedule.empOpinion', 'Ý kiến') }}</label>
+      <textarea nz-input rows="3" [ngModel]="formEmpOpinion()" (ngModelChange)="formEmpOpinion.set($event)" maxlength="2000"></textarea>
+    </div>
+  </ng-container>
+  <ng-container *nzModalFooter>
+    <button nz-button (click)="formVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button *ngIf="!formIsAdd()" nz-button nzDanger (click)="deleteCurrent()">
+      <span nz-icon nzType="delete"></span>{{ i18n.t('common.delete', 'Xóa') }}
+    </button>
+    <button nz-button nzType="primary" [nzLoading]="formSaving()" (click)="saveForm()">
+      <span nz-icon nzType="save"></span>{{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </ng-container>
+</nz-modal>

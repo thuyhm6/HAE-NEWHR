@@ -27,14 +27,12 @@ import com.ait.sy.sys.dto.DataTablesResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.servlet.http.HttpServletResponse;
-import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,6 +46,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -100,45 +99,37 @@ public class HrEmpinfoController {
     @Autowired
     private com.ait.ess.viewDept.service.ManageEmpPositionInfoService manageEmpPositionInfoService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     /**
      * Trang xem thông tin cá nhân nhân viên
      */
     @GetMapping("/viewPersonalInfo")
-    public String viewPersonalInfo(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        PermissionService.UserPermissionInfo permissionInfo = (PermissionService.UserPermissionInfo) session
-                .getAttribute("currentPermissionInfo");
-
-        // Lấy thông tin personal info chi tiết
-        HrPersonalInfo personalInfo = hrPersonalInfoService.getPersonalInfoFromHrUserInfo(currentHrUser);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("personalInfo", personalInfo);
-        model.addAttribute("title", "Hồ sơ nhân viên - HR System");
-
-        return "hrm/empinfo/viewPersonalInfo";
+    public String viewPersonalInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
      * Hiển thị danh sách nhân viên nữ với DataTables
      */
     @GetMapping("/viewTempEmpInfoList")
-    public String viewTempEmpInfoList(Model model, HttpSession session) {
-        // Lấy thông tin user từ session
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Quản lý nhân viên nữ");
-
-        return "hrm/empinfo/viewTempEmpInfoList";
+    public String viewTempEmpInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
-     * Xuất kết quả tìm kiếm nhân viên nữ
+     * Xuất kết quả tìm kiếm nhân viên nữ ra file Excel thật (.xlsx) - trang
+     * viewTempEmpInfoList (Angular) gọi endpoint này qua nút "Xuất kết quả".
+     * Trước đây trả về tên view Thymeleaf "hrm/empinfo/exportFemaleEmployees"
+     * (file .html đã bị xoá từ trước khi module hrm được chuyển sang Angular,
+     * khiến nút xuất luôn lỗi) - nay xuất file .xlsx thật đúng quy tắc 6
+     * CLAUDE.md, cùng bộ cột đang hiển thị ở bảng Angular.
      */
     @GetMapping("/export")
-    public String exportFemaleEmployees(
+    public void exportFemaleEmployees(
             @RequestParam(value = "localName", required = false) String localName,
             @RequestParam(value = "empId", required = false) String empId,
             @RequestParam(value = "deptNo", required = false) String deptNo,
@@ -147,36 +138,57 @@ public class HrEmpinfoController {
             @RequestParam(value = "createDateTo", required = false) String createDateTo,
             @RequestParam(value = "activity", required = false) String activity,
             @RequestParam(value = "otFlag", required = false) String otFlag,
-            Model model, HttpSession session) {
+            HttpServletResponse response) throws IOException {
 
-        // Lấy thông tin user từ session
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        if (currentHrUser == null) {
-            return "redirect:/login";
-        }
+        List<HrSpecialMatter> employees = hrSpecialMatterService.searchFemaleEmployeesWithConditions(
+                localName, empId, deptNo, position, createDateFrom, createDateTo, activity, otFlag);
 
-        try {
-            // Lấy dữ liệu với điều kiện tìm kiếm
-            List<HrSpecialMatter> employees = hrSpecialMatterService.searchFemaleEmployeesWithConditions(
-                    localName, empId, deptNo, position, createDateFrom, createDateTo, activity, otFlag);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=danh_sach_nhan_vien_nu.xlsx");
 
-            model.addAttribute("employees", employees);
-            model.addAttribute("searchParams", java.util.Map.of(
-                    "localName", localName != null ? localName : "",
-                    "empId", empId != null ? empId : "",
-                    "deptNo", deptNo != null ? deptNo : "",
-                    "position", position != null ? position : "",
-                    "createDateFrom", createDateFrom != null ? createDateFrom : "",
-                    "createDateTo", createDateTo != null ? createDateTo : "",
-                    "activity", activity != null ? activity : "",
-                    "otFlag", otFlag != null ? otFlag : ""));
-            model.addAttribute("exportDate", java.time.LocalDateTime.now());
-            model.addAttribute("title", "Xuất danh sách nhân viên nữ");
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("DanhSachNhanVienNu");
 
-            return "hrm/empinfo/exportFemaleEmployees";
-        } catch (Exception e) {
-            model.addAttribute("error", "Loi he thong khi xu ly du lieu.");
-            return "hrm/empinfo/tempEmpInfoList";
+            CellStyle headerStyle = wb.createCellStyle();
+            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            String[] cols = { "STT", "Mã nhân viên", "Họ tên", "Phòng ban", "Chức vụ", "Số đặc biệt",
+                    "Hoạt động", "Ngày tạo", "Ngày bắt đầu", "Ngày kết thúc", "Trạng thái OT" };
+            Row header = sheet.createRow(0);
+            for (int i = 0; i < cols.length; i++) {
+                Cell c = header.createCell(i);
+                c.setCellValue(cols[i]);
+                c.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 4500);
+            }
+
+            java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            for (int i = 0; i < employees.size(); i++) {
+                HrSpecialMatter e = employees.get(i);
+                Row row = sheet.createRow(i + 1);
+                row.createCell(0).setCellValue(i + 1);
+                row.createCell(1).setCellValue(e.getEmpId());
+                row.createCell(2).setCellValue(e.getLocalName());
+                row.createCell(3).setCellValue(e.getDeptNo());
+                row.createCell(4).setCellValue(e.getPosition());
+                row.createCell(5).setCellValue(e.getSpecialNo());
+                row.createCell(6).setCellValue(e.getActivity() != null && e.getActivity() == 1 ? "Hoạt động" : "Không hoạt động");
+                row.createCell(7).setCellValue(e.getCreateDate() != null ? e.getCreateDate().format(dtf) : "");
+                row.createCell(8).setCellValue(e.getStartDate() != null ? e.getStartDate().format(dtf) : "");
+                row.createCell(9).setCellValue(e.getEndDate() != null ? e.getEndDate().format(dtf) : "");
+                row.createCell(10).setCellValue(e.getOtFlag() != null && e.getOtFlag() == 1 ? "Có OT" : "Không OT");
+            }
+
+            wb.write(response.getOutputStream());
         }
     }
 
@@ -320,11 +332,9 @@ public class HrEmpinfoController {
      * Trang xem thông tin công việc (kinh nghiệm làm việc)
      */
     @GetMapping("/viewWorkInformation")
-    public String viewWorkInformation(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Thông tin công việc");
-        return "hrm/empinfo/viewWorkInformation";
+    public String viewWorkInformation(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -408,11 +418,9 @@ public class HrEmpinfoController {
      * Trang tìm kiếm quá trình học tập
      */
     @GetMapping("/educationSearch")
-    public String viewEducationSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Quá trình học tập");
-        return "hrm/empinfo/educationSearch";
+    public String viewEducationSearch(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -498,11 +506,9 @@ public class HrEmpinfoController {
      * Trang tra cứu địa chỉ
      */
     @GetMapping("/addressSearch")
-    public String viewAddressSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu địa chỉ");
-        return "hrm/empinfo/addressSearch";
+    public String viewAddressSearch(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -588,11 +594,9 @@ public class HrEmpinfoController {
      * Trang tra cứu gia đình
      */
     @GetMapping("/familySearch")
-    public String viewFamilySearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu gia đình");
-        return "hrm/empinfo/familySearch";
+    public String viewFamilySearch(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -678,11 +682,9 @@ public class HrEmpinfoController {
      * Trang tra cứu địa chỉ khẩn cấp
      */
     @GetMapping("/emergencyAddressSearch")
-    public String viewEmergencyAddressSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu địa chỉ khẩn cấp");
-        return "hrm/empinfo/emergencyAddressSearch";
+    public String viewEmergencyAddressSearch(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -768,11 +770,9 @@ public class HrEmpinfoController {
      * Trang tra cứu khen thưởng
      */
     @GetMapping("/recognitionSearch")
-    public String recognitionSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu khen thưởng");
-        return "hrm/empinfo/recognitionSearch";
+    public String recognitionSearch(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -818,11 +818,9 @@ public class HrEmpinfoController {
      * Trang tra cứu chứng chỉ
      */
     @GetMapping("/viewQualification")
-    public String viewQualification(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu chứng chỉ");
-        return "hrm/empinfo/viewQualification";
+    public String viewQualification(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -944,11 +942,9 @@ public class HrEmpinfoController {
      * Trang tra cứu kỷ luật
      */
     @GetMapping("/punishmentSearch")
-    public String punishmentSearch(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Tra cứu kỷ luật");
-        return "hrm/empinfo/punishmentSearch";
+    public String punishmentSearch(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -1032,11 +1028,9 @@ public class HrEmpinfoController {
      * Trang import ảnh đại diện nhân viên
      */
     @GetMapping("/photoImport")
-    public String photoImport(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Import ảnh đại diện");
-        return "hrm/empinfo/photoImport";
+    public String photoImport(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -1074,11 +1068,9 @@ public class HrEmpinfoController {
     // ── Quyết định nhân sự (HR_EXPERIENCE_INSIDE) ─────────────────────────────
 
     @GetMapping("/viewStartPoint")
-    public String viewStartPoint(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Quyết định nhân sự");
-        return "hrm/empinfo/viewStartPoint";
+    public String viewStartPoint(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/startpoint/employee/search")
@@ -1334,11 +1326,9 @@ public class HrEmpinfoController {
      * Trang Thẻ nhân sự
      */
     @GetMapping("/viewHAECardInfoList")
-    public String viewHAECardInfoList(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("title", "Thẻ nhân sự");
-        return "hrm/empinfo/viewHAECardInfoList";
+    public String viewHAECardInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**

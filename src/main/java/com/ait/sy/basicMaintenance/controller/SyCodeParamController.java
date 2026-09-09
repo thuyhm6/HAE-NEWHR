@@ -6,13 +6,17 @@ import com.ait.sy.basicMaintenance.service.SyCodeParamService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/sys")
@@ -22,10 +26,14 @@ public class SyCodeParamController {
     @Autowired
     private SyCodeParamService syCodeParamService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     // View Mapping
     @GetMapping("/basicMaintenance/viewCodePamers")
-    public String viewCodePamers() {
-        return "sys/basicMaintenance/viewCodePamers";
+    public String viewCodePamers(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // API Mappings
@@ -89,7 +97,11 @@ public class SyCodeParamController {
     }
 
     @GetMapping("/api/code_param/export")
-    public void export(@RequestParam String cpnyId, @RequestParam(required = false) String parentCode) {
-        // Implement export logic later if needed
+    public ResponseEntity<byte[]> export(@RequestParam String cpnyId, @RequestParam(required = false) String parentCode) {
+        byte[] data = syCodeParamService.exportExcel(parentCode, cpnyId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"code_param_list.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(data);
     }
 }

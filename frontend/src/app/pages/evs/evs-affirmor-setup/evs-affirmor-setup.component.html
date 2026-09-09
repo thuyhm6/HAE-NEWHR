@@ -1,0 +1,210 @@
+<div class="veas-page">
+  <div class="veas-search-card">
+    <div class="veas-search-row">
+      <label class="veas-inline-label">{{ i18n.t('evs.viewEvsAffirmorSetup.evalName', 'Tên đánh giá') }}</label>
+      <nz-select id="veas-resume-seq" nzSize="small" style="width:240px" [ngModel]="searchResumeSeq()" (ngModelChange)="onResumeChange($event)">
+        @for (opt of resumeOptions(); track opt.seq) { <nz-option [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option> }
+      </nz-select>
+
+      <label class="veas-inline-label">{{ i18n.t('evs.viewEvsAffirmorSetup.department', 'Phòng ban') }}</label>
+      <nz-tree-select style="width:200px" [nzNodes]="deptTreeNodes()" [ngModel]="searchDeptNos()" (ngModelChange)="searchDeptNos.set($event)" nzSize="small" nzShowSearch nzCheckable [nzPlaceHolder]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.selectDept', 'Chọn phòng ban')"></nz-tree-select>
+
+      <label class="veas-inline-label">{{ i18n.t('evs.viewEvsAffirmorSetup.PINGJIAREN.a', 'Người đánh giá') }}</label>
+      <input id="veas-affirmor-search" nz-input nzSize="small" style="width:180px" [ngModel]="searchAffirmorKeyword()" (ngModelChange)="searchAffirmorKeyword.set($event)" (keydown.enter)="search()" [placeholder]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.selectKeyword', 'Chọn từ khóa sau đó Enter')" />
+    </div>
+    <div class="veas-toolbar-row">
+      <button id="veas-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span> {{ i18n.t('evs.viewEvsAffirmorSetup.btnSearch', 'Tra cứu') }}
+      </button>
+      <button id="veas-clear-btn" nz-button nzSize="small" (click)="clearSearch()">
+        <span nz-icon nzType="close-circle"></span> {{ i18n.t('evs.viewEvsAffirmorSetup.btnClearFilter', 'Xóa lọc') }}
+      </button>
+      <button id="veas-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+        <span nz-icon nzType="plus-circle"></span> {{ i18n.t('evs.viewEvsAffirmorSetup.btnAddNew', 'Thêm mới') }}
+      </button>
+      <button id="veas-template-btn" nz-button nzSize="small" (click)="downloadTemplate()">
+        <span nz-icon nzType="download"></span> {{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+      </button>
+      <button id="veas-import-btn" nz-button nzSize="small" (click)="openImportModal()">
+        <span nz-icon nzType="upload"></span> {{ i18n.t('common.importExcel', 'Import Excel') }}
+      </button>
+      <button id="veas-save-all-btn" nz-button nzType="primary" nzSize="small" (click)="saveAll()">
+        <span nz-icon nzType="save"></span> {{ i18n.t('evs.viewEvsAffirmorSetup.btnSaveAll', 'Lưu tất cả') }}
+      </button>
+      <button id="veas-create-target-btn" nz-button nzSize="small" [nzLoading]="creatingTarget()" (click)="createTarget()">
+        <span nz-icon nzType="aim"></span> {{ i18n.t('evs.viewEvsAffirmorSetup.CreateTarget.a', 'Tạo mục tiêu') }}
+      </button>
+      <button id="veas-evs-start-btn" nz-button nzDanger nzSize="small" [nzLoading]="startingEvs()" (click)="evsStart()">
+        <span nz-icon nzType="play-circle"></span> {{ i18n.t('evs.viewEvsAffirmorSetup.StartEvaluation.a', 'Bắt đầu đánh giá') }}
+      </button>
+      <button id="veas-delete-btn" nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+        <span nz-icon nzType="delete"></span> {{ i18n.t('evs.viewEvsAffirmorSetup.btnDelete', 'Xóa') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="veas-bulk-card">
+    <label class="veas-inline-label">{{ i18n.t('evs.viewEvsAffirmorSetup.PINGJIAJIEDUAN.a', 'Giai đoạn') }}</label>
+    <nz-select id="veas-bulk-stage" nzSize="small" style="width:180px" [ngModel]="bulkStage()" (ngModelChange)="bulkStage.set($event)" [nzPlaceHolder]="i18n.t('evs.viewEvsAffirmorSetup.selectOption', 'Lựa chọn')">
+      <nz-option nzValue="1" [nzLabel]="i18n.t('evs.viewEvsAffirmorSetup.evalStage1', 'Người đánh giá 1')"></nz-option>
+      <nz-option nzValue="2" [nzLabel]="i18n.t('evs.viewEvsAffirmorSetup.evalStage2', 'Người đánh giá 2')"></nz-option>
+    </nz-select>
+
+    <label class="veas-inline-label">{{ i18n.t('evs.viewEvsAffirmorSetup.PINGJIAREN.a', 'Người đánh giá') }}</label>
+    <input id="veas-bulk-display" nz-input nzSize="small" style="width:200px" readonly [ngModel]="bulkEmployee() ? (bulkEmployee()!.empid + ' - ' + bulkEmployee()!.localName) : ''" (click)="openPicker({ kind: 'bulk' })" [placeholder]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.selectKeyword', 'Chọn từ khóa sau đó Enter')" />
+    <button nz-button nzSize="small" (click)="openPicker({ kind: 'bulk' })"><span nz-icon nzType="search"></span></button>
+
+    <button id="veas-bulk-clear-btn" nz-button nzSize="small" (click)="bulkClear()">{{ i18n.t('evs.viewEvsAffirmorSetup.btnClear', 'Xóa') }}</button>
+    <button id="veas-bulk-apply-btn" nz-button nzType="primary" nzSize="small" (click)="bulkApply()">{{ i18n.t('evs.viewEvsAffirmorSetup.btnDoAll', 'Thực hiện tất cả') }}</button>
+  </div>
+
+  <div class="veas-table-card">
+    <nz-table id="veas-table" [nzData]="rows()" [nzLoading]="listLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: '1600px', y: '100%' }">
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="veas-col-center"><input type="checkbox" [title]="i18n.t('evs.viewEvsAffirmorSetup.selectAll', 'Chọn tất cả')" (change)="toggleAll($any($event.target).checked)" /></th>
+          <th nzWidth="44px" class="veas-col-center">No.</th>
+          <th nzWidth="150px">{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th nzWidth="100px" class="veas-col-center">{{ i18n.t('evs.viewEvsAffirmorSetup.empCode', 'Mã NV') }}</th>
+          <th nzWidth="150px">{{ i18n.t('evs.viewEvsAffirmorSetup.department', 'Phòng ban') }}</th>
+          <th nzWidth="100px" class="veas-col-center">{{ i18n.t('common.position', 'Chức vụ') }}</th>
+          <th nzWidth="100px" class="veas-col-center">{{ i18n.t('common.joinDate', 'Ngày vào làm') }}</th>
+          <th nzWidth="150px">{{ i18n.t('evs.viewEvsAffirmorSetup.evalSheet', 'Bảng đánh giá') }}</th>
+          <th nzWidth="100px" class="veas-col-center">{{ i18n.t('evs.viewEvsAffirmorSetup.PINGJIAQUN.a', 'Nhóm ĐG') }}</th>
+          <th nzWidth="150px">{{ i18n.t('evs.viewEvsAffirmorSetup.dg1Name', 'ĐG1 - Họ tên') }}</th>
+          <th nzWidth="100px" class="veas-col-center">{{ i18n.t('evs.viewEvsAffirmorSetup.dg1Position', 'ĐG1 - Chức vụ') }}</th>
+          <th nzWidth="150px">{{ i18n.t('evs.viewEvsAffirmorSetup.dg2Name', 'ĐG2 - Họ tên') }}</th>
+          <th nzWidth="100px" class="veas-col-center">{{ i18n.t('evs.viewEvsAffirmorSetup.dg2Position', 'ĐG2 - Chức vụ') }}</th>
+          <th nzWidth="150px">{{ i18n.t('evs.viewEvsAffirmorSetup.changeBy', 'Người thay đổi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.seq; let idx = $index) {
+          <tr [class.veas-ticked]="isTicked(row.seq)">
+            <td class="veas-col-center"><input type="checkbox" [checked]="isTicked(row.seq)" (change)="toggleRow(row.seq!, $any($event.target).checked)" /></td>
+            <td class="veas-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.localName }}</td>
+            <td class="veas-col-center">{{ row.empid }}</td>
+            <td>{{ row.deptname }}</td>
+            <td class="veas-col-center">{{ row.postGradeName }}</td>
+            <td class="veas-col-center">{{ row.dateStarted }}</td>
+            <td>{{ row.listTypeName }} @if (row.evsGroupName) { <br /><small class="veas-muted">{{ row.evsGroupName }}</small> }</td>
+            <td class="veas-col-center">{{ row.evsOccGroupName }}</td>
+            <td>
+              <span class="veas-affirm-display" (click)="openPicker({ kind: 'row', seq: row.seq!, level: 1 })">
+                {{ displayName(row, 1) || '—' }}
+              </span>
+            </td>
+            <td class="veas-col-center"><small class="veas-muted">{{ displayGrade(row, 1) }}</small></td>
+            <td>
+              <span class="veas-affirm-display" (click)="openPicker({ kind: 'row', seq: row.seq!, level: 2 })">
+                {{ displayName(row, 2) || '—' }}
+              </span>
+            </td>
+            <td class="veas-col-center"><small class="veas-muted">{{ displayGrade(row, 2) }}</small></td>
+            <td><small>{{ row.updatedBy }}<br />{{ row.updateDate }}</small></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="14" class="veas-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+        }
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal tìm nhân viên dùng chung -->
+<nz-modal
+  [nzVisible]="pickerVisible()"
+  [nzTitle]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.selectEmployee', 'Chọn nhân viên...')"
+  (nzOnCancel)="pickerVisible.set(false)"
+  (nzVisibleChange)="pickerVisible.set($event)"
+  nzWidth="600px"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <div class="veas-picker-search">
+      <input nz-input nzSize="small" [ngModel]="pickerKeyword()" (ngModelChange)="pickerKeyword.set($event)" (keydown.enter)="searchPicker()" [placeholder]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.enterName', 'Nhập tên, Enter để tìm...')" />
+      <button nz-button nzType="primary" nzSize="small" [nzLoading]="pickerSearching()" (click)="searchPicker()"><span nz-icon nzType="search"></span></button>
+    </div>
+    <nz-table [nzData]="pickerResults()" [nzShowPagination]="false" nzSize="small" [nzScroll]="{ y: '320px' }">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('common.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('evs.viewEvsAffirmorSetup.department', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (emp of pickerResults(); track emp.personId) {
+          <tr class="veas-picker-row" (click)="selectPickerEmployee(emp)">
+            <td>{{ emp.empid }}</td>
+            <td>{{ emp.localName }}</td>
+            <td>{{ emp.deptname }}</td>
+            <td>{{ emp.postGradeName }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="veas-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal thêm mới đối tượng đánh giá -->
+<nz-modal
+  [nzVisible]="addModalVisible()"
+  [nzTitle]="i18n.t('evs.viewEvsAffirmorSetup.addModalTitle', 'Thêm mới đối tượng đánh giá')"
+  (nzOnCancel)="addModalVisible.set(false)"
+  (nzVisibleChange)="addModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="addSaving()"
+  (nzOnOk)="saveNewObject()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <div class="veas-add-field">
+      <label class="veas-field-label">{{ i18n.t('evs.viewEvsAffirmorSetup.evalObject', 'Đối tượng đánh giá') }} <span class="veas-required"></span></label>
+      <div class="veas-add-input-group">
+        <input nz-input nzSize="small" readonly [ngModel]="formObjectEmp() ? (formObjectEmp()!.empid + ' - ' + formObjectEmp()!.localName) : ''" [placeholder]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.selectEmployee', 'Chọn nhân viên...')" />
+        <button nz-button nzSize="small" (click)="openPicker({ kind: 'addObject', field: 'object' })"><span nz-icon nzType="search"></span></button>
+        <button nz-button nzSize="small" (click)="formObjectEmp.set(null)"><span nz-icon nzType="close"></span></button>
+      </div>
+    </div>
+    <div class="veas-add-field">
+      <label class="veas-field-label">{{ i18n.t('evs.viewEvsAffirmorSetup.YICIPINGJIAREN.a', 'Người đánh giá lần 1') }}</label>
+      <div class="veas-add-input-group">
+        <input nz-input nzSize="small" readonly [ngModel]="formAffirm1Emp() ? (formAffirm1Emp()!.empid + ' - ' + formAffirm1Emp()!.localName) : ''" [placeholder]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.selectEmployee', 'Chọn nhân viên...')" />
+        <button nz-button nzSize="small" (click)="openPicker({ kind: 'addObject', field: 'affirm1' })"><span nz-icon nzType="search"></span></button>
+        <button nz-button nzSize="small" (click)="formAffirm1Emp.set(null)"><span nz-icon nzType="close"></span></button>
+      </div>
+    </div>
+    <div class="veas-add-field">
+      <label class="veas-field-label">{{ i18n.t('evs.viewEvsAffirmorSetup.LAINGCIPINGJIAREN.a', 'Người đánh giá lần 2') }}</label>
+      <div class="veas-add-input-group">
+        <input nz-input nzSize="small" readonly [ngModel]="formAffirm2Emp() ? (formAffirm2Emp()!.empid + ' - ' + formAffirm2Emp()!.localName) : ''" [placeholder]="i18n.t('evs.viewEvsAffirmorSetup.placeholder.selectEmployee', 'Chọn nhân viên...')" />
+        <button nz-button nzSize="small" (click)="openPicker({ kind: 'addObject', field: 'affirm2' })"><span nz-icon nzType="search"></span></button>
+        <button nz-button nzSize="small" (click)="formAffirm2Emp.set(null)"><span nz-icon nzType="close"></span></button>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Chèn file (Import Excel) -->
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('common.importExcel', 'Import Excel')"
+  (nzOnCancel)="importModalVisible.set(false)"
+  (nzVisibleChange)="importModalVisible.set($event)"
+  nzWidth="420px"
+  [nzOkLoading]="importing()"
+  [nzOkDisabled]="!importFile()"
+  (nzOnOk)="submitImport()"
+  [nzOkText]="i18n.t('common.importExcel', 'Import Excel')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <input id="veas-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+</nz-modal>

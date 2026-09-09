@@ -1,0 +1,13 @@
+.imp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.imp-col-center {
+  text-align: center;
+}
+
+.imp-row-error td {
+  background-color: #fff1f0;
+}

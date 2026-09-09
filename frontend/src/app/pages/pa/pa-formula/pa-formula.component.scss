@@ -1,0 +1,220 @@
+.vpf-page {
+  display: flex;
+  gap: 10px;
+  height: calc(100vh - 160px);
+}
+
+.vpf-left {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vpf-left-header {
+  font-weight: 600;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  background: var(--ant-color-fill-tertiary, #fafafa);
+}
+
+.vpf-item-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.vpf-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.vpf-item-row:hover {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+}
+
+.vpf-item-active {
+  background: var(--ant-color-primary, #1677ff);
+  color: #fff;
+}
+
+.vpf-item-icon {
+  color: #faad14;
+  flex-shrink: 0;
+}
+
+.vpf-item-active .vpf-item-icon {
+  color: #fff;
+}
+
+.vpf-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vpf-empty {
+  padding: 16px;
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+}
+
+.vpf-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.vpf-right-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.vpf-selected-label {
+  font-weight: 600;
+  color: var(--ant-color-primary, #1677ff);
+}
+
+.vpf-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.vpf-col-center {
+  text-align: center;
+}
+
+.vpf-clickable {
+  cursor: pointer;
+}
+
+.vpf-seq-val {
+  margin-right: 4px;
+}
+
+.vpf-seq-up {
+  color: #52c41a;
+}
+
+.vpf-seq-down {
+  color: #1677ff;
+}
+
+::ng-deep .vpf-token {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+.vpf-config-info {
+  background: var(--ant-color-info-bg, #e6f4ff);
+  border: 1px solid var(--ant-color-info-border, #91caff);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.vpf-form-row {
+  margin-bottom: 12px;
+}
+
+.vpf-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.vpf-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.vpf-mono {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.vpf-tool-panel {
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.vpf-tool-header {
+  background: #595959;
+  color: #fff;
+  padding: 8px 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vpf-tool-columns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.vpf-tool-col {
+  border-right: 1px solid var(--ant-color-border, #f0f0f0);
+}
+
+.vpf-tool-col:last-child {
+  border-right: none;
+}
+
+.vpf-tool-col-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  background: var(--ant-color-fill-tertiary, #fafafa);
+}
+
+.vpf-tool-col-body {
+  height: 180px;
+  overflow-y: auto;
+}
+
+.vpf-tool-item {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  font-size: 12px;
+  color: #1677ff;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.vpf-tool-item:hover {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+}
+
+.vpf-tool-empty {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  padding: 8px;
+}

@@ -1,0 +1,42 @@
+.eci-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eci-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.eci-col-center {
+  text-align: center;
+}
+
+.eci-detail-title {
+  color: #1677ff;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.eci-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.eci-detail-table th {
+  text-align: left;
+  width: 40%;
+  padding: 5px 8px;
+  background: #fafafa;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.eci-detail-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f5f5f5;
+}

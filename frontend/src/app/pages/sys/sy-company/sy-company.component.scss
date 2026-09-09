@@ -1,0 +1,84 @@
+.vco-page {
+  padding: 4px 0;
+}
+
+.vco-search-card {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vco-search-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vco-field {
+  min-width: 260px;
+}
+
+.vco-inline-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.vco-search-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.vco-table-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.vco-col-center {
+  text-align: center;
+}
+
+.vco-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.vco-form-row {
+  margin-bottom: 12px;
+}
+
+.vco-form-row-full {
+  grid-column: 1 / -1;
+}
+
+.vco-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.vco-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.vco-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vco-switch-label {
+  font-size: 13px;
+  color: #555;
+}

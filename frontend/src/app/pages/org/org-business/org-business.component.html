@@ -1,0 +1,127 @@
+<div class="obiz-page">
+  <div class="obiz-left">
+    <div class="obiz-field">
+      <label class="obiz-label">{{ i18n.t('org.compose.versionLabel', 'Phiên bản thay đổi') }}</label>
+      <nz-select
+        style="width: 100%"
+        [ngModel]="selectedResumeNo()"
+        (ngModelChange)="onResumeChange($event)"
+        [nzLoading]="loadingResume()"
+        nzShowSearch
+        nzAllowClear
+        [nzPlaceHolder]="i18n.t('org.compose.versionPlaceholder', '-- Chọn phiên bản thay đổi --')"
+      >
+        <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+      </nz-select>
+    </div>
+
+    <input
+      nz-input
+      class="obiz-search-input"
+      [ngModel]="searchTreeValue()"
+      (ngModelChange)="searchTreeValue.set($event)"
+      [placeholder]="i18n.t('org.compose.searchTreePlaceholder', 'Tìm kiếm phòng ban...')"
+    />
+
+    <div class="obiz-tree-actions">
+      <button nz-button nzSize="small" (click)="expandAllNodes()">{{ i18n.t('org.compose.expandAll', 'Mở tất cả') }}</button>
+      <button nz-button nzSize="small" (click)="collapseAllNodes()">{{ i18n.t('org.compose.collapseAll', 'Đóng tất cả') }}</button>
+    </div>
+
+    <div class="obiz-tree-container">
+      <div *ngIf="loadingTree()" class="obiz-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+      <nz-tree
+        *ngIf="!loadingTree()"
+        [nzData]="treeNodes()"
+        [nzSearchValue]="searchTreeValue()"
+        [nzSelectedKeys]="selectedDeptKey() ? [selectedDeptKey()!] : []"
+        (nzClick)="onTreeClick($event)"
+        [nzExpandedKeys]="expandedKeys()"
+        (nzExpandedKeysChange)="expandedKeys.set($event)"
+      ></nz-tree>
+      <div *ngIf="!loadingTree() && treeNodes().length === 0" class="obiz-tree-empty">
+        {{ i18n.t('org.compose.msg.noOrgData', 'Không có dữ liệu tổ chức') }}
+      </div>
+    </div>
+  </div>
+
+  <div class="obiz-right">
+    <div class="obiz-card-header">
+      <span class="obiz-card-title">
+        {{ i18n.t('org.orgManage.viewOrgBusiness.title', 'Thông tin kinh doanh tổ chức') }}
+        <ng-container *ngIf="selectedDeptName()"> - {{ selectedDeptName() }}</ng-container>
+      </span>
+      <div class="obiz-btn-group">
+        <button nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <button nz-button nzSize="small" [disabled]="!selectedRow()" (click)="openEditModal()">
+          <span nz-icon nzType="edit"></span>{{ i18n.t('common.edit', 'Sửa') }}
+        </button>
+        <button nz-button nzSize="small" nzDanger [disabled]="!selectedRow()" (click)="confirmDeleteRow()">
+          <span nz-icon nzType="delete"></span>{{ i18n.t('common.delete', 'Xóa') }}
+        </button>
+      </div>
+    </div>
+
+    <nz-table [nzData]="businessList()" [nzLoading]="loadingList()" [nzPageSize]="20" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" nzBordered #obizTable>
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="obiz-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('org.orgManage.title.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('org.business.codeNo', 'Công việc') }}</th>
+          <th class="obiz-col-center">{{ i18n.t('org.business.isDefault', 'Mặc định') }}</th>
+          <th>{{ i18n.t('org.business.updatedBy', 'Người thay đổi') }}</th>
+          <th>{{ i18n.t('org.business.updateDate', 'Thời gian thay đổi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let row of obizTable.data; let idx = index"
+          class="obiz-clickable"
+          [class.obiz-row-selected]="row.seq === selectedSeq()"
+          (click)="selectRow(row)"
+        >
+          <td class="obiz-col-center">{{ idx + 1 }}</td>
+          <td>{{ row.deptName }}</td>
+          <td>{{ row.businessName || row.codeNo }}</td>
+          <td class="obiz-col-center">
+            <span nz-icon nzType="check" nzTheme="outline" class="obiz-check-icon" *ngIf="row.isDefault === '1'"></span>
+          </td>
+          <td>{{ row.updatedBy }}</td>
+          <td>{{ row.updateDate }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa nghiệp vụ -->
+<nz-modal
+  [(nzVisible)]="modalVisible"
+  [nzTitle]="modalMode() === 'NEW' ? i18n.t('org.business.modalAddTitle', 'Thêm nghiệp vụ') : i18n.t('org.business.modalEditTitle', 'Cập nhật nghiệp vụ')"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  (nzOnCancel)="modalVisible.set(false)"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <div class="obiz-form-row">
+      <label class="obiz-form-label">{{ i18n.t('org.orgManage.title.deptName', 'Phòng ban') }}</label>
+      <input nz-input [ngModel]="selectedDeptName()" disabled />
+    </div>
+    <div class="obiz-form-row">
+      <label class="obiz-form-label obiz-required">{{ i18n.t('org.business.codeNo', 'Mã Công việc (Code No)') }}</label>
+      <input nz-input [(ngModel)]="form.codeNo" [placeholder]="i18n.t('org.business.codeNoPlaceholder', 'Nhập mã công việc...')" />
+      <small class="obiz-hint">{{ i18n.t('org.business.codeNoHint', 'Nhập mã công việc để hệ thống lấy tên tương ứng.') }}</small>
+    </div>
+    <div class="obiz-form-row">
+      <label class="obiz-form-label">{{ i18n.t('org.business.orderNo', 'Thứ tự hiển thị') }}</label>
+      <nz-input-number style="width: 100%" [(ngModel)]="form.orderNo" [nzMin]="0"></nz-input-number>
+    </div>
+    <div class="obiz-form-row">
+      <label nz-checkbox [(ngModel)]="form.isDefault">{{ i18n.t('org.business.isDefault', 'Mặc định') }}</label>
+    </div>
+  </ng-container>
+</nz-modal>

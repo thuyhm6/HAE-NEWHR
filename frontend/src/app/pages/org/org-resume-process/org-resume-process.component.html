@@ -1,0 +1,124 @@
+<div class="orp-page">
+  <div class="orp-header">
+    <div class="orp-field">
+      <label class="orp-inline-label">{{ i18n.t('org.compose.versionLabel', 'Phiên bản thay đổi') }}</label>
+      <nz-select
+        style="width: 320px"
+        [ngModel]="selectedNo()"
+        (ngModelChange)="selectedNo.set($event)"
+        [nzLoading]="loading()"
+        nzShowSearch
+        nzAllowClear
+        [nzPlaceHolder]="i18n.t('org.compose.versionPlaceholder', '-- Chọn phiên bản thay đổi --')"
+      >
+        <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="orp-status">
+      <span class="orp-status-label">{{ i18n.t('common.status', 'Trạng thái') }}: </span>
+      <span
+        class="orp-status-value"
+        [class.orp-status-active]="selectedNo() && statusActive()"
+        [class.orp-status-inactive]="selectedNo() && !statusActive()"
+      >
+        {{ !selectedNo() ? '---' : (statusActive() ? i18n.t('common.active', 'Hoạt động') : i18n.t('common.inactive', 'Không hoạt động')) }}
+      </span>
+    </div>
+    <button nz-button class="orp-btn-execute" [nzLoading]="executing()" (click)="execute()">
+      {{ executing() ? i18n.t('common.processing', 'Đang thực hiện...') : i18n.t('org.resumeProcess.execute', 'Thực hiện') }}
+    </button>
+  </div>
+
+  <div class="orp-process-container">
+    <!-- Group 1: Edit Organization Tree -->
+    <div class="orp-process-group">
+      <div class="orp-process-header">{{ i18n.t('org.resumeProcess.groupEditOrgTree', 'Edit Organization Tree') }}</div>
+
+      <div class="orp-step-item">
+        <div class="orp-step-btn orp-checkbox-step">
+          <input type="checkbox" id="orpChkCopyOrg" [(ngModel)]="chkCopyOrg" />
+          <label for="orpChkCopyOrg">{{ i18n.t('org.resumeProcess.step.copyOrg', 'Sao chép tổ chức cũ') }}</label>
+        </div>
+      </div>
+
+      <div class="orp-step-arrow-down">↓</div>
+
+      <div class="orp-step-item">
+        <div class="orp-step-btn orp-active-step">{{ i18n.t('org.resumeProcess.step.setupOrg', 'Thiết lập tổ chức') }}</div>
+      </div>
+    </div>
+
+    <div class="orp-group-connector">→</div>
+
+    <!-- Group 2: Make Actions -->
+    <div class="orp-process-group">
+      <div class="orp-process-header">{{ i18n.t('org.resumeProcess.groupMakeActions', 'Make Actions') }}</div>
+
+      <div class="orp-step-item">
+        <div class="orp-step-btn orp-active-step">{{ i18n.t('org.resumeProcess.step.checkDeptManager', 'Kiểm tra trưởng bộ phận') }}</div>
+      </div>
+
+      <div class="orp-step-arrow-down">↓</div>
+
+      <div class="orp-step-item">
+        <div class="orp-step-btn orp-checkbox-step">
+          <input type="checkbox" id="orpChkScfl" [(ngModel)]="chkScfl" />
+          <label for="orpChkScfl">{{ i18n.t('org.resumeProcess.step.scfl', 'Tự động tạo ra quyết định') }}</label>
+        </div>
+      </div>
+
+      <div class="orp-step-arrow-down">↓</div>
+
+      <div class="orp-step-item">
+        <div class="orp-step-btn orp-active-step">{{ i18n.t('org.resumeProcess.step.checkDecision', 'Kiểm tra quyết định') }}</div>
+      </div>
+
+      <div class="orp-step-arrow-down">↓</div>
+
+      <div class="orp-step-item">
+        <div class="orp-step-btn orp-active-step">{{ i18n.t('org.resumeProcess.step.checkDraftDecision', 'Kiểm tra quyết định dự kiến') }}</div>
+      </div>
+    </div>
+
+    <div class="orp-group-connector">→</div>
+
+    <!-- Vertical Groups 3 & 4 -->
+    <div class="orp-vertical-groups">
+      <!-- Group 3: Organization History -->
+      <div class="orp-process-group">
+        <div class="orp-process-header">{{ i18n.t('org.resumeProcess.groupOrgHistory', 'Organization History') }}</div>
+
+        <div class="orp-step-item">
+          <div class="orp-step-btn orp-checkbox-step">
+            <input type="checkbox" id="orpChkSczz" [(ngModel)]="chkSczz" />
+            <label for="orpChkSczz">{{ i18n.t('org.resumeProcess.step.sczz', 'Tạo ra nội dung thay đổi') }}</label>
+          </div>
+        </div>
+
+        <div class="orp-step-arrow-down">↓</div>
+
+        <div class="orp-step-item">
+          <div class="orp-step-btn orp-active-step">{{ i18n.t('org.resumeProcess.step.deptChangeHistory', 'Lịch sử thay đổi-phòng ban') }}</div>
+        </div>
+      </div>
+
+      <!-- Group 4: Confirmation -->
+      <div class="orp-process-group">
+        <div class="orp-process-header">{{ i18n.t('org.resumeProcess.groupConfirmation', 'Confirmation') }}</div>
+
+        <div class="orp-step-item">
+          <div class="orp-step-btn orp-active-step">{{ i18n.t('org.resumeProcess.step.checkChange', 'Kiểm tra thay đổi') }}</div>
+        </div>
+
+        <div class="orp-step-arrow-down">↓</div>
+
+        <div class="orp-step-item">
+          <div class="orp-step-btn orp-checkbox-step">
+            <input type="checkbox" id="orpChkQdzz" [(ngModel)]="chkQdzz" />
+            <label for="orpChkQdzz">{{ i18n.t('org.resumeProcess.step.qdzz', 'Hình thành tổ chức mới') }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

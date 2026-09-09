@@ -1,0 +1,163 @@
+/*
+ * ".vrg-page" là layout 2 cột trái/phải (danh sách + panel phân quyền) bằng flex thường (không phải
+ * nz-row) nên bị lọt vào rule global [class$="-page"]:not([nz-row]):has([class*="-table-card"]) ở
+ * styles.scss - rule đó ép flex-direction: column (dành cho layout xếp CHỒNG kiểu ar-item) với
+ * specificity cao hơn class thường, phải ép lại row bằng !important để giữ đúng layout 2 cột. Đồng
+ * thời bỏ "align-items: flex-start" (co theo nội dung) để 2 cột stretch hết chiều cao "-page" (đã có
+ * height:100% từ global) thì ".vrg-left" mới có chỗ dựa cho ".vrg-table-card" bên trong cuộn đúng.
+ */
+.vrg-page {
+  display: flex;
+  flex-direction: row !important;
+  gap: 10px;
+}
+
+.vrg-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.vrg-right {
+  width: 380px;
+  flex-shrink: 0;
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.vrg-search-card {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vrg-search-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vrg-field {
+  min-width: 260px;
+}
+
+.vrg-inline-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.vrg-search-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.vrg-table-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.vrg-col-center {
+  text-align: center;
+}
+
+.vrg-clickable {
+  cursor: pointer;
+}
+
+.vrg-row-selected {
+  background: var(--ant-color-primary-bg, #e6f4ff);
+}
+
+.vrg-right-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.vrg-selected-label {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vrg-role-list {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.vrg-role-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.vrg-role-id {
+  color: #999;
+}
+
+.vrg-empty {
+  color: #999;
+  text-align: center;
+  padding: 24px 8px;
+  font-size: 13px;
+}
+
+.vrg-form-row {
+  margin-bottom: 12px;
+}
+
+.vrg-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.vrg-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.vrg-form-hint {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.vrg-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.vrg-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vrg-switch-label {
+  font-size: 13px;
+  color: #555;
+}

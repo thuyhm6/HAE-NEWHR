@@ -1,0 +1,171 @@
+<div class="ewi-page">
+  <!-- ===== Quyết định nhân sự ===== -->
+  <nz-card class="ewi-card">
+    <div class="ewi-card-header">
+      <strong>{{ i18n.t('epi.section.hrDecision', 'Quyết định nhân sự') }}</strong>
+    </div>
+    <nz-table id="ewi-inside-table" #ewiInsideTable [nzData]="insideExperience()" [nzLoading]="insideLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="140px">{{ i18n.t('epi.field.period', 'Thời gian') }}</th>
+          <th>{{ i18n.t('epi.field.decision', 'Quyết định') }}</th>
+          <th>{{ i18n.t('epi.field.reason', 'Lý do') }}</th>
+          <th>{{ i18n.t('epi.field.department', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('epi.field.work', 'Công việc') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ewiInsideTable.data; track $index) {
+          <tr>
+            <td>{{ row.startDate }}</td>
+            <td>{{ row.transCode }}</td>
+            <td></td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.mainBusiness || row.postGrade }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="ewi-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <!-- ===== Kinh nghiệm ===== -->
+  <nz-card class="ewi-card">
+    <div class="ewi-card-header">
+      <strong>{{ i18n.t('epi.section.workExp', 'Kinh nghiệm') }}</strong>
+      <button id="ewi-add-workexp-btn" nz-button nzType="primary" nzSize="small" (click)="openWorkExpModal(null)">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('epi.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+    <nz-table id="ewi-workexp-table" #ewiWorkExpTable [nzData]="workExperience()" [nzLoading]="workExpLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('epi.field.cpnyName', 'Tên công ty') }}</th>
+          <th nzWidth="120px">{{ i18n.t('epi.field.startDate', 'Ngày vào làm') }}</th>
+          <th nzWidth="120px">{{ i18n.t('epi.field.endDate', 'Ngày thôi việc') }}</th>
+          <th>{{ i18n.t('epi.field.reason', 'Lý do') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ewiWorkExpTable.data; track row.workExpNo) {
+          <tr class="ewi-row" (click)="openWorkExpModal(row)">
+            <td><a class="ewi-name-link">{{ row.cpnyName }}</a></td>
+            <td>{{ row.startMonth || row.startDate }}</td>
+            <td>{{ row.endMonth || row.endDate }}</td>
+            <td>{{ row.resignReason }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="ewi-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- ===== Modal: Thêm/Sửa Kinh nghiệm ===== -->
+<nz-modal
+  id="ewi-workexp-modal"
+  [nzVisible]="workExpModalVisible()"
+  [nzTitle]="i18n.t('epi.modal.workExp', 'Kinh nghiệm làm việc')"
+  [nzWidth]="700"
+  (nzOnCancel)="closeWorkExpModal()"
+  (nzVisibleChange)="workExpModalVisible.set($event)"
+  [nzOkLoading]="workExpSaving()"
+  [nzOkText]="i18n.t('epi.btn.submitRequest', 'Gửi yêu cầu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+  (nzOnOk)="saveWorkExperience()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('epi.field.cpnyName', 'Tên công ty') }}</nz-form-label>
+            <nz-form-control><input id="ewi-we-cpnyName" nz-input [(ngModel)]="workExpForm.cpnyName" name="weCpnyName" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.department', 'Tên bộ phận') }}</nz-form-label>
+            <nz-form-control><input id="ewi-we-deptName" nz-input [(ngModel)]="workExpForm.deptName" name="weDeptName" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.startMonth', 'Ngày vào làm (MM/YYYY)') }}</nz-form-label>
+            <nz-form-control><input id="ewi-we-startMonth" nz-input [(ngModel)]="workExpForm.startMonth" name="weStartMonth" placeholder="VD: 01/2020" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.endMonth', 'Ngày thôi việc (MM/YYYY)') }}</nz-form-label>
+            <nz-form-control><input id="ewi-we-endMonth" nz-input [(ngModel)]="workExpForm.endMonth" name="weEndMonth" placeholder="VD: 12/2022" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.position', 'Chức vụ') }}</nz-form-label>
+            <nz-form-control><input id="ewi-we-position" nz-input [(ngModel)]="workExpForm.position" name="wePosition" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.resignReason', 'Lý do nghỉ việc') }}</nz-form-label>
+            <nz-form-control><input id="ewi-we-resignReason" nz-input [(ngModel)]="workExpForm.resignReason" name="weResignReason" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.witness', 'Người làm chứng') }}</nz-form-label>
+            <nz-form-control><input id="ewi-we-witness" nz-input [(ngModel)]="workExpForm.witness" name="weWitness" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control><textarea id="ewi-we-remark" nz-input rows="2" [(ngModel)]="workExpForm.remark" name="weRemark"></textarea></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      @if (workExpForm.updateWorkExperNo) {
+        <div class="ewi-file-list">
+          <label class="ewi-file-list-label">
+            <span nz-icon nzType="paper-clip"></span>
+            {{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}
+          </label>
+          @if (workExpFilesLoading()) {
+            <div class="ewi-file-item ewi-file-muted">{{ i18n.t('common.loading', 'Đang tải...') }}</div>
+          } @else if (!workExpFiles().length) {
+            <div class="ewi-file-item ewi-file-muted">{{ i18n.t('veai.msg.noFile', 'Không có file đính kèm') }}</div>
+          } @else {
+            @for (f of workExpFiles(); track f.fileNo) {
+              <div class="ewi-file-item">
+                <span nz-icon nzType="file" class="ewi-file-icon"></span>
+                <a [href]="'/ess/empinfo/api/files/download/' + f.fileNo" target="_blank">{{ f.fileName }}</a>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <div class="ewi-alert-note">
+        <span nz-icon nzType="info-circle"></span>
+        {{ i18n.t('epi.msg.applyNote', 'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.') }}
+      </div>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}</nz-form-label>
+        <nz-form-control>
+          <input id="ewi-we-attachFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onWorkExpFilesChange($event)" />
+          <div class="ewi-upload-hint">{{ i18n.t('epi.msg.uploadHint', 'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.') }}</div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

@@ -26,11 +26,17 @@ public class FrontendConfig implements WebMvcConfigurer {
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 // Serve ảnh đại diện nhân viên từ thư mục upload ngoài classpath
                 // Đăng ký trước /assets/** để Spring ưu tiên path cụ thể hơn
+                // Location thứ 2 (/assets/images/users/ trong webapp root) là fallback cho các ảnh mặc
+                // định đóng gói sẵn (vd. dummy-avatar.jpg) không nằm trong thư mục upload - Spring thử
+                // lần lượt từng location, location nào có file thì dùng, không thì mới trả 404. Nếu
+                // thiếu fallback này, ảnh mặc định sẽ 404 vĩnh viễn vì handler cụ thể này che mất handler
+                // /assets/** chung ở dưới (pattern cụ thể hơn luôn được Spring ưu tiên bất kể thứ tự
+                // đăng ký).
                 File uploadDir = new File(photoUploadPath);
                 String uploadDirPath = uploadDir.getAbsolutePath().replace("\\", "/");
                 if (!uploadDirPath.endsWith("/")) uploadDirPath += "/";
                 registry.addResourceHandler("/assets/images/users/**")
-                                .addResourceLocations("file:" + uploadDirPath)
+                                .addResourceLocations("file:" + uploadDirPath, "/assets/images/users/")
                                 .setCacheControl(CacheControl.maxAge(Duration.ofHours(1)));
 
                 // Assets nằm trong webapp root (src/main/webapp/assets/)

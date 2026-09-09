@@ -1,0 +1,31 @@
+.spi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.spi-toolbar-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.spi-col-center {
+  text-align: center;
+}
+
+.spi-section-title {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1677ff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.spi-hint {
+  display: block;
+  margin-top: 4px;
+  color: #8c8c8c;
+}

@@ -1,0 +1,158 @@
+<div class="oar-page">
+  <nz-card class="oar-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.empIdOrName', 'Mã NV / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="oar-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="oarKeyword" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="oar-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="oarDeptNos"
+                [nzPlaceHolder]="i18n.t('ex.placeholder.dept', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.fromDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="oar-start-date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" name="oarStartDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.toDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="oar-end-date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" name="oarEndDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.postFamily', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="oar-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="oarPostFamily" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of postFamilyOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ex.field.shiftNo', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="oar-shift" [ngModel]="shiftNo()" (ngModelChange)="shiftNo.set($event)" name="oarShiftNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="shiftLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('caoi.field.otType', 'Loại tăng ca') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="oar-item" [ngModel]="itemNoSearch()" (ngModelChange)="itemNoSearch.set($event)" name="oarItemNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNoCode" [nzLabel]="opt.itemName || opt.itemNoCode"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row>
+        <div nz-col [nzSpan]="24" class="oar-search-actions">
+          <button id="oar-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ex.btn.search', 'Tra cứu') }}
+          </button>
+          <button id="oar-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="oar-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('ex.btn.export', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="oar-table-card">
+    <nz-table
+      id="oar-data-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzShowSizeChanger]="true"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="oar-col-center">{{ i18n.t('ex.col.no', 'No.') }}</th>
+          <th class="oar-col-center">{{ i18n.t('ex.col.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ex.col.fullName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ex.col.dept', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('ex.col.position', 'Chức vụ') }}</th>
+          <th class="oar-col-center">{{ i18n.t('cai.col.shift', 'Ca') }}</th>
+          <th>{{ i18n.t('caoi.col.otType', 'Loại tăng ca') }}</th>
+          <th class="oar-col-center">{{ i18n.t('cai.col.workDate', 'Ngày công') }}</th>
+          <th class="oar-col-center">{{ i18n.t('caoi.col.checkIn', 'Vào') }}</th>
+          <th class="oar-col-center">{{ i18n.t('caoi.col.checkOut', 'Ra') }}</th>
+          <th class="oar-col-center">{{ i18n.t('cai.col.fromTime', 'Thời gian bắt đầu') }}</th>
+          <th class="oar-col-center">{{ i18n.t('cai.col.toTime', 'Thời gian kết thúc') }}</th>
+          <th class="oar-col-center">{{ i18n.t('cai.col.duration', 'Thời lượng') }}</th>
+          <th>{{ i18n.t('caoi.col.remark', 'Ghi chú') }}</th>
+          <th class="oar-col-center">{{ i18n.t('cai.col.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index; let idx = $index) {
+          <tr>
+            <td class="oar-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="oar-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="oar-col-center">{{ row.shiftName }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="oar-col-center">{{ row.arDateStr }}</td>
+            <td class="oar-col-center">{{ row.indoorTime }}</td>
+            <td class="oar-col-center">{{ row.outdoorTime }}</td>
+            <td class="oar-col-center">{{ row.fromDate }}</td>
+            <td class="oar-col-center">{{ row.toTime }}</td>
+            <td class="oar-col-center">{{ row.quantity }}{{ row.unit ? ' ' + row.unit : '' }}</td>
+            <td>{{ row.remark }}</td>
+            <td class="oar-col-center">{{ row.statusName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="15" class="oar-col-center">{{ i18n.t('atpi.js.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

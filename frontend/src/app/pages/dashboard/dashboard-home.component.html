@@ -1,0 +1,77 @@
+<div class="hae-dashboard-welcome" *ngIf="user() as u">
+  <h2>Chào mừng {{ u.employeeName || u.username }} đến với hệ thống HR!</h2>
+</div>
+
+<div class="hae-dbhome-row">
+  <div class="hae-dbhome-stats">
+    <div class="hae-dbhome-range">
+      <nz-range-picker
+        id="hae-dbhome-daterange"
+        nzFormat="dd/MM/yyyy"
+        [ngModel]="dateRange()"
+        (ngModelChange)="onDateRangeChange($event)"
+      ></nz-range-picker>
+    </div>
+
+    <nz-table
+      id="hae-dbhome-stats-table"
+      [nzData]="stats()"
+      [nzShowPagination]="false"
+      [nzSize]="'small'"
+    >
+      <thead>
+        <tr>
+          <th>{{ i18n.t('common.name', 'Tên') }}</th>
+          <th>{{ i18n.t('dashboard.col.quantity', 'Số lượng') }}</th>
+          <th>{{ i18n.t('common.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of stats(); track row.key) {
+          <tr>
+            <td>{{ i18n.t(row.labelKey, row.labelFallback) }}</td>
+            <td>{{ row.count ?? '-' }}</td>
+            <td>
+              @if (row.count === null) {
+                <span>-</span>
+              } @else if (row.count === 0) {
+                <nz-tag nzColor="success">{{ i18n.t('dashboard.status.stable', 'Ổn định') }}</nz-tag>
+              } @else if (row.isWarning) {
+                <nz-tag nzColor="warning">{{ i18n.t('dashboard.status.needAction', 'Cần xử lý') }}</nz-tag>
+              } @else {
+                <nz-tag nzColor="processing">{{ i18n.t('dashboard.status.registered', 'Đã đăng ký') }}</nz-tag>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </div>
+
+  <nz-card
+    id="hae-dbhome-chart-card"
+    class="hae-dbhome-chart"
+    [nzTitle]="i18n.t('dashboard.chart.title', 'Biểu đồ chấm công & Tăng ca')"
+  >
+    <apx-chart
+      [series]="chartOptions.series"
+      [chart]="chartOptions.chart"
+      [xaxis]="chartOptions.xaxis"
+      [yaxis]="chartOptions.yaxis"
+      [stroke]="chartOptions.stroke"
+      [fill]="chartOptions.fill"
+      [markers]="chartOptions.markers"
+      [dataLabels]="chartOptions.dataLabels"
+      [plotOptions]="chartOptions.plotOptions"
+      [tooltip]="chartOptions.tooltip"
+      [noData]="chartOptions.noData"
+      [grid]="chartOptions.grid"
+      [legend]="chartOptions.legend"
+      [colors]="chartOptions.colors"
+    ></apx-chart>
+  </nz-card>
+</div>
+
+<div class="hae-dbhome-banner">
+  <img src="/assets/images/BannerPC.png" alt="Banner" />
+</div>

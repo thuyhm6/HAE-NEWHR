@@ -1,0 +1,292 @@
+<div class="edu-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="eduSearchEmpId" [placeholder]="i18n.t('hrm.educationSearch.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.localName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="eduSearchLocalName" [placeholder]="i18n.t('hrm.educationSearch.title.localNamePlaceholder', 'Nhập tên nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.institutionName', 'Tên trường/Cơ sở') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-search-institution" nz-input [ngModel]="searchInstitutionName()" (ngModelChange)="searchInstitutionName.set($event)" name="eduSearchInstitution" [placeholder]="i18n.t('hrm.educationSearch.title.institutionPlaceholder', 'Nhập tên trường')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>&nbsp;</nz-form-label>
+            <nz-form-control>
+              <div class="edu-toolbar-actions">
+                <button id="edu-search-btn" nz-button nzType="primary" (click)="search()">
+                  <span nz-icon nzType="search"></span>
+                  {{ i18n.t('common.search', 'Tìm kiếm') }}
+                </button>
+                <button id="edu-clear-btn" nz-button (click)="clearSearch()">
+                  <span nz-icon nzType="close"></span>
+                  {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+                </button>
+                <button id="edu-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+                  <span nz-icon nzType="plus"></span>
+                  {{ i18n.t('common.addNew', 'Thêm mới') }}
+                </button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+
+    <nz-table
+      id="edu-data-table"
+      #eduTable
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="20"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[20, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: '1400px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="edu-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.educationSearch.title.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('hrm.educationSearch.title.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.educationSearch.title.institutionName', 'Tên trường') }}</th>
+          <th>{{ i18n.t('hrm.educationSearch.title.degreeCode', 'Bằng cấp') }}</th>
+          <th>{{ i18n.t('hrm.educationSearch.title.subject', 'Chuyên ngành') }}</th>
+          <th class="edu-col-center">{{ i18n.t('common.startDate', 'Từ ngày') }}</th>
+          <th class="edu-col-center">{{ i18n.t('common.endDate', 'Đến ngày') }}</th>
+          <th>{{ i18n.t('hrm.educationSearch.title.siteCountry', 'Quốc gia') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th nzWidth="100px" class="edu-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of eduTable.data; track row.educNo; let idx = $index) {
+          <tr>
+            <td class="edu-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.institutionName }}</td>
+            <td>{{ row.degreeCode }}</td>
+            <td>{{ row.subject }}</td>
+            <td class="edu-col-center">{{ row.startDate }}</td>
+            <td class="edu-col-center">{{ row.endDate }}</td>
+            <td>{{ row.siteCountry }}</td>
+            <td>{{ row.remark }}</td>
+            <td class="edu-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="edu-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.educationSearch.title.editTitle', 'Cập nhật Quá trình học tập') : i18n.t('hrm.educationSearch.title.addTitle', 'Thêm mới Quá trình học tập')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="900px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="edu-form-emp"
+                [ngModel]="formPersonId()"
+                (ngModelChange)="onEmployeeSelected($event)"
+                name="eduFormEmp"
+                nzShowSearch
+                [nzServerSearch]="true"
+                (nzOnSearch)="onEmployeeSearch($event)"
+                [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                [nzLoading]="employeeSearching()"
+              >
+                @if (formEmpLabel() && formPersonId()) {
+                  <nz-option [nzValue]="formPersonId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                }
+                @for (emp of employeeOptions(); track emp.personId) {
+                  <nz-option [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.educationSearch.title.institutionName', 'Tên trường/Cơ sở') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-institution" nz-input [ngModel]="formInstitutionName()" (ngModelChange)="formInstitutionName.set($event)" name="eduFormInstitution" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.degreeCode', 'Bằng cấp') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-degree" nz-input [ngModel]="formDegreeCode()" (ngModelChange)="formDegreeCode.set($event)" name="eduFormDegree" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.subject', 'Chuyên ngành chính') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-subject" nz-input [ngModel]="formSubject()" (ngModelChange)="formSubject.set($event)" name="eduFormSubject" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.startDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-start" nz-input [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" name="eduFormStart" placeholder="YYYYMMDD" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.endDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-end" nz-input [ngModel]="formEndDate()" (ngModelChange)="formEndDate.set($event)" name="eduFormEnd" placeholder="YYYYMMDD" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.schoolLength', 'Thời gian học (Hệ đào tạo)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-length" nz-input [ngModel]="formSchoolLength()" (ngModelChange)="formSchoolLength.set($event)" name="eduFormLength" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.siteCountry', 'Quốc gia') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-country" nz-input [ngModel]="formSiteCountry()" (ngModelChange)="formSiteCountry.set($event)" name="eduFormCountry" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.place', 'Địa điểm') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-place" nz-input [ngModel]="formPlace()" (ngModelChange)="formPlace.set($event)" name="eduFormPlace" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.thesisLocal', 'Tên luận văn') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-thesis-local" nz-input [ngModel]="formThesisNameLocal()" (ngModelChange)="formThesisNameLocal.set($event)" name="eduFormThesisLocal" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.thesisEng', 'Tên luận văn (Anh)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-thesis-eng" nz-input [ngModel]="formThesisNameEng()" (ngModelChange)="formThesisNameEng.set($event)" name="eduFormThesisEng" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.subjectSecond', 'Chuyên ngành 2') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-subject2" nz-input [ngModel]="formSubjectSecond()" (ngModelChange)="formSubjectSecond.set($event)" name="eduFormSubject2" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.eduDegNum', 'Số bằng cấp') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-degnum" nz-input [ngModel]="formEduDegNum()" (ngModelChange)="formEduDegNum.set($event)" name="eduFormDegNum" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.degreesCode', 'Mã học vị') }}</nz-form-label>
+            <nz-form-control>
+              <input id="edu-form-degrees-code" nz-input [ngModel]="formDegreesCode()" (ngModelChange)="formDegreesCode.set($event)" name="eduFormDegreesCode" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.studyExperience', 'Du học') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="edu-form-study-exp" [ngModel]="formStudyExperience()" (ngModelChange)="formStudyExperience.set($event)" name="eduFormStudyExp">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.educationSearch.title.finalDegree', 'Bằng cao nhất') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="edu-form-final-degree" [ngModel]="formFinalDegreeWhether()" (ngModelChange)="formFinalDegreeWhether.set($event)" name="eduFormFinalDegree">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="edu-form-remark" nz-input rows="2" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)" name="eduFormRemark"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

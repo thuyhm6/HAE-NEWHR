@@ -1,0 +1,159 @@
+<div class="hcv-page">
+  <nz-card class="hcv-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewHAECardInfoList.title.keyword', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="hcv-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="hcvKeyword" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="hcv-dept"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="hcvDept"
+                nzMultiple
+                nzCheckable
+                nzShowSearch
+                [nzPlaceHolder]="i18n.t('recruit.list.placeholder.selectDept', '-- Chọn phòng ban --')"
+                style="width:100%"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewHAECardInfoList.title.fromDate', 'Ngày vào làm từ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="hcv-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="hcvFromDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewHAECardInfoList.title.toDate', 'Ngày vào làm đến') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="hcv-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="hcvToDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewHAECardInfoList.title.postFamily', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="hcv-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="hcvPostFamily" [nzPlaceHolder]="i18n.t('common.all', '-- Tất cả --')" nzAllowClear style="width:100%">
+                @for (opt of postFamilyOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empType', 'Loại nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="hcv-emp-type" [ngModel]="empTypeCode()" (ngModelChange)="empTypeCode.set($event)" name="hcvEmpType" [nzPlaceHolder]="i18n.t('common.all', '-- Tất cả --')" nzAllowClear style="width:100%">
+                @for (opt of empTypeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="hcv-emp-office" [ngModel]="empOffice()" (ngModelChange)="empOffice.set($event)" name="hcvEmpOffice" [nzPlaceHolder]="i18n.t('common.all', '-- Tất cả --')" nzAllowClear style="width:100%">
+                @for (opt of empOfficeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="hcv-toolbar-actions">
+        <button id="hcv-search-btn" nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="hcv-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="hcv-print-btn" nz-button nzType="primary" (click)="printSelected()">
+          <span nz-icon nzType="printer"></span>
+          {{ i18n.t('hrm.viewHAECardInfoList.title.printCard', 'In thẻ') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="hcv-table-card">
+    <nz-table id="hcv-data-table" [nzData]="list()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[50, 100, 200]" nzSize="small" [nzScroll]="{ x: 'max-content', y: '100%' }">
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="hcv-col-center">
+            <input type="checkbox" (change)="toggleSelectAll($any($event.target).checked)" />
+          </th>
+          <th>{{ i18n.t('hrm.viewHAECardInfoList.title.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hrm.viewHAECardInfoList.title.postFamily', 'Nhóm nhân viên') }}</th>
+          <th>{{ i18n.t('common.empType', 'Loại nhân viên') }}</th>
+          <th>{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th class="hcv-col-center">{{ i18n.t('common.startDate', 'Ngày vào làm') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of list(); track row.empId) {
+          <tr>
+            <td class="hcv-col-center">
+              <input type="checkbox" [checked]="isRowSelected(row.empId)" (change)="toggleRowSelected(row.empId!, $any($event.target).checked)" />
+            </td>
+            <td>{{ row.empId }}</td>
+            <td><a (click)="openCardForEmployee(row.empId!)">{{ row.localName }}</a></td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postFamilyName }}</td>
+            <td>{{ row.empTypeName }}</td>
+            <td>{{ row.empOfficeName }}</td>
+            <td class="hcv-col-center">{{ row.dateStarted }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="hcv-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="previewVisible()"
+  [nzTitle]="i18n.t('hrm.viewHAECardInfoList.title.previewTitle', 'Xem trước Thẻ nhân sự')"
+  (nzOnCancel)="closePreview()"
+  (nzVisibleChange)="previewVisible.set($event)"
+  nzWidth="90%"
+>
+  <ng-container *nzModalContent>
+    <div [innerHTML]="previewCardsHtml()"></div>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closePreview()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button nz-button nzType="primary" (click)="executePrint()">
+      <span nz-icon nzType="printer"></span>
+      {{ i18n.t('common.print', 'In') }}
+    </button>
+  </div>
+</nz-modal>

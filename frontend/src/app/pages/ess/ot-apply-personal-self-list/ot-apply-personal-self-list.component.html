@@ -1,0 +1,150 @@
+<div class="otsl-page">
+  <nz-card class="otsl-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('otsl.label.startDate', 'Ngày bắt đầu') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker
+            id="otsl-start-date"
+            [ngModel]="startDate()"
+            (ngModelChange)="startDate.set($event)"
+            name="otslStartDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('otsl.label.endDate', 'Ngày kết thúc') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker
+            id="otsl-end-date"
+            [ngModel]="endDate()"
+            (ngModelChange)="endDate.set($event)"
+            name="otslEndDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <button id="otsl-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="otsl-export-btn" nz-button nzType="default" (click)="exportExcel()" class="otsl-export-btn">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="otsl-table-card">
+    <nz-table
+      id="otsl-data-table"
+      #otslTable
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="otsl-col-center">{{ i18n.t('otsl.msg.stt', 'STT') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.msg.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('otsl.msg.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('otsl.msg.deptName', 'Phòng ban') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.msg.total', 'Tổng') }}</th>
+          @for (item of items(); track item.itemNo) {
+            <th class="otsl-col-center">{{ item.itemName }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of otslTable.data; track row.personId; let idx = $index) {
+          <tr>
+            <td class="otsl-col-center">{{ idx + 1 }}</td>
+            <td class="otsl-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td class="otsl-col-center otsl-col-bold">{{ row.total }}</td>
+            @for (item of items(); track item.itemNo) {
+              <td class="otsl-col-center">
+                @if ((row.items[item.itemNo ?? ''] ?? 0) > 0) {
+                  <a class="otsl-detail-link" (click)="openDetail(row, item)">{{ row.items[item.itemNo ?? ''] }}</a>
+                } @else {
+                  <span class="otsl-col-muted">0</span>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="5 + items().length" class="otsl-col-center">
+              {{ i18n.t('otsl.msg.noData', 'Không có dữ liệu') }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="otsl-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="detailTitle()"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="otslDetailFooter"
+>
+  <ng-container *nzModalContent>
+    <nz-table id="otsl-detail-table" [nzData]="detailRows()" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="otsl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.col.shift', 'Ca') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.col.workTime', 'Thời gian làm việc') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.col.date', 'Ngày') }}</th>
+          <th>{{ i18n.t('otsl.col.otType', 'Tăng ca') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.col.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.col.endTime', 'Thời gian kết thúc') }}</th>
+          <th class="otsl-col-center">{{ i18n.t('otsl.col.duration', 'Thời lượng') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of detailRows(); track $index; let idx = $index) {
+          <tr>
+            <td class="otsl-col-center">{{ idx + 1 }}</td>
+            <td class="otsl-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td class="otsl-col-center">{{ row.shiftName || row.shiftNo }}</td>
+            <td class="otsl-col-center">{{ row.workTime }}</td>
+            <td class="otsl-col-center">{{ row.arDateStr }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="otsl-col-center">{{ row.fromTimeStr }}</td>
+            <td class="otsl-col-center">{{ row.toTimeStr }}</td>
+            <td class="otsl-col-center">{{ row.quantity }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="otsl-col-center">{{ i18n.t('otsl.msg.noDataDetail', 'Không có dữ liệu.') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>
+
+<ng-template #otslDetailFooter>
+  <button id="otsl-detail-close-btn" nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>

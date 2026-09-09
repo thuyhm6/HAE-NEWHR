@@ -1,0 +1,157 @@
+<div class="shl-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.year', 'Năm') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shl-search-year" [ngModel]="searchYear()" (ngModelChange)="searchYear.set($event)" name="shlSearchYear" style="width: 100%" [nzMin]="1900" [nzMax]="2999"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="20" class="shl-toolbar-actions">
+          <button id="shl-search-btn" nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="shl-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="shl-add-btn" nz-button nzType="primary" nzDanger="false" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('ar.viewStatutoryHolidays.addNew', 'Thêm mới ngày lễ') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <nz-table #shlTable id="shl-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="shl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('ar.viewStatutoryHolidays.title.date', 'Ngày') }}</th>
+          <th class="shl-col-center">{{ i18n.t('common.year', 'Năm') }}</th>
+          <th class="shl-col-center">{{ i18n.t('ar.viewStatutoryHolidays.title.month', 'Tháng') }}</th>
+          <th class="shl-col-center">{{ i18n.t('ar.viewStatutoryHolidays.title.day', 'Ngày trong tháng') }}</th>
+          <th>{{ i18n.t('ar.viewArItemParam.title.company', 'Công ty') }}</th>
+          <th>{{ i18n.t('ar.viewStatutoryHolidays.title.shift', 'Ca làm việc') }}</th>
+          <th>{{ i18n.t('ar.viewStatutoryHolidays.title.typeid', 'Loại ngày (TypeID)') }}</th>
+          <th class="shl-col-center">{{ i18n.t('ar.viewStatutoryHolidays.title.workdayflag', 'Cờ làm việc') }}</th>
+          <th class="shl-col-center">{{ i18n.t('ar.viewStatutoryHolidays.title.statutoryFlag', 'Cờ ngày lễ PĐ') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th class="shl-col-center">{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</th>
+          <th class="shl-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th nzWidth="100px" class="shl-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of shlTable.data; track row.ddateStr; let idx = $index) {
+          <tr>
+            <td class="shl-col-center">{{ idx + 1 }}</td>
+            <td>{{ displayDate(row.ddateStr) }}</td>
+            <td class="shl-col-center">{{ row.iyear }}</td>
+            <td class="shl-col-center">{{ row.imonth }}</td>
+            <td class="shl-col-center">{{ row.iday }}</td>
+            <td>{{ row.companyName }}</td>
+            <td>{{ row.shiftName }}</td>
+            <td>{{ row.typeidName }}</td>
+            <td class="shl-col-center">
+              @if (row.workdayflag === 1) {
+                <nz-tag nzColor="processing">{{ i18n.t('ar.viewCompanyCalendar.title.work', 'Làm việc') }}</nz-tag>
+              } @else {
+                <nz-tag nzColor="warning">{{ i18n.t('ar.viewCompanyCalendar.title.rest', 'Nghỉ') }}</nz-tag>
+              }
+            </td>
+            <td class="shl-col-center">
+              @if (row.statutoryFlag === 1) {
+                <nz-tag nzColor="error">{{ i18n.t('ar.viewStatutoryHolidays.statutoryYes', 'Lễ pháp định') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('common.no', 'Không') }}</nz-tag>
+              }
+            </td>
+            <td>{{ row.remark }}</td>
+            <td class="shl-col-center">{{ row.orderno }}</td>
+            <td class="shl-col-center">
+              @if (row.activity === 1) {
+                <nz-tag nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+              }
+            </td>
+            <td class="shl-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row.ddateStr)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row.ddateStr)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="14" class="shl-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('ar.viewStatutoryHolidays.modal.editTitle', 'Cập nhật Ngày lễ') : i18n.t('ar.viewStatutoryHolidays.modal.addTitle', 'Thêm mới Ngày lễ pháp định')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="600px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewStatutoryHolidays.title.date', 'Ngày') }}</nz-form-label>
+            <nz-form-control>
+              @if (modalIsEdit()) {
+                <input nz-input [ngModel]="displayDate(formDdateStr() ?? undefined)" name="shlFDateDisabled" disabled />
+              } @else {
+                <nz-date-picker id="shl-f-ddate" [ngModel]="formDdate()" (ngModelChange)="formDdate.set($event)" name="shlFDdate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewStatutoryHolidays.title.typeid', 'Loại ngày (TypeID)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="shl-f-typeid" [ngModel]="formTypeid()" (ngModelChange)="formTypeid.set($event)" name="shlFTypeid">
+                <nz-option nzValue="1442" [nzLabel]="i18n.t('ar.viewStatutoryHolidays.typeid.holiday', 'Ngày lễ')"></nz-option>
+                <nz-option nzValue="1441" [nzLabel]="i18n.t('ar.viewStatutoryHolidays.typeid.weekend', 'Cuối tuần')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewStatutoryHolidays.title.remark', 'Ghi chú / Tên ngày lễ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shl-f-remark" nz-input [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)" name="shlFRemark" [placeholder]="i18n.t('ar.viewStatutoryHolidays.remarkPlaceholder', 'VD: Tết Nguyên Đán, Quốc Khánh...')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="shl-info-box">
+        <span nz-icon nzType="info-circle"></span>
+        {{ i18n.t('ar.viewStatutoryHolidays.infoBox', 'Khi lưu, hệ thống sẽ tự động cập nhật dữ liệu sang bảng AR_CALENDER_GROUP và ghi lịch sử vào AR_CALENDER_GROUP_HISTORY.') }}
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="shl-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>

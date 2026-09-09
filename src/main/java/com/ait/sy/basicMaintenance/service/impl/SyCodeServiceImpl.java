@@ -7,12 +7,20 @@ import com.ait.sy.basicMaintenance.service.SyCodeService;
 import com.ait.sy.sys.mapper.SyGlobalNameMapper;
 import com.ait.sy.sys.model.SyGlobalName;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -116,26 +124,48 @@ public class SyCodeServiceImpl implements SyCodeService {
 
     @Override
     public byte[] exportExcel() {
-        List<SyCodeDto> list = syCodeMapper.findCodeWithParentNo(null);
-        StringBuilder sb = new StringBuilder();
-        // BOM for Excel to recognize UTF-8
-        sb.append('\uFEFF');
-        sb.append("Code No,Parent Code,Name (VI),Name (EN),Name (ZH),Name (KO),Description\n");
-        for (SyCodeDto dto : list) {
-            sb.append(escapeCsv(dto.getCodeNo())).append(",");
-            sb.append(escapeCsv(dto.getParentCodeNo())).append(",");
-            sb.append(escapeCsv(dto.getNameVi())).append(",");
-            sb.append(escapeCsv(dto.getNameEn())).append(",");
-            sb.append(escapeCsv(dto.getNameZh())).append(",");
-            sb.append(escapeCsv(dto.getNameKo())).append(",");
-            sb.append(escapeCsv(dto.getDescription())).append("\n");
-        }
-        return sb.toString().getBytes(StandardCharsets.UTF_8);
-    }
+        try {
+            List<SyCodeDto> list = syCodeMapper.findCodeWithParentNo(null);
 
-    private String escapeCsv(String s) {
-        if (s == null)
-            return "";
-        return "\"" + s.replace("\"", "\"\"") + "\"";
+            try (XSSFWorkbook wb = new XSSFWorkbook()) {
+                XSSFSheet sheet = wb.createSheet("SY_CODE");
+
+                CellStyle headerStyle = wb.createCellStyle();
+                headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+                List<String> headers = Arrays.asList(
+                        "Code No", "Parent Code", "Name (VI)", "Name (EN)", "Name (ZH)", "Name (KO)", "Description");
+                XSSFRow headerRow = sheet.createRow(0);
+                for (int col = 0; col < headers.size(); col++) {
+                    XSSFCell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers.get(col));
+                    cell.setCellStyle(headerStyle);
+                }
+
+                int rowIdx = 1;
+                for (SyCodeDto dto : list) {
+                    XSSFRow dataRow = sheet.createRow(rowIdx++);
+                    int c = 0;
+                    dataRow.createCell(c++).setCellValue(dto.getCodeNo() != null ? dto.getCodeNo() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getParentCodeNo() != null ? dto.getParentCodeNo() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameVi() != null ? dto.getNameVi() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameEn() != null ? dto.getNameEn() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameZh() != null ? dto.getNameZh() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameKo() != null ? dto.getNameKo() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getDescription() != null ? dto.getDescription() : "");
+                }
+
+                for (int i = 0; i < headers.size(); i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                wb.write(bos);
+                return bos.toByteArray();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

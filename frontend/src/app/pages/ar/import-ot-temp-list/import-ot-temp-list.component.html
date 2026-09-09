@@ -1,0 +1,102 @@
+<div class="iot-page">
+  <nz-card class="iot-toolbar-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label [nzNoColon]="true">{{ i18n.t('impOt.totalRows', 'Tổng số hàng:') }}</nz-form-label>
+        <nz-form-control>
+          <strong id="iot-total-rows">{{ totalRows() }}</strong>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzNoColon]="true">{{ i18n.t('impOt.errorRows', 'Số hàng lỗi:') }}</nz-form-label>
+        <nz-form-control>
+          <strong id="iot-error-rows">{{ errorRows() }}</strong>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('impOt.errorFilter', 'Gặp lỗi hay không') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="iot-error-only" [ngModel]="errorOnly()" (ngModelChange)="errorOnly.set($event)" name="iotErrorOnly" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('impOt.all', 'Tất cả')" style="min-width: 200px">
+            <nz-option nzValue="Y" [nzLabel]="i18n.t('impOt.onlyError', 'Chỉ hiển thị dòng lỗi')"></nz-option>
+            <nz-option nzValue="N" [nzLabel]="i18n.t('impOt.onlyValid', 'Chỉ hiển thị dòng hợp lệ')"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="iot-search-btn" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tra cứu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="iot-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">
+            <span nz-icon nzType="save"></span>
+            {{ i18n.t('common.save', 'Lưu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="iot-table-card">
+    <nz-table #iotTable id="iot-result-table" [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: '2200px', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="iot-col-center">{{ i18n.t('impOt.line', 'Line') }}</th>
+          <th>{{ i18n.t('impOt.fullName', 'Họ tên') }}</th>
+          <th class="iot-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th class="iot-col-center">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.otDate', 'Ngày tăng ca') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.fromDate', 'Từ ngày') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.fromTime', 'Từ giờ') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.toDate', 'Đến ngày') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.toTime', 'Đến giờ') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.otType', 'Loại tăng ca') }}</th>
+          <th class="iot-col-center">{{ i18n.t('common.hours', 'Số giờ') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.totalMonth', 'Tổng tăng ca tháng') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.otLimit', 'Giới hạn tăng ca') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.deductYn', 'Trừ ăn nghỉ') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.specialYn', 'Qua ngày') }}</th>
+          <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.approvalStatus', 'Trạng thái duyệt') }}</th>
+          <th>{{ i18n.t('impOt.validationResult', 'Kết quả kiểm chứng') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.uploadBy', 'Người tải') }}</th>
+          <th class="iot-col-center">{{ i18n.t('impOt.uploadTime', 'Thời gian') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of iotTable.data; track $index) {
+          <tr [class.iot-row-error]="(row.uploadErrorMsg ?? '').trim() !== ''">
+            <td class="iot-col-center">{{ row.lineId }}</td>
+            <td>{{ row.applyName }}</td>
+            <td class="iot-col-center">{{ row.empId }}</td>
+            <td class="iot-col-center">{{ row.deptName }}</td>
+            <td class="iot-col-center">{{ row.applyOtDate }}</td>
+            <td class="iot-col-center">{{ row.otFromDate }}</td>
+            <td class="iot-col-center">{{ row.otFromTime }}</td>
+            <td class="iot-col-center">{{ row.otToDate }}</td>
+            <td class="iot-col-center">{{ row.otToTime }}</td>
+            <td class="iot-col-center">{{ row.otTypeName }}</td>
+            <td class="iot-col-center">{{ row.otApplyHour }}</td>
+            <td class="iot-col-center">{{ row.otTotalMonth }}</td>
+            <td class="iot-col-center">{{ row.otLimit }}</td>
+            <td class="iot-col-center">{{ flagText(row.deductYn) }}</td>
+            <td class="iot-col-center">{{ flagText(row.specialYn) }}</td>
+            <td>{{ row.applyOtRemark }}</td>
+            <td class="iot-col-center">{{ row.affirmFlagName }}</td>
+            <td>{{ row.uploadErrorMsg }}</td>
+            <td class="iot-col-center">{{ row.uploadBy }}</td>
+            <td class="iot-col-center">{{ row.uploadDate }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="19" class="iot-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

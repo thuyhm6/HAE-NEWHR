@@ -26,24 +26,6 @@
         <tracking-mode>COOKIE</tracking-mode>
     </session-config>
 
-    <!-- Error Pages -->
-    <error-page>
-        <error-code>403</error-code>
-        <location>/error/403</location>
-    </error-page>
-    <error-page>
-        <error-code>404</error-code>
-        <location>/error/404</location>
-    </error-page>
-    <error-page>
-        <error-code>500</error-code>
-        <location>/error/500</location>
-    </error-page>
-    <error-page>
-        <exception-type>java.lang.Exception</exception-type>
-        <location>/error/general</location>
-    </error-page>
-
     <!-- Welcome Files -->
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>

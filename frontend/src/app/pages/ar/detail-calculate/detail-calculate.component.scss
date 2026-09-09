@@ -1,0 +1,29 @@
+.adc-page {
+  display: flex;
+  justify-content: center;
+}
+
+.adc-card {
+  width: 100%;
+  max-width: 720px;
+}
+
+.adc-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.adc-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.adc-emp-field input {
+  flex: 1;
+}
+
+.adc-actions {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +24,13 @@ public class PaComputeItemParamController {
     @Autowired
     private PaComputeItemParamService paComputeItemParamService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/viewPaComputeItemParamList")
-    public String viewPaComputeItemParamList() {
-        return "pa/salary/viewPaComputeItemParamList";
+    public String viewPaComputeItemParamList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/computeitemparam/api/list")

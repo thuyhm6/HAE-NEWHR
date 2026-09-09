@@ -1,0 +1,186 @@
+<div class="spi-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search', 'Tìm kiếm') }}</nz-form-label>
+            <nz-form-control>
+              <input id="spi-search-text" nz-input [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" name="spiSearchText" [placeholder]="i18n.t('ar.viewSummaryParamItem.placeholder.search', 'Nhập mã hạng mục / Tên hạng mục')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="16" class="spi-toolbar-actions">
+          <button id="spi-search-btn" nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="spi-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="spi-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('common.addNew', 'Thêm mới') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <nz-table #spiTable id="spi-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="spi-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>Param No</th>
+          <th>{{ i18n.t('ar.viewArItemParam.title.company', 'Tên công ty') }}</th>
+          <th>{{ i18n.t('ar.viewSummaryItem.title.itemNo', 'Mã hạng mục') }}</th>
+          <th>{{ i18n.t('ar.viewSummaryItem.title.itemName', 'Tên hạng mục') }}</th>
+          <th class="spi-col-center">{{ i18n.t('ar.viewSummaryParamItem.title.unit', 'Đơn vị') }}</th>
+          <th class="spi-col-center">{{ i18n.t('ar.viewSummaryParamItem.title.minUnit', 'Đơn vị tối thiểu (Min)') }}</th>
+          <th class="spi-col-center">{{ i18n.t('ar.viewSummaryParamItem.title.calOrder', 'Thứ tự tính toán (Cal)') }}</th>
+          <th class="spi-col-center">{{ i18n.t('ar.viewSummaryParamItem.title.manageFlag', 'Cờ quản lý') }}</th>
+          <th class="spi-col-center">{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</th>
+          <th class="spi-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th nzWidth="100px" class="spi-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of spiTable.data; track row.paramNo; let idx = $index) {
+          <tr>
+            <td class="spi-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.paramNo }}</td>
+            <td>{{ row.companyName }}</td>
+            <td>{{ row.itemNo }}</td>
+            <td>{{ row.itemNameVi }}</td>
+            <td class="spi-col-center">{{ row.unit }}</td>
+            <td class="spi-col-center">{{ row.minUnit }}</td>
+            <td class="spi-col-center">{{ row.calOrder }}</td>
+            <td class="spi-col-center">{{ row.manageFlag }}</td>
+            <td class="spi-col-center">{{ row.orderno }}</td>
+            <td class="spi-col-center">
+              @if (row.activity === 1) {
+                <nz-tag nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+              }
+            </td>
+            <td class="spi-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row.paramNo)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="12" class="spi-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? (i18n.t('ar.viewSummaryParamItem.modal.editTitlePrefix', 'Cập nhật Thông số:') + ' ' + formParamNo()) : i18n.t('ar.viewSummaryParamItem.modal.addTitle', 'Thêm mới Thông số tổng hợp')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <h6 class="spi-section-title">{{ i18n.t('ar.viewSummaryParamItem.title.itemInfo', 'Thông tin Hạng mục') }}</h6>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewSummaryParamItem.title.selectItem', 'Chọn Hạng mục (ITEM_NO)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="spi-f-item" [ngModel]="formItemNo()" (ngModelChange)="formItemNo.set($event)" name="spiFItem" [nzDisabled]="modalIsEdit()" [nzPlaceHolder]="i18n.t('ar.viewSummaryParamItem.placeholder.selectAvailableItem', '-- Chọn hạng mục chưa có thông số --')" nzShowSearch>
+                <nz-option *ngFor="let it of itemOptions()" [nzValue]="it.itemNo" [nzLabel]="itemLabel(it)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <h6 class="spi-section-title">{{ i18n.t('ar.viewSummaryParamItem.title.paramConfig', 'Cấu hình thông số (Parameters)') }}</h6>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryParamItem.title.unitFull', 'Đơn vị (ngày, giờ, phút)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="spi-f-unit" [ngModel]="formUnit()" (ngModelChange)="formUnit.set($event)" name="spiFUnit">
+                <nz-option nzValue="DAY" [nzLabel]="i18n.t('ar.viewSummaryParamItem.unit.day', 'Ngày')"></nz-option>
+                <nz-option nzValue="HOUR" [nzLabel]="i18n.t('ar.viewSummaryParamItem.unit.hour', 'Giờ')"></nz-option>
+                <nz-option nzValue="MINUTE" [nzLabel]="i18n.t('ar.viewSummaryParamItem.unit.minute', 'Phút')"></nz-option>
+                <nz-option nzValue="TIME" [nzLabel]="i18n.t('ar.viewSummaryParamItem.unit.time', 'Lần')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryParamItem.title.minUnitFull', 'Đơn vị tối thiểu (Min Unit)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="spi-f-min-unit" [ngModel]="formMinUnit()" (ngModelChange)="formMinUnit.set($event)" name="spiFMinUnit">
+                <nz-option [nzValue]="1" nzLabel="1"></nz-option>
+                <nz-option [nzValue]="0.5" nzLabel="0.5"></nz-option>
+                <nz-option [nzValue]="0.25" nzLabel="0.25"></nz-option>
+                <nz-option [nzValue]="0.05" nzLabel="0.05"></nz-option>
+                <nz-option [nzValue]="0.01" nzLabel="0.01"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        @if (modalIsEdit()) {
+          <div nz-col [nzSpan]="12">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t('ar.viewSummaryParamItem.title.calOrderFull', 'Thứ tự tính toán (Cal Order)') }}</nz-form-label>
+              <nz-form-control>
+                <nz-input-number id="spi-f-cal-order" [ngModel]="formCalOrder()" [nzDisabled]="true" name="spiFCalOrder" style="width: 100%"></nz-input-number>
+                <small class="spi-hint">{{ i18n.t('ar.viewSummaryParamItem.hint.autoIncrement', 'Tự động tăng khi thêm mới') }}</small>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryParamItem.title.manageFlagFull', 'Cờ quản lý (Manage Flag)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="spi-f-manage-flag" [ngModel]="formManageFlag()" (ngModelChange)="formManageFlag.set($event)" name="spiFManageFlag" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryParamItem.title.ordernoFull', 'Sắp xếp (Orderno)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="spi-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="spiFOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryParamItem.title.activityFull', 'Trạng thái (1: Hoạt động, 0: Ngừng)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="spi-f-active" [ngModel]="formActive()" (ngModelChange)="formActive.set($event)" name="spiFActive">
+                <nz-option [nzValue]="true" [nzLabel]="'1 - ' + i18n.t('common.active', 'Hoạt động')"></nz-option>
+                <nz-option [nzValue]="false" [nzLabel]="'0 - ' + i18n.t('common.inactive', 'Ngừng')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="spi-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('ar.viewSummaryParamItem.btn.saveData', 'Lưu dữ liệu') }}
+    </button>
+  </div>
+</nz-modal>

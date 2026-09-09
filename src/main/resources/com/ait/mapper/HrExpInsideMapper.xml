@@ -27,7 +27,6 @@
         <result column="TRANS_RESOURCE"    property="transResource"    jdbcType="VARCHAR"/>
         <result column="COST_CENTER"       property="costCenter"       jdbcType="VARCHAR"/>
         <result column="PAY_STEP_NO"       property="payStepNo"        jdbcType="VARCHAR"/>
-        <result column="POSITION"          property="position"         jdbcType="VARCHAR"/>
         <result column="CREATE_DATE"       property="createDate"       jdbcType="VARCHAR"/>
         <result column="CREATED_BY"        property="createdBy"        jdbcType="VARCHAR"/>
         <result column="UPDATE_DATE"       property="updateDate"       jdbcType="VARCHAR"/>
@@ -115,7 +114,6 @@
                     T.TRANS_RESOURCE,
                     T.COST_CENTER,
                     T.PAY_STEP_NO,
-                    T.POSITION,
                     TO_CHAR(T.CREATE_DATE, 'YYYY/MM/DD HH24:MI') AS CREATE_DATE,
                     T.CREATED_BY,
                     TO_CHAR(T.UPDATE_DATE, 'YYYY/MM/DD HH24:MI') AS UPDATE_DATE,
@@ -163,7 +161,6 @@
             T.TRANS_RESOURCE,
             T.COST_CENTER,
             T.PAY_STEP_NO,
-            T.POSITION,
             TO_CHAR(T.CREATE_DATE, 'YYYY/MM/DD HH24:MI') AS CREATE_DATE,
             T.CREATED_BY,
             TO_CHAR(T.UPDATE_DATE, 'YYYY/MM/DD HH24:MI') AS UPDATE_DATE,
@@ -209,7 +206,6 @@
             T.TRANS_RESOURCE,
             T.COST_CENTER,
             T.PAY_STEP_NO,
-            T.POSITION,
             TO_CHAR(T.CREATE_DATE, 'YYYY/MM/DD HH24:MI') AS CREATE_DATE,
             T.CREATED_BY,
             TO_CHAR(T.UPDATE_DATE, 'YYYY/MM/DD HH24:MI') AS UPDATE_DATE,
@@ -233,7 +229,7 @@
             POST_GRADE_NO, POST_FAMILY, JOB_TYPE, DUTY_NO,
             WORK_HOUR_TYPE, WAGE_TYPE, REMARK, ACTIVITY,
             POSITION_NO, MAIN_BUSINESS, TRANS_RESOURCE, COST_CENTER,
-            PAY_STEP_NO, POSITION,
+            PAY_STEP_NO,
             CREATE_DATE, CREATED_BY, CREATED_IP, UPDATED_BY, UPDATE_DATE, UPDATED_IP
         ) VALUES (
             #{seq, jdbcType=NUMERIC},
@@ -258,7 +254,6 @@
             #{transResource, jdbcType=VARCHAR},
             #{costCenter, jdbcType=VARCHAR},
             #{payStepNo, jdbcType=VARCHAR},
-            #{position, jdbcType=VARCHAR},
             SYSDATE,
             #{adminID, jdbcType=VARCHAR},
             #{adminIP, jdbcType=VARCHAR},
@@ -291,7 +286,6 @@
             TRANS_RESOURCE    = #{transResource, jdbcType=VARCHAR},
             COST_CENTER       = #{costCenter, jdbcType=VARCHAR},
             PAY_STEP_NO       = #{payStepNo, jdbcType=VARCHAR},
-            POSITION          = #{position, jdbcType=VARCHAR},
             UPDATED_BY        = #{adminID, jdbcType=VARCHAR},
             UPDATE_DATE       = SYSDATE,
             UPDATED_IP        = #{adminIP, jdbcType=VARCHAR}

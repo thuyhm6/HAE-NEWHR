@@ -19,7 +19,6 @@
         <result property="specialContent" column="SPECIAL_CONTENT"/>
         <result property="startDate" column="START_DATE"/>
         <result property="endDate" column="END_DATE"/>
-        <result property="otFlag" column="OT_FLAG"/>
         <result property="localName" column="LOCAL_NAME"/>
         <result property="empId" column="EMPID"/>
         <result property="deptNo" column="DEPTNO"/>
@@ -46,8 +45,7 @@
         hsm.GENERATION_TITLE,
         hsm.SPECIAL_CONTENT,
         hsm.START_DATE,
-        hsm.END_DATE,
-        hsm.OT_FLAG
+        hsm.END_DATE
     </sql>
 
     <!-- Fragment 2: Employee columns -->
@@ -106,9 +104,6 @@
         <if test="activity != null and activity != ''">
             AND hsm.ACTIVITY = #{activity}
         </if>
-        <if test="otFlag != null and otFlag != ''">
-            AND hsm.OT_FLAG = #{otFlag}
-        </if>
     </sql>
 
     <!-- Fragment 7: Dynamic ORDER BY clause -->
@@ -125,7 +120,6 @@
                     <when test="orderColumn == 'createDate'">hsm.CREATE_DATE</when>
                     <when test="orderColumn == 'startDate'">hsm.START_DATE</when>
                     <when test="orderColumn == 'endDate'">hsm.END_DATE</when>
-                    <when test="orderColumn == 'otFlag'">hsm.OT_FLAG</when>
                     <otherwise>hsm.CREATE_DATE</otherwise>
                 </choose>
                 <choose>
@@ -281,9 +275,6 @@
             <if test="endDate != null">
                 END_DATE = #{endDate},
             </if>
-            <if test="otFlag != null">
-                OT_FLAG = #{otFlag},
-            </if>
             <!-- Audit fields - luôn update -->
             UPDATE_DATE = #{updateDate},
             UPDATED_BY = #{adminID, jdbcType=VARCHAR},
@@ -304,7 +295,6 @@
             SPECIAL_CONTENT,
             START_DATE,
             END_DATE,
-            OT_FLAG,
             CREATE_DATE,
             CREATED_BY,
             CREATED_IP,
@@ -321,7 +311,6 @@
             #{specialContent},
             #{startDate},
             #{endDate},
-            #{otFlag},
             #{createDate},
             #{adminID, jdbcType=VARCHAR},
             #{adminIP, jdbcType=VARCHAR},

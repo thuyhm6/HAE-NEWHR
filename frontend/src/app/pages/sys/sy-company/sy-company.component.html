@@ -1,0 +1,149 @@
+<div class="vco-page">
+  <div class="vco-search-card">
+    <div class="vco-search-row">
+      <div class="vco-field">
+        <label class="vco-inline-label">{{ i18n.t('sys.company.searchKeyword', 'Từ khóa (ID, Tên)') }}</label>
+        <input
+          nz-input
+          [ngModel]="searchKeyword()"
+          (ngModelChange)="searchKeyword.set($event)"
+          (keydown.enter)="search()"
+          [placeholder]="i18n.t('sys.company.searchKeywordPlaceholder', 'Nhập mã hoặc tên công ty')"
+        />
+      </div>
+      <div class="vco-search-actions">
+        <button nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close-circle"></span>{{ i18n.t('sys.company.clearSearch', 'Xóa lọc') }}
+        </button>
+        <button nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <a nz-button [href]="exportUrl">
+          <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="vco-table-card">
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="10" nzShowSizeChanger [nzPageSizeOptions]="[10, 25, 50]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small" nzBordered #vcoTable>
+      <thead>
+        <tr>
+          <th nzWidth="48px" class="vco-col-center">{{ i18n.t('sys.codeManage.no', 'STT') }}</th>
+          <th>{{ i18n.t('sys.company.cpnyId', 'Mã ID') }}</th>
+          <th>{{ i18n.t('sys.codeManage.nameViShort', 'Tên TV') }}</th>
+          <th>{{ i18n.t('sys.codeManage.nameEnShort', 'Tên TA') }}</th>
+          <th>{{ i18n.t('sys.company.address', 'Địa chỉ') }}</th>
+          <th>{{ i18n.t('sys.company.phone', 'Điện thoại') }}</th>
+          <th>{{ i18n.t('sys.company.website', 'Website') }}</th>
+          <th class="vco-col-center" nzWidth="100px">{{ i18n.t('sys.codeManage.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vcoTable.data; let idx = index">
+          <td class="vco-col-center">{{ idx + 1 }}</td>
+          <td>{{ row.cpnyId }}</td>
+          <td>{{ row.nameVi }}</td>
+          <td>{{ row.nameEn }}</td>
+          <td>{{ row.cpnyAddr }}</td>
+          <td>{{ row.cpnyTelNo }}</td>
+          <td>{{ row.cpnyWebAddr }}</td>
+          <td class="vco-col-center">
+            <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+              <span nz-icon nzType="edit"></span>
+            </button>
+            <button nz-button nzSize="small" nzDanger (click)="deleteRow(row)" [title]="i18n.t('common.delete', 'Xóa')">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa Công ty -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('sys.company.addTitle', 'Thêm mới Công ty') : i18n.t('sys.company.editTitle', 'Cập nhật Công ty')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="800px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vco-form-grid">
+      <div class="vco-form-row">
+        <label class="vco-form-label vco-required">{{ i18n.t('sys.company.cpnyIdFull', 'Mã Công ty (ID)') }}</label>
+        <input nz-input [ngModel]="formCpnyId()" (ngModelChange)="formCpnyId.set($event)" [disabled]="!formIsAdd()" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.company.operationId', 'Operation ID') }}</label>
+        <input nz-input [ngModel]="formOperationId()" (ngModelChange)="formOperationId.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label vco-required">{{ i18n.t('sys.codeManage.nameViFull', 'Tên Tiếng Việt') }}</label>
+        <input nz-input [ngModel]="formNameVi()" (ngModelChange)="formNameVi.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.codeManage.nameEnFull', 'Tên Tiếng Anh') }}</label>
+        <input nz-input [ngModel]="formNameEn()" (ngModelChange)="formNameEn.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.codeManage.nameZhFull', 'Tên Tiếng Trung') }}</label>
+        <input nz-input [ngModel]="formNameZh()" (ngModelChange)="formNameZh.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.codeManage.nameKoFull', 'Tên Tiếng Hàn') }}</label>
+        <input nz-input [ngModel]="formNameKo()" (ngModelChange)="formNameKo.set($event)" />
+      </div>
+      <div class="vco-form-row vco-form-row-full">
+        <label class="vco-form-label">{{ i18n.t('sys.company.address', 'Địa chỉ') }}</label>
+        <input nz-input [ngModel]="formCpnyAddr()" (ngModelChange)="formCpnyAddr.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.company.postalCode', 'Mã bưu điện') }}</label>
+        <input nz-input [ngModel]="formCpnyPostalcode()" (ngModelChange)="formCpnyPostalcode.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.company.location', 'Vị trí (Location)') }}</label>
+        <input nz-input [ngModel]="formCpnyLocation()" (ngModelChange)="formCpnyLocation.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.company.telNo', 'Số điện thoại') }}</label>
+        <input nz-input [ngModel]="formCpnyTelNo()" (ngModelChange)="formCpnyTelNo.set($event)" />
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.company.faxNo', 'Số Fax') }}</label>
+        <input nz-input [ngModel]="formCpnyFaxNo()" (ngModelChange)="formCpnyFaxNo.set($event)" />
+      </div>
+      <div class="vco-form-row vco-form-row-full">
+        <label class="vco-form-label">{{ i18n.t('sys.company.website', 'Website') }}</label>
+        <input nz-input [ngModel]="formCpnyWebAddr()" (ngModelChange)="formCpnyWebAddr.set($event)" />
+      </div>
+      <div class="vco-form-row vco-form-row-full">
+        <label class="vco-form-label">{{ i18n.t('sys.company.intro', 'Giới thiệu') }}</label>
+        <textarea nz-input rows="2" [ngModel]="formCpnyIntro()" (ngModelChange)="formCpnyIntro.set($event)"></textarea>
+      </div>
+      <div class="vco-form-row vco-form-row-full">
+        <label class="vco-form-label">{{ i18n.t('sys.company.history', 'Lịch sử') }}</label>
+        <textarea nz-input rows="2" [ngModel]="formCpnyHistory()" (ngModelChange)="formCpnyHistory.set($event)"></textarea>
+      </div>
+      <div class="vco-form-row">
+        <label class="vco-form-label">{{ i18n.t('sys.codeManage.orderNo', 'Thứ tự') }}</label>
+        <nz-input-number style="width: 100%" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="vco-form-row vco-switch-row">
+        <nz-switch [ngModel]="formGgsYn()" (ngModelChange)="formGgsYn.set($event)"></nz-switch>
+        <span class="vco-switch-label">{{ i18n.t('sys.company.ggsYn', 'Sử dụng GGS') }}</span>
+      </div>
+      <div class="vco-form-row vco-switch-row">
+        <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+        <span class="vco-switch-label">{{ formActivity() ? i18n.t('common.active', 'Hoạt động') : i18n.t('common.inactive', 'Ngừng') }}</span>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

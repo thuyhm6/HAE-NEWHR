@@ -1,0 +1,406 @@
+<div class="ver-page">
+  <div class="ver-search-card">
+    <div class="ver-search-field">
+      <span class="ver-inline-label">{{ i18n.t('evs.result.label.evaluationName', 'Tên đánh giá') }}</span>
+      <nz-select style="min-width: 220px" [ngModel]="searchResumeSeq()" (ngModelChange)="searchResumeSeq.set($event)">
+        <nz-option *ngFor="let opt of resumeOptions()" [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option>
+      </nz-select>
+    </div>
+    <div class="ver-search-field">
+      <span class="ver-inline-label">{{ i18n.t('evs.result.label.empSearch', 'Mã NV / Họ tên') }}</span>
+      <nz-select
+        style="min-width: 220px"
+        [ngModel]="searchPersonId()"
+        (ngModelChange)="onEmployeeChange($event)"
+        nzShowSearch
+        nzAllowClear
+        [nzPlaceHolder]="i18n.t('evs.result.placeholder.selectEmployee', 'Chọn nhân viên...')"
+        (nzOnSearch)="onEmployeeSearch($event)"
+      >
+        <nz-option *ngFor="let emp of employeeOptions()" [nzValue]="emp.personId" [nzLabel]="(emp.empId ?? '') + ' - ' + (emp.localName ?? '')"></nz-option>
+      </nz-select>
+    </div>
+    <div class="ver-search-field">
+      <span class="ver-inline-label">{{ i18n.t('evs.result.label.dept', 'Phòng ban') }}</span>
+      <nz-tree-select
+        style="min-width: 200px"
+        [nzNodes]="deptTreeNodes()"
+        [ngModel]="searchDeptNos()"
+        (ngModelChange)="searchDeptNos.set($event); search()"
+        nzMultiple
+        nzCheckable
+        nzShowSearch
+        [nzPlaceHolder]="i18n.t('evs.result.placeholder.selectDept', 'Chọn phòng ban')"
+      ></nz-tree-select>
+    </div>
+  </div>
+
+  <div class="ver-stats-row">
+    <div class="ver-card ver-standard-card">
+      <div class="ver-card-title">{{ i18n.t('evs.result.panel.standard', 'Tiêu chuẩn cơ bản') }}</div>
+      <table class="ver-dist-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>{{ i18n.t('evs.result.col.total', 'Tổng số người') }}</th>
+            <th colspan="2">EX</th><th colspan="2">VG</th><th colspan="2">GD</th><th colspan="2">NI</th><th colspan="2">UN</th>
+          </tr>
+          <tr>
+            <th></th><th></th>
+            <th>{{ i18n.t('evs.result.col.count', 'Số lượng') }}</th><th>{{ i18n.t('evs.result.col.rate', 'Tỷ lệ') }}</th>
+            <th>{{ i18n.t('evs.result.col.count', 'Số lượng') }}</th><th>{{ i18n.t('evs.result.col.rate', 'Tỷ lệ') }}</th>
+            <th>{{ i18n.t('evs.result.col.count', 'Số lượng') }}</th><th>{{ i18n.t('evs.result.col.rate', 'Tỷ lệ') }}</th>
+            <th>{{ i18n.t('evs.result.col.count', 'Số lượng') }}</th><th>{{ i18n.t('evs.result.col.rate', 'Tỷ lệ') }}</th>
+            <th>{{ i18n.t('evs.result.col.count', 'Số lượng') }}</th><th>{{ i18n.t('evs.result.col.rate', 'Tỷ lệ') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ver-row-label">{{ i18n.t('evs.result.col.std', 'Tỷ lệ tiêu chuẩn') }}</td>
+            <td>{{ rows().length }}</td>
+            <td>{{ stdCount('EX') }}</td><td>{{ stdPct('EX') }}%</td>
+            <td>{{ stdCount('VG') }}</td><td>{{ stdPct('VG') }}%</td>
+            <td>{{ stdCount('GD') }}</td><td>{{ stdPct('GD') }}%</td>
+            <td>{{ stdCount('NI') }}</td><td>{{ stdPct('NI') }}%</td>
+            <td>{{ stdCount('UN') }}</td><td>{{ stdPct('UN') }}%</td>
+          </tr>
+          <tr>
+            <td class="ver-row-label">{{ i18n.t('evs.result.col.hr', 'Nhân sự') }}</td>
+            <td>{{ standardDist().total }}</td>
+            <td>{{ distCount(standardDist(), 'EX') }}</td><td>{{ distPct(standardDist(), 'EX') }}%</td>
+            <td>{{ distCount(standardDist(), 'VG') }}</td><td>{{ distPct(standardDist(), 'VG') }}%</td>
+            <td>{{ distCount(standardDist(), 'GD') }}</td><td>{{ distPct(standardDist(), 'GD') }}%</td>
+            <td>{{ distCount(standardDist(), 'NI') }}</td><td>{{ distPct(standardDist(), 'NI') }}%</td>
+            <td>{{ distCount(standardDist(), 'UN') }}</td><td>{{ distPct(standardDist(), 'UN') }}%</td>
+          </tr>
+          <tr>
+            <td class="ver-row-label">{{ i18n.t('evs.result.col.prog_l2', 'Lần 2') }}</td>
+            <td>{{ l2Dist().total }}</td>
+            <td>{{ distCount(l2Dist(), 'EX') }}</td><td>{{ distPct(l2Dist(), 'EX') }}%</td>
+            <td>{{ distCount(l2Dist(), 'VG') }}</td><td>{{ distPct(l2Dist(), 'VG') }}%</td>
+            <td>{{ distCount(l2Dist(), 'GD') }}</td><td>{{ distPct(l2Dist(), 'GD') }}%</td>
+            <td>{{ distCount(l2Dist(), 'NI') }}</td><td>{{ distPct(l2Dist(), 'NI') }}%</td>
+            <td>{{ distCount(l2Dist(), 'UN') }}</td><td>{{ distPct(l2Dist(), 'UN') }}%</td>
+          </tr>
+          <tr>
+            <td class="ver-row-label">{{ i18n.t('evs.result.col.prog_l1', 'Lần 1') }}</td>
+            <td>{{ l1Dist().total }}</td>
+            <td>{{ distCount(l1Dist(), 'EX') }}</td><td>{{ distPct(l1Dist(), 'EX') }}%</td>
+            <td>{{ distCount(l1Dist(), 'VG') }}</td><td>{{ distPct(l1Dist(), 'VG') }}%</td>
+            <td>{{ distCount(l1Dist(), 'GD') }}</td><td>{{ distPct(l1Dist(), 'GD') }}%</td>
+            <td>{{ distCount(l1Dist(), 'NI') }}</td><td>{{ distPct(l1Dist(), 'NI') }}%</td>
+            <td>{{ distCount(l1Dist(), 'UN') }}</td><td>{{ distPct(l1Dist(), 'UN') }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ver-card ver-progress-card">
+      <div class="ver-progress-header">
+        <span class="ver-card-title">{{ i18n.t('evs.result.panel.statusProgress', 'Trạng thái tiến hành') }}</span>
+        <div class="ver-btn-group">
+          <button nz-button nzSize="small" (click)="featureInProgress()">{{ i18n.t('evs.result.btn.email', 'Email') }}</button>
+          <button nz-button nzDanger nzSize="small" [nzLoading]="evaluatingEnd()" (click)="evaluateEnd()">
+            {{ i18n.t('evs.result.btn.evaluateEnd', 'Đánh giá kết thúc') }}
+          </button>
+        </div>
+      </div>
+      <div class="ver-status-row">
+        <span class="ver-inline-label">{{ i18n.t('evs.result.label.status', 'Trạng thái') }}</span>
+        <nz-select style="min-width: 140px" nzSize="small" [ngModel]="searchStatus()" (ngModelChange)="searchStatus.set($event)" nzAllowClear>
+          <nz-option *ngFor="let opt of statusOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+        </nz-select>
+        <button nz-button nzType="default" nzSize="small" [nzLoading]="changingStatus()" (click)="changeStatus()">
+          {{ i18n.t('evs.result.btn.changeStatus', 'Thay đổi trạng thái') }}
+        </button>
+      </div>
+      <div class="ver-card-title">{{ i18n.t('evs.result.panel.progress', 'Tình trạng đánh giá giai đoạn') }}</div>
+      <table class="ver-dist-table">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('evs.result.col.total', 'Tổng số người') }}</th>
+            <th>{{ i18n.t('evs.result.col.prog_self', 'Bản thân') }}</th>
+            <th>{{ i18n.t('evs.result.col.prog_l1', 'Lần 1') }}</th>
+            <th>{{ i18n.t('evs.result.col.prog_l2', 'Lần 2') }}</th>
+            <th>{{ i18n.t('evs.result.col.prog_done', 'Hoàn thành') }}</th>
+            <th>{{ i18n.t('evs.result.col.prog_end', 'Kết thúc') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ progress().total }}</td>
+            <td>{{ progress().self }}</td>
+            <td>{{ progress().l1 }}</td>
+            <td>{{ progress().l2 }}</td>
+            <td>{{ progress().done }}</td>
+            <td>{{ progress().end }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="ver-toolbar">
+    <span class="ver-total-label">{{ i18n.t('evs.result.label.total', 'Tổng') }}: <strong>{{ totalCount() }}</strong></span>
+    <div class="ver-quick-filter">
+      <span class="ver-inline-label">{{ i18n.t('evs.result.quickFilter', 'Lọc nhanh') }}</span>
+      <input
+        nz-input
+        nzSize="small"
+        style="width: 140px"
+        [ngModel]="quickFilter()"
+        (ngModelChange)="quickFilter.set($event)"
+        [placeholder]="i18n.t('evs.result.placeholder.keyword', 'Từ khóa...')"
+      />
+    </div>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()"><span nz-icon nzType="search"></span>{{ i18n.t('evs.result.btn.search', 'Tra cứu') }}</button>
+    <button nz-button nzSize="small" (click)="featureInProgress()"><span nz-icon nzType="file-text"></span>{{ i18n.t('evs.result.btn.template', 'Bản mẫu') }}</button>
+    <button nz-button nzSize="small" (click)="featureInProgress()"><span nz-icon nzType="paper-clip"></span>{{ i18n.t('evs.result.btn.insertFile', 'Chèn file') }}</button>
+    <button nz-button nzSize="small" [nzLoading]="copyingGrade()" (click)="copyGrade()"><span nz-icon nzType="copy"></span>{{ i18n.t('evs.result.btn.copyGrade', 'Sao chép cấp đánh giá') }}</button>
+    <button nz-button nzType="primary" nzSize="small" [nzLoading]="saving()" (click)="save()"><span nz-icon nzType="save"></span>{{ i18n.t('evs.result.btn.save', 'Lưu') }}</button>
+    <button nz-button nzSize="small" (click)="exportExcel()"><span nz-icon nzType="file-excel"></span>{{ i18n.t('evs.result.btn.exportExcel', 'Xuất Excel') }}</button>
+  </div>
+
+  <div class="ver-card ver-table-card">
+    <nz-table [nzData]="filteredRows()" [nzLoading]="loading()" [nzFrontPagination]="false" nzSize="small" nzBordered [nzScroll]="{ x: '2200px', y: '100%' }">
+      <thead>
+        <tr>
+          <th nzWidth="32px" class="ver-col-center">
+            <input type="checkbox" [checked]="filteredRows().length > 0 && ticked().size === filteredRows().length" (change)="toggleAll($any($event.target).checked)" />
+          </th>
+          <th nzWidth="40px" class="ver-col-center">{{ i18n.t('evs.result.col.no', 'No') }}</th>
+          <th nzWidth="140px">{{ i18n.t('evs.result.col.name', 'Họ tên') }}</th>
+          <th nzWidth="90px" class="ver-col-center">{{ i18n.t('evs.result.col.empId', 'Mã nhân viên') }}</th>
+          <th nzWidth="140px">{{ i18n.t('evs.result.col.dept', 'Phòng ban') }}</th>
+          <th nzWidth="110px" class="ver-col-center">{{ i18n.t('evs.result.col.position', 'Chức vụ') }}</th>
+          <th nzWidth="100px" class="ver-col-center">{{ i18n.t('evs.result.col.dateStarted', 'Ngày vào làm') }}</th>
+          <th nzWidth="100px" class="ver-col-center">{{ i18n.t('evs.result.col.statusActivity', 'Trạng thái') }}</th>
+          <th nzWidth="90px" class="ver-col-center">{{ i18n.t('evs.result.col.self', 'Bản thân') }} - {{ i18n.t('evs.result.col.statusEval', 'Trạng thái') }}</th>
+          <th nzWidth="70px" class="ver-col-center">{{ i18n.t('evs.result.col.point', 'Điểm số') }}</th>
+          <th nzWidth="60px" class="ver-col-center">{{ i18n.t('evs.result.col.grade', 'Cấp') }}</th>
+          <th nzWidth="120px">{{ i18n.t('evs.result.col.appraiser1', 'Người đánh giá lần 1') }}</th>
+          <th nzWidth="100px" class="ver-col-center">{{ i18n.t('evs.result.col.position', 'Chức vụ') }}</th>
+          <th nzWidth="90px" class="ver-col-center">{{ i18n.t('evs.result.col.statusEval', 'Trạng thái') }}</th>
+          <th nzWidth="70px" class="ver-col-center">{{ i18n.t('evs.result.col.point', 'Điểm số') }}</th>
+          <th nzWidth="60px" class="ver-col-center">{{ i18n.t('evs.result.col.grade', 'Cấp') }}</th>
+          <th nzWidth="120px">{{ i18n.t('evs.result.col.appraiser2', 'Người đánh giá lần 2') }}</th>
+          <th nzWidth="100px" class="ver-col-center">{{ i18n.t('evs.result.col.position', 'Chức vụ') }}</th>
+          <th nzWidth="90px" class="ver-col-center">{{ i18n.t('evs.result.col.statusEval', 'Trạng thái') }}</th>
+          <th nzWidth="70px" class="ver-col-center">{{ i18n.t('evs.result.col.point', 'Điểm số') }}</th>
+          <th nzWidth="60px" class="ver-col-center">{{ i18n.t('evs.result.col.grade', 'Cấp') }}</th>
+          <th nzWidth="130px" class="ver-col-center">{{ i18n.t('evs.result.col.hrGrade', 'Cấp đánh giá (nhân sự)') }}</th>
+          <th nzWidth="160px">{{ i18n.t('evs.result.col.opinion', 'Ý kiến') }}</th>
+          <th nzWidth="120px" class="ver-col-center">{{ i18n.t('evs.result.col.updatedBy', 'Người thay đổi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of filteredRows(); let idx = index" [class.ver-ticked]="isTicked(row.seq)">
+          <td class="ver-col-center">
+            <input type="checkbox" [checked]="isTicked(row.seq)" (change)="tickRow(row.seq!, $any($event.target).checked)" />
+          </td>
+          <td class="ver-col-center">{{ idx + 1 }}</td>
+          <td class="ver-link" (click)="openDetail(row)">{{ row.localName }}</td>
+          <td class="ver-col-center">{{ row.empid }}</td>
+          <td>{{ row.deptname }}</td>
+          <td class="ver-col-center">{{ row.postGradeName }}</td>
+          <td class="ver-col-center">{{ row.dateStarted?.substring(0, 10) }}</td>
+          <td class="ver-col-center">{{ row.activityName }}</td>
+          <td class="ver-col-center">
+            <span [class.ver-status-evaluated]="row.affirmFlagName0 === 'Evaluated'" [class.ver-status-not-eval]="row.affirmFlagName0 !== 'Evaluated'">
+              {{ row.affirmFlagName0 }}
+            </span>
+          </td>
+          <td class="ver-col-center">{{ row.evsPoint0 }}</td>
+          <td class="ver-col-center"><span class="ver-grade-badge" [ngClass]="gradeClass(row.evsGrade0)">{{ row.evsGrade0 }}</span></td>
+          <td>{{ row.localName1 }}</td>
+          <td class="ver-col-center"><small class="ver-muted">{{ row.postGradeName1 }}</small></td>
+          <td class="ver-col-center">
+            <span [class.ver-status-evaluated]="row.affirmFlagName1 === 'Evaluated'" [class.ver-status-not-eval]="row.affirmFlagName1 !== 'Evaluated'">
+              {{ row.affirmFlagName1 }}
+            </span>
+          </td>
+          <td class="ver-col-center">{{ row.evsPoint1 }}</td>
+          <td class="ver-col-center"><span class="ver-grade-badge" [ngClass]="gradeClass(row.evsGrade1)">{{ row.evsGrade1 }}</span></td>
+          <td>{{ row.localName2 }}</td>
+          <td class="ver-col-center"><small class="ver-muted">{{ row.postGradeName2 }}</small></td>
+          <td class="ver-col-center">
+            <span [class.ver-status-evaluated]="row.affirmFlagName2 === 'Evaluated'" [class.ver-status-not-eval]="row.affirmFlagName2 !== 'Evaluated'">
+              {{ row.affirmFlagName2 }}
+            </span>
+          </td>
+          <td class="ver-col-center">{{ row.evsPoint2 }}</td>
+          <td class="ver-col-center"><span class="ver-grade-badge" [ngClass]="gradeClass(row.evsGrade2)">{{ row.evsGrade2 }}</span></td>
+          <td class="ver-col-center">
+            <nz-select nzSize="small" style="min-width: 90px" [ngModel]="gradeValue(row)" (ngModelChange)="onGradeChange(row, $event)" nzAllowClear>
+              <nz-option *ngFor="let opt of gradeOptions()" [nzValue]="opt.value" [nzLabel]="opt.text"></nz-option>
+            </nz-select>
+          </td>
+          <td>
+            <input nz-input nzSize="small" [ngModel]="contentValue(row)" (ngModelChange)="onContentChange(row, $event)" />
+          </td>
+          <td class="ver-col-center"><small>{{ row.updatedBy }}<br />{{ row.updateDate }}</small></td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal chi tiết (chỉ đọc) -->
+<nz-modal [(nzVisible)]="detailVisible" [nzTitle]="i18n.t('evs.viewAffirmTarget2.modal.personalInfo', 'Thông tin cá nhân')" nzWidth="1150px" (nzOnCancel)="closeDetail()">
+  <ng-container *nzModalContent>
+    <div class="ver-info-grid">
+      <table class="ver-info-table">
+        <thead><tr><th colspan="2">{{ i18n.t('evs.viewAffirmTarget2.modal.basicInfo', 'Thông tin cơ bản') }}</th></tr></thead>
+        <tbody>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.fullName', 'Họ tên') }}</td><td>{{ detail()?.localName }}</td></tr>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.position', 'Chức vụ') }}</td><td>{{ detail()?.postGradeName }}</td></tr>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.dept', 'Phòng ban') }}</td><td>{{ detail()?.deptname }}</td></tr>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.hireDate', 'Ngày vào làm') }}</td><td>{{ detail()?.dateStarted }}</td></tr>
+        </tbody>
+      </table>
+      <table class="ver-info-table">
+        <thead><tr><th colspan="2">{{ i18n.t('evs.viewAffirmTarget2.modal.evalCategory', 'Hạng mục đánh giá') }}</th></tr></thead>
+        <tbody>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.evalYear', 'Năm đánh giá') }}</td><td>{{ detail()?.evsYear }}</td></tr>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.period', 'Thời gian') }}</td><td>{{ period() }}</td></tr>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.appraiser1', 'Người đánh giá lần 1') }}</td><td>{{ detail()?.localName1 }}</td></tr>
+          <tr><td class="ver-info-label">{{ i18n.t('evs.viewAffirmTarget2.modal.appraiser2', 'Người đánh giá lần 2') }}</td><td>{{ detail()?.localName2 }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Performance -->
+    <ng-container *ngIf="evsType !== 'ability'">
+      <div class="ver-card-title">{{ i18n.t('evs.viewAffirmTarget2.modal.objectiveTitle', 'Objective Confirm') }}</div>
+
+      <div class="ver-section-title">{{ i18n.t('evs.viewAffirmTarget2.modal.strategicTarget', 'Mục tiêu chiến lược') }}</div>
+      <table class="ver-info-table mb-2">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.col.no', 'No') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.evalItem', 'Hạng mục đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.target', 'Mục tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.targetScore', 'Điểm chỉ tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.selfScore', 'Tự đánh giá (%)') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.affirm1Score', 'Đánh giá lần 1') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.affirm2Score', 'Đánh giá lần 2') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!strategicItems().length"><td colspan="7" class="ver-col-center">-</td></tr>
+          <tr *ngFor="let item of strategicItems(); let idx = index">
+            <td class="ver-col-center">{{ idx + 1 }}</td>
+            <td>{{ item.itemName }}</td>
+            <td [innerHTML]="item.itemContent"></td>
+            <td class="ver-col-center">{{ item.itemScore }}</td>
+            <td class="ver-col-center">{{ item.evsScore }}</td>
+            <td class="ver-col-center">{{ item.evsScore1 }}</td>
+            <td class="ver-col-center">{{ item.evsScore2 }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="ver-total-row"><td colspan="3" class="ver-total-label">{{ i18n.t('common.total', 'Tổng') }}</td><td class="ver-col-center">{{ sectionItemScoreTotal(strategicItems()) }}</td><td colspan="3"></td></tr>
+        </tfoot>
+      </table>
+
+      <div class="ver-section-title">{{ i18n.t('evs.viewAffirmTarget2.modal.operationTarget', 'Mục tiêu vận hành') }}</div>
+      <table class="ver-info-table mb-2">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.col.no', 'No') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.evalItem', 'Hạng mục đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.target', 'Mục tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.targetScore', 'Điểm chỉ tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.selfScore', 'Tự đánh giá (%)') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.affirm1Score', 'Đánh giá lần 1') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2.modal.col.affirm2Score', 'Đánh giá lần 2') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!operationItems().length"><td colspan="7" class="ver-col-center">-</td></tr>
+          <tr *ngFor="let item of operationItems(); let idx = index">
+            <td class="ver-col-center">{{ idx + 1 }}</td>
+            <td>{{ item.itemName }}</td>
+            <td [innerHTML]="item.itemContent"></td>
+            <td class="ver-col-center">{{ item.itemScore }}</td>
+            <td class="ver-col-center">{{ item.evsScore }}</td>
+            <td class="ver-col-center">{{ item.evsScore1 }}</td>
+            <td class="ver-col-center">{{ item.evsScore2 }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="ver-total-row"><td colspan="3" class="ver-total-label">{{ i18n.t('common.total', 'Tổng') }}</td><td class="ver-col-center">{{ sectionItemScoreTotal(operationItems()) }}</td><td colspan="3"></td></tr>
+        </tfoot>
+      </table>
+    </ng-container>
+
+    <!-- Ability -->
+    <ng-container *ngIf="evsType === 'ability'">
+      <div class="ver-card-title">{{ i18n.t('evs.viewAffirmTarget2Ability.modal.abilityTitle', 'Đánh giá năng lực lần 2') }}</div>
+      <table class="ver-info-table mb-2">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.no', 'No') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.distinction', 'Phân biệt') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.evalItem', 'Hạng mục đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.criterion', 'Chỉ tiêu đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.itemScore', 'Điểm chỉ tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.selfScore', 'Tự đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.affirm1Score', 'Đánh giá lần 1') }}</th>
+            <th>{{ i18n.t('evs.viewAffirmTarget2Ability.modal.col.affirm2Score', 'Đánh giá lần 2') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!abilityItems().length"><td colspan="8" class="ver-col-center">-</td></tr>
+          <tr *ngFor="let item of abilityItems(); let idx = index">
+            <td class="ver-col-center">{{ idx + 1 }}</td>
+            <td>{{ item.groupName }}</td>
+            <td>{{ item.itemName }}</td>
+            <td class="ver-small">{{ item.remark }}</td>
+            <td class="ver-col-center">{{ item.itemScore }}</td>
+            <td class="ver-col-center">{{ item.evsScore0 }}</td>
+            <td class="ver-col-center">{{ item.evsScore1 }}</td>
+            <td class="ver-col-center">{{ item.evsScore2 }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="ver-total-row"><td colspan="4" class="ver-total-label">{{ i18n.t('common.total', 'Tổng') }}</td><td class="ver-col-center">{{ abilityTotalItemScore() }}</td><td colspan="3"></td></tr>
+        </tfoot>
+      </table>
+    </ng-container>
+
+    <table class="ver-info-table mb-2">
+      <thead><tr><th>{{ i18n.t('evs.viewAffirmTarget2.modal.selfOpinion', 'Ý kiến cá nhân') }}</th><th nzWidth="100px">{{ i18n.t('evs.viewAffirmTarget2.modal.col.totalScore', 'Điểm số') }}</th><th nzWidth="80px">{{ i18n.t('evs.viewAffirmTarget2.col.grade', 'Cấp') }}</th></tr></thead>
+      <tbody>
+        <tr>
+          <td [innerHTML]="detail()?.affirmContent0"></td>
+          <td class="ver-col-center">{{ detail()?.evsPoint0 || '-' }}</td>
+          <td class="ver-col-center"><span class="ver-grade-badge" [ngClass]="gradeClass(detail()?.evsGrade0)">{{ detail()?.evsGrade0 || '-' }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="ver-info-table mb-2">
+      <thead><tr><th>{{ i18n.t('evs.viewAffirmTarget2.modal.affirm1Opinion', 'Ý kiến đánh giá lần 1') }}</th><th nzWidth="100px">{{ i18n.t('evs.viewAffirmTarget2.modal.col.totalScore', 'Điểm số') }}</th><th nzWidth="80px">{{ i18n.t('evs.viewAffirmTarget2.col.grade', 'Cấp') }}</th></tr></thead>
+      <tbody>
+        <tr>
+          <td [innerHTML]="detail()?.affirmContent1"></td>
+          <td class="ver-col-center">{{ detail()?.evsPoint1 || '-' }}</td>
+          <td class="ver-col-center"><span class="ver-grade-badge" [ngClass]="gradeClass(detail()?.evsGrade1)">{{ detail()?.evsGrade1 || '-' }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="ver-info-table">
+      <thead><tr><th>{{ i18n.t('evs.viewAffirmTarget2.modal.affirm2Opinion', 'Ý kiến đánh giá lần 2') }}</th><th nzWidth="100px">{{ i18n.t('evs.viewAffirmTarget2.modal.col.totalScore', 'Điểm số') }}</th><th nzWidth="80px">{{ i18n.t('evs.viewAffirmTarget2.col.grade', 'Cấp') }}</th></tr></thead>
+      <tbody>
+        <tr>
+          <td [innerHTML]="detail()?.affirmContent2"></td>
+          <td class="ver-col-center">{{ detail()?.evsPoint2 || '-' }}</td>
+          <td class="ver-col-center"><span class="ver-grade-badge" [ngClass]="gradeClass(detail()?.evsGrade2)">{{ detail()?.evsGrade2 || '-' }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+  <ng-container *nzModalFooter>
+    <button nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </ng-container>
+</nz-modal>

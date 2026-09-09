@@ -1,0 +1,131 @@
+<div class="vpiip-page">
+  <div class="vpiip-search-card">
+    <div class="vpiip-search-left">
+      <span class="vpiip-inline-label">{{ i18n.t('pa.inputItemParam.itemType', 'Loại hạng mục') }}</span>
+      <nz-select style="min-width: 200px" [ngModel]="searchItemType()" (ngModelChange)="searchItemType.set($event)" nzAllowClear>
+        <nz-option [nzValue]="null" [nzLabel]="i18n.t('pa.salaryCode.itemType.all', 'Tất cả')"></nz-option>
+        <nz-option *ngFor="let t of itemTypes" [nzValue]="t.value" [nzLabel]="i18n.t(t.key, t.fallback)"></nz-option>
+      </nz-select>
+      <span class="vpiip-inline-label">{{ i18n.t('pa.inputItemParam.itemName', 'Tên hạng mục') }}</span>
+      <input
+        nz-input
+        style="max-width: 200px"
+        [ngModel]="searchAliasName()"
+        (ngModelChange)="searchAliasName.set($event)"
+        (keydown.enter)="search()"
+      />
+    </div>
+    <div class="vpiip-search-right">
+      <button nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span>{{ i18n.t('pa.inputItemParam.search', 'Tra cứu') }}
+      </button>
+      <button nz-button nzSize="small" (click)="editChecked()">
+        <span nz-icon nzType="edit"></span>{{ i18n.t('pa.inputItemParam.edit', 'Sửa') }}
+      </button>
+      <button nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+        <span nz-icon nzType="delete"></span>{{ i18n.t('pa.inputItemParam.delete', 'Xóa') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="vpiip-table-card">
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      nzSize="small"
+      nzBordered
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="vpiip-col-center">
+            <input type="checkbox" [checked]="rows().length > 0 && checkedSeqs().size === rows().length" (change)="toggleAll($any($event.target).checked)" />
+          </th>
+          <th nzWidth="48px" class="vpiip-col-center">{{ i18n.t('pa.inputItemParam.no', 'STT') }}</th>
+          <th>{{ i18n.t('pa.inputItemParam.company', 'Công ty') }}</th>
+          <th>{{ i18n.t('pa.inputItemParam.itemType', 'Loại hạng mục') }}</th>
+          <th>{{ i18n.t('pa.inputItemParam.distinctField1', 'Hạng mục phân biệt 1') }}</th>
+          <th>{{ i18n.t('pa.inputItemParam.distinctField2', 'Hạng mục phân biệt 2') }}</th>
+          <th nzWidth="130px" class="vpiip-col-center">{{ i18n.t('pa.inputItemParam.defaultVal', 'Giá trị mặc định') }}</th>
+          <th>{{ i18n.t('pa.inputItemParam.itemName', 'Tên hạng mục') }}</th>
+          <th nzWidth="120px" class="vpiip-col-center">{{ i18n.t('pa.inputItemParam.activity', 'Tình trạng sử dụng') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" class="vpiip-clickable" (click)="openEditModal(row)">
+          <td class="vpiip-col-center" (click)="$event.stopPropagation()">
+            <input type="checkbox" [checked]="isChecked(row.paramNo)" (change)="toggleChecked(row.paramNo, $any($event.target).checked)" />
+          </td>
+          <td class="vpiip-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td>{{ row.cpnyName }}</td>
+          <td>{{ itemTypeName(row.itemType) }}</td>
+          <td>{{ row.distinctFieldName }}</td>
+          <td>{{ row.distinctField2ndName }}</td>
+          <td class="vpiip-col-center">{{ row.defaultVal }}</td>
+          <td>{{ row.aliasName }}</td>
+          <td class="vpiip-col-center">
+            <nz-tag [nzColor]="row.activity === 1 ? 'success' : 'default'">
+              {{ row.activity === 1 ? i18n.t('pa.inputItemParam.activity.use', 'Sử dụng') : i18n.t('pa.inputItemParam.activity.notUse', 'Không sử dụng') }}
+            </nz-tag>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Sửa thông số mục nhập -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="i18n.t('pa.inputItemParam.editTitle', 'Chỉnh sửa thông số mục nhập')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="560px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vpiip-form-row">
+      <label class="vpiip-form-label">{{ i18n.t('pa.inputItemParam.company', 'Công ty') }}</label>
+      <div class="vpiip-plaintext">{{ formCpnyId() }}</div>
+    </div>
+    <div class="vpiip-form-row">
+      <label class="vpiip-form-label">{{ i18n.t('pa.inputItemParam.itemType', 'Loại hạng mục') }}</label>
+      <div class="vpiip-plaintext">{{ formItemTypeName() }}</div>
+    </div>
+    <div class="vpiip-form-row">
+      <label class="vpiip-form-label">{{ i18n.t('pa.inputItemParam.itemName', 'Tên hạng mục') }}</label>
+      <div class="vpiip-plaintext">{{ formAliasName() }}</div>
+    </div>
+    <div class="vpiip-form-row">
+      <label class="vpiip-form-label">{{ i18n.t('pa.inputItemParam.distinctField1', 'Hạng mục phân biệt 1') }}</label>
+      <nz-select style="width: 100%" [ngModel]="formDistinctField()" (ngModelChange)="formDistinctField.set($event)" nzAllowClear>
+        <nz-option *ngFor="let opt of distinctOptions()" [nzValue]="opt.distinctField" [nzLabel]="opt.distinctFieldName || opt.distinctField || ''"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vpiip-form-row">
+      <label class="vpiip-form-label">{{ i18n.t('pa.inputItemParam.distinctField2', 'Hạng mục phân biệt 2') }}</label>
+      <nz-select style="width: 100%" [ngModel]="formDistinctField2nd()" (ngModelChange)="formDistinctField2nd.set($event)" nzAllowClear>
+        <nz-option *ngFor="let opt of distinctOptions()" [nzValue]="opt.distinctField" [nzLabel]="opt.distinctFieldName || opt.distinctField || ''"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vpiip-form-row">
+      <label class="vpiip-form-label">{{ i18n.t('pa.inputItemParam.defaultVal', 'Giá trị mặc định') }}</label>
+      <input nz-input style="max-width: 200px" [ngModel]="formDefaultVal()" (ngModelChange)="formDefaultVal.set($event)" maxlength="50" />
+    </div>
+    <div class="vpiip-form-row">
+      <label class="vpiip-form-label">{{ i18n.t('pa.inputItemParam.activity', 'Tình trạng sử dụng') }}</label>
+      <nz-select style="width: 180px" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)">
+        <nz-option [nzValue]="1" [nzLabel]="i18n.t('pa.inputItemParam.activity.use', 'Sử dụng')"></nz-option>
+        <nz-option [nzValue]="0" [nzLabel]="i18n.t('pa.inputItemParam.activity.notUse', 'Không sử dụng')"></nz-option>
+      </nz-select>
+    </div>
+  </ng-container>
+</nz-modal>

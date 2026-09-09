@@ -66,9 +66,12 @@ public class SyRole {
     private String sysType;
 
     /**
-     * Kiểm tra có hoạt động không
+     * Kiểm tra có hoạt động không.
+     * Sửa lỗi logic: code cũ dùng "activity != null || activity == 1" nên luôn trả về true với mọi
+     * activity khác null (kể cả 0), khiến PermissionServiceImpl#filter coi role đã vô hiệu hóa vẫn là
+     * active khi tính quyền menu - phải dùng "&&" mới đúng ý nghĩa "chỉ hoạt động khi activity = 1".
      */
     public boolean isActive() {
-        return this.activity != null || this.activity == 1;
+        return this.activity != null && this.activity == 1;
     }
 }

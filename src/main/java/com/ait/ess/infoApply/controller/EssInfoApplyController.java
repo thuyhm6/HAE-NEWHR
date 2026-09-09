@@ -13,6 +13,7 @@ import com.ait.ess.infoApply.service.EssPersonOtInfoService;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import com.ait.util.AngularIndexService;
 import com.ait.util.MailSendApprovalManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,19 +56,25 @@ public class EssInfoApplyController {
     @Autowired
     private MailSendApprovalManager mailSendApprovalManager;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewSSTOtApplyInfo")
-    public String viewSSTOtApplyInfo() {
-        return "ess/infoApply/viewSSTOtApplyInfo";
+    public String viewSSTOtApplyInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewSSTOtApplyInfoTx")
-    public String viewSSTOtApplyInfoTx() {
-        return "ess/infoApply/viewSSTOtApplyInfoTx";
+    public String viewSSTOtApplyInfoTx(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewPiciOtAffirmPBatchList")
-    public String viewPiciOtAffirmPBatchList() {
-        return "ess/infoApply/viewPiciOtAffirmPBatchList";
+    public String viewPiciOtAffirmPBatchList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/myOtApplyOver/list")
@@ -103,8 +112,9 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewPOtApplyInfoList")
-    public String viewPOtApplyInfoList() {
-        return "ess/infoApply/viewPOtApplyInfoList";
+    public String viewPOtApplyInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/hrDeptManager")
@@ -165,8 +175,9 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewPersonOtApplyInfoList")
-    public String viewPersonOtApplyInfoList() {
-        return "ess/infoApply/viewPersonOtApplyInfoList";
+    public String viewPersonOtApplyInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/personOt/list")
@@ -191,13 +202,15 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewApplyOtLBatchByAnyApproverList")
-    public String viewApplyOtLBatchByAnyApproverList() {
-        return "ess/infoApply/viewApplyOtLBatchByAnyApproverList";
+    public String viewApplyOtLBatchByAnyApproverList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewApprovalEmail")
-    public String viewApprovalEmail() {
-        return "ess/infoApply/viewApprovalEmail";
+    public String viewApprovalEmail(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/approvalEmail/list")
@@ -224,8 +237,9 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewApprovaledEmail")
-    public String viewApprovaledEmail() {
-        return "ess/infoApply/viewApprovaledEmail";
+    public String viewApprovaledEmail(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/approvaledEmail/list")
@@ -262,8 +276,9 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewNoticeedEmail")
-    public String viewNoticeedEmail() {
-        return "ess/infoApply/viewNoticeedEmail";
+    public String viewNoticeedEmail(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/noticeedEmail/list")
@@ -273,8 +288,9 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewCoordApplyOtInfoList")
-    public String viewCoordApplyOtInfoList() {
-        return "ess/infoApply/viewCoordApplyOtInfoList";
+    public String viewCoordApplyOtInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/coordOt/list")
@@ -313,8 +329,9 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewApplyOTBatchInfoHAEList")
-    public String viewApplyOTBatchInfoHAEList() {
-        return "ess/infoApply/viewApplyOTBatchInfoHAEList";
+    public String viewApplyOTBatchInfoHAEList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/otBatchHAE/list")
@@ -353,8 +370,9 @@ public class EssInfoApplyController {
     }
 
     @GetMapping("/viewShowCwaAbnormalApply")
-    public String viewShowCwaAbnormalApply() {
-        return "ess/infoApply/viewShowCwaAbnormalApply";
+    public String viewShowCwaAbnormalApply(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/myCwaAbnormal/list")

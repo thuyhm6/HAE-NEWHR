@@ -1,0 +1,151 @@
+<div class="occ-page">
+  <div class="occ-search-card">
+    <div class="occ-search-row">
+      <div class="occ-field">
+        <label class="occ-inline-label">{{ i18n.t('org.compose.costCenter', 'Mã chi phí') }}</label>
+        <input
+          nz-input
+          [ngModel]="searchCodeNo()"
+          (ngModelChange)="searchCodeNo.set($event)"
+          (keydown.enter)="search()"
+          [placeholder]="i18n.t('org.costCenter.searchCodeNoPlaceholder', 'Nhập mã chi phí')"
+        />
+      </div>
+      <div class="occ-field">
+        <label class="occ-inline-label">{{ i18n.t('org.costCenter.searchName', 'Tên chi phí') }}</label>
+        <input
+          nz-input
+          [ngModel]="searchCodeName()"
+          (ngModelChange)="searchCodeName.set($event)"
+          (keydown.enter)="search()"
+          [placeholder]="i18n.t('org.costCenter.searchNamePlaceholder', 'Nhập tên chi phí')"
+        />
+      </div>
+      <div class="occ-search-actions">
+        <button nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close-circle"></span>{{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="occ-table-card">
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" nzBordered #occTable [nzScroll]="{ x: 'max-content', y: '100%' }">
+      <thead>
+        <tr>
+          <th nzWidth="48px" class="occ-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('org.compose.costCenter', 'Mã chi phí') }}</th>
+          <th>{{ i18n.t('sys.codeManage.nameViFull', 'Tên Tiếng Việt') }}</th>
+          <th>{{ i18n.t('sys.codeManage.nameEnFull', 'Tên Tiếng Anh') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th>{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th>
+          <th>{{ i18n.t('common.endDate', 'Ngày kết thúc') }}</th>
+          <th>{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th class="occ-col-center" nzWidth="100px">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of occTable.data; let idx = index">
+          <td class="occ-col-center">{{ idx + 1 }}</td>
+          <td>{{ row.codeNo }}</td>
+          <td>{{ row.codeName }}</td>
+          <td>{{ row.codeEngName }}</td>
+          <td>{{ row.remark }}</td>
+          <td>{{ row.startDate }}</td>
+          <td>{{ row.endDate }}</td>
+          <td>{{ row.activity }}</td>
+          <td class="occ-col-center">
+            <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+              <span nz-icon nzType="edit"></span>
+            </button>
+            <button nz-button nzSize="small" nzDanger (click)="deleteRow(row)" [title]="i18n.t('common.delete', 'Xóa')">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa Trung tâm chi phí -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('org.costCenter.modalAddTitle', 'Thêm mới Trung tâm chi phí') : i18n.t('org.costCenter.modalEditTitle', 'Cập nhật Trung tâm chi phí')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="800px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="occ-form-grid">
+      <div class="occ-form-row">
+        <label class="occ-form-label occ-required">{{ i18n.t('org.compose.costCenter', 'Mã chi phí') }}</label>
+        <input nz-input [ngModel]="formCodeNo()" (ngModelChange)="formCodeNo.set($event)" [disabled]="!formIsAdd()" />
+      </div>
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('org.business.orderNo', 'Thứ tự hiển thị') }}</label>
+        <nz-input-number style="width: 100%" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)" [nzMin]="0"></nz-input-number>
+      </div>
+
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('sys.codeManage.nameViFull', 'Tên Tiếng Việt') }}</label>
+        <input nz-input [ngModel]="formCodeName()" (ngModelChange)="formCodeName.set($event)" />
+      </div>
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('sys.codeManage.nameEnFull', 'Tên Tiếng Anh') }}</label>
+        <input nz-input [ngModel]="formCodeEngName()" (ngModelChange)="formCodeEngName.set($event)" />
+      </div>
+
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('sys.codeManage.nameKoFull', 'Tên Tiếng Hàn') }}</label>
+        <input nz-input [ngModel]="formCodeKoreanName()" (ngModelChange)="formCodeKoreanName.set($event)" />
+      </div>
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('org.costCenter.codeVietnameseName', 'Tên tiếng Việt quy định') }}</label>
+        <input nz-input [ngModel]="formCodeVietnameseName()" (ngModelChange)="formCodeVietnameseName.set($event)" />
+      </div>
+
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</label>
+        <input nz-input [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" placeholder="YYYY-MM-DD" />
+      </div>
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('common.endDate', 'Ngày kết thúc') }}</label>
+        <input nz-input [ngModel]="formEndDate()" (ngModelChange)="formEndDate.set($event)" placeholder="YYYY-MM-DD" />
+      </div>
+
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('org.title.COUNTRY', 'Quốc gia') }}</label>
+        <input nz-input [ngModel]="formCountry()" (ngModelChange)="formCountry.set($event)" />
+      </div>
+      <div class="occ-form-row">
+        <label class="occ-form-label">{{ i18n.t('common.status', 'Trạng thái') }}</label>
+        <input nz-input [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)" />
+      </div>
+
+      <div class="occ-form-row occ-form-row-full">
+        <label class="occ-form-label">{{ i18n.t('org.title.ADDRESS', 'Địa chỉ') }}</label>
+        <input nz-input [ngModel]="formAddress()" (ngModelChange)="formAddress.set($event)" />
+      </div>
+      <div class="occ-form-row occ-form-row-full">
+        <label class="occ-form-label">{{ i18n.t('org.costCenter.businessScope', 'Phạm vi kinh doanh (Business Scope)') }}</label>
+        <textarea nz-input rows="2" [ngModel]="formBusinessScope()" (ngModelChange)="formBusinessScope.set($event)"></textarea>
+      </div>
+      <div class="occ-form-row occ-form-row-full">
+        <label class="occ-form-label">{{ i18n.t('org.costCenter.profitCenter', 'Trung tâm lợi nhuận (Profit Center)') }}</label>
+        <textarea nz-input rows="2" [ngModel]="formProfitCenter()" (ngModelChange)="formProfitCenter.set($event)"></textarea>
+      </div>
+      <div class="occ-form-row occ-form-row-full">
+        <label class="occ-form-label">{{ i18n.t('common.remark', 'Ghi chú') }}</label>
+        <textarea nz-input rows="2" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

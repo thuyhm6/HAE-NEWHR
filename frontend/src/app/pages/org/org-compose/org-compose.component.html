@@ -1,0 +1,225 @@
+<div class="voc-page">
+  <div class="voc-left">
+    <div class="voc-field">
+      <label class="voc-label">{{ i18n.t('org.compose.versionLabel', 'Phiên bản thay đổi') }}</label>
+      <nz-select
+        style="width: 100%"
+        [ngModel]="selectedResumeNo()"
+        (ngModelChange)="onResumeChange($event)"
+        [nzLoading]="loadingResume()"
+        nzShowSearch
+        nzAllowClear
+        [nzPlaceHolder]="i18n.t('org.compose.versionPlaceholder', '-- Chọn phiên bản thay đổi --')"
+      >
+        <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+      </nz-select>
+    </div>
+
+    <input
+      nz-input
+      class="voc-search-input"
+      [ngModel]="searchTreeValue()"
+      (ngModelChange)="searchTreeValue.set($event)"
+      [placeholder]="i18n.t('org.compose.searchTreePlaceholder', 'Tìm kiếm phòng ban...')"
+    />
+
+    <div class="voc-tree-actions">
+      <button nz-button nzSize="small" (click)="expandAllNodes()">{{ i18n.t('org.compose.expandAll', 'Mở tất cả') }}</button>
+      <button nz-button nzSize="small" (click)="collapseAllNodes()">{{ i18n.t('org.compose.collapseAll', 'Đóng tất cả') }}</button>
+    </div>
+
+    <div class="voc-tree-container">
+      <div *ngIf="loadingTree()" class="voc-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+      <nz-tree
+        *ngIf="!loadingTree()"
+        [nzData]="treeNodes()"
+        [nzSearchValue]="searchTreeValue()"
+        [nzSelectedKeys]="selectedDeptKey() ? [selectedDeptKey()!] : []"
+        (nzClick)="onTreeClick($event)"
+        [nzExpandedKeys]="expandedKeys()"
+        (nzExpandedKeysChange)="expandedKeys.set($event)"
+      ></nz-tree>
+      <div *ngIf="!loadingTree() && treeNodes().length === 0" class="voc-tree-empty">
+        {{ i18n.t('org.compose.msg.noOrgData', 'Không có dữ liệu tổ chức') }}
+      </div>
+    </div>
+  </div>
+
+  <div class="voc-right">
+    <div class="voc-card">
+      <div class="voc-card-header">
+        <span class="voc-card-title">{{ i18n.t('org.compose.orgInfoTitle', 'Thông tin tổ chức') }}</span>
+        <div class="voc-btn-group" *ngIf="mode() === 'VIEW'">
+          <button nz-button nzType="primary" nzSize="small" (click)="startNew()">
+            <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+          </button>
+          <button nz-button nzSize="small" [disabled]="!form.deptNo" (click)="startEdit()">
+            <span nz-icon nzType="edit"></span>{{ i18n.t('common.edit', 'Sửa') }}
+          </button>
+          <button nz-button nzSize="small" nzDanger [disabled]="!form.deptNo" (click)="confirmDeleteOrg()">
+            <span nz-icon nzType="delete"></span>{{ i18n.t('common.delete', 'Xóa') }}
+          </button>
+        </div>
+        <div class="voc-btn-group" *ngIf="mode() !== 'VIEW'">
+          <button nz-button nzType="primary" nzSize="small" [nzLoading]="saving()" (click)="save()">
+            <span nz-icon nzType="save"></span>{{ i18n.t('common.save', 'Lưu') }}
+          </button>
+          <button nz-button nzSize="small" (click)="cancelEdit()">
+            <span nz-icon nzType="close"></span>{{ i18n.t('common.cancel', 'Hủy') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="voc-form-grid">
+        <div class="voc-form-row">
+          <label class="voc-form-label voc-required">{{ i18n.t('org.orgManage.title.deptNo', 'Mã phòng ban') }}</label>
+          <input nz-input [(ngModel)]="form.deptNo" name="vocDeptNo" [readOnly]="mode() !== 'NEW'" />
+        </div>
+        <div class="voc-form-row">
+          <label class="voc-form-label">{{ i18n.t('org.orgManage.title.parentDept', 'Phòng ban trên') }}</label>
+          <div class="voc-input-group">
+            <input nz-input [ngModel]="form.parentDeptNo" name="vocParentDeptNo" readonly />
+            <button nz-button [disabled]="mode() === 'VIEW'" (click)="openParentModal()">
+              <span nz-icon nzType="folder-open"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="voc-form-row">
+          <label class="voc-form-label">{{ i18n.t('org.orgManage.title.deptEnglishName', 'Phòng ban tiếng Anh') }}</label>
+          <input nz-input [(ngModel)]="form.orgNameEng" name="vocOrgNameEng" [readOnly]="mode() === 'VIEW'" />
+        </div>
+        <div class="voc-form-row">
+          <label class="voc-form-label">{{ i18n.t('org.compose.orgNameLocal', 'Tên địa phương') }}</label>
+          <input nz-input [(ngModel)]="form.orgNameLocal" name="vocOrgNameLocal" [readOnly]="mode() === 'VIEW'" />
+        </div>
+
+        <div class="voc-form-row">
+          <label class="voc-form-label voc-required">{{ i18n.t('org.orgManage.title.deptType', 'Loại hình phòng ban') }}</label>
+          <nz-select style="width: 100%" [(ngModel)]="form.deptType" name="vocDeptType" [nzDisabled]="mode() === 'VIEW'">
+            <nz-option nzValue="TEAM" nzLabel="TEAM"></nz-option>
+            <nz-option nzValue="DEPT" nzLabel="DEPT"></nz-option>
+            <nz-option nzValue="DIV" nzLabel="DIV"></nz-option>
+            <nz-option nzValue="PART" nzLabel="PART"></nz-option>
+          </nz-select>
+        </div>
+        <div class="voc-form-row">
+          <label class="voc-form-label">{{ i18n.t('org.orgManage.ORGANIZATIONAL_LEVEL.Z', 'Cấp') }}</label>
+          <nz-input-number style="width: 100%" [(ngModel)]="form.deptLevel" name="vocDeptLevel" [nzDisabled]="mode() === 'VIEW'"></nz-input-number>
+        </div>
+
+        <div class="voc-form-row">
+          <label class="voc-form-label">{{ i18n.t('org.orgManage.DEPARTMENT_INFORMATION.Z', 'Trưởng phòng') }}</label>
+          <input nz-input [(ngModel)]="form.managerEmpId" name="vocManagerEmpId" [readOnly]="mode() === 'VIEW'" />
+        </div>
+        <div class="voc-form-row">
+          <label class="voc-form-label voc-required">{{ i18n.t('common.createDate', 'Ngày tạo') }}</label>
+          <nz-date-picker style="width: 100%" [(ngModel)]="form.dateCreated" name="vocDateCreated" nzFormat="dd/MM/yyyy" [nzDisabled]="mode() === 'VIEW'"></nz-date-picker>
+        </div>
+
+        <div class="voc-form-row voc-form-row-inline">
+          <label class="voc-checkbox-label">
+            <input type="checkbox" [(ngModel)]="form.isPartTime" name="vocIsPartTime" [disabled]="mode() === 'VIEW'" />
+            {{ i18n.t('org.compose.isPartTime', 'Kiêm nhiệm') }}
+          </label>
+        </div>
+        <div class="voc-form-row">
+          <label class="voc-form-label">{{ i18n.t('org.compose.costCenter', 'Mã chi phí') }}</label>
+          <nz-select style="width: 100%" [(ngModel)]="form.costCenter" name="vocCostCenter" [nzDisabled]="mode() === 'VIEW'" nzAllowClear nzShowSearch>
+            <nz-option *ngFor="let c of costCenterOptions()" [nzValue]="c.codeNo" [nzLabel]="c.codeNo + ' - ' + (c.codeName ?? '')"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+    </div>
+
+    <div class="voc-card">
+      <div class="voc-card-header">
+        <div>
+          <span class="voc-card-title">{{ i18n.t('org.compose.employeeListTitle', 'Danh sách nhân viên') }}</span>
+          <span class="voc-badge">{{ i18n.t('common.total', 'Tổng') }}: {{ employees().length }}</span>
+        </div>
+        <button nz-button nzSize="small" (click)="openTransferModal()">
+          <span nz-icon nzType="swap"></span>{{ i18n.t('org.compose.btnTransfer', 'Điều chuyển') }}
+        </button>
+      </div>
+
+      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="10" nzShowSizeChanger [nzPageSizeOptions]="[10, 25, 50, 100]" nzSize="small" nzBordered #vocEmpTable>
+        <thead>
+          <tr>
+            <th nzWidth="50px" class="voc-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th nzWidth="40px" class="voc-col-center">
+              <input type="checkbox" [checked]="allEmpChecked()" (change)="toggleAllEmp($any($event.target).checked)" />
+            </th>
+            <th>{{ i18n.t('org.title.LOCAL_NAME', 'Họ tên') }}</th>
+            <th>{{ i18n.t('org.title.EMPID', 'Mã nhân viên') }}</th>
+            <th>{{ i18n.t('org.title.BUSINESS_NAME', 'Chức vụ') }}</th>
+            <th>{{ i18n.t('org.title.POSITION_NO', 'Chức danh') }}</th>
+            <th>{{ i18n.t('hrm.empinfo.hrcard.empGroup', 'Nhóm nhân viên') }}</th>
+            <th class="voc-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of vocEmpTable.data; let idx = index">
+            <td class="voc-col-center">{{ idx + 1 }}</td>
+            <td class="voc-col-center">
+              <input type="checkbox" [checked]="isEmpChecked(emp.empId)" (change)="toggleEmpCheck(emp.empId, $any($event.target).checked)" />
+            </td>
+            <td>{{ emp.localName }}</td>
+            <td>{{ emp.empId }}</td>
+            <td>{{ emp.dutyNo }}</td>
+            <td>{{ emp.postNo }}</td>
+            <td>{{ emp.empTypeCode }}</td>
+            <td class="voc-col-center">{{ emp.statusCode }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal chọn phòng ban trên -->
+<nz-modal
+  [(nzVisible)]="parentModalVisible"
+  [nzTitle]="i18n.t('org.compose.selectParentTitle', 'Chọn Phòng Ban Trực Thuộc')"
+  (nzOnCancel)="parentModalVisible.set(false)"
+  (nzOnOk)="confirmParent()"
+  [nzOkText]="i18n.t('common.confirm', 'Xác nhận')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <input
+      nz-input
+      class="voc-modal-search"
+      [ngModel]="parentSearchValue()"
+      (ngModelChange)="parentSearchValue.set($event)"
+      [placeholder]="i18n.t('org.compose.searchPlaceholder', 'Tìm kiếm...')"
+    />
+    <div class="voc-modal-tree">
+      <nz-tree [nzData]="treeNodes()" [nzSearchValue]="parentSearchValue()" nzExpandAll [nzSelectedKeys]="pendingParentKey ? [pendingParentKey] : []" (nzClick)="onParentTreeClick($event)"></nz-tree>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal chọn phòng ban điều chuyển đến -->
+<nz-modal
+  [(nzVisible)]="targetModalVisible"
+  [nzTitle]="i18n.t('org.compose.selectTargetTitle', 'Chọn Phòng Ban Điều Chuyển Đến')"
+  (nzOnCancel)="targetModalVisible.set(false)"
+  (nzOnOk)="confirmTransfer()"
+  [nzOkLoading]="transferring()"
+  [nzOkText]="i18n.t('org.compose.confirmTransfer', 'Xác nhận chuyển')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <input
+      nz-input
+      class="voc-modal-search"
+      [ngModel]="targetSearchValue()"
+      (ngModelChange)="targetSearchValue.set($event)"
+      [placeholder]="i18n.t('org.compose.searchPlaceholder', 'Tìm kiếm...')"
+    />
+    <div class="voc-modal-tree">
+      <nz-tree [nzData]="treeNodes()" [nzSearchValue]="targetSearchValue()" nzExpandAll [nzSelectedKeys]="pendingTargetKey ? [pendingTargetKey] : []" (nzClick)="onTargetTreeClick($event)"></nz-tree>
+    </div>
+  </ng-container>
+</nz-modal>

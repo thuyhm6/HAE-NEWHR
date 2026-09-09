@@ -1,0 +1,117 @@
+<div class="vmp-page">
+  <div class="vmp-company-bar">
+    <label class="vmp-company-label">{{ i18n.t('sys.codeParam.companyLabel', 'Công ty (Company):') }}</label>
+    <nz-select
+      style="min-width: 320px"
+      [ngModel]="selectedCompanyId()"
+      (ngModelChange)="onCompanyChange($event)"
+      nzShowSearch
+      nzAllowClear
+      [nzPlaceHolder]="i18n.t('sys.codeParam.companyPlaceholder', '-- Chọn công ty --')"
+    >
+      <nz-option *ngFor="let c of companyOptions()" [nzValue]="c.cpnyId" [nzLabel]="(c.nameVi ?? '') + ' (' + c.cpnyId + ')'"></nz-option>
+    </nz-select>
+  </div>
+
+  <div class="vmp-body">
+    <div class="vmp-left">
+      <div class="vmp-left-header">{{ i18n.t('sys.menuParam.treeTitle', 'Danh sách Menu System') }}</div>
+      <input
+        nz-input
+        class="vmp-search-input"
+        [ngModel]="searchTreeValue()"
+        (ngModelChange)="searchTreeValue.set($event)"
+        [placeholder]="i18n.t('sys.codeManage.searchPlaceholder', 'Tìm kiếm...')"
+      />
+      <div class="vmp-tree-container">
+        <div *ngIf="treeLoading()" class="vmp-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+        <nz-tree
+          *ngIf="!treeLoading()"
+          [nzData]="treeNodes()"
+          [nzSearchValue]="searchTreeValue()"
+          (nzClick)="onTreeClick($event)"
+          [nzExpandedKeys]="expandedKeys()"
+          (nzExpandedKeysChange)="expandedKeys.set($event)"
+        ></nz-tree>
+      </div>
+    </div>
+
+    <div class="vmp-right">
+      <div class="vmp-right-header">
+        <span class="vmp-selected-label">
+          {{ selectedLabel() ? (i18n.t('sys.menuParam.rightPaneTitlePrefix', 'Danh sách Menu con của:') + ' ' + selectedLabel()) : i18n.t('sys.menuParam.rightPaneDefaultTitle', 'Danh sách Menu con') }}
+        </span>
+        <div class="vmp-btn-group">
+          <button nz-button nzType="primary" nzSize="small" [nzLoading]="saving()" [disabled]="!selectedCompanyId()" (click)="saveDirty()">
+            <span nz-icon nzType="save"></span>{{ i18n.t('common.save', 'Lưu') }}
+          </button>
+          <button nz-button nzSize="small" (click)="exportExcel()">
+            <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" nzBordered #vmpTable>
+        <thead>
+          <tr>
+            <th nzWidth="48px" class="vmp-col-center">{{ i18n.t('sys.codeManage.no', 'STT') }}</th>
+            <th nzWidth="48px" class="vmp-col-center">
+              <input type="checkbox" [disabled]="!selectedCompanyId()" [checked]="allChecked()" (change)="toggleAll($any($event.target).checked)" />
+            </th>
+            <th>{{ i18n.t('sys.menuParam.menuCode', 'Mã Menu') }}</th>
+            <th>{{ i18n.t('sys.codeManage.nameViShort', 'Tên TV') }}</th>
+            <th>{{ i18n.t('sys.codeManage.nameEnShort', 'Tên TA') }}</th>
+            <th class="vmp-col-center">{{ i18n.t('sys.codeParam.paramOrderNo', 'Thứ tự (Param)') }}</th>
+            <th class="vmp-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+            <th class="vmp-col-center" nzWidth="80px">{{ i18n.t('sys.codeManage.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of vmpTable.data; let idx = index">
+            <td class="vmp-col-center">{{ idx + 1 }}</td>
+            <td class="vmp-col-center">
+              <input type="checkbox" [disabled]="!selectedCompanyId()" [checked]="isChecked(row)" (change)="toggleChecked(row, $any($event.target).checked)" />
+            </td>
+            <td>{{ row.menuCode }}</td>
+            <td>{{ row.nameVi }}</td>
+            <td>{{ row.nameEn }}</td>
+            <td class="vmp-col-center">{{ row.paramOrderNo ?? '-' }}</td>
+            <td class="vmp-col-center">
+              <nz-tag *ngIf="row.paramActivity === 1" nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              <nz-tag *ngIf="row.paramActivity === 0">{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+            </td>
+            <td class="vmp-col-center">
+              <button nz-button nzSize="small" [disabled]="!row.assigned" (click)="openEditModal(row)">
+                <span nz-icon nzType="edit"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cập nhật tham số Menu -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="i18n.t('sys.menuParam.editParamTitle', 'Cập nhật tham số Menu')"
+  [nzOkLoading]="formSaving()"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vmp-form-row">
+      <label class="vmp-form-label">{{ i18n.t('sys.codeParam.orderNoLabel', 'Thứ tự sắp xếp') }}</label>
+      <nz-input-number style="width: 100%" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)"></nz-input-number>
+    </div>
+    <div class="vmp-form-row">
+      <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+      <span class="vmp-switch-label">{{ i18n.t('common.active', 'Hoạt động') }}</span>
+    </div>
+    <div class="vmp-form-row">
+      <nz-switch [ngModel]="formIsCanBeBuild()" (ngModelChange)="formIsCanBeBuild.set($event)"></nz-switch>
+      <span class="vmp-switch-label">{{ i18n.t('sys.menuParam.isCanBeBuild', 'Is Can Be Build') }}</span>
+    </div>
+  </ng-container>
+</nz-modal>

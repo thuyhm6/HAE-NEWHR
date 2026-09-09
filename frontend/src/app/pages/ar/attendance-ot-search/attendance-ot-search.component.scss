@@ -1,0 +1,21 @@
+.ots-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ots-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.ots-col-center {
+  text-align: center;
+}
+
+.ots-col-right {
+  text-align: right;
+}

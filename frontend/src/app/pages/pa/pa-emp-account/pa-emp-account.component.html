@@ -1,0 +1,185 @@
+<div class="vpae-page">
+  <div class="vpae-search-card">
+    <div class="vpae-search-row">
+      <span class="vpae-inline-label">{{ i18n.t('pa.empAccount.empSearch', 'Mã nhân viên / Họ tên') }}</span>
+      <input nz-input style="max-width: 200px" [ngModel]="searchEmpSearch()" (ngModelChange)="searchEmpSearch.set($event)" (keydown.enter)="search()" />
+
+      <span class="vpae-inline-label">{{ i18n.t('pa.empAccount.bank', 'Ngân hàng') }}</span>
+      <nz-select style="min-width: 170px" [ngModel]="searchBank()" (ngModelChange)="searchBank.set($event)" nzAllowClear>
+        <nz-option *ngFor="let opt of bankOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+      </nz-select>
+
+      <span class="vpae-inline-label">{{ i18n.t('pa.empAccount.empOffice', 'Trạng thái làm việc') }}</span>
+      <nz-select style="min-width: 170px" [ngModel]="searchEmpOffice()" (ngModelChange)="searchEmpOffice.set($event)" nzAllowClear>
+        <nz-option *ngFor="let opt of empOfficeOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+      </nz-select>
+
+      <span class="vpae-inline-label">{{ i18n.t('pa.empAccount.dateStarted', 'Ngày vào làm') }}</span>
+      <nz-date-picker [ngModel]="searchFromDate()" (ngModelChange)="searchFromDate.set($event)" nzFormat="dd/MM/yyyy" style="width: 130px"></nz-date-picker>
+      <span>-</span>
+      <nz-date-picker [ngModel]="searchToDate()" (ngModelChange)="searchToDate.set($event)" nzFormat="dd/MM/yyyy" style="width: 130px"></nz-date-picker>
+    </div>
+    <div class="vpae-search-row">
+      <span class="vpae-inline-label">{{ i18n.t('pa.empAccount.dept', 'Phòng ban') }}</span>
+      <nz-tree-select
+        style="min-width: 220px"
+        [nzNodes]="deptTreeNodes()"
+        [ngModel]="searchDeptNos()"
+        (ngModelChange)="searchDeptNos.set($event)"
+        nzMultiple
+        nzCheckable
+        nzShowSearch
+        [nzPlaceHolder]="i18n.t('pa.empAccount.deptPlaceholder', 'Chọn phòng ban')"
+      ></nz-tree-select>
+      <div class="vpae-search-actions">
+        <button nz-button nzType="primary" nzSize="small" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('pa.empAccount.search', 'Tra cứu') }}
+        </button>
+        <button nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus-circle"></span>{{ i18n.t('pa.empAccount.addNew', 'Thêm mới') }}
+        </button>
+        <button nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+          <span nz-icon nzType="delete"></span>{{ i18n.t('pa.empAccount.delete', 'Xóa') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="vpae-table-card">
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      nzSize="small"
+      nzBordered
+      [nzScroll]="{ x: '1600px', y: '100%' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="vpae-col-center">
+            <input type="checkbox" [checked]="rows().length > 0 && checkedSeqs().size === rows().length" (change)="toggleAll($any($event.target).checked)" />
+          </th>
+          <th nzWidth="48px" class="vpae-col-center">{{ i18n.t('pa.empAccount.no', 'STT') }}</th>
+          <th>{{ i18n.t('pa.empAccount.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('pa.empAccount.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('pa.empAccount.dept', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('pa.empAccount.position', 'Chức vụ') }}</th>
+          <th class="vpae-col-center">{{ i18n.t('pa.empAccount.dateStarted', 'Ngày vào làm') }}</th>
+          <th>{{ i18n.t('pa.empAccount.bank', 'Ngân hàng') }}</th>
+          <th>{{ i18n.t('pa.empAccount.accountNo', 'Tài khoản ngân hàng') }}</th>
+          <th>{{ i18n.t('pa.empAccount.accountAddress', 'Chi nhánh') }}</th>
+          <th>{{ i18n.t('pa.empAccount.securityNo', 'Mã số BH') }}</th>
+          <th>{{ i18n.t('pa.empAccount.taxNo', 'Mã số thuế') }}</th>
+          <th class="vpae-col-center">{{ i18n.t('pa.empAccount.createdBy', 'Người tạo') }}</th>
+          <th class="vpae-col-center">{{ i18n.t('pa.empAccount.createDate', 'Thời gian tạo') }}</th>
+          <th class="vpae-col-center">{{ i18n.t('pa.empAccount.updatedBy', 'Người thay đổi') }}</th>
+          <th class="vpae-col-center">{{ i18n.t('pa.empAccount.updateDate', 'Thời gian thay đổi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" class="vpae-clickable" (click)="openEditModal(row)">
+          <td class="vpae-col-center" (click)="$event.stopPropagation()">
+            <input type="checkbox" [checked]="isChecked(row.paEmpAccountNo)" (change)="toggleChecked(row.paEmpAccountNo, $any($event.target).checked)" />
+          </td>
+          <td class="vpae-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName }}</td>
+          <td>{{ row.postGradeName }}</td>
+          <td class="vpae-col-center">{{ row.dateStarted }}</td>
+          <td>{{ row.accountTypeName }}</td>
+          <td>{{ row.accountNo }}</td>
+          <td>{{ row.accountAddress }}</td>
+          <td>{{ row.securityNo }}</td>
+          <td>{{ row.taxNo }}</td>
+          <td class="vpae-col-center">{{ row.createdBy }}</td>
+          <td class="vpae-col-center">{{ row.createDate }}</td>
+          <td class="vpae-col-center">{{ row.updatedBy }}</td>
+          <td class="vpae-col-center">{{ row.updateDate }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa tài khoản lương nhân viên -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('pa.empAccount.addTitle', 'Thêm mới tài khoản lương nhân viên') : i18n.t('pa.empAccount.editTitle', 'Chỉnh sửa tài khoản lương nhân viên')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="600px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label vpae-required">{{ i18n.t('pa.empAccount.supervisor', 'Nhân viên') }}</label>
+      <nz-select
+        *ngIf="formIsAdd(); else empPlaintext"
+        style="width: 100%"
+        [ngModel]="formPersonId()"
+        (ngModelChange)="onEmployeeSelect($event)"
+        nzShowSearch
+        [nzPlaceHolder]="i18n.t('pa.empAccount.empSelectPlaceholder', 'Chọn nhân viên...')"
+        (nzOnSearch)="onEmployeeSearch($event)"
+      >
+        <nz-option *ngFor="let emp of formEmployeeOptions()" [nzValue]="emp.personId" [nzLabel]="(emp.empId ?? '') + ' - ' + (emp.localName ?? '')"></nz-option>
+      </nz-select>
+      <ng-template #empPlaintext>
+        <div class="vpae-plaintext">{{ formEmpDisplay() }}</div>
+      </ng-template>
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.bank', 'Ngân hàng') }}</label>
+      <nz-select style="width: 100%" [ngModel]="formAccountType()" (ngModelChange)="formAccountType.set($event)" nzAllowClear>
+        <nz-option *ngFor="let opt of bankOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.accountNo', 'Tài khoản ngân hàng') }}</label>
+      <input nz-input [ngModel]="formAccountNo()" (ngModelChange)="formAccountNo.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.accountAddress', 'Chi nhánh') }}</label>
+      <input nz-input [ngModel]="formAccountAddress()" (ngModelChange)="formAccountAddress.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.accountName', 'Tên tài khoản') }}</label>
+      <input nz-input [ngModel]="formAccountName()" (ngModelChange)="formAccountName.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.securityNo', 'Mã số BHXH') }}</label>
+      <input nz-input [ngModel]="formSecurityNo()" (ngModelChange)="formSecurityNo.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.securityPayDate', 'Thời gian đóng BH') }}</label>
+      <input nz-input [ngModel]="formSecurityPayDate()" (ngModelChange)="formSecurityPayDate.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.fundNo', 'Mã số công đoàn') }}</label>
+      <input nz-input [ngModel]="formFundNo()" (ngModelChange)="formFundNo.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.fundPayDate', 'Thời gian đóng CĐ') }}</label>
+      <input nz-input [ngModel]="formFundPayDate()" (ngModelChange)="formFundPayDate.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.taxNo', 'Mã số thuế') }}</label>
+      <input nz-input [ngModel]="formTaxNo()" (ngModelChange)="formTaxNo.set($event)" />
+    </div>
+    <div class="vpae-form-row">
+      <label class="vpae-form-label">{{ i18n.t('pa.empAccount.activity', 'Trạng thái') }}</label>
+      <nz-select style="width: 180px" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)">
+        <nz-option [nzValue]="1" [nzLabel]="i18n.t('pa.empAccount.activity.active', 'Hoạt động')"></nz-option>
+        <nz-option [nzValue]="0" [nzLabel]="i18n.t('pa.empAccount.activity.inactive', 'Không hoạt động')"></nz-option>
+      </nz-select>
+    </div>
+  </ng-container>
+</nz-modal>

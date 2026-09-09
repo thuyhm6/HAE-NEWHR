@@ -1,0 +1,304 @@
+<div class="vdp-page">
+  <nz-card class="vdp-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vdp.search.empKeyword', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="vdp-keyword"
+                nz-input
+                [ngModel]="keyword()"
+                (ngModelChange)="keyword.set($event)"
+                name="vdpKeyword"
+                [placeholder]="i18n.t('vdp.search.empKeyword.placeholder', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="vdp-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="vdpDeptNos"
+                [nzPlaceHolder]="i18n.t('vdp.search.dept.placeholder', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vdp.search.joinDateFrom', 'Ngày vào làm từ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="vdp-from-date"
+                [ngModel]="fromDate()"
+                (ngModelChange)="fromDate.set($event)"
+                name="vdpFromDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vdp.search.joinDateTo', 'Ngày vào làm đến') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="vdp-to-date"
+                [ngModel]="toDate()"
+                (ngModelChange)="toDate.set($event)"
+                name="vdpToDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vdp.search.postFamily', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vdp-post-family"
+                [ngModel]="postFamily()"
+                (ngModelChange)="postFamily.set($event)"
+                name="vdpPostFamily"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of postFamilyOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empType', 'Loại nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vdp-emp-type"
+                [ngModel]="empTypeCode()"
+                (ngModelChange)="empTypeCode.set($event)"
+                name="vdpEmpTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vdp-emp-office"
+                [ngModel]="empOffice()"
+                (ngModelChange)="empOffice.set($event)"
+                name="vdpEmpOffice"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empOfficeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.nationality', 'Quốc tịch') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="vdp-nationality"
+                [ngModel]="nationalityCode()"
+                (ngModelChange)="nationalityCode.set($event)"
+                name="vdpNationalityCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of nationalityOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="18" class="vdp-search-actions">
+          <button id="vdp-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('essDept.search', 'Tra cứu') }}
+          </button>
+          <button id="vdp-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <a id="vdp-export-btn" nz-button nzType="default" [href]="exportUrl">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </a>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="vdp-table-card">
+    <nz-table
+      id="vdp-data-table"
+      #vdpTable
+      [nzData]="list()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="vdp-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="vdp-col-center">{{ i18n.t('common.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th class="vdp-col-center">{{ i18n.t('vdp.detail.jobTitle', 'Chức danh') }}</th>
+          <th class="vdp-col-center">{{ i18n.t('common.empType', 'Loại nhân viên') }}</th>
+          <th class="vdp-col-center">{{ i18n.t('mep.col.dateJoined', 'Ngày vào làm') }}</th>
+          <th class="vdp-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of vdpTable.data; track row.personId; let idx = $index) {
+          <tr>
+            <td class="vdp-col-center">{{ idx + 1 }}</td>
+            <td class="vdp-col-center">{{ row.empId }}</td>
+            <td>
+              <a class="vdp-name-link" (click)="openDetail(row)">{{ row.localName }}</a>
+            </td>
+            <td>{{ row.deptName }}</td>
+            <td class="vdp-col-center">{{ row.postGradeNo }}</td>
+            <td class="vdp-col-center">{{ row.empTypeName }}</td>
+            <td class="vdp-col-center">{{ row.dateStarted }}</td>
+            <td class="vdp-col-center">{{ row.empOfficeName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="vdp-col-center">{{ i18n.t('vdp.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="vdp-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="i18n.t('vdp.detail.title', 'Chi tiết nhân viên')"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="vdpDetailFooter"
+>
+  <ng-container *nzModalContent>
+    @if (selectedRow(); as row) {
+      <div class="vdp-detail-body">
+        <nz-descriptions [nzColumn]="2" nzBordered nzSize="small">
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empId', 'Mã nhân viên')">{{ row.empId }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empName', 'Họ tên')">{{ row.localName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.personId', 'Person ID')">{{ row.personId }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.supplierCode', 'Mã NCC')">{{ row.personSupplierCompany }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.deptName', 'Phòng ban')">{{ row.deptName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.orgNameLocal', 'Tên phòng local')">{{ row.orgNameLocal }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.position', 'Chức vụ')">{{ row.dutyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.jobTitle', 'Chức danh')">{{ row.postGradeNo }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.positionName', 'Vị trí')">{{ row.positionNoName || row.positionName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.postFamily', 'Nhóm nhân viên')">{{ row.postFamilyName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.empType', 'Loại nhân viên')">{{ row.empTypeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.status', 'Trạng thái')">{{ row.empOfficeName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('common.nationality', 'Quốc tịch')">{{ row.nationalityName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.dateStarted', 'Ngày vào làm')">{{ row.dateStarted }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.mainBusiness', 'Nghiệp vụ chính')">{{ row.mainBusiness }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.employeeOwned', 'Khối sở hữu')">{{ row.employeeOwned }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.manager', 'Quản lý hiển thị')">{{ row.managerName }}</nz-descriptions-item>
+          <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.managerUpdate', 'Quản lý cập nhật')">{{ row.managerEmpName }}</nz-descriptions-item>
+        </nz-descriptions>
+
+        <h4 class="vdp-inside-title">{{ i18n.t('vdp.detail.insideProcess', 'Quá trình nội bộ') }}</h4>
+        <nz-table
+          id="vdp-inside-table"
+          [nzData]="insideExperienceList()"
+          [nzLoading]="insideExperienceLoading()"
+          [nzShowPagination]="false"
+          nzSize="small"
+        >
+          <thead>
+            <tr>
+              <th nzWidth="60px" class="vdp-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th nzWidth="140px" class="vdp-col-center">{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th>
+              <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+              <th>{{ i18n.t('vdp.detail.mainBusiness', 'Nghiệp vụ chính') }}</th>
+              <th>{{ i18n.t('vdp.detail.jobTitle', 'Chức danh') }}</th>
+              <th>{{ i18n.t('vdp.detail.transType', 'Loại điều chuyển') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of insideExperienceList(); track $index; let idx = $index) {
+              <tr>
+                <td class="vdp-col-center">{{ idx + 1 }}</td>
+                <td class="vdp-col-center">{{ item.startDate }}</td>
+                <td>{{ item.deptName }}</td>
+                <td>{{ item.mainBusiness }}</td>
+                <td>{{ item.postGrade }}</td>
+                <td>{{ item.transCode }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="vdp-col-center">
+                  {{ row.personId ? i18n.t('vdp.msg.noInsideExp', 'Không có dữ liệu quá trình nội bộ.') : i18n.t('vdp.msg.noPersonId', 'Không lấy được PERSON_ID để xem quá trình nội bộ.') }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<ng-template #vdpDetailFooter>
+  <button id="vdp-detail-close-btn" nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>

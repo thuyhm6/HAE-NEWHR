@@ -1,0 +1,30 @@
+.vapl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vapl-search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.vapl-col-center {
+  text-align: center;
+}
+
+.vapl-col-nowrap {
+  white-space: nowrap;
+}
+
+.vapl-col-bold {
+  font-weight: 600;
+}
+
+.vapl-col-muted {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.vapl-detail-link {
+  font-weight: 600;
+}

@@ -12,9 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/sys")
@@ -24,9 +26,13 @@ public class SyRoleGroupController {
     @Autowired
     private SyRoleGroupService syRoleGroupService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/syRole/viewSyRolesGroupList")
-    public String viewSyRolesGroupList() {
-        return "sys/syRole/viewSyRolesGroupList";
+    public String viewSyRolesGroupList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/role_group/list")
@@ -90,12 +96,11 @@ public class SyRoleGroupController {
     }
 
     @GetMapping("/api/role_group/export")
-    @SuppressWarnings("null")
     public ResponseEntity<byte[]> exportExcel() {
         byte[] bytes = syRoleGroupService.exportExcel();
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=RoleGroups.csv")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"RoleGroups.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(bytes);
     }
 }

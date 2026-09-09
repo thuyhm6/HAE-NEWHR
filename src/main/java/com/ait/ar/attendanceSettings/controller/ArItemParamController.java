@@ -2,6 +2,7 @@ package com.ait.ar.attendanceSettings.controller;
 
 import com.ait.ar.attendanceSettings.dto.ArItemParamDto;
 import com.ait.ar.attendanceSettings.service.ArItemParamService;
+import com.ait.util.AngularIndexService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,20 +25,25 @@ public class ArItemParamController {
     @Autowired
     private ArItemParamService arItemParamService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     /**
      * Mở giao diện trang Danh sách tham số hạng mục
      */
     @GetMapping("/viewArItemParamList")
-    public String viewArItemParamList() {
-        return "ar/attendanceSettings/viewArItemParamList";
+    public String viewArItemParamList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
      * Mở giao diện trang Quản lý tham số hạng mục (Tree-Table)
      */
     @GetMapping("/viewItemParameter")
-    public String viewItemParameter() {
-        return "ar/attendanceSettings/viewItemParameter";
+    public String viewItemParameter(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**

@@ -1,0 +1,113 @@
+<div class="poai-page">
+  <nz-card class="poai-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('poai.field.otCategory', 'Phân loại tăng ca') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select
+            id="poai-item-select"
+            [ngModel]="itemNo()"
+            (ngModelChange)="itemNo.set($event)"
+            name="poaiItemNo"
+            style="width: 200px"
+            [nzAllowClear]="true"
+            [nzPlaceHolder]="i18n.t('poai.opt.all', '-- Tất cả --')"
+          >
+            <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="opt.itemName || opt.itemNo"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('poai.field.durationGte', 'Thời lượng (>=)') }}</nz-form-label>
+        <nz-form-control>
+          <nz-input-number id="poai-min-quantity" [ngModel]="minQuantity()" (ngModelChange)="minQuantity.set($event)" name="poaiMinQuantity" [nzMin]="0" [nzStep]="0.5"></nz-input-number>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('poai.field.dateRange', 'Thời gian') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="poai-start-date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" name="poaiStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <span class="poai-tilde">~</span>
+      <nz-form-item>
+        <nz-form-control>
+          <nz-date-picker id="poai-end-date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" name="poaiEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <button id="poai-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('poai.btn.search', 'Tra cứu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="poai-table-card">
+    <div class="poai-toolbar">
+      <input
+        id="poai-quick-filter"
+        nz-input
+        [ngModel]="quickFilter()"
+        (ngModelChange)="onQuickFilterChange($event)"
+        [placeholder]="i18n.t('poai.label.quickFilter', 'Lọc nhanh')"
+        style="max-width: 240px"
+      />
+    </div>
+
+    <nz-table
+      id="poai-data-table"
+      #poaiTable
+      [nzData]="filteredRows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="poai-col-center">{{ i18n.t('common.no.serial', 'NO') }}</th>
+          <th class="poai-col-center">{{ i18n.t('common.date', 'Ngày') }}</th>
+          <th class="poai-col-center">{{ i18n.t('poai.col.dayOfWeek', 'Thứ') }}</th>
+          <th>{{ i18n.t('poai.col.ot', 'Tăng ca') }}</th>
+          <th>{{ i18n.t('common.shift', 'Ca') }}</th>
+          <th class="poai-col-center">{{ i18n.t('poai.col.workTime', 'Thời gian làm việc') }}</th>
+          <th class="poai-col-center">{{ i18n.t('poai.col.checkIn', 'Vào') }}</th>
+          <th class="poai-col-center">{{ i18n.t('poai.col.checkOut', 'Ra') }}</th>
+          <th class="poai-col-center">{{ i18n.t('poai.col.otStartTime', 'Thời gian bắt đầu tăng ca') }}</th>
+          <th class="poai-col-center">{{ i18n.t('poai.col.otEndTime', 'Thời gian kết thúc') }}</th>
+          <th class="poai-col-center">{{ i18n.t('poai.col.otDuration', 'Thời lượng tăng ca') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of poaiTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="poai-col-center">{{ idx + 1 }}</td>
+            <td class="poai-col-center">{{ row.arDateStr }}</td>
+            <td class="poai-col-center">{{ dayOfWeek(row.arDateStr) }}</td>
+            <td>{{ row.itemName || row.itemNo }}</td>
+            <td>{{ row.shiftName || row.shiftNo }}</td>
+            <td class="poai-col-center">{{ row.workTime }}</td>
+            <td class="poai-col-center">{{ row.indoorTime }}</td>
+            <td class="poai-col-center">{{ row.outdoorTime }}</td>
+            <td class="poai-col-center">{{ row.otStartTime }}</td>
+            <td class="poai-col-center">{{ row.otEndTime }}</td>
+            <td class="poai-col-center">{{ row.workHour }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="poai-col-center">{{ i18n.t('poai.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

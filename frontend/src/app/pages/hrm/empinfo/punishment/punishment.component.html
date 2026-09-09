@@ -1,0 +1,233 @@
+<div class="pun-page">
+  <nz-card>
+    <div nz-row [nzGutter]="12" class="pun-search-row">
+      <div nz-col [nzSpan]="6">
+        <label class="pun-label">{{ i18n.t('hrm.punishmentSearch.title.empId', 'Mã nhân viên') }}</label>
+        <input id="pun-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="punSearchEmpId" [placeholder]="i18n.t('hrm.punishmentSearch.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+      </div>
+      <div nz-col [nzSpan]="6">
+        <label class="pun-label">{{ i18n.t('hrm.punishmentSearch.title.localName', 'Họ tên') }}</label>
+        <input id="pun-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="punSearchLocalName" [placeholder]="i18n.t('hrm.punishmentSearch.title.localNamePlaceholder', 'Nhập họ tên')" />
+      </div>
+      <div nz-col [nzSpan]="6">
+        <label class="pun-label">{{ i18n.t('hrm.punishmentSearch.title.punishCode', 'Loại kỷ luật') }}</label>
+        <input id="pun-search-code" nz-input [ngModel]="searchPunishCode()" (ngModelChange)="searchPunishCode.set($event)" name="punSearchCode" [placeholder]="i18n.t('hrm.punishmentSearch.title.punishCodePlaceholder', 'Nhập loại kỷ luật')" />
+      </div>
+      <div nz-col [nzSpan]="6">
+        <label class="pun-label">&nbsp;</label>
+        <div class="pun-toolbar-actions">
+          <button id="pun-search-btn" nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="pun-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('common.addNew', 'Thêm mới') }}
+          </button>
+          <button id="pun-export-btn" nz-button (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <nz-table
+      id="pun-data-table"
+      #punTable
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="20"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[20, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: '1400px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="pun-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.punishmentSearch.title.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('hrm.punishmentSearch.title.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.punishmentSearch.title.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hrm.punishmentSearch.title.punishCode', 'Loại KL') }}</th>
+          <th class="pun-col-center">{{ i18n.t('hrm.punishmentSearch.title.punishDate', 'Ngày KL') }}</th>
+          <th>{{ i18n.t('hrm.punishmentSearch.title.punishReason', 'Lý do') }}</th>
+          <th>{{ i18n.t('hrm.punishmentSearch.title.punishDepartment', 'Bộ phận KL') }}</th>
+          <th class="pun-col-center">{{ i18n.t('hrm.punishmentSearch.title.punishScore', 'Điểm') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th nzWidth="100px" class="pun-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of punTable.data; track row.punishNo; let idx = $index) {
+          <tr>
+            <td class="pun-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.punishCode }}</td>
+            <td class="pun-col-center">{{ row.punishDate }}</td>
+            <td>{{ row.punishReason }}</td>
+            <td>{{ row.punishDepartment }}</td>
+            <td class="pun-col-center">{{ row.punishScore }}</td>
+            <td>{{ row.remarks }}</td>
+            <td class="pun-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="pun-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.punishmentSearch.title.editTitle', 'Cập nhật kỷ luật') : i18n.t('hrm.punishmentSearch.title.addTitle', 'Thêm mới kỷ luật')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="800px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="pun-form-emp"
+                [ngModel]="formPersonId()"
+                (ngModelChange)="onEmployeeSelected($event)"
+                name="punFormEmp"
+                nzShowSearch
+                [nzServerSearch]="true"
+                (nzOnSearch)="onEmployeeSearch($event)"
+                [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                [nzLoading]="employeeSearching()"
+              >
+                @if (formEmpLabel() && formPersonId()) {
+                  <nz-option [nzValue]="formPersonId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                }
+                @for (emp of employeeOptions(); track emp.personId) {
+                  <nz-option [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.punishCode', 'Loại kỷ luật (Mã)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="pun-form-code" nz-input [ngModel]="formPunishCode()" (ngModelChange)="formPunishCode.set($event)" name="punFormCode" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.punishDate', 'Ngày kỷ luật') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="pun-form-date" [ngModel]="formPunishDate()" (ngModelChange)="formPunishDate.set($event)" name="punFormDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.punishReason', 'Lý do kỷ luật') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="pun-form-reason" nz-input rows="2" [ngModel]="formPunishReason()" (ngModelChange)="formPunishReason.set($event)" name="punFormReason"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.releaseDate', 'Ngày gỡ bỏ/Hết hạn') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="pun-form-release-date" [ngModel]="formReleaseDate()" (ngModelChange)="formReleaseDate.set($event)" name="punFormReleaseDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.punishDepartment', 'Bộ phận/Cơ quan kỷ luật') }}</nz-form-label>
+            <nz-form-control>
+              <input id="pun-form-department" nz-input [ngModel]="formPunishDepartment()" (ngModelChange)="formPunishDepartment.set($event)" name="punFormDepartment" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.punishScore', 'Điểm kỷ luật/phạt') }}</nz-form-label>
+            <nz-form-control>
+              <input id="pun-form-score" nz-input [ngModel]="formPunishScore()" (ngModelChange)="formPunishScore.set($event)" name="punFormScore" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.faultTypeCode', 'Mã loại lỗi') }}</nz-form-label>
+            <nz-form-control>
+              <input id="pun-form-fault-type" nz-input [ngModel]="formFaultTypeCode()" (ngModelChange)="formFaultTypeCode.set($event)" name="punFormFaultType" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.paycutStartDate', 'Ngày bắt đầu giảm lương') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="pun-form-paycut-start" [ngModel]="formPaycutStartDate()" (ngModelChange)="formPaycutStartDate.set($event)" name="punFormPaycutStart" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.paycutEndDate', 'Ngày kết thúc giảm lương') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="pun-form-paycut-end" [ngModel]="formPaycutEndDate()" (ngModelChange)="formPaycutEndDate.set($event)" name="punFormPaycutEnd" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.punishmentSearch.title.personnelCardInquiry', 'Hiển thị thẻ nhân sự') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="pun-form-card" [ngModel]="formPersonnelCardInquiry()" (ngModelChange)="formPersonnelCardInquiry.set($event)" name="punFormCard">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="pun-form-remarks" nz-input rows="2" [ngModel]="formRemarks()" (ngModelChange)="formRemarks.set($event)" name="punFormRemarks"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

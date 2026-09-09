@@ -1,0 +1,103 @@
+.sf-page {
+  display: flex;
+}
+
+.sf-tree-card,
+.sf-table-card {
+  height: 100%;
+}
+
+.sf-title {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.sf-search-input {
+  margin-bottom: 8px;
+}
+
+.sf-tree-container {
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+.sf-tree-loading {
+  text-align: center;
+  padding: 24px 0;
+  font-size: 20px;
+}
+
+.sf-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sf-table-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1677ff;
+}
+
+.sf-col-center {
+  text-align: center;
+}
+
+.sf-formula-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sf-info-box {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #e6f4ff;
+  border: 1px solid #91caff;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.sf-tools-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.sf-tools-title {
+  color: #595959;
+  margin-bottom: 10px;
+}
+
+.sf-tool-card {
+  height: 100%;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sf-tool-header {
+  background: #fafafa;
+  padding: 6px 8px;
+  font-weight: 600;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sf-tool-body {
+  height: 220px;
+  overflow-y: auto;
+  font-size: 12.5px;
+}
+
+.sf-tool-item {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+}
+
+.sf-tool-item:hover {
+  background: #e6f4ff;
+}

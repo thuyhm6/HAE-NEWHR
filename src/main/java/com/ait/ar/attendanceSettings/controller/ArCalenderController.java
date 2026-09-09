@@ -5,15 +5,17 @@ import com.ait.ar.attendanceSettings.dto.ArEmpCalenderDto;
 import com.ait.ar.attendanceSettings.dto.ArCalenderGroupDto;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.ar.attendanceSettings.service.ArCalenderService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -27,14 +29,19 @@ public class ArCalenderController {
     @Autowired
     private ArCalenderService arCalenderService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewStatutoryHolidays")
-    public String viewStatutoryHolidays() {
-        return "ar/attendanceSettings/viewStatutoryHolidays";
+    public String viewStatutoryHolidays(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewCompanyCalendar")
-    public String viewCompanyCalendar() {
-        return "ar/attendanceSettings/viewCompanyCalendar";
+    public String viewCompanyCalendar(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // API: lấy danh sách ngày lễ (dùng cho viewStatutoryHolidays)
@@ -112,8 +119,9 @@ public class ArCalenderController {
     // ================= CLASS CALENDAR API =================
 
     @GetMapping("/viewClassCalendar")
-    public String viewClassCalendar() {
-        return "ar/attendanceSettings/viewClassCalendar";
+    public String viewClassCalendar(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/calender/group/month")
@@ -186,18 +194,9 @@ public class ArCalenderController {
     // ================= EMP CALENDAR API =================
 
     @GetMapping("/viewEmpCalendar")
-    public String viewEmpCalendar(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = 
-            (HrUserInfo) session.getAttribute("currentHrUser");
-        
-        if (currentHrUser != null) {
-            model.addAttribute("defaultPersonId", currentHrUser.getPersonId());
-            if (currentHrUser.getHrEmployee() != null) {
-                model.addAttribute("defaultEmpId", currentHrUser.getHrEmployee().getEmpId());
-                model.addAttribute("defaultLocalName", currentHrUser.getHrEmployee().getLocalName());
-            }
-        }
-        return "ar/attendanceSettings/viewEmpCalendar";
+    public String viewEmpCalendar(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/calender/emp/month")

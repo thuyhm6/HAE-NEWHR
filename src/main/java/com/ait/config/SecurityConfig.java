@@ -45,10 +45,12 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .authorizeRequests(authz -> authz
                         .antMatchers(
                                 "/", "/login", "/auth/login", "/logout",
-                                "/assets/**", "/static/**", "/webjars/**",
+                                "/assets/**", "/static/**", "/webjars/**", "/ng/**",
                                 "/error/**", "/favicon.ico",
-                                "/actuator/health", "/api/health", "/api/csrf-token",
-                                "/change-language", "/api/current-language", "/api/supported-languages")
+                                "/actuator/health", "/api/health", "/api/csrf-token", "/api/auth/login",
+                                "/api/i18n/**",
+                                "/change-language", "/api/current-language", "/api/supported-languages",
+                                "/sys/feedback/submit")
                         .permitAll()
                         .antMatchers(HttpMethod.GET, "/sys/api/code/list", "/sys/api/code/tree", "/sys/api/menu/list",
                                 "/sys/api/getCode/list")
@@ -93,9 +95,10 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/", "/login", "/auth/login", "/logout",
-                        "/assets/**", "/static/**", "/webjars/**",
+                        "/assets/**", "/static/**", "/webjars/**", "/ng/**",
                         "/error/**", "/favicon.ico", "/actuator/**",
-                        "/api/health", "/api/csrf-token");
+                        "/api/health", "/api/csrf-token", "/api/auth/login", "/api/i18n/**",
+                        "/sys/feedback/submit");
     }
 
     public static class AuthenticationInterceptor implements HandlerInterceptor {
@@ -142,14 +145,18 @@ public class SecurityConfig implements WebMvcConfigurer {
                     uri.startsWith("/assets/") ||
                     uri.startsWith("/static/") ||
                     uri.startsWith("/webjars/") ||
+                    uri.startsWith("/ng/") ||
                     uri.startsWith("/error/") ||
                     uri.startsWith("/actuator/") ||
                     uri.equals("/favicon.ico") ||
                     uri.equals("/api/health") ||
                     uri.equals("/api/csrf-token") ||
+                    uri.equals("/api/auth/login") ||
+                    uri.startsWith("/api/i18n/") ||
                     uri.equals("/change-language") ||
                     uri.equals("/api/current-language") ||
-                    uri.equals("/api/supported-languages");
+                    uri.equals("/api/supported-languages") ||
+                    uri.equals("/sys/feedback/submit");
         }
     }
 

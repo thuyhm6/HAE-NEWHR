@@ -1,0 +1,98 @@
+<div class="odmc-page">
+  <div class="odmc-header">
+    <span class="odmc-label">{{ i18n.t('org.compose.versionLabel', 'Phiên bản thay đổi') }}</span>
+    <nz-select
+      style="width: 360px"
+      [ngModel]="selectedResumeNo()"
+      (ngModelChange)="onResumeChange($event)"
+      [nzLoading]="loadingResume()"
+      nzShowSearch
+      nzAllowClear
+      [nzPlaceHolder]="i18n.t('org.compose.versionPlaceholder', '-- Chọn phiên bản thay đổi --')"
+    >
+      <nz-option *ngFor="let r of resumeOptions()" [nzValue]="r.no" [nzLabel]="resumeLabel(r)"></nz-option>
+    </nz-select>
+    <button nz-button class="odmc-export-btn" (click)="exportExcel()">
+      <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+    </button>
+  </div>
+
+  <div class="odmc-table-wrap">
+    <nz-table [nzData]="rows()" [nzLoading]="loadingRows()" [nzScroll]="{ y: '600px' }" [nzFrontPagination]="false" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="30%">{{ i18n.t('org.deptMgr.deptColumn', 'Mã bộ phận - Tên bộ phận') }}</th>
+          <th>{{ i18n.t('org.orgManage.DEPARTMENT_INFORMATION.Z', 'Trưởng phòng') }}</th>
+          <th>{{ i18n.t('org.title.BUSINESS_NAME', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('org.title.POSITION_NO', 'Chức danh') }}</th>
+          <th class="odmc-col-center">{{ i18n.t('org.compose.isPartTime', 'Kiêm nhiệm') }}</th>
+          <th class="odmc-col-center">{{ i18n.t('org.deptMgr.vacancyColumn', 'Trống (Vacancy)') }}</th>
+          <th class="odmc-col-center" nzWidth="80px">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows()">
+          <td><div [style.padding-left]="deptIndentPx(row)">{{ row.DEPTNO }} - {{ row.ORG_NAME_LOCAL }}</div></td>
+          <td>{{ row.MANAGER_NAME || i18n.t('org.deptMgr.noManager', 'Chưa có') }}</td>
+          <td>{{ row.POST_GRADE_NAME }}</td>
+          <td>{{ row.POSITION_NAME }}</td>
+          <td class="odmc-col-center">
+            <span nz-icon nzType="check" nzTheme="outline" class="odmc-check-icon" *ngIf="isPartTimeRow(row)"></span>
+          </td>
+          <td class="odmc-col-center">
+            <span class="odmc-badge" [class.odmc-badge-danger]="isVacant(row)" [class.odmc-badge-success]="!isVacant(row)">
+              {{ isVacant(row) ? i18n.t('org.deptMgr.vacant', 'Trống') : i18n.t('org.deptMgr.appointed', 'Đã bổ nhiệm') }}
+            </span>
+          </td>
+          <td class="odmc-col-center">
+            <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+              <span nz-icon nzType="edit"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal cập nhật trưởng bộ phận -->
+<nz-modal
+  [(nzVisible)]="modalVisible"
+  [nzTitle]="i18n.t('org.deptMgr.modalTitle', 'Cập nhật trưởng bộ phận')"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveManager()"
+  (nzOnCancel)="modalVisible.set(false)"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <div class="odmc-form-row">
+      <label class="odmc-form-label">{{ i18n.t('org.orgManage.title.deptNo', 'Mã phòng ban') }}</label>
+      <input nz-input [ngModel]="editDeptLabel()" disabled />
+    </div>
+    <div class="odmc-form-row">
+      <label class="odmc-form-label">{{ i18n.t('common.employee', 'Nhân viên') }}</label>
+      <div class="odmc-input-group">
+        <nz-select
+          style="flex: 1"
+          [ngModel]="editManagerEmpId()"
+          (ngModelChange)="onEmployeeSelected($event)"
+          nzShowSearch
+          [nzServerSearch]="true"
+          (nzOnSearch)="onEmployeeSearch($event)"
+          [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+          [nzLoading]="employeeSearching()"
+        >
+          <nz-option *ngIf="editEmpLabel() && editManagerEmpId()" [nzValue]="editManagerEmpId()" [nzLabel]="editEmpLabel()!"></nz-option>
+          <nz-option *ngFor="let emp of employeeOptions()" [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+        </nz-select>
+        <button nz-button (click)="clearSelectedManager()">
+          <span nz-icon nzType="close"></span>
+        </button>
+      </div>
+    </div>
+    <div class="odmc-form-row">
+      <label nz-checkbox [(ngModel)]="editIsPartTime">{{ i18n.t('org.compose.isPartTime', 'Kiêm nhiệm') }}</label>
+    </div>
+  </ng-container>
+</nz-modal>

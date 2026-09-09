@@ -1,0 +1,111 @@
+<div class="vae-page">
+  <nz-card class="vae-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('vae.search.title', 'Tiêu đề') }}</nz-form-label>
+        <nz-form-control>
+          <input id="vae-title-search" nz-input [ngModel]="titleSearch()" (ngModelChange)="titleSearch.set($event)" name="vaeTitleSearch" style="min-width: 200px" (keydown.enter)="search()" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('vae.search.applyType', 'Loại đơn') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="vae-apply-type-search" [ngModel]="applyTypeSearch()" (ngModelChange)="applyTypeSearch.set($event); search()" name="vaeApplyTypeSearch" style="min-width: 160px">
+            <nz-option nzValue="" [nzLabel]="i18n.t('vae.search.applyType.all', '-- Tất cả --')"></nz-option>
+            <nz-option nzValue="31" [nzLabel]="i18n.t('vae.search.applyType.ot', 'Tăng ca')"></nz-option>
+            <nz-option nzValue="21" [nzLabel]="i18n.t('vae.search.applyType.leave', 'Nghỉ phép')"></nz-option>
+            <nz-option nzValue="218197" [nzLabel]="i18n.t('vae.search.applyType.anomaly', 'Nghỉ bất thường')"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <div class="vae-toolbar-actions">
+            <button id="vae-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+              <span nz-icon nzType="search"></span>
+              {{ i18n.t('vae.btn.search', 'Tra cứu') }}
+            </button>
+            <button id="vae-approve-btn" nz-button (click)="openActionModal(1)">
+              <span nz-icon nzType="check-circle"></span>
+              {{ i18n.t('vae.btn.approve', 'Duyệt') }}
+            </button>
+            <button id="vae-reject-btn" nz-button nzDanger (click)="openActionModal(2)">
+              <span nz-icon nzType="close-circle"></span>
+              {{ i18n.t('vae.btn.reject', 'Từ chối') }}
+            </button>
+            <button id="vae-sync-btn" nz-button nzType="default" [nzLoading]="syncing()" (click)="syncEagleOffice()">
+              <span nz-icon nzType="sync"></span>
+              {{ i18n.t('vae.btn.syncEagleOffice', 'Đồng bộ Clever') }}
+            </button>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="vae-table-card">
+    <nz-table id="vae-data-table" #vaeTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" [nzScroll]="{ x: 'max-content', y: '100%' }">
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="vae-col-center">
+            <label nz-checkbox [ngModel]="checkAll()" (ngModelChange)="toggleAll($event)"></label>
+          </th>
+          <th nzWidth="50px" class="vae-col-center">{{ i18n.t('vae.col.no', 'NO') }}</th>
+          <th>{{ i18n.t('vae.col.title', 'Tiêu đề') }}</th>
+          <th class="vae-col-center">{{ i18n.t('vae.col.applyPerson', 'Người xin phép') }}</th>
+          <th class="vae-col-center">{{ i18n.t('vae.col.updateDate', 'Ngày thực hiện') }}</th>
+          <th class="vae-col-center">{{ i18n.t('vae.col.affirmStatus', 'Trạng thái duyệt') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of vaeTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="vae-col-center" (click)="$event.stopPropagation()">
+              <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleRow(row, $event)"></label>
+            </td>
+            <td class="vae-col-center">{{ idx + 1 }}</td>
+            <td>
+              @if (row.affirmUrl) {
+                <a class="vae-detail-link" (click)="openDetail(row)">{{ row.title }}</a>
+              } @else {
+                {{ row.title }}
+              }
+            </td>
+            <td class="vae-col-center">{{ row.applyPersonInfo }}</td>
+            <td class="vae-col-center">{{ row.updateDate }}</td>
+            <td class="vae-col-center">
+              <nz-tag [nzColor]="statusColor(row.affirmFlag)">{{ row.applyAffirmFlag }}</nz-tag>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="vae-col-center">{{ i18n.t('vae.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #otModal variant="ot" (approved)="loadList()"></app-apply-detail-modal>
+<app-apply-detail-modal #leaveModal variant="leave" (approved)="loadList()"></app-apply-detail-modal>
+<app-apply-detail-modal #attendanceExModal variant="attendanceEx" (approved)="loadList()"></app-apply-detail-modal>
+
+<nz-modal
+  [nzVisible]="actionModalVisible()"
+  [nzTitle]="actionFlag() === 1 ? i18n.t('vae.modal.approve.title', 'Xác nhận duyệt') : i18n.t('vae.modal.reject.title', 'Xác nhận từ chối')"
+  (nzOnCancel)="closeActionModal()"
+  (nzVisibleChange)="actionModalVisible.set($event)"
+>
+  <ng-container *nzModalContent>
+    <label class="vae-modal-label">{{ i18n.t('vae.modal.remarkLabel', 'Nội dung phê duyệt') }}</label>
+    <textarea id="vae-affirm-content" nz-input [ngModel]="affirmContent()" (ngModelChange)="affirmContent.set($event)" name="vaeAffirmContent" rows="3" [placeholder]="i18n.t('vae.modal.remarkPlaceholder', 'Nhập nội dung phê duyệt (tùy chọn)')"></textarea>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="vae-action-cancel-btn" nz-button (click)="closeActionModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="vae-action-confirm-btn" nz-button nzType="primary" (click)="confirmAction()">
+      <span nz-icon nzType="check"></span>
+      {{ i18n.t('common.confirm', 'Xác nhận') }}
+    </button>
+  </div>
+</nz-modal>

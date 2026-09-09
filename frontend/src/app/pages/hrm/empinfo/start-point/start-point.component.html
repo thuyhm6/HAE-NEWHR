@@ -1,0 +1,204 @@
+<div class="vsp-page">
+  <!-- ════ Panel trái: Danh sách quyết định ════ -->
+  <div class="vsp-left-panel">
+    <div class="vsp-search-row">
+      <input
+        id="vsp-search-keyword"
+        nz-input
+        nzSize="small"
+        [ngModel]="searchKeyword()"
+        (ngModelChange)="searchKeyword.set($event)"
+        (keydown.enter)="searchEmployee()"
+        [placeholder]="i18n.t('vsp.search.placeholder', 'Mã/Tên nhân viên...')"
+      />
+      <button id="vsp-search-btn" nz-button nzType="primary" nzSize="small" (click)="searchEmployee()">
+        <span nz-icon nzType="search"></span>
+      </button>
+    </div>
+
+    <div class="vsp-emp-header">
+      <div class="vsp-emp-name">{{ currentLocalName() || i18n.t('vsp.label.noEmployee', '-- Chưa chọn nhân viên --') }}</div>
+      @if (currentEmpId()) {
+        <div class="vsp-emp-sub">{{ currentEmpId() }}{{ currentDeptName() ? ' | ' + currentDeptName() : '' }}</div>
+      }
+    </div>
+
+    <div class="vsp-toolbar">
+      <span class="vsp-list-count">{{ total() }} {{ i18n.t('vsp.label.decisions', 'quyết định') }}</span>
+      <div class="vsp-toolbar-actions">
+        <button id="vsp-new-btn" nz-button nzType="primary" nzSize="small" (click)="newDecision()" [title]="i18n.t('common.add', 'Thêm')">
+          <span nz-icon nzType="plus"></span>
+        </button>
+        <button id="vsp-delete-btn" nz-button nzDanger nzSize="small" (click)="deleteSelected()" [title]="i18n.t('common.delete', 'Xóa')">
+          <span nz-icon nzType="delete"></span>
+        </button>
+        <button id="vsp-export-btn" nz-button nzSize="small" (click)="exportExcel()" [title]="i18n.t('common.exportExcel', 'Xuất Excel')">
+          <span nz-icon nzType="file-excel"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="vsp-decision-list">
+      @if (!rows().length) {
+        <div class="vsp-no-data">
+          <span nz-icon nzType="inbox" style="font-size: 28px;"></span>
+          <div>{{ currentPersonId() ? i18n.t('common.noData', 'Không có dữ liệu') : i18n.t('vsp.js.selectFirst', 'Vui lòng tìm kiếm nhân viên trước') }}</div>
+        </div>
+      }
+      @for (row of rows(); track row.seq) {
+        <div class="vsp-decision-item" [class.selected]="selectedSeq() === row.seq" (click)="selectDecision(row.seq!)">
+          <input
+            type="checkbox"
+            class="vsp-item-checkbox"
+            [checked]="isRowSelected(row.seq)"
+            (click)="$event.stopPropagation()"
+            (change)="toggleRowSelected(row.seq!, $any($event.target).checked)"
+          />
+          <div class="vsp-item-body">
+            <div class="vsp-item-title">{{ row.transCodeName || row.transCode }}</div>
+            <div class="vsp-item-date">{{ row.startDate }}</div>
+            @if (row.deptno) {
+              <div class="vsp-item-dept">{{ row.deptName }}</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (rows().length) {
+      <div class="vsp-paging">
+        <button nz-button nzSize="small" [disabled]="pageIndex() <= 1" (click)="pageChange(-1)">
+          <span nz-icon nzType="left"></span>
+        </button>
+        <span class="vsp-page-info">{{ pageIndex() }}/{{ totalPages }}</span>
+        <button nz-button nzSize="small" [disabled]="pageIndex() >= totalPages" (click)="pageChange(1)">
+          <span nz-icon nzType="right"></span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- ════ Panel phải: Chi tiết quyết định ════ -->
+  <div class="vsp-right-panel">
+    <div class="vsp-detail-header">
+      <span class="vsp-detail-title">{{ detailTitle() || i18n.t('vsp.label.selectDecision', '-- Chọn quyết định --') }}</span>
+      @if (selectedSeq()) {
+        <span class="vsp-detail-seq">#{{ selectedSeq() }}</span>
+      }
+    </div>
+
+    <div class="vsp-detail-body">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label vsp-required">{{ i18n.t('vsp.field.startDate', 'Ngày quyết định') }}</label>
+          <nz-date-picker id="vsp-start-date" [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" name="vspStartDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label vsp-required">{{ i18n.t('vsp.field.transCode', 'Loại quyết định') }}</label>
+          <nz-select id="vsp-trans-code" [ngModel]="formTransCode()" (ngModelChange)="onTransCodeChange($event)" name="vspTransCode" nzAllowClear style="width:100%">
+            @for (opt of transCodeOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.transResource', 'Lý do quyết định') }}</label>
+          <nz-select id="vsp-trans-resource" [ngModel]="formTransResource()" (ngModelChange)="formTransResource.set($event)" name="vspTransResource" nzAllowClear style="width:100%">
+            @for (opt of transResourceOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.deptNo', 'Phòng ban') }}</label>
+          <nz-tree-select
+            id="vsp-deptno"
+            [nzNodes]="deptTreeNodes()"
+            [ngModel]="formDeptno()"
+            (ngModelChange)="onDeptnoChange($event)"
+            name="vspDeptno"
+            nzShowSearch
+            [nzPlaceHolder]="i18n.t('recruit.list.placeholder.selectDept', '-- Chọn phòng ban --')"
+            style="width:100%"
+          ></nz-tree-select>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.empTypeCode', 'Loại nhân viên') }}</label>
+          <nz-select id="vsp-emp-type" [ngModel]="formEmpTypeCode()" (ngModelChange)="formEmpTypeCode.set($event)" name="vspEmpType" nzAllowClear style="width:100%">
+            @for (opt of empTypeOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.postFamily', 'Nhóm nhân viên') }}</label>
+          <nz-select id="vsp-post-family" [ngModel]="formPostFamily()" (ngModelChange)="onPostFamilyChange($event)" name="vspPostFamily" nzAllowClear style="width:100%">
+            @for (opt of postFamilyOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.postGradeNo', 'Chức vụ') }}</label>
+          <nz-select id="vsp-post-grade" [ngModel]="formPostGradeNo()" (ngModelChange)="formPostGradeNo.set($event)" name="vspPostGrade" nzAllowClear style="width:100%">
+            @for (opt of postGradeOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.positionNo', 'Chức danh') }}</label>
+          <nz-select id="vsp-position-no" [ngModel]="formPositionNo()" (ngModelChange)="formPositionNo.set($event)" name="vspPositionNo" nzAllowClear style="width:100%">
+            @for (opt of positionNoOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.costCenter', 'Mã chi phí') }}</label>
+          <nz-tree-select
+            id="vsp-cost-center"
+            [nzNodes]="deptTreeNodes()"
+            [ngModel]="formCostCenter()"
+            (ngModelChange)="formCostCenter.set($event)"
+            name="vspCostCenter"
+            nzShowSearch
+            [nzPlaceHolder]="i18n.t('recruit.list.placeholder.selectDept', '-- Chọn phòng ban --')"
+            style="width:100%"
+          ></nz-tree-select>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.position', 'Vị trí') }}</label>
+          <nz-select id="vsp-position" [ngModel]="formPosition()" (ngModelChange)="formPosition.set($event)" name="vspPosition" nzAllowClear style="width:100%">
+            @for (opt of positionOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.mainBusiness', 'Công việc') }}</label>
+          <nz-select id="vsp-main-business" [ngModel]="formMainBusiness()" (ngModelChange)="formMainBusiness.set($event)" name="vspMainBusiness" nzAllowClear style="width:100%">
+            @for (opt of mainBusinessOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+            }
+          </nz-select>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <label class="vsp-field-label">{{ i18n.t('vsp.field.remark', 'Ghi chú') }}</label>
+          <textarea nz-input rows="2" maxlength="300" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)" name="vspRemark"></textarea>
+        </div>
+      </div>
+
+      <div class="vsp-save-row">
+        <button id="vsp-save-btn" nz-button nzType="primary" nzSize="small" [nzLoading]="saving()" (click)="saveDecision()">
+          <span nz-icon nzType="save"></span>
+          {{ i18n.t('common.save', 'Lưu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

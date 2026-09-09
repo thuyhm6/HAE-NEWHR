@@ -16,7 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -130,10 +133,13 @@ public class ArShiftServiceImpl implements ArShiftService {
         ArShift020Dto dto = new ArShift020Dto();
         BeanUtils.copyProperties(entity, dto);
 
+        // Bug có thật ở bản gốc: dùng LocalDateTime.toString() cho ra chuỗi ISO
+        // đầy đủ ("1970-01-01T08:00") thay vì "HH:mm", khiến modal Sửa hiển thị
+        // sai giờ (frontend chỉ đọc phần "HH:mm"). Sửa dùng DateTimeFormatter.
         if (entity.getFromTime() != null)
-            dto.setFromTimeStr(entity.getFromTime().toString());
+            dto.setFromTimeStr(entity.getFromTime().format(DateTimeFormatter.ofPattern("HH:mm")));
         if (entity.getToTime() != null)
-            dto.setToTimeStr(entity.getToTime().toString());
+            dto.setToTimeStr(entity.getToTime().format(DateTimeFormatter.ofPattern("HH:mm")));
 
         return dto;
     }
@@ -149,12 +155,17 @@ public class ArShiftServiceImpl implements ArShiftService {
         ArShift020 entity = new ArShift020();
         BeanUtils.copyProperties(dto, entity);
 
-        // Parse "HH:mm" to LocalTime
+        // Parse "HH:mm" thành LocalTime rồi ghép với ngày mốc cố định (chỉ phần giờ
+        // được sử dụng thực tế, xem TO_CHAR(..., 'HH24:MI') ở ArShift020Mapper).
+        // Trước đây dùng LocalDateTime.parse(fromTimeStr) - luôn ném
+        // DateTimeParseException vì fromTimeStr chỉ là "HH:mm" (không có phần
+        // ngày), lỗi bị nuốt bởi catch nên FROM_TIME/TO_TIME không bao giờ được
+        // lưu. Đây là bug có thật ở bản gốc, không phải do migrate sang Angular.
         try {
             if (dto.getFromTimeStr() != null && !dto.getFromTimeStr().trim().isEmpty())
-                entity.setFromTime(LocalDateTime.parse(dto.getFromTimeStr()));
+                entity.setFromTime(LocalDateTime.of(LocalDate.EPOCH, LocalTime.parse(dto.getFromTimeStr())));
             if (dto.getToTimeStr() != null && !dto.getToTimeStr().trim().isEmpty())
-                entity.setToTime(LocalDateTime.parse(dto.getToTimeStr()));
+                entity.setToTime(LocalDateTime.of(LocalDate.EPOCH, LocalTime.parse(dto.getToTimeStr())));
         } catch (Exception e) {
             log.error("Invalid shift detail time format for shiftNo={}", dto.getShiftNo(), e);
         }

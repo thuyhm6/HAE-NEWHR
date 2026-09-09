@@ -1,0 +1,79 @@
+<div class="hae-hrmhome-welcome" *ngIf="authService.currentUser() as u">
+  <i class="hae-hrmhome-welcome-icon">🏢</i>
+  <div>
+    <h5>{{ i18n.t('hrm.welcome.title', 'Chào mừng đến với HR Management System') }}</h5>
+    <p>Chào mừng {{ u.employeeName || u.username }} đến với hệ thống HR!</p>
+  </div>
+</div>
+
+<div class="hae-hrmhome-row">
+  <nz-card
+    id="hae-hrmhome-alerts-card"
+    class="hae-hrmhome-alerts"
+    [nzTitle]="i18n.t('hrm.alerts.title', 'Cảnh báo')"
+  >
+    <nz-table [nzData]="[1, 2]" [nzShowPagination]="false" [nzSize]="'small'">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('common.name', 'Tên') }}</th>
+          <th>{{ i18n.t('dashboard.col.quantity', 'Số lượng') }}</th>
+          <th>{{ i18n.t('common.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ i18n.t('dashboard.contract.expiringDetail', 'Hợp đồng sắp hết hạn (7 ngày tới)') }}</td>
+          <td>{{ expiringContractsCount() ?? '-' }}</td>
+          <td>
+            @if (expiringContractsCount() === null) {
+              <span>-</span>
+            } @else if (expiringContractsCount()! > 0) {
+              <nz-tag nzColor="warning">{{ i18n.t('dashboard.status.needAction', 'Cần xử lý') }}</nz-tag>
+            } @else {
+              <nz-tag nzColor="success">{{ i18n.t('dashboard.status.stable', 'Ổn định') }}</nz-tag>
+            }
+          </td>
+        </tr>
+        <tr>
+          <td>{{ i18n.t('hrm.alert.noContract', 'Nhân viên chưa có hợp đồng') }}</td>
+          <td>-</td>
+          <td><span>-</span></td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <nz-card
+    id="hae-hrmhome-chart-card"
+    class="hae-hrmhome-chart"
+    [nzTitle]="i18n.t('hrm.chart.personnel.title', 'Tình hình nhân sự')"
+    [nzExtra]="chartExtra"
+  >
+    <ng-template #chartExtra>
+      <div class="hae-hrmhome-chart-actions">
+        <nz-select
+          id="hae-hrmhome-year-select"
+          [ngModel]="selectedYear()"
+          (ngModelChange)="onYearChange($event)"
+          style="width: 100px"
+        >
+          <nz-option *ngFor="let y of yearOptions" [nzValue]="y" [nzLabel]="y.toString()"></nz-option>
+        </nz-select>
+        <a id="hae-hrmhome-export-btn" nz-button nzSize="small" [href]="exportUrl">
+          {{ i18n.t('hrm.chart.export', 'Xuất Excel') }}
+        </a>
+      </div>
+    </ng-template>
+    <apx-chart
+      [series]="chartOptions.series"
+      [chart]="chartOptions.chart"
+      [xaxis]="chartOptions.xaxis"
+      [yaxis]="chartOptions.yaxis"
+      [plotOptions]="chartOptions.plotOptions"
+      [dataLabels]="chartOptions.dataLabels"
+      [colors]="chartOptions.colors"
+      [legend]="chartOptions.legend"
+      [grid]="chartOptions.grid"
+    ></apx-chart>
+  </nz-card>
+</div>

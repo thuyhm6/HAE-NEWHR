@@ -1,0 +1,189 @@
+<div class="hmai-page">
+  <nz-card class="hmai-search-card">
+    <div nz-row [nzGutter]="12" class="hmai-search-row">
+      <div nz-col [nzSpan]="4">
+        <label class="hmai-label">{{ i18n.t('common.time', 'Thời gian') }}</label>
+        <nz-date-picker id="hmai-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="hmaiFromDate" nzFormat="dd/MM/yyyy" [nzPlaceHolder]="i18n.t('hmai.filter.fromDate', 'Từ ngày')" style="width: 100%"></nz-date-picker>
+      </div>
+      <div nz-col [nzSpan]="4">
+        <label class="hmai-label">&nbsp;</label>
+        <nz-date-picker id="hmai-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="hmaiToDate" nzFormat="dd/MM/yyyy" [nzPlaceHolder]="i18n.t('hmai.filter.toDate', 'Đến ngày')" style="width: 100%"></nz-date-picker>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="hmai-label">{{ i18n.t('hmai.filter.status', 'Trạng thái') }}</label>
+        <nz-radio-group id="hmai-activity" [ngModel]="activitySearch()" (ngModelChange)="activitySearch.set($event)" name="hmaiActivity">
+          <label nz-radio nzValue="">{{ i18n.t('hmai.filter.all', 'Tất cả') }}</label>
+          <label nz-radio nzValue="1">{{ i18n.t('hmai.status.submitted', 'Chờ duyệt') }}</label>
+          <label nz-radio nzValue="2">{{ i18n.t('hmai.status.approved', 'Đã duyệt') }}</label>
+          <label nz-radio nzValue="3">{{ i18n.t('hmai.status.rejected', 'Đã từ chối') }}</label>
+        </nz-radio-group>
+      </div>
+      <div nz-col [nzSpan]="4">
+        <label class="hmai-label">{{ i18n.t('hmai.filter.keyword', 'Mã NV / Tên NV') }}</label>
+        <input id="hmai-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="hmaiKeyword" [placeholder]="i18n.t('hmai.filter.keyword', 'Mã NV / Tên NV')" />
+      </div>
+      <div nz-col [nzSpan]="4" class="hmai-search-actions">
+        <button id="hmai-search-btn" nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="hmai-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.reset', 'Đặt lại') }}
+        </button>
+      </div>
+    </div>
+  </nz-card>
+
+  <div nz-row [nzGutter]="16" class="hmai-content-row">
+    <!-- Left: List -->
+    <div nz-col [nzSpan]="10">
+      <nz-card class="hmai-table-card">
+        <nz-table
+          id="hmai-data-table"
+          [nzData]="rows()"
+          [nzLoading]="listLoading()"
+          [nzFrontPagination]="false"
+          [nzTotal]="total()"
+          [nzPageIndex]="pageIndex()"
+          [nzPageSize]="pageSize()"
+          [nzPageSizeOptions]="[20, 50, 100, 200]"
+          [nzShowSizeChanger]="true"
+          (nzQueryParams)="onQueryParamsChange($event)"
+          nzSize="small"
+          [nzScroll]="{ x: '760px', y: '100%' }"
+        >
+          <thead>
+            <tr>
+              <th nzWidth="50px" class="hmai-col-center">No.</th>
+              <th>{{ i18n.t('hmai.col.empCode', 'Mã NV') }}</th>
+              <th>{{ i18n.t('hmai.col.empName', 'Tên nhân viên') }}</th>
+              <th>{{ i18n.t('hmai.col.dept', 'Phòng ban') }}</th>
+              <th>{{ i18n.t('hmai.col.type', 'Loại thay đổi') }}</th>
+              <th class="hmai-col-center">{{ i18n.t('hmai.col.applyDate', 'Ngày nộp') }}</th>
+              <th class="hmai-col-center">{{ i18n.t('hmai.col.distinction', 'Loại áp dụng') }}</th>
+              <th class="hmai-col-center">{{ i18n.t('hmai.col.status', 'Trạng thái') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.applyNo; let idx = $index) {
+              <tr
+                [class.hmai-row-selected]="selectedApplyNo() === row.applyNo && selectedType() === row.applyTableType"
+                (click)="selectRow(row)"
+              >
+                <td class="hmai-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+                <td class="hmai-col-center">{{ row.empCode }}</td>
+                <td>{{ row.empName }}</td>
+                <td>{{ row.deptName }}</td>
+                <td>{{ typeLabel(row.applyTableType) }}</td>
+                <td class="hmai-col-center">{{ row.createDate }}</td>
+                <td class="hmai-col-center">{{ distinctionLabel(row.applyType) }}</td>
+                <td class="hmai-col-center">
+                  <nz-tag [nzColor]="statusColor(row.activity)">{{ statusLabel(row.activity) }}</nz-tag>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="hmai-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </div>
+
+    <!-- Right: Detail -->
+    <div nz-col [nzSpan]="14">
+      <nz-card class="hmai-detail-card">
+        <div class="hmai-detail-header">
+          <span nz-icon nzType="info-circle" class="hmai-detail-icon"></span>
+          <strong>{{ i18n.t('hmai.detail.title', 'Chi tiết yêu cầu thay đổi') }}</strong>
+          @if (hasDetail()) {
+            <nz-tag class="hmai-detail-badge">{{ typeLabel(selectedType() ?? undefined) }}</nz-tag>
+          }
+          @if (hasDetail() && selectedActivity() === 1) {
+            <div class="hmai-detail-actions">
+              <button id="hmai-btn-approve" nz-button nzType="primary" nzSize="small" [nzLoading]="actioning()" (click)="approve()">
+                <span nz-icon nzType="check-circle"></span>
+                {{ i18n.t('hmai.btn.approve', 'Phê duyệt') }}
+              </button>
+              <button id="hmai-btn-reject" nz-button nzDanger nzSize="small" [nzLoading]="actioning()" (click)="reject()">
+                <span nz-icon nzType="close-circle"></span>
+                {{ i18n.t('hmai.btn.reject', 'Từ chối') }}
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="hmai-detail-body">
+          @if (!hasDetail()) {
+            <div class="hmai-placeholder">
+              <span nz-icon nzType="select" class="hmai-placeholder-icon"></span>
+              <div>{{ i18n.t('hmai.detail.placeholder', 'Chọn một yêu cầu để xem chi tiết') }}</div>
+            </div>
+          } @else if (detailLoading()) {
+            <div class="hmai-placeholder"><span nz-icon nzType="loading" nzSpin></span></div>
+          } @else {
+            <div nz-row [nzGutter]="8">
+              <div nz-col [nzSpan]="12">
+                <div class="hmai-compare-card hmai-compare-new">
+                  <div class="hmai-compare-header">
+                    <span nz-icon nzType="edit"></span>
+                    {{ i18n.t('hmai.detail.newData', 'Dữ liệu thay đổi') }}
+                  </div>
+                  <table class="hmai-compare-table">
+                    <tbody>
+                      @for (r of compareRows(); track r.label) {
+                        <tr [class.hmai-diff-row]="r.isDiff">
+                          <th>{{ r.label }}</th>
+                          <td>{{ r.newVal }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div nz-col [nzSpan]="12">
+                <div class="hmai-compare-card hmai-compare-orig">
+                  <div class="hmai-compare-header hmai-compare-header-orig">
+                    <span nz-icon nzType="history"></span>
+                    {{ i18n.t('hmai.detail.originalData', 'Dữ liệu ban đầu') }}
+                  </div>
+                  <table class="hmai-compare-table">
+                    <tbody>
+                      @for (r of compareRows(); track r.label) {
+                        <tr>
+                          <th>{{ r.label }}</th>
+                          <td>{{ r.origVal }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="hmai-files-section">
+              <h6 class="hmai-files-title">
+                <span nz-icon nzType="paper-clip"></span>
+                {{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}
+              </h6>
+              @if (files().length === 0) {
+                <div class="hmai-no-file">{{ i18n.t('veai.msg.noFile', 'Không có file đính kèm') }}</div>
+              } @else {
+                <ul class="hmai-file-list">
+                  @for (f of files(); track f.fileNo) {
+                    <li>
+                      <span nz-icon nzType="file" class="hmai-file-icon"></span>
+                      <a [href]="fileUrl(f)" target="_blank">{{ f.fileName }}</a>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+        </div>
+      </nz-card>
+    </div>
+  </div>
+</div>

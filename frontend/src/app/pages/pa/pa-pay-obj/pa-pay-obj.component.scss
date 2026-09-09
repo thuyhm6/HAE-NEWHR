@@ -1,0 +1,67 @@
+.vppo-page {
+  padding: 4px 0;
+}
+
+.vppo-search-card {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vppo-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vppo-search-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.vppo-inline-label {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.vppo-table-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.vppo-col-center {
+  text-align: center;
+}
+
+.vppo-dirty-row {
+  background: var(--ant-color-warning-bg, #fffbe6);
+}
+
+.vppo-dirty-btn {
+  border-color: var(--ant-color-warning, #faad14);
+  color: var(--ant-color-warning, #faad14);
+}
+
+.vppo-form-row {
+  margin-bottom: 10px;
+}
+
+.vppo-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.vppo-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}

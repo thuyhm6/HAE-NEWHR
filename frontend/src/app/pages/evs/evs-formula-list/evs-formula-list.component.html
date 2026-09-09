@@ -1,0 +1,138 @@
+<div class="vefl-page">
+  <div class="vefl-search-card">
+    <div class="vefl-search-row">
+      <label class="vefl-inline-label">{{ i18n.t('evs.manage.viewEvsFormulaList.search.code', 'Mã') }}</label>
+      <input id="vefl-search-code" nz-input nzSize="small" maxlength="20" style="width:160px" [ngModel]="searchCodeNo()" (ngModelChange)="searchCodeNo.set($event)" (keydown.enter)="search()" />
+
+      <label class="vefl-inline-label">{{ i18n.t('evs.manage.viewEvsFormulaList.search.name', 'Tên') }}</label>
+      <input id="vefl-search-name" nz-input nzSize="small" maxlength="200" style="width:200px" [ngModel]="searchCodeName()" (ngModelChange)="searchCodeName.set($event)" (keydown.enter)="search()" />
+
+      <label class="vefl-inline-label">{{ i18n.t('evs.manage.viewEvsFormulaList.search.status', 'Trạng thái') }}</label>
+      <nz-select id="vefl-search-status" nzSize="small" style="width:160px" [ngModel]="searchActivity()" (ngModelChange)="searchActivity.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('evs.manage.viewEvsFormulaList.search.allOption', '-- Tất cả --')">
+        <nz-option nzValue="1" [nzLabel]="i18n.t('evs.manage.viewEvsFormulaList.search.active', 'Sử dụng')"></nz-option>
+        <nz-option nzValue="0" [nzLabel]="i18n.t('evs.manage.viewEvsFormulaList.search.inactive', 'Không sử dụng')"></nz-option>
+      </nz-select>
+
+      <button id="vefl-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span> {{ i18n.t('evs.manage.viewEvsFormulaList.btn.search', 'Tra cứu') }}
+      </button>
+      <button id="vefl-clear-btn" nz-button nzSize="small" (click)="clearSearch()">
+        <span nz-icon nzType="close-circle"></span> {{ i18n.t('evs.manage.viewEvsFormulaList.btn.clearFilter', 'Xóa lọc') }}
+      </button>
+      <button id="vefl-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+        <span nz-icon nzType="plus-circle"></span> {{ i18n.t('evs.manage.viewEvsFormulaList.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="vefl-table-card">
+    <nz-table id="vefl-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="44px" class="vefl-col-center">{{ i18n.t('evs.manage.viewEvsFormulaList.col.no', 'No.') }}</th>
+          <th nzWidth="120px" class="vefl-col-center">{{ i18n.t('evs.manage.viewEvsFormulaList.col.code', 'Mã') }}</th>
+          <th nzWidth="200px">{{ i18n.t('evs.manage.viewEvsFormulaList.col.name', 'Tên') }}</th>
+          <th>{{ i18n.t('evs.manage.viewEvsFormulaList.col.formula', 'Công thức') }}</th>
+          <th nzWidth="200px">{{ i18n.t('evs.manage.viewEvsFormulaList.col.remark', 'Ghi chú') }}</th>
+          <th nzWidth="100px" class="vefl-col-center">{{ i18n.t('evs.manage.viewEvsFormulaList.col.status', 'Trạng thái') }}</th>
+          <th nzWidth="70px" class="vefl-col-center">{{ i18n.t('evs.manage.viewEvsFormulaList.col.orderNo', 'Thứ tự') }}</th>
+          <th nzWidth="80px" class="vefl-col-center">{{ i18n.t('evs.manage.viewEvsFormulaList.col.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.seq; let idx = $index) {
+          <tr class="vefl-data-row" (click)="openEditModal(row)">
+            <td class="vefl-col-center">{{ idx + 1 }}</td>
+            <td class="vefl-col-center">{{ row.codeNo }}</td>
+            <td>{{ row.codeName }}</td>
+            <td [title]="row.formula"><span class="vefl-formula-text">{{ truncate(row.formula, 80) }}</span></td>
+            <td [title]="row.remark">{{ truncate(row.remark, 50) }}</td>
+            <td class="vefl-col-center">
+              <nz-tag [nzColor]="row.activity === '1' ? 'green' : 'default'">
+                {{ row.activity === '1' ? i18n.t('evs.manage.viewEvsFormulaList.badge.active', 'Sử dụng') : i18n.t('evs.manage.viewEvsFormulaList.badge.inactive', 'Không sử dụng') }}
+              </nz-tag>
+            </td>
+            <td class="vefl-col-center">{{ row.orderNo }}</td>
+            <td class="vefl-col-center">
+              <button nz-button nzSize="small" (click)="$event.stopPropagation(); openEditModal(row)"><span nz-icon nzType="edit"></span></button>
+              <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); openDeleteModal(row)"><span nz-icon nzType="delete"></span></button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="8" class="vefl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+        }
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="detailModalVisible()"
+  [nzTitle]="isEditMode() ? i18n.t('evs.manage.viewEvsFormulaList.modal.editTitle', 'Chỉnh sửa công thức') : i18n.t('evs.manage.viewEvsFormulaList.modal.addTitle', 'Thêm mới công thức')"
+  (nzOnCancel)="detailModalVisible.set(false)"
+  (nzVisibleChange)="detailModalVisible.set($event)"
+  nzWidth="700px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="save()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <table class="vefl-modal-table">
+      <tbody>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewEvsFormulaList.modal.code', 'Mã') }} <span class="vefl-required"></span></th>
+          <td><input id="vefl-code-no" nz-input nzSize="small" maxlength="20" style="width:200px" [ngModel]="formCodeNo()" (ngModelChange)="formCodeNo.set($event)" [disabled]="isEditMode()" /></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewEvsFormulaList.modal.name', 'Tên') }} <span class="vefl-required"></span></th>
+          <td><input id="vefl-code-name" nz-input nzSize="small" maxlength="200" [ngModel]="formCodeName()" (ngModelChange)="formCodeName.set($event)" /></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewEvsFormulaList.modal.formula', 'Công thức') }}</th>
+          <td><textarea nz-input rows="5" maxlength="4000" class="vefl-formula-input" [ngModel]="formFormula()" (ngModelChange)="formFormula.set($event)"></textarea></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewEvsFormulaList.modal.remark', 'Ghi chú') }}</th>
+          <td><textarea nz-input rows="3" maxlength="4000" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewEvsFormulaList.modal.orderNo', 'Thứ tự') }}</th>
+          <td><nz-input-number nzSize="small" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)" [nzMin]="0" [nzMax]="9999" style="width:100px"></nz-input-number></td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('evs.manage.viewEvsFormulaList.modal.status', 'Trạng thái') }}</th>
+          <td>
+            <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+            <span class="vefl-switch-label">{{ i18n.t('evs.manage.viewEvsFormulaList.modal.activeLabel', 'Sử dụng') }}</span>
+          </td>
+        </tr>
+        @if (formAuditDisplay()) {
+          <tr>
+            <th>{{ i18n.t('evs.manage.viewEvsFormulaList.modal.auditInfo', 'Thông tin cập nhật') }}</th>
+            <td class="vefl-audit-display">{{ formAuditDisplay() }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Xác nhận xóa -->
+<nz-modal
+  [nzVisible]="deleteModalVisible()"
+  [nzTitle]="i18n.t('evs.manage.viewEvsFormulaList.modal.deleteTitle', 'Xác nhận xóa')"
+  (nzOnCancel)="deleteModalVisible.set(false)"
+  (nzVisibleChange)="deleteModalVisible.set($event)"
+  nzWidth="420px"
+  (nzOnOk)="confirmDelete()"
+  [nzOkText]="i18n.t('common.delete', 'Xóa')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+  nzOkType="primary"
+  [nzOkDanger]="true"
+>
+  <ng-container *nzModalContent>
+    <p>{{ deleteConfirmMsg() }}</p>
+  </ng-container>
+</nz-modal>

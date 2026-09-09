@@ -1,0 +1,72 @@
+<div class="vne-page">
+  <nz-card class="vne-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('vne.search.title', 'Tiêu đề') }}</nz-form-label>
+        <nz-form-control>
+          <input id="vne-title-search" nz-input [ngModel]="titleSearch()" (ngModelChange)="titleSearch.set($event)" name="vneTitleSearch" style="min-width: 220px" (keydown.enter)="search()" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('vne.search.applyType', 'Loại đơn') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="vne-apply-type-search" [ngModel]="applyTypeSearch()" (ngModelChange)="applyTypeSearch.set($event); search()" name="vneApplyTypeSearch" style="min-width: 160px">
+            <nz-option nzValue="" [nzLabel]="i18n.t('vne.search.applyType.all', '-- Tất cả --')"></nz-option>
+            <nz-option nzValue="31" [nzLabel]="i18n.t('vne.search.applyType.ot', 'Tăng ca')"></nz-option>
+            <nz-option nzValue="21" [nzLabel]="i18n.t('vne.search.applyType.leave', 'Nghỉ phép')"></nz-option>
+            <nz-option nzValue="218197" [nzLabel]="i18n.t('vne.search.applyType.anomaly', 'Nghỉ bất thường')"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="vne-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('vne.btn.search', 'Tra cứu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="vne-table-card">
+    <nz-table id="vne-data-table" #vneTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" [nzScroll]="{ x: 'max-content', y: '100%' }">
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="vne-col-center">{{ i18n.t('vne.col.no', 'NO') }}</th>
+          <th>{{ i18n.t('vne.col.title', 'Tiêu đề') }}</th>
+          <th class="vne-col-center">{{ i18n.t('vne.col.applyPerson', 'Người xin phép') }}</th>
+          <th class="vne-col-center">{{ i18n.t('vne.col.updateDate', 'Ngày thực hiện') }}</th>
+          <th class="vne-col-center">{{ i18n.t('vne.col.affirmStatus', 'Trạng thái duyệt') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of vneTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="vne-col-center">{{ idx + 1 }}</td>
+            <td>
+              @if (row.affirmUrl) {
+                <a class="vne-detail-link" (click)="openDetail(row)">{{ row.title }}</a>
+              } @else {
+                {{ row.title }}
+              }
+            </td>
+            <td class="vne-col-center">{{ row.applyPersonInfo }}</td>
+            <td class="vne-col-center">{{ row.updateDate }}</td>
+            <td class="vne-col-center">
+              <nz-tag [nzColor]="statusColor(row.affirmFlag)">{{ row.applyAffirmFlag }}</nz-tag>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="vne-col-center">{{ i18n.t('vne.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #otModal variant="ot"></app-apply-detail-modal>
+<app-apply-detail-modal #leaveModal variant="leave"></app-apply-detail-modal>
+<app-apply-detail-modal #attendanceExModal variant="attendanceEx"></app-apply-detail-modal>

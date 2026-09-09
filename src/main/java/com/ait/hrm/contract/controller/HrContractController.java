@@ -5,13 +5,13 @@ import com.ait.hrm.contract.service.HrContractService;
 import com.ait.sy.sys.dto.DataTablesRequest;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
+import com.ait.util.AngularIndexService;
 import com.ait.util.DataTablesSearchUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -34,40 +34,40 @@ public class HrContractController {
     @Autowired
     private HrContractService hrContractService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     /**
      * Display contract list page
      */
     @GetMapping("/viewNOContractInfo")
-    public String viewNOContractInfo(Model model, HttpSession session) {
+    public String viewNOContractInfo(HttpSession session, HttpServletResponse response) throws IOException {
         // Check authentication
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "hrm/contract/viewNOContractInfo";
+        getAuthenticatedUser(session);
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
      * Display expired contract list page for extension
      */
     @GetMapping("/viewExpiredContract")
-    public String viewExpiredContract(Model model, HttpSession session) {
+    public String viewExpiredContract(HttpSession session, HttpServletResponse response) throws IOException {
         // Check authentication
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "hrm/contract/viewExpiredContract";
+        getAuthenticatedUser(session);
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
      * Display contract search page
      */
     @GetMapping("/viewContractInfoForSearch")
-    public String viewContractInfoForSearch(Model model, HttpSession session) {
+    public String viewContractInfoForSearch(HttpSession session, HttpServletResponse response) throws IOException {
         // Check authentication
-        HrUserInfo currentHrUser = getAuthenticatedUser(session);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        return "hrm/contract/viewContractInfoForSearch";
+        getAuthenticatedUser(session);
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**

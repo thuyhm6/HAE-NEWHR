@@ -1,0 +1,96 @@
+.veas-page {
+  padding: 4px 0;
+}
+
+.veas-search-card,
+.veas-bulk-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.veas-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.veas-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.veas-inline-label {
+  font-size: 12px;
+  color: #555;
+}
+
+.veas-col-center {
+  text-align: center;
+}
+
+.veas-muted {
+  color: var(--ant-color-text-tertiary, #999);
+  font-size: 11px;
+}
+
+.veas-ticked {
+  background: var(--ant-color-warning-bg, #fffbe6);
+}
+
+.veas-affirm-display {
+  cursor: pointer;
+  display: inline-block;
+  min-width: 60px;
+}
+
+.veas-affirm-display:hover {
+  text-decoration: underline dotted #aaa;
+}
+
+.veas-picker-search {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.veas-picker-row {
+  cursor: pointer;
+}
+
+.veas-add-field {
+  margin-bottom: 12px;
+}
+
+.veas-field-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.veas-required::before {
+  content: '*';
+  color: #ff4d4f;
+}
+
+.veas-add-input-group {
+  display: flex;
+  gap: 4px;
+}
+
+.veas-add-input-group input {
+  flex: 1;
+}

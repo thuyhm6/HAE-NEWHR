@@ -1,0 +1,167 @@
+<div class="vpf-page">
+  <div class="vpf-left">
+    <div class="vpf-left-header">{{ i18n.t('pa.formula.itemList', 'Hạng mục tính') }}</div>
+    <div class="vpf-item-list">
+      <div
+        *ngFor="let item of items()"
+        class="vpf-item-row"
+        [class.vpf-item-active]="item.itemNo === selectedItemNo()"
+        (click)="selectItem(item)"
+      >
+        <span nz-icon nzType="file" nzTheme="fill" class="vpf-item-icon"></span>
+        <span class="vpf-item-name">{{ item.itemName || item.itemNo }}</span>
+      </div>
+      <div *ngIf="!items().length" class="vpf-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
+    </div>
+  </div>
+
+  <div class="vpf-right">
+    <div class="vpf-right-header">
+      <span class="vpf-selected-label">{{ selectedItemName() || i18n.t('pa.formula.formulaConfig', 'Cấu hình công thức') }}</span>
+      <div class="vpf-btn-group">
+        <button nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus-circle"></span>{{ i18n.t('pa.formula.addNew', 'Thêm mới') }}
+        </button>
+        <button nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+          <span nz-icon nzType="delete"></span>{{ i18n.t('pa.formula.delete', 'Xóa') }}
+        </button>
+      </div>
+    </div>
+
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="vpf-col-center">
+            <input type="checkbox" [checked]="rows().length > 0 && checkedSeqs().size === rows().length" (change)="toggleAll($any($event.target).checked)" />
+          </th>
+          <th nzWidth="40px" class="vpf-col-center">{{ i18n.t('pa.formula.no', 'STT') }}</th>
+          <th nzWidth="130px" class="vpf-col-center">{{ i18n.t('pa.formula.conditionSeq', 'Trình tự tính') }}</th>
+          <th>{{ i18n.t('pa.formula.condition', 'Điều kiện') }}</th>
+          <th>{{ i18n.t('pa.formula.formular', 'Công thức') }}</th>
+          <th nzWidth="180px">{{ i18n.t('pa.formula.description', 'Mô tả') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" class="vpf-clickable" (click)="openEditModal(row)">
+          <td class="vpf-col-center" (click)="$event.stopPropagation()">
+            <input type="checkbox" [checked]="isChecked(row.formularNo)" (change)="toggleChecked(row.formularNo, $any($event.target).checked)" />
+          </td>
+          <td class="vpf-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td class="vpf-col-center" (click)="$event.stopPropagation()">
+            <span class="vpf-seq-val">{{ row.conditionSeq }}</span>
+            <button *ngIf="row.maxSeq == null || row.conditionSeq !== row.maxSeq" nz-button nzType="text" nzSize="small" (click)="swapSeq(row, 'up')">
+              <span nz-icon nzType="arrow-up" class="vpf-seq-up"></span>
+            </button>
+            <button *ngIf="row.minSeq == null || row.conditionSeq !== row.minSeq" nz-button nzType="text" nzSize="small" (click)="swapSeq(row, 'down')">
+              <span nz-icon nzType="arrow-down" class="vpf-seq-down"></span>
+            </button>
+          </td>
+          <td [innerHTML]="highlightExpr(row.condition)"></td>
+          <td [innerHTML]="highlightExpr(row.formular)"></td>
+          <td>{{ row.description }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa công thức -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formFormularNo() != null ? i18n.t('pa.formula.editTitle', 'Cập nhật công thức') : i18n.t('pa.formula.addTitle', 'Thêm mới công thức')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="900px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vpf-config-info">
+      <strong>{{ i18n.t('pa.formula.configItem', 'Hạng mục đang cấu hình:') }}</strong>
+      {{ selectedItemName() }} ({{ selectedItemNo() }})
+    </div>
+
+    <div class="vpf-form-row">
+      <label class="vpf-form-label">{{ i18n.t('pa.formula.conditionLabel', 'Điều kiện (Condition)') }}</label>
+      <textarea
+        #conditionInput
+        nz-input
+        rows="2"
+        class="vpf-mono"
+        [ngModel]="formCondition()"
+        (ngModelChange)="formCondition.set($event)"
+        (focus)="onFieldFocus('condition')"
+      ></textarea>
+    </div>
+    <div class="vpf-form-row">
+      <label class="vpf-form-label vpf-required">{{ i18n.t('pa.formula.formularLabel', 'Công thức (Formular)') }}</label>
+      <textarea
+        #formularInput
+        nz-input
+        rows="2"
+        class="vpf-mono"
+        [ngModel]="formFormular()"
+        (ngModelChange)="formFormular.set($event)"
+        (focus)="onFieldFocus('formular')"
+      ></textarea>
+    </div>
+    <div class="vpf-form-row">
+      <label class="vpf-form-label">{{ i18n.t('pa.formula.descriptionLabel', 'Mô tả (Description)') }}</label>
+      <textarea nz-input rows="2" [ngModel]="formDescription()" (ngModelChange)="formDescription.set($event)"></textarea>
+    </div>
+
+    <div class="vpf-tool-panel">
+      <div class="vpf-tool-header"><span nz-icon nzType="tool"></span> {{ i18n.t('pa.formula.toolPanel', 'Công cụ') }}</div>
+      <div class="vpf-tool-columns">
+        <div class="vpf-tool-col">
+          <div class="vpf-tool-col-title">{{ i18n.t('pa.formula.toolParamItem', 'Danh sách mục nhập') }}</div>
+          <div class="vpf-tool-col-body">
+            <div *ngFor="let item of toolItems().paramItems" class="vpf-tool-item" [title]="item.itemId" (click)="insertToken(item.itemId)">
+              {{ item.itemName || item.itemId }}
+            </div>
+            <div *ngIf="!toolItems().paramItems?.length" class="vpf-tool-empty">-</div>
+          </div>
+        </div>
+        <div class="vpf-tool-col">
+          <div class="vpf-tool-col-title">{{ i18n.t('pa.formula.toolSalaryItem', 'Danh sách hạng mục lương') }}</div>
+          <div class="vpf-tool-col-body">
+            <div *ngFor="let item of toolItems().salaryItems" class="vpf-tool-item" [title]="item.itemId" (click)="insertToken(item.itemId)">
+              {{ item.itemName || item.itemId }}
+            </div>
+            <div *ngIf="!toolItems().salaryItems?.length" class="vpf-tool-empty">-</div>
+          </div>
+        </div>
+        <div class="vpf-tool-col">
+          <div class="vpf-tool-col-title">{{ i18n.t('pa.formula.toolAttendanceItem', 'Hạng mục chấm công') }}</div>
+          <div class="vpf-tool-col-body">
+            <div *ngFor="let item of toolItems().attendanceItems" class="vpf-tool-item" [title]="item.itemId" (click)="insertToken(item.itemId)">
+              {{ item.itemName || item.itemId }}
+            </div>
+            <div *ngIf="!toolItems().attendanceItems?.length" class="vpf-tool-empty">-</div>
+          </div>
+        </div>
+        <div class="vpf-tool-col">
+          <div class="vpf-tool-col-title">{{ i18n.t('pa.formula.toolFixedParam', 'Tham số cố định') }}</div>
+          <div class="vpf-tool-col-body">
+            <div *ngFor="let item of toolItems().fixedParams" class="vpf-tool-item" [title]="item.itemId" (click)="insertToken(item.itemId)">
+              {{ item.itemName || item.itemId }}
+            </div>
+            <div *ngIf="!toolItems().fixedParams?.length" class="vpf-tool-empty">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

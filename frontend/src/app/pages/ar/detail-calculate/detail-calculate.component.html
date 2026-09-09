@@ -1,0 +1,101 @@
+<div class="adc-page">
+  <nz-card class="adc-card">
+    <h2 class="adc-title">{{ i18n.t('arCalc.title', 'Tính toán chi tiết') }}</h2>
+    <form nz-form [nzLayout]="'vertical'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('arCalc.calType', 'Phân loại tính toán') }}</nz-form-label>
+        <nz-form-control>
+          <nz-radio-group id="adc-caltype" [ngModel]="caltype()" (ngModelChange)="onCaltypeChange($event)" name="adcCaltype">
+            <label nz-radio-button nzValue="EMP">{{ i18n.t('arCalc.byEmployee', 'Nhân viên') }}</label>
+            <label nz-radio-button nzValue="DEPT">{{ i18n.t('arCalc.byDept', 'Phòng ban') }}</label>
+          </nz-radio-group>
+        </nz-form-control>
+      </nz-form-item>
+
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="adc-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="adcFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="adc-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="adcToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      @if (caltype() === 'EMP') {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ i18n.t('arCalc.byEmployee', 'Nhân viên') }}</nz-form-label>
+          <nz-form-control>
+            <div class="adc-emp-field">
+              <input id="adc-person-display" nz-input [ngModel]="personDisplay()" name="adcPersonDisplay" readonly [placeholder]="i18n.t('arCalc.selectEmployee', 'Chọn nhân viên...')" />
+              <button nz-button type="button" (click)="openEmpPicker()"><span nz-icon nzType="search"></span></button>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      } @else {
+        <nz-form-item>
+          <nz-form-label nzRequired>{{ i18n.t('arCalc.byDept', 'Phòng ban') }}</nz-form-label>
+          <nz-form-control>
+            <nz-tree-select
+              id="adc-dept"
+              [nzNodes]="deptTreeNodes()"
+              [ngModel]="selectedDeptCode()"
+              (ngModelChange)="selectedDeptCode.set($event)"
+              name="adcDept"
+              nzShowSearch
+              [nzPlaceHolder]="i18n.t('arCalc.selectDept', 'Chọn phòng ban')"
+              style="width: 100%"
+            ></nz-tree-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-control>
+            <label nz-checkbox id="adc-son-dept-flag" [ngModel]="sonDeptFlag()" (ngModelChange)="sonDeptFlag.set($event)" name="adcSonDeptFlag">
+              {{ i18n.t('arCalc.includeSubDept', 'Bao gồm phòng ban con') }}
+            </label>
+          </nz-form-control>
+        </nz-form-item>
+      }
+
+      <div class="adc-actions">
+        <button id="adc-calculate-btn" nz-button nzType="primary" [nzLoading]="calculating()" (click)="runCalculate()">
+          <span nz-icon nzType="calculator"></span>
+          {{ i18n.t('arCalc.btnCalculate', 'Tính toán') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="empPickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm nhân viên')"
+  (nzOnCancel)="closeEmpPicker()"
+  (nzVisibleChange)="empPickerVisible.set($event)"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      id="adc-emp-picker-search"
+      [ngModel]="null"
+      (ngModelChange)="onEmpPickerSelected($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã hoặc tên nhân viên')"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="empPickerSearching()"
+      (nzOnSearch)="onEmpPickerSearch($event)"
+      style="width: 100%"
+    >
+      <nz-option *ngFor="let emp of empPickerSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
+    </nz-select>
+  </ng-container>
+</nz-modal>

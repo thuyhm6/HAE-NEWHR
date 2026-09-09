@@ -1,0 +1,96 @@
+<div class="ecal-page">
+  <div class="ecal-toolbar">
+    <div class="ecal-nav">
+      <button class="ecal-nav-btn" id="ecal-prev-month" nz-button nzType="text" (click)="prevMonth()">
+        <span nz-icon nzType="left"></span>
+      </button>
+      <nz-select id="ecal-month-select" class="ecal-combo" [ngModel]="month()" (ngModelChange)="month.set($event); load()">
+        @for (mk of monthKeys; track mk; let idx = $index) {
+          <nz-option [nzValue]="idx + 1" [nzLabel]="i18n.t('common.month.' + mk, 'Tháng ' + mk)"></nz-option>
+        }
+      </nz-select>
+      <nz-select id="ecal-year-select" class="ecal-combo ecal-year" [ngModel]="year()" (ngModelChange)="year.set($event); load()">
+        @for (y of yearOptions; track y) {
+          <nz-option [nzValue]="y" [nzLabel]="y"></nz-option>
+        }
+      </nz-select>
+      <button class="ecal-nav-btn" id="ecal-next-month" nz-button nzType="text" (click)="nextMonth()">
+        <span nz-icon nzType="right"></span>
+      </button>
+    </div>
+    <div class="ecal-actions">
+      <button id="ecal-refresh-btn" nz-button nzType="default" (click)="load()" [nzLoading]="loading()">
+        <span nz-icon nzType="reload"></span>
+        {{ i18n.t('essDept.search', 'Tra cứu') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="ecal-grid-wrap">
+    <div class="ecal-hrow">
+      @for (dk of dayKeys; track dk) {
+        <div class="ecal-hcell" [class.ecal-col-sun]="dk === 'sun'" [class.ecal-col-sat]="dk === 'sat'">
+          {{ i18n.t('common.day.' + dk, dk) }}
+        </div>
+      }
+    </div>
+
+    @if (errorMessage(); as err) {
+      <div class="ecal-message ecal-message-error">{{ err }}</div>
+    } @else if (loading()) {
+      <div class="ecal-message">{{ i18n.t('esscal.msg.loading', 'Đang tải...') }}</div>
+    } @else if (!weeks().length) {
+      <div class="ecal-message">{{ i18n.t('esscal.msg.noCalData', 'Không có dữ liệu lịch trong tháng này.') }}</div>
+    } @else {
+      @for (week of weeks(); track $index) {
+        <div class="ecal-week">
+          @for (cell of week; track $index) {
+            @if (cell.isEmpty) {
+              <div class="ecal-day ecal-day-empty"></div>
+            } @else {
+              <div
+                class="ecal-day"
+                [class.ecal-day-today]="cell.isToday"
+                [class.ecal-day-holiday]="!cell.isToday && cell.isHoliday"
+                [class.ecal-day-rest]="!cell.isToday && !cell.isHoliday && cell.isRest"
+                [class.ecal-day-work]="!cell.isToday && !cell.isHoliday && !cell.isRest"
+              >
+                <div class="ecal-day-top">
+                  <span class="ecal-day-num" [class.ecal-day-num-sun]="cell.dayOfWeek === 0" [class.ecal-day-num-sat]="cell.dayOfWeek === 6">
+                    {{ cell.day }}
+                  </span>
+                  <span
+                    class="ecal-status"
+                    [class.ecal-status-holiday]="cell.isHoliday"
+                    [class.ecal-status-rest]="!cell.isHoliday && cell.isRest"
+                    [class.ecal-status-work]="!cell.isHoliday && !cell.isRest"
+                  >
+                    {{ i18n.t(cell.statusLabelKey!, cell.statusLabelFallback!) }}
+                  </span>
+                </div>
+                <div class="ecal-tags">
+                  @for (tag of cell.tags; track tag.labelKey) {
+                    <span class="ecal-tag" [ngClass]="tag.cls">{{ i18n.t(tag.labelKey, tag.labelFallback) }}</span>
+                  }
+                  @if (cell.shiftTagLabel) {
+                    <span class="ecal-tag ecal-tag-sh">{{ cell.shiftTagLabel }}</span>
+                  }
+                </div>
+                @if (cell.remark) {
+                  <div class="ecal-remark" [title]="cell.remark">— {{ cell.remark }}</div>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <div class="ecal-legend">
+    <span class="ecal-legend-item"><span class="ecal-legend-dot ecal-lg-work"></span> {{ i18n.t('esscal.legend.workDay', 'Ngày làm việc') }}</span>
+    <span class="ecal-legend-item"><span class="ecal-legend-dot ecal-lg-rest"></span> {{ i18n.t('esscal.legend.restDay', 'Ngày nghỉ') }}</span>
+    <span class="ecal-legend-item"><span class="ecal-legend-dot ecal-lg-holiday"></span> {{ i18n.t('esscal.legend.holiday', 'Ngày lễ') }}</span>
+    <span class="ecal-legend-item"><span class="ecal-legend-dot ecal-lg-today"></span> {{ i18n.t('esscal.legend.today', 'Hôm nay') }}</span>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+.vdp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vdp-search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.vdp-col-center {
+  text-align: center;
+}
+
+.vdp-name-link {
+  color: #0d2bff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vdp-name-link:hover {
+  text-decoration: underline;
+}
+
+.vdp-inside-title {
+  margin: 16px 0 8px;
+  font-weight: 600;
+}

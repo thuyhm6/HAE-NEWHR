@@ -1,0 +1,50 @@
+.exb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.exb-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.exb-col-center {
+  text-align: center;
+}
+
+.exb-small {
+  font-size: 12px;
+}
+
+.exb-time-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.exb-time-row:last-child {
+  margin-bottom: 0;
+}
+
+.exb-time-label {
+  flex-shrink: 0;
+  width: 26px;
+  font-size: 12px;
+}
+
+.exb-approver-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.exb-approver-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

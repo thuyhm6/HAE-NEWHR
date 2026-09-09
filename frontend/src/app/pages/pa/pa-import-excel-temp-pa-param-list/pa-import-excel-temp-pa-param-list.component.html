@@ -1,0 +1,64 @@
+<div class="viept-page">
+  <div class="viept-card">
+    <div class="viept-search-row">
+      <div class="viept-counter">
+        <span>{{ i18n.t('impParam.totalRows', 'Tổng số hàng:') }}</span>
+        <strong>{{ totalRows() }}</strong>
+      </div>
+      <div class="viept-counter">
+        <span>{{ i18n.t('impParam.errorRows', 'Số hàng lỗi:') }}</span>
+        <strong class="viept-error-count">{{ errorRows() }}</strong>
+      </div>
+
+      <span class="viept-inline-label">{{ i18n.t('impParam.errorFilter', 'Gặp lỗi hay không') }}</span>
+      <nz-select style="min-width: 180px" [ngModel]="errorOnly()" (ngModelChange)="errorOnly.set($event)">
+        <nz-option nzValue="" [nzLabel]="i18n.t('impParam.all', 'Tất cả')"></nz-option>
+        <nz-option nzValue="Y" [nzLabel]="i18n.t('impParam.onlyError', 'Chỉ hiển thị dòng lỗi')"></nz-option>
+        <nz-option nzValue="N" [nzLabel]="i18n.t('impParam.onlyValid', 'Chỉ hiển thị dòng hợp lệ')"></nz-option>
+      </nz-select>
+
+      <div class="viept-search-actions">
+        <button nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button nz-button nzType="primary" nzDanger [nzLoading]="saving()" (click)="save()">
+          <span nz-icon nzType="save"></span>{{ i18n.t('common.save', 'Lưu') }}
+        </button>
+        <button nz-button (click)="cancel()">
+          <span nz-icon nzType="close"></span>{{ i18n.t('common.cancel', 'Hủy bỏ') }}
+        </button>
+      </div>
+    </div>
+
+    <div class="viept-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" nzBordered [nzScroll]="{ x: '1200px' }" #vieptTable>
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="viept-col-center">{{ i18n.t('impParam.line', 'STT') }}</th>
+          <th nzWidth="110px" class="viept-col-center">{{ i18n.t('impParam.empId', 'Mã nhân viên') }}</th>
+          <th nzWidth="180px">{{ i18n.t('impParam.localName', 'Họ tên') }}</th>
+          <th nzWidth="110px" class="viept-col-center">{{ i18n.t('impParam.startMonth', 'Tháng bắt đầu') }}</th>
+          <th nzWidth="110px" class="viept-col-center">{{ i18n.t('impParam.endMonth', 'Tháng kết thúc') }}</th>
+          <th nzWidth="100px" class="viept-col-right">{{ i18n.t('impParam.returnValue', 'Trị số') }}</th>
+          <th nzWidth="200px">{{ i18n.t('impParam.remark', 'Ghi chú') }}</th>
+          <th nzWidth="250px">{{ i18n.t('impParam.errorMsg', 'Nguyên nhân lỗi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vieptTable.data; let idx = index">
+          <td class="viept-col-center">{{ idx + 1 }}</td>
+          <td class="viept-col-center">{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td class="viept-col-center">{{ row.startMonth }}</td>
+          <td class="viept-col-center">{{ row.endMonth }}</td>
+          <td class="viept-col-right">{{ row.returnValue }}</td>
+          <td>{{ row.remark }}</td>
+          <td>
+            <span *ngIf="row.uploadErrorMsg" class="viept-error-msg">{{ row.uploadErrorMsg }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>

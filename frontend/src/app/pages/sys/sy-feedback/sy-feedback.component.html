@@ -1,0 +1,84 @@
+<div class="vfb-page">
+  <div class="vfb-search-card">
+    <span class="vfb-inline-label">{{ i18n.t('sys.feedback.searchLabel', 'Từ khóa') }}</span>
+    <input
+      nz-input
+      style="max-width: 320px"
+      [ngModel]="searchKeyword()"
+      (ngModelChange)="searchKeyword.set($event)"
+      (keydown.enter)="search()"
+      [placeholder]="i18n.t('sys.feedback.searchPlaceholder', 'Tìm theo tiêu đề hoặc nội dung góp ý...')"
+    />
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>{{ i18n.t('sys.feedback.search', 'Tra cứu') }}
+    </button>
+  </div>
+
+  <div class="vfb-table-card">
+    <div class="vfb-card-title">{{ i18n.t('sys.feedback.pageTitle', 'Danh sách góp ý người dùng') }}</div>
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="vfb-col-center">{{ i18n.t('sys.feedback.no', 'STT') }}</th>
+          <th nzWidth="22%">{{ i18n.t('sys.feedback.titleCol', 'Tiêu đề') }}</th>
+          <th>{{ i18n.t('sys.feedback.contentCol', 'Nội dung') }}</th>
+          <th nzWidth="130px" class="vfb-col-center">{{ i18n.t('sys.feedback.createdIp', 'Địa chỉ IP') }}</th>
+          <th nzWidth="150px" class="vfb-col-center">{{ i18n.t('sys.feedback.createDate', 'Thời gian gửi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" class="vfb-clickable" (click)="openDetail(row)">
+          <td class="vfb-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td>{{ row.feedbackTitle }}</td>
+          <td>{{ truncate(row.feedbackContent) }}</td>
+          <td class="vfb-col-center">{{ row.createdIp }}</td>
+          <td class="vfb-col-center">{{ row.createDate }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal xem chi tiết góp ý (chỉ đọc) -->
+<nz-modal
+  [(nzVisible)]="detailVisible"
+  [nzTitle]="i18n.t('sys.feedback.detailTitle', 'Chi tiết góp ý')"
+  [nzFooter]="null"
+  nzWidth="700px"
+  (nzOnCancel)="detailVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vfb-detail-row">
+      <label class="vfb-detail-label">{{ i18n.t('sys.feedback.titleCol', 'Tiêu đề') }}</label>
+      <div class="vfb-detail-value">{{ detailRow()?.feedbackTitle }}</div>
+    </div>
+    <div class="vfb-detail-row">
+      <label class="vfb-detail-label">{{ i18n.t('sys.feedback.contentCol', 'Nội dung') }}</label>
+      <div class="vfb-detail-value vfb-detail-content">{{ detailRow()?.feedbackContent }}</div>
+    </div>
+    <div class="vfb-detail-grid">
+      <div class="vfb-detail-row">
+        <label class="vfb-detail-label">{{ i18n.t('sys.feedback.createdIp', 'Địa chỉ IP') }}</label>
+        <div class="vfb-detail-value">{{ detailRow()?.createdIp }}</div>
+      </div>
+      <div class="vfb-detail-row">
+        <label class="vfb-detail-label">{{ i18n.t('sys.feedback.createDate', 'Thời gian gửi') }}</label>
+        <div class="vfb-detail-value">{{ detailRow()?.createDate }}</div>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

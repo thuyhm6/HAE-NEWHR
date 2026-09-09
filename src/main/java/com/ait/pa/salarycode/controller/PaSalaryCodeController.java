@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +24,13 @@ public class PaSalaryCodeController {
     @Autowired
     private PaSalaryCodeService paSalaryCodeService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/viewSalaryCodeList")
-    public String viewSalaryCodeList() {
-        return "pa/salarycode/viewSalaryCodeList";
+    public String viewSalaryCodeList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/list")

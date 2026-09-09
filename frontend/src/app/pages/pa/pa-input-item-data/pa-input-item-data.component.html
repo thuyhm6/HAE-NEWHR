@@ -1,0 +1,193 @@
+<div class="vpid-page">
+  <div class="vpid-left">
+    <div class="vpid-left-header">{{ i18n.t('pa.inputItemData.itemList', 'Hạng mục tiêu chuẩn') }}</div>
+    <div class="vpid-item-list">
+      <div
+        *ngFor="let item of items()"
+        class="vpid-item-row"
+        [class.vpid-item-active]="item.paramNo === selectedParamNo()"
+        (click)="selectItem(item)"
+      >
+        <span nz-icon nzType="file" nzTheme="fill" class="vpid-item-icon"></span>
+        <span class="vpid-item-name">{{ item.paramName || item.paramNo }}</span>
+      </div>
+      <div *ngIf="!items().length" class="vpid-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
+    </div>
+  </div>
+
+  <div class="vpid-right">
+    <div class="vpid-search-card">
+      <div class="vpid-search-row">
+        <span class="vpid-inline-label">{{ i18n.t('pa.inputItemData.payMonth', 'Tháng lương') }}</span>
+        <input nz-input style="width: 100px" [ngModel]="searchPayMonth()" (ngModelChange)="searchPayMonth.set($event)" placeholder="MMYYYY" maxlength="6" />
+
+        <span class="vpid-inline-label">{{ i18n.t('pa.inputItemData.empOffice', 'Trạng thái làm việc') }}</span>
+        <nz-select style="min-width: 160px" [ngModel]="searchEmpOffice()" (ngModelChange)="searchEmpOffice.set($event)" nzAllowClear>
+          <nz-option *ngFor="let opt of empOfficeOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+        </nz-select>
+
+        <span class="vpid-inline-label">{{ i18n.t('pa.inputItemData.dept', 'Phòng ban') }}</span>
+        <nz-tree-select
+          style="min-width: 200px"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="searchDeptNos()"
+          (ngModelChange)="searchDeptNos.set($event)"
+          nzMultiple
+          nzCheckable
+          nzShowSearch
+          [nzPlaceHolder]="i18n.t('pa.inputItemData.deptPlaceholder', 'Chọn phòng ban')"
+        ></nz-tree-select>
+
+        <span class="vpid-inline-label">{{ i18n.t('pa.inputItemData.empSearch', 'Họ tên / Mã NV') }}</span>
+        <input nz-input style="max-width: 180px" [ngModel]="searchEmpSearch()" (ngModelChange)="searchEmpSearch.set($event)" (keydown.enter)="search()" />
+
+        <div class="vpid-search-actions">
+          <button nz-button nzType="primary" nzSize="small" (click)="search()">
+            <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tra cứu') }}
+          </button>
+          <button nz-button nzSize="small" (click)="resetSearch()">
+            <span nz-icon nzType="reload"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="vpid-right-header">
+      <span class="vpid-selected-label">{{ selectedParamName() || i18n.t('pa.inputItemData.dataList', 'Danh sách dữ liệu tiêu chuẩn') }}</span>
+      <div class="vpid-btn-group">
+        <button nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus-circle"></span>{{ i18n.t('pa.inputItemData.addNew', 'Thêm mới') }}
+        </button>
+        <a nz-button nzSize="small" [href]="downloadTemplateUrl">
+          <span nz-icon nzType="download"></span>{{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+        </a>
+        <button nz-button nzSize="small" (click)="openImportModal()">
+          <span nz-icon nzType="upload"></span>{{ i18n.t('common.importExcel', 'Import Excel') }}
+        </button>
+        <button nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+          <span nz-icon nzType="delete"></span>{{ i18n.t('pa.inputItemData.delete', 'Xóa') }}
+        </button>
+      </div>
+    </div>
+
+    <div class="vpid-table-card">
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      nzSize="small"
+      nzBordered
+      [nzScroll]="{ x: '1300px', y: '100%' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="vpid-col-center">
+            <input type="checkbox" [checked]="rows().length > 0 && checkedIds().size === rows().length" (change)="toggleAll($any($event.target).checked)" />
+          </th>
+          <th nzWidth="48px" class="vpid-col-center">{{ i18n.t('pa.inputItemData.no', 'STT') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.postGrade', 'Chức danh') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.empOfficeName', 'Trạng thái') }}</th>
+          <th class="vpid-col-right">{{ i18n.t('pa.inputItemData.returnValue', 'Giá trị') }}</th>
+          <th class="vpid-col-center">{{ i18n.t('pa.inputItemData.startMonth', 'Tháng bắt đầu') }}</th>
+          <th class="vpid-col-center">{{ i18n.t('pa.inputItemData.endMonth', 'Tháng kết thúc') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.remark', 'Ghi chú') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" class="vpid-clickable" (click)="openEditModal(row)">
+          <td class="vpid-col-center" (click)="$event.stopPropagation()">
+            <input type="checkbox" [checked]="isChecked(row.paramDataNo)" (change)="toggleChecked(row.paramDataNo, $any($event.target).checked)" />
+          </td>
+          <td class="vpid-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td>{{ row.empId }}</td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.deptName }}</td>
+          <td>{{ row.postGradeName }}</td>
+          <td>{{ row.empOffice }}</td>
+          <td class="vpid-col-right">{{ formatValue(row.returnValue) }}</td>
+          <td class="vpid-col-center">{{ row.startMonth }}</td>
+          <td class="vpid-col-center">{{ row.endMonth }}</td>
+          <td>{{ row.remark }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa dữ liệu tiêu chuẩn -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('pa.inputItemData.addTitle', 'Thêm mới dữ liệu tiêu chuẩn') : i18n.t('pa.inputItemData.editTitle', 'Cập nhật dữ liệu tiêu chuẩn')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="650px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vpid-config-info">
+      <strong>{{ i18n.t('pa.inputItemData.configItem', 'Hạng mục đang nhập:') }}</strong>
+      {{ selectedParamName() }} ({{ selectedParamNo() }})
+    </div>
+
+    <div class="vpid-form-row">
+      <label class="vpid-form-label vpid-required">{{ i18n.t('pa.inputItemData.personId', 'Mã nhân viên') }}</label>
+      <nz-select
+        *ngIf="formIsAdd(); else vpidEmpPlaintext"
+        style="width: 100%"
+        [ngModel]="formPersonId()"
+        (ngModelChange)="onEmployeeSelect($event)"
+        nzShowSearch
+        [nzPlaceHolder]="i18n.t('pa.inputItemData.personIdPlaceholder', 'Nhập mã NV hoặc họ tên...')"
+        (nzOnSearch)="onEmployeeSearch($event)"
+      >
+        <nz-option *ngFor="let emp of formEmployeeOptions()" [nzValue]="emp.personId" [nzLabel]="(emp.empId ?? '') + ' - ' + (emp.localName ?? '')"></nz-option>
+      </nz-select>
+      <ng-template #vpidEmpPlaintext>
+        <div class="vpid-plaintext">{{ formPersonDisplay() }}</div>
+      </ng-template>
+    </div>
+    <div class="vpid-form-row">
+      <label class="vpid-form-label vpid-required">{{ i18n.t('pa.inputItemData.returnValue', 'Giá trị') }}</label>
+      <input #returnValueInput nz-input [ngModel]="formReturnValueDisplay()" (ngModelChange)="formReturnValueDisplay.set($event)" (input)="onReturnValueInput($event)" />
+    </div>
+    <div class="vpid-form-row-group">
+      <div class="vpid-form-row">
+        <label class="vpid-form-label vpid-required">{{ i18n.t('pa.inputItemData.startMonth', 'Tháng bắt đầu') }}</label>
+        <input nz-input [ngModel]="formStartMonth()" (ngModelChange)="formStartMonth.set($event)" placeholder="MMYYYY" maxlength="6" />
+      </div>
+      <div class="vpid-form-row">
+        <label class="vpid-form-label">{{ i18n.t('pa.inputItemData.endMonth', 'Tháng kết thúc') }}</label>
+        <input nz-input [ngModel]="formEndMonth()" (ngModelChange)="formEndMonth.set($event)" placeholder="MMYYYY" maxlength="6" />
+      </div>
+    </div>
+    <div class="vpid-form-row">
+      <label class="vpid-form-label">{{ i18n.t('pa.inputItemData.remark', 'Ghi chú') }}</label>
+      <textarea nz-input rows="2" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Import Excel -->
+<nz-modal
+  [(nzVisible)]="importModalVisible"
+  [nzTitle]="i18n.t('common.importExcel', 'Import Excel')"
+  [nzOkLoading]="importing()"
+  (nzOnOk)="submitImport()"
+  (nzOnCancel)="importModalVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <p>{{ i18n.t('pa.inputItemData.configItem', 'Hạng mục đang nhập:') }} <strong>{{ selectedParamName() }}</strong></p>
+    <input type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+</nz-modal>

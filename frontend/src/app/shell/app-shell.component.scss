@@ -1,0 +1,450 @@
+// Khoá chiều cao toàn khung theo viewport (thay vì min-height cho phép cả trang cuộn) để header +
+// tab-strip luôn cố định, chỉ vùng nội dung bên trong (.hae-dashboard-content-body) cuộn riêng -
+// xem thêm chú thích ở .hae-dashboard-content bên dưới.
+.hae-dashboard-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+// Sider: logo đứng yên, chỉ phần menu (.hae-dashboard-menu) cuộn riêng khi cây menu dài hơn viewport
+// - bản thân nz-sider (và .ant-layout-sider-children do NzSiderComponent tự render bọc ng-content,
+// không phải phần tử mình viết trong template nên cần ::ng-deep) không cuộn nữa (overflow: hidden),
+// tránh khi cuộn logo bị trôi theo lên trên cùng menu.
+nz-sider {
+  overflow: hidden;
+}
+
+nz-sider ::ng-deep .ant-layout-sider-children {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.hae-dashboard-logo {
+  flex-shrink: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+// Vẫn cuộn được bằng chuột/phím nhưng ẩn hẳn thanh cuộn (thanh cuộn to bản chiếm chỗ, không hợp với
+// sidebar hẹp) - ẩn theo từng engine trình duyệt vì không có 1 thuộc tính CSS chuẩn chung nào làm
+// được việc này.
+.hae-dashboard-menu {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE/Edge cũ
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome/Edge/Safari (Blink/WebKit)
+  }
+}
+
+// Sidebar menu (nz-sider + nz-menu nzTheme="dark") - dùng ::ng-deep vì các thẻ
+// <li> thực tế được render bên trong MenuNodeComponent (child component) nên
+// style scoped của shell không xuyên qua được nếu không có ::ng-deep. Chỉ có
+// sider này dùng nzTheme="dark" trong toàn app nên override .ant-menu-dark
+// tại đây không ảnh hưởng tới các dropdown menu (theme light) khác.
+:host ::ng-deep {
+  nz-sider {
+    background: #ee7f47;
+  }
+
+  .ant-menu-dark,
+  .ant-menu-dark .ant-menu-sub {
+    background: transparent;
+  }
+
+  .ant-menu-dark .ant-menu-item,
+  .ant-menu-dark .ant-menu-submenu-title {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .ant-menu-dark .ant-menu-item .anticon,
+  .ant-menu-dark .ant-menu-submenu-title .anticon {
+    color: #fff;
+    margin-right: 10px;
+    font-size: 16px;
+  }
+
+  // Menu con thụt vào thêm so với padding-left mặc định của antd để thấy rõ
+  // phân cấp cha - con.
+  .ant-menu-dark .ant-menu-sub .ant-menu-item,
+  .ant-menu-dark .ant-menu-sub .ant-menu-submenu-title {
+    padding-left: calc(1.25em + var(--ant-menu-item-padding-left, 24px)) !important;
+  }
+
+  .ant-menu-dark .ant-menu-item:hover,
+  .ant-menu-dark .ant-menu-submenu-title:hover {
+    background: #d96c34;
+    color: #fff;
+  }
+
+  .ant-menu-dark .ant-menu-item-selected {
+    background: #d96c34 !important;
+    color: #fff;
+  }
+
+  .ant-menu-dark .ant-menu-item-selected::after {
+    border-right-color: #fff;
+  }
+
+  // Menu cha (nz-submenu) chứa menu lá đang active - tô nền active cùng tông màu với hover
+  // (#d96c34) để "menu đó được focus giống như khi hover" kể cả khi đang đóng (chưa mở nhánh con).
+  // Class hae-menu-node-active được MenuNodeComponent gắn thẳng lên <li nz-submenu> (không phải
+  // trên .ant-menu-submenu-title do NzSubMenuComponent tự render) nên selector nhắm vào li cha.
+  .ant-menu-dark .ant-menu-submenu.hae-menu-node-active > .ant-menu-submenu-title {
+    background: #d96c34;
+    color: #fff;
+  }
+}
+
+.hae-dashboard-header {
+  background: #ee7f47;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+// Menu ngang ở header - đồng bộ màu chữ trắng đậm + hover/selected cùng tông cam đậm (#d96c34)
+// như menu dọc bên trái (nz-menu nzTheme="dark" ở nz-sider, xem :host ::ng-deep phía trên). Các
+// <li nz-menu-item> nằm trực tiếp trong template component này (không qua child component) nên
+// selector scoped thường (không cần ::ng-deep) vẫn áp dụng được lên class .ant-menu-item do
+// NzMenuItemDirective gắn thẳng vào chính thẻ <li> đó.
+.hae-dashboard-header-menu {
+  flex: 1;
+  min-width: 0;
+  border-bottom: none;
+  background: transparent;
+
+  li.ant-menu-item {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  li.ant-menu-item:hover {
+    background: #d96c34;
+    color: #fff;
+  }
+
+  li.ant-menu-item-selected {
+    background: #d96c34;
+    color: #fff;
+  }
+
+  li.ant-menu-item-selected::after {
+    border-bottom-color: #fff;
+  }
+}
+
+// Tiêu đề menu cha (nz-submenu) trên menu ngang - .ant-menu-submenu-title do NzSubMenuComponent
+// tự render trong template riêng của nó (khác nz-menu-item ở trên vốn gắn thẳng class lên <li>
+// của mình) nên cần ::ng-deep mới style được, dù vẫn nằm trong DOM của component này (không qua
+// cdk-overlay) nên không cần bỏ tiền tố :host như phần popup dropdown bên dưới.
+:host ::ng-deep .hae-dashboard-header-menu {
+  li.ant-menu-submenu > .ant-menu-submenu-title {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  li.ant-menu-submenu:hover > .ant-menu-submenu-title,
+  li.ant-menu-submenu.hae-dashboard-header-menu-active > .ant-menu-submenu-title {
+    background: #d96c34;
+    color: #fff;
+  }
+}
+
+// Dropdown menu con hiện ra khi di chuột vào menu cha (nz-submenu, nzMode="horizontal") - ant
+// design render nổi (float) qua cdk-overlay, gắn thẳng vào cuối <body> chứ KHÔNG nằm trong DOM
+// của app-shell nên :host ::ng-deep không với tới được, phải dùng ::ng-deep toàn cục. Hiện toàn
+// app chỉ có menu ngang này dùng nz-submenu dạng horizontal nên không ảnh hưởng tới menu/dropdown
+// nào khác (sidebar dùng nzMode="inline", các dropdown thông báo/ngôn ngữ/user dùng nz-dropdown
+// khác class .ant-dropdown, không phải .ant-menu-submenu-popup).
+::ng-deep .ant-menu-submenu-popup {
+  .ant-menu,
+  .ant-menu-sub {
+    background: #d96c34;
+  }
+
+  .ant-menu-item {
+    color: #fff;
+
+    &:hover,
+    &.ant-menu-item-selected {
+      background: #ee7f47;
+      color: #fff;
+    }
+  }
+}
+
+.hae-dashboard-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.hae-dashboard-lang,
+.hae-dashboard-user,
+.hae-dashboard-notif {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+}
+
+.hae-dashboard-lang .anticon {
+  font-size: 18px;
+}
+
+// Nút chuông thông báo: hình tròn, đổi màu khi hover để trực quan hơn nút cũ (chỉ có icon trơn).
+// Nền header đã đổi sang cam #ee7f47 nên dùng hover tối hơn (#d96c34, cùng tông với hover menu
+// dọc bên trái) thay vì cam nhạt như trước (chỉ hợp với nền trắng).
+.hae-dashboard-notif {
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #d96c34;
+  }
+}
+
+.hae-dashboard-notif-icon {
+  font-size: 20px;
+  color: #fff;
+  transition: color 0.2s ease;
+}
+
+// Panel dropdown chi tiết thông báo: header nền cam #ee7f47, danh sách nền trắng để dễ đọc,
+// hover/footer nhấn cùng tông cam cho đồng bộ với theme sidebar.
+.hae-dashboard-notif-menu {
+  min-width: 300px;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+
+  li[nz-menu-item] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  li[nz-menu-item]:last-child {
+    border-bottom: none;
+  }
+}
+
+.hae-dashboard-notif-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.hae-dashboard-notif-item-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(0, 0, 0, 0.75);
+
+  .anticon {
+    font-size: 16px;
+    color: #ee7f47;
+  }
+}
+
+.hae-dashboard-notif-footer {
+  justify-content: center !important;
+  color: #ee7f47;
+  font-weight: 600;
+  background: #fff6f0;
+
+  .anticon {
+    font-size: 12px;
+  }
+}
+
+.hae-dashboard-notif-header,
+.hae-dashboard-user-header {
+  padding: 12px 16px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.hae-dashboard-notif-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ee7f47;
+  color: #fff;
+  font-size: 14px;
+
+  .anticon {
+    font-size: 16px;
+  }
+}
+
+.hae-dashboard-user-header {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+// Ghi đè style mặc định của ant-menu-item (margin/border-radius/hover) chỉ trong phạm vi dropdown
+// thông báo - dùng ::ng-deep vì nz-menu-item áp class .ant-menu-item thuộc scope riêng của thư viện.
+// KHÔNG dùng ":host ::ng-deep" vì nz-dropdown render menu vào CDK overlay gắn ở document.body,
+// nằm ngoài DOM của :host nên selector sẽ không bao giờ khớp.
+::ng-deep .hae-dashboard-notif-menu {
+  &.ant-menu {
+    border-inline-end: none;
+  }
+
+  .ant-menu-item {
+    height: auto;
+    line-height: 1.4;
+    margin: 0;
+    border-radius: 0;
+    width: 100%;
+
+    &:hover,
+    &:focus,
+    &-active {
+      background: rgba(238, 127, 71, 0.08);
+      color: inherit;
+    }
+  }
+
+  // ant-menu-title-content mặc định là inline (co khít nội dung) khi menu không ở mode "inline",
+  // nên phải ép nó giãn hết chiều rộng li thì .hae-dashboard-notif-item-row bên trong mới đẩy
+  // badge số lượng ra sát mép phải được.
+  .ant-menu-title-content {
+    display: block;
+    width: 100%;
+  }
+
+  .hae-dashboard-notif-footer:hover {
+    background: #ffe9db;
+  }
+}
+
+.hae-dashboard-user-name {
+  font-weight: 700;
+}
+
+// nz-content bọc cả tab-strip lẫn vùng trang - phải tự làm flex-column có chiều cao cố định (kế
+// thừa từ .hae-dashboard-layout height:100vh phía trên) để tab-strip đứng yên (flex-shrink: 0) và
+// chỉ .hae-dashboard-content-body cuộn - xem chú thích ở đó.
+.hae-dashboard-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.hae-tab-strip {
+  flex-shrink: 0;
+}
+
+// Vùng cuộn thực sự duy nhất trong toàn khung: bọc router-outlet (tab 'route') + các
+// app-external-tab (tab 'external'). min-height: 0 bắt buộc phải có - thiếu dòng này flex item sẽ
+// không co lại theo chiều cao cha (hành vi mặc định của flexbox), khiến overflow-y: auto vô tác
+// dụng và trang lại đẩy tràn ra ngoài như cũ.
+.hae-dashboard-content-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// Bọc <router-outlet> - component route (class root "-page") nằm ngay SAU <router-outlet> làm anh em
+// (không phải con) của nó, nhưng cả 2 đều là con của div này nên nó chính là "cha" mà height:100% của
+// "-page" (styles.scss) tính theo. Thiếu class/height ở đây thì div này mặc định height:auto (co theo
+// nội dung) - phần trăm không có cơ sở để tính, toàn bộ chuỗi flex height:100% -> -search-card cố định
+// -> -table-card cuộn riêng bị đứt ngay từ gốc dù mọi CSS ở từng trang đều đúng. .hae-dashboard-content-body
+// (cha của div này) đã có chiều cao xác định qua flex:1 nên height:100% ở đây tính được bình thường.
+.hae-route-body {
+  height: 100%;
+}
+
+.hae-dashboard-cpwd-error {
+  color: #d4380d;
+  font-size: 12px;
+}
+
+// Tab-strip: danh sách tab đang mở (thay cho innerTab.js gốc) - xem shell/tab.service.ts.
+.hae-tab-strip {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  // margin: -24px -24px 16px;
+  // padding: 0 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 8px 8px 0 0;
+}
+
+.hae-tab-strip-item {
+  margin: 0;
+}
+
+.hae-tab-strip-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 2px solid transparent;
+  color: rgba(0, 0, 0, 0.65);
+  white-space: nowrap;
+
+  &:hover {
+    color: #ee7f47;
+  }
+
+  &.active {
+    color: #ee7f47;
+    border-bottom-color: #ee7f47;
+    font-weight: 600;
+  }
+}
+
+.hae-tab-strip-close {
+  font-size: 11px;
+  border-radius: 50%;
+  padding: 2px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+}
+
+// Menu chuột phải trên tab-strip (dropdown render vào CDK overlay ở document.body, ngoài DOM
+// :host nên phải dùng ::ng-deep không kèm :host - xem giải thích tương tự ở .hae-dashboard-notif-menu).
+::ng-deep #hae-tab-strip-ctx-menu {
+  min-width: 190px;
+
+  .ant-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}

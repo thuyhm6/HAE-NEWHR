@@ -1,0 +1,149 @@
+<nz-modal
+  [attr.id]="'adm-' + variant + '-modal'"
+  [nzVisible]="visible()"
+  [nzTitle]="'[' + typeLabel + ']'"
+  [nzWidth]="900"
+  (nzOnCancel)="close()"
+  (nzVisibleChange)="visible.set($event)"
+  [nzFooter]="admFooter"
+>
+  <ng-container *nzModalContent>
+    <div class="adm-body">
+      <table class="adm-table adm-table-plain">
+        <tbody>
+          <tr>
+            <th class="adm-col-label">{{ i18n.t('applyAtt.subject', 'Tiêu đề') }}</th>
+            <td>{{ applyTitleLine }}</td>
+          </tr>
+          <tr>
+            <th class="adm-col-label">{{ i18n.t('applyAtt.applicant', 'Người xin phép') }}</th>
+            <td>{{ applicantLine }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="adm-table">
+        <thead>
+          <tr>
+            <th class="adm-col-center" style="width: 50px">{{ i18n.t('common.no.serial', 'STT') }}</th>
+            <th class="adm-col-center" style="width: 90px">{{ i18n.t('applyAtt.approvalSeq', 'Trình tự duyệt') }}</th>
+            <th class="adm-col-center" style="width: 110px">{{ i18n.t('applyAtt.approvalStatus', 'Trạng thái duyệt') }}</th>
+            <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+            <th>{{ i18n.t('applyAtt.opinion', 'Ý kiến') }}</th>
+            <th class="adm-col-center" style="width: 170px">{{ i18n.t('applyAtt.actionTime', 'Thời gian thực hiện') }}</th>
+            <th class="adm-col-center" style="width: 120px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading()) {
+            <tr>
+              <td colspan="7" class="adm-col-center adm-muted">{{ i18n.t('applyAtt.loadingData', 'Đang tải dữ liệu...') }}</td>
+            </tr>
+          } @else if (!approvalList.length) {
+            <tr>
+              <td colspan="7" class="adm-col-center adm-muted">{{ i18n.t('applyAtt.noApprovalData', 'Không có dữ liệu phê duyệt') }}</td>
+            </tr>
+          } @else {
+            @for (row of approvalList; track $index) {
+              <tr>
+                <td class="adm-col-center">{{ approvalStt(row, $index) }}</td>
+                <td class="adm-col-center">{{ row.affirmTypeName }}</td>
+                <td class="adm-col-center">{{ row.affirmFlagName }}</td>
+                <td>{{ row.affirmName }}</td>
+                <td>
+                  @if (isPendingRow(row)) {
+                    <input [attr.id]="'adm-' + variant + '-opinion'" nz-input [(ngModel)]="opinionText" name="admOpinion" />
+                  } @else {
+                    {{ row.affirmContent }}
+                  }
+                </td>
+                <td class="adm-col-center">{{ row.updateDate }}</td>
+                <td class="adm-col-center">{{ row.deptName }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+
+      <h4 class="adm-section-title">{{ i18n.t('applyAtt.empInfo', 'Thông tin nhân viên') }}</h4>
+      <table class="adm-table adm-table-plain">
+        <tbody>
+          <tr>
+            <th class="adm-col-label">{{ i18n.t('common.empName', 'Họ tên') }}</th>
+            <td>{{ employeeInfo.localName }}</td>
+            <th class="adm-col-label">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+            <td>{{ employeeInfo.empId }}</td>
+          </tr>
+          <tr>
+            <th class="adm-col-label">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+            <td>{{ employeeInfo.deptName }}</td>
+            <th class="adm-col-label">{{ i18n.t('common.position', 'Chức vụ') }}</th>
+            <td>{{ employeeInfo.postGradeName }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      @if (isOtLike) {
+        <h4 class="adm-section-title">{{ i18n.t('arOtf.otInfo', 'Thông tin tăng ca') }}</h4>
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('arOtf.otType', 'Loại tăng ca') }}</th>
+              <th class="adm-col-center" style="width: 140px">{{ i18n.t('arOtf.otDate', 'Ngày tăng ca') }}</th>
+              <th class="adm-col-center" style="width: 170px">{{ i18n.t('arOtf.otBegin', 'Bắt đầu') }}</th>
+              <th class="adm-col-center" style="width: 170px">{{ i18n.t('arOtf.otEnd', 'Kết thúc') }}</th>
+              <th class="adm-col-center" style="width: 140px">{{ i18n.t('common.hours', 'Số giờ') }}</th>
+              <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="adm-col-center">{{ info.otTypeName }}</td>
+              <td class="adm-col-center">{{ info.applyOtDate }}</td>
+              <td class="adm-col-center">{{ info.detailFromDateTime }}</td>
+              <td class="adm-col-center">{{ info.detailToDateTime }}</td>
+              <td class="adm-col-center">{{ durationText }}</td>
+              <td class="adm-col-center">{{ info.applyOtRemark }}</td>
+            </tr>
+          </tbody>
+        </table>
+      } @else {
+        <h4 class="adm-section-title">{{ i18n.t('applyAtt.leaveInfo', 'Thông tin xin phép') }}</h4>
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('applyAtt.leaveTypeFull', 'Loại nghỉ phép') }}</th>
+              <th class="adm-col-center" style="width: 170px">{{ i18n.t('common.startTime', 'Thời gian bắt đầu') }}</th>
+              <th class="adm-col-center" style="width: 170px">{{ i18n.t('common.endTime', 'Thời gian kết thúc') }}</th>
+              <th class="adm-col-center" style="width: 140px">{{ i18n.t('applyAtt.leaveDuration', 'Thời lượng') }}</th>
+              <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="adm-col-center">{{ info.leaveTypeName }}</td>
+              <td class="adm-col-center">{{ info.leaveFromTime }}</td>
+              <td class="adm-col-center">{{ info.leaveToTime }}</td>
+              <td class="adm-col-center">{{ durationText }}</td>
+              <td class="adm-col-center">{{ info.leaveReason }}</td>
+            </tr>
+          </tbody>
+        </table>
+      }
+    </div>
+  </ng-container>
+</nz-modal>
+
+<ng-template #admFooter>
+  @if (canAffirm) {
+    <button [attr.id]="'adm-' + variant + '-approve-btn'" nz-button nzType="primary" (click)="doAffirm(1)">
+      <span nz-icon nzType="check-circle"></span>
+      {{ i18n.t('vae.btn.approve', 'Duyệt') }}
+    </button>
+    <button [attr.id]="'adm-' + variant + '-reject-btn'" nz-button nzDanger (click)="doAffirm(2)">
+      <span nz-icon nzType="close-circle"></span>
+      {{ i18n.t('vae.btn.reject', 'Từ chối') }}
+    </button>
+  }
+  <button [attr.id]="'adm-' + variant + '-close-btn'" nz-button (click)="close()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>

@@ -1,0 +1,201 @@
+<div class="ali-page">
+  <nz-card class="ali-search-card">
+    <div class="ali-search-row">
+      <span class="ali-label">{{ i18n.t('essLeave.startDate', 'Ngày bắt đầu') }}</span>
+      <nz-date-picker id="ali-start-date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      <span class="ali-label">{{ i18n.t('essLeave.endDate', 'Ngày kết thúc') }}</span>
+      <nz-date-picker id="ali-end-date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" nzFormat="dd/MM/yyyy"></nz-date-picker>
+      <span class="ali-label">{{ i18n.t('essLeave.approvalStatus', 'Trạng thái duyệt') }}</span>
+      <nz-select
+        id="ali-affirm-flag"
+        [ngModel]="affirmFlag()"
+        (ngModelChange)="affirmFlag.set($event)"
+        [nzAllowClear]="true"
+        [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')"
+        style="min-width: 160px"
+      >
+        <nz-option *ngFor="let opt of affirmFlagOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+      </nz-select>
+      <button id="ali-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+        {{ i18n.t('essLeave.search', 'Tra cứu') }}
+      </button>
+    </div>
+  </nz-card>
+
+  <div class="ali-toolbar">
+    <span class="ali-toolbar-label">{{ i18n.t('essCommon.quickFilter', 'Lọc nhanh') }}</span>
+    <input
+      id="ali-filter-input"
+      nz-input
+      [ngModel]="quickFilter()"
+      (ngModelChange)="onQuickFilterChange($event)"
+      style="max-width: 160px"
+    />
+    <button id="ali-cancel-btn" nz-button nzDanger class="ali-cancel-btn" (click)="cancelSelected()">
+      {{ i18n.t('essLeave.cancelBtn', 'Hủy bỏ') }}
+    </button>
+  </div>
+
+  <nz-card class="ali-table-card">
+    <nz-table
+      id="ali-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      #aliTable
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="ali-col-center">{{ i18n.t('common.stt', 'NO.') }}</th>
+          <th nzWidth="40px" class="ali-col-center"></th>
+          <th class="ali-col-center">{{ i18n.t('essCommon.attendanceDate', 'Ngày công') }}</th>
+          <th>{{ i18n.t('essCommon.category', 'Phân loại') }}</th>
+          <th class="ali-col-center">{{ i18n.t('essCommon.cardSwipeTime', 'Thời gian quẹt thẻ') }}</th>
+          <th class="ali-col-center">{{ i18n.t('essOt.timeRange', 'Thời gian') }}</th>
+          <th class="ali-col-center">{{ i18n.t('essCommon.shift', 'Ca') }}</th>
+          <th class="ali-col-center">{{ i18n.t('essCommon.workTime', 'Thời gian làm việc') }}</th>
+          <th>{{ i18n.t('common.remark', 'Lý do') }}</th>
+          <th class="ali-col-center">{{ i18n.t('essLeave.approvalStatus', 'Trạng thái duyệt') }}</th>
+          <th>{{ i18n.t('essCommon.hrOpinion', 'Ý kiến của nhân sự') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of aliTable.data; track $index; let idx = $index) {
+          <tr class="ali-row" (click)="openDetail(row)">
+            <td class="ali-col-center">{{ idx + 1 }}</td>
+            <td class="ali-col-center" (click)="$event.stopPropagation()">
+              @if (isCancellable(row)) {
+                <label nz-checkbox [(ngModel)]="row.checked"></label>
+              }
+            </td>
+            <td class="ali-col-center">{{ row.arDateStr }}</td>
+            <td>
+              <a class="ali-name-link" (click)="$event.stopPropagation(); openDetail(row)">{{ row.itemName || row.itemNo }}</a>
+            </td>
+            <td class="ali-col-center ali-small">
+              <div>Vào: {{ row.indoorTime || '**:**' }}</div>
+              <div>Ra: {{ row.outdoorTime || '**:**' }}</div>
+            </td>
+            <td class="ali-col-center ali-small">
+              <div>Vào: {{ row.fromTime }}</div>
+              <div>Ra: {{ row.toTime }}</div>
+            </td>
+            <td class="ali-col-center">{{ row.shiftName }}</td>
+            <td class="ali-col-center ali-small">{{ row.workTime }}</td>
+            <td>{{ row.applyReason }}</td>
+            <td class="ali-col-center">{{ row.affirmFlagName || row.affirmFlag }}</td>
+            <td>{{ row.hrComment }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="ali-col-center">{{ i18n.t('essCommon.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="ali-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="i18n.t('essLeave.approvalInfo', 'Thông tin phê duyệt')"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="aliDetailFooter"
+>
+  <ng-container *nzModalContent>
+    @if (detail(); as d) {
+      <div class="ali-detail-body">
+        <table class="ali-detail-info-table">
+          <tr>
+            <th>{{ i18n.t('essCommon.title', 'Tiêu đề') }}</th>
+            <td>{{ d.leaveInfo?.leaveTypeName }}</td>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('essCommon.applicant', 'Người xin phép') }}</th>
+            <td>{{ (d.employeeInfo?.localName || d.leaveInfo?.localName) }} / {{ d.employeeInfo?.postGradeName || d.leaveInfo?.postGradeName }} / {{ d.employeeInfo?.deptName || d.leaveInfo?.deptName }}</td>
+          </tr>
+        </table>
+
+        <nz-table [nzData]="d.approvalList ?? []" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small" class="ali-approval-table">
+          <thead>
+            <tr>
+              <th nzWidth="50px" class="ali-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+              <th nzWidth="90px" class="ali-col-center">{{ i18n.t('essCommon.approvalOrder', 'Trình tự duyệt') }}</th>
+              <th nzWidth="110px" class="ali-col-center">{{ i18n.t('essCommon.approvalStatus', 'Trạng thái duyệt') }}</th>
+              <th>{{ i18n.t('essCommon.fullName', 'Họ tên') }}</th>
+              <th>{{ i18n.t('essCommon.opinion', 'Ý kiến') }}</th>
+              <th nzWidth="170px" class="ali-col-center">{{ i18n.t('essCommon.executionTime', 'Thời gian thực hiện') }}</th>
+              <th nzWidth="120px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of d.approvalList; track $index; let idx = $index) {
+              <tr>
+                <td class="ali-col-center">{{ approvalStt(item, idx) }}</td>
+                <td class="ali-col-center">{{ item.affirmTypeName }}</td>
+                <td class="ali-col-center">{{ item.affirmFlagName }}</td>
+                <td>{{ item.affirmName }}</td>
+                <td>{{ item.affirmContent }}</td>
+                <td class="ali-col-center">{{ item.updateDate }}</td>
+                <td>{{ item.deptName }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="ali-col-center">{{ i18n.t('essCommon.noData', 'Không có dữ liệu') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <h4 class="ali-section-title">{{ i18n.t('essCommon.empInfo', 'Thông tin nhân viên') }}</h4>
+        <table class="ali-detail-info-table">
+          <tr>
+            <th>{{ i18n.t('essCommon.fullName', 'Họ tên') }}</th>
+            <td>{{ d.employeeInfo?.localName }}</td>
+            <th>{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+            <td>{{ d.employeeInfo?.empId }}</td>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+            <td>{{ d.employeeInfo?.deptName }}</td>
+            <th>{{ i18n.t('essCommon.position', 'Chức vụ') }}</th>
+            <td>{{ d.employeeInfo?.postGradeName }}</td>
+          </tr>
+        </table>
+
+        <h4 class="ali-section-title">{{ i18n.t('essCommon.applyInfo', 'Thông tin xin phép') }}</h4>
+        <table class="ali-detail-info-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('essCommon.leaveType', 'Loại nghỉ phép') }}</th>
+              <th>{{ i18n.t('essCommon.startTime', 'Thời gian bắt đầu') }}</th>
+              <th>{{ i18n.t('essCommon.endTime', 'Thời gian kết thúc') }}</th>
+              <th>{{ i18n.t('essCommon.duration', 'Số giờ') }}</th>
+              <th>{{ i18n.t('essCommon.reason', 'Lý do') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="ali-col-center">{{ d.leaveInfo?.leaveTypeName }}</td>
+              <td class="ali-col-center">{{ d.leaveInfo?.leaveFromTime }}</td>
+              <td class="ali-col-center">{{ d.leaveInfo?.leaveToTime }}</td>
+              <td class="ali-col-center">{{ d.leaveInfo?.applyLength }}</td>
+              <td class="ali-col-center">{{ d.leaveInfo?.leaveReason }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<ng-template #aliDetailFooter>
+  <button nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>

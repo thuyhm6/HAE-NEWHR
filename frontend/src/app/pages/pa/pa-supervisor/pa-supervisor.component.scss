@@ -1,0 +1,83 @@
+.vpas-page {
+  padding: 4px 0;
+}
+
+.vpas-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+  min-height: 500px;
+}
+
+.vpas-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.vpas-title {
+  margin: 0;
+}
+
+.vpas-col-center {
+  text-align: center;
+}
+
+.vpas-clickable {
+  cursor: pointer;
+}
+
+.vpas-row-selected {
+  background: var(--ant-color-primary-bg, #e6f4ff);
+}
+
+.vpas-tree-container {
+  min-height: 380px;
+  max-height: 560px;
+  overflow-y: auto;
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.vpas-tree-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: 24px;
+}
+
+.vpas-tree-actions {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.vpas-info-placeholder {
+  color: #999;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.vpas-form-row {
+  margin-bottom: 10px;
+}
+
+.vpas-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.vpas-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.vpas-plaintext {
+  padding: 4px 0;
+  font-size: 13px;
+}

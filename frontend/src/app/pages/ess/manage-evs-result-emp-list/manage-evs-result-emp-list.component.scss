@@ -1,0 +1,15 @@
+.vmer-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vmer-search-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.vmer-col-center {
+  text-align: center;
+}

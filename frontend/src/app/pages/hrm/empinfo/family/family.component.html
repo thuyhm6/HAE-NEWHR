@@ -1,0 +1,284 @@
+<div class="fam-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="famSearchEmpId" [placeholder]="i18n.t('hrm.familySearch.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.localName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="famSearchLocalName" [placeholder]="i18n.t('hrm.familySearch.title.localNamePlaceholder', 'Nhập tên nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.famName', 'Tên người thân') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-search-name" nz-input [ngModel]="searchFamName()" (ngModelChange)="searchFamName.set($event)" name="famSearchName" [placeholder]="i18n.t('hrm.familySearch.title.famNamePlaceholder', 'Nhập tên người thân')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>&nbsp;</nz-form-label>
+            <nz-form-control>
+              <div class="fam-toolbar-actions">
+                <button id="fam-search-btn" nz-button nzType="primary" (click)="search()">
+                  <span nz-icon nzType="search"></span>
+                  {{ i18n.t('common.search', 'Tìm kiếm') }}
+                </button>
+                <button id="fam-clear-btn" nz-button (click)="clearSearch()">
+                  <span nz-icon nzType="close"></span>
+                  {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+                </button>
+                <button id="fam-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+                  <span nz-icon nzType="plus"></span>
+                  {{ i18n.t('common.addNew', 'Thêm mới') }}
+                </button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+
+    <nz-table
+      id="fam-data-table"
+      #famTable
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="20"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[20, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: '1100px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="fam-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.familySearch.title.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('hrm.familySearch.title.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.familySearch.title.famName', 'Tên người thân') }}</th>
+          <th>{{ i18n.t('hrm.familySearch.title.famTypeCode', 'Quan hệ') }}</th>
+          <th class="fam-col-center">{{ i18n.t('epi.field.dob', 'Ngày sinh') }}</th>
+          <th>{{ i18n.t('epi.field.phone', 'SĐT') }}</th>
+          <th>{{ i18n.t('hrm.familySearch.title.ocupation', 'Nghề nghiệp') }}</th>
+          <th class="fam-col-center">{{ i18n.t('hrm.familySearch.title.taxYn', 'Người phụ thuộc') }}</th>
+          <th nzWidth="100px" class="fam-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of famTable.data; track row.familyNo; let idx = $index) {
+          <tr>
+            <td class="fam-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.famName }}</td>
+            <td>{{ row.famTypeCode }}</td>
+            <td class="fam-col-center">{{ row.famBorndate }}</td>
+            <td>{{ row.famPhone }}</td>
+            <td>{{ row.ocupation }}</td>
+            <td class="fam-col-center">
+              @if (row.taxYn === 'Y') {
+                <span nz-icon nzType="check" style="color:#52c41a"></span>
+              }
+            </td>
+            <td class="fam-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="fam-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.familySearch.title.editTitle', 'Cập nhật Người thân') : i18n.t('hrm.familySearch.title.addTitle', 'Thêm mới Người thân')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="900px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="fam-form-emp"
+                [ngModel]="formPersonId()"
+                (ngModelChange)="onEmployeeSelected($event)"
+                name="famFormEmp"
+                nzShowSearch
+                [nzServerSearch]="true"
+                (nzOnSearch)="onEmployeeSearch($event)"
+                [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                [nzLoading]="employeeSearching()"
+              >
+                @if (formEmpLabel() && formPersonId()) {
+                  <nz-option [nzValue]="formPersonId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                }
+                @for (emp of employeeOptions(); track emp.personId) {
+                  <nz-option [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.familySearch.title.famName', 'Tên người thân') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-name" nz-input [ngModel]="formFamName()" (ngModelChange)="formFamName.set($event)" name="famFormName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.familySearch.title.famTypeCode', 'Quan hệ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-type" nz-input [ngModel]="formFamTypeCode()" (ngModelChange)="formFamTypeCode.set($event)" name="famFormType" placeholder="Vợ/Chồng/Con/Bố/Mẹ..." />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.dob', 'Ngày sinh') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="fam-form-borndate" [ngModel]="formFamBorndate()" (ngModelChange)="formFamBorndate.set($event)" name="famFormBorndate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.famIdcard', 'CCCD/CMND') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-idcard" nz-input [ngModel]="formFamIdcard()" (ngModelChange)="formFamIdcard.set($event)" name="famFormIdcard" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.gender', 'Giới tính') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="fam-form-gender" [ngModel]="formGender()" (ngModelChange)="formGender.set($event)" name="famFormGender">
+                <nz-option nzValue="Male" [nzLabel]="i18n.t('hrm.empinfo.family.male', 'Nam')"></nz-option>
+                <nz-option nzValue="Female" [nzLabel]="i18n.t('hrm.empinfo.family.female', 'Nữ')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.phone', 'Số điện thoại') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-phone" nz-input [ngModel]="formFamPhone()" (ngModelChange)="formFamPhone.set($event)" name="famFormPhone" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.email', 'Email') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-email" nz-input [ngModel]="formFamEmail()" (ngModelChange)="formFamEmail.set($event)" name="famFormEmail" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.ocupation', 'Nghề nghiệp') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-ocupation" nz-input [ngModel]="formOcupation()" (ngModelChange)="formOcupation.set($event)" name="famFormOcupation" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.famCompanyName', 'Nơi làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-company" nz-input [ngModel]="formFamCompanyName()" (ngModelChange)="formFamCompanyName.set($event)" name="famFormCompany" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.address', 'Địa chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="fam-form-address" nz-input [ngModel]="formFamAddress()" (ngModelChange)="formFamAddress.set($event)" name="famFormAddress" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.liveYn', 'Sống cùng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="fam-form-live" [ngModel]="formLiveYn()" (ngModelChange)="formLiveYn.set($event)" name="famFormLive">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.emergencyContactYn', 'LH Khẩn cấp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="fam-form-emer" [ngModel]="formEmergencyContactYn()" (ngModelChange)="formEmergencyContactYn.set($event)" name="famFormEmer">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.familySearch.title.taxYn', 'Giảm trừ gia cảnh') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="fam-form-tax" [ngModel]="formTaxYn()" (ngModelChange)="formTaxYn.set($event)" name="famFormTax">
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="fam-form-remarks" nz-input rows="2" [ngModel]="formRemarks()" (ngModelChange)="formRemarks.set($event)" name="famFormRemarks"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

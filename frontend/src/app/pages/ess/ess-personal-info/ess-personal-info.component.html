@@ -1,0 +1,548 @@
+<div class="epi-page">
+  <!-- ===== Cá nhân ===== -->
+  <nz-card class="epi-card">
+    <div class="epi-card-header">
+      <strong>{{ i18n.t('epi.section.personal', 'Cá nhân') }}</strong>
+      <button id="epi-edit-personal-btn" nz-button nzType="default" nzSize="small" (click)="openPersonalModal()">
+        <span nz-icon nzType="edit"></span>
+        {{ i18n.t('epi.btn.edit', 'Chỉnh sửa') }}
+      </button>
+    </div>
+    <nz-descriptions [nzColumn]="{ xs: 1, sm: 2, md: 3, lg: 5 }" nzBordered nzSize="small">
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.dob', 'Ngày sinh')">{{ formatDisplayDate(info()?.dob) }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.gender', 'Giới tính')">{{ info()?.sexName }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.maritalStatus', 'Tình trạng hôn nhân')">{{ info()?.maritalStatusName }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.ethnicity', 'Dân tộc')">{{ info()?.nationName }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.houseTp', 'Hộ khẩu')">{{ info()?.houseTp }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.homePhone', 'ĐT gia đình')">{{ info()?.homePhone }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.companyPhone', 'ĐT công ty')">{{ info()?.companyPhone }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.phone', 'Điện thoại')">{{ info()?.cellphone }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.residence', 'Chỗ ở')">{{ info()?.residentialDistinction }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.existSingle', 'EagleM')">{{ info()?.existSingle }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.email', 'Email')">{{ info()?.email }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.companyEmail', 'Email công ty')">{{ info()?.emailSecond }}</nz-descriptions-item>
+      <nz-descriptions-item [nzTitle]="i18n.t('epi.field.nationality', 'Quốc tịch')">{{ info()?.nationalityName }}</nz-descriptions-item>
+      <nz-descriptions-item nzTitle="EagleM ID">{{ info()?.singId }}</nz-descriptions-item>
+    </nz-descriptions>
+  </nz-card>
+
+  <!-- ===== Loại địa chỉ ===== -->
+  <nz-card class="epi-card">
+    <div class="epi-card-header">
+      <strong>{{ i18n.t('epi.section.address', 'Loại địa chỉ') }}</strong>
+      <button id="epi-add-address-btn" nz-button nzType="primary" nzSize="small" (click)="openAddressModal(null)">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('epi.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+    <nz-table id="epi-address-table" #epiAddressTable [nzData]="addresses()" [nzLoading]="addressLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('epi.field.addressType', 'Loại địa chỉ') }}</th>
+          <th>{{ i18n.t('epi.field.effectiveDate', 'Ngày hiệu lực') }}</th>
+          <th>{{ i18n.t('epi.field.address', 'Địa chỉ') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of epiAddressTable.data; track row.addressNo) {
+          <tr class="epi-row" (click)="openAddressModal(row)">
+            <td>{{ row.addressTypeName || row.addressType }}</td>
+            <td>{{ formatDisplayDate(row.effectiveStartDate) }}</td>
+            <td>{{ row.addressContent }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3" class="epi-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <!-- ===== Thông tin gia đình ===== -->
+  <nz-card class="epi-card">
+    <div class="epi-card-header">
+      <strong>{{ i18n.t('epi.section.family', 'Thông tin gia đình') }}</strong>
+      <button id="epi-add-family-btn" nz-button nzType="primary" nzSize="small" (click)="openFamilyModal(null)">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('epi.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+    <nz-table id="epi-family-table" #epiFamilyTable [nzData]="families()" [nzLoading]="familyLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('epi.field.relationship', 'Quan hệ') }}</th>
+          <th>{{ i18n.t('epi.field.fullName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('epi.field.gender', 'Giới tính') }}</th>
+          <th>{{ i18n.t('epi.field.dob', 'Ngày sinh') }}</th>
+          <th>{{ i18n.t('epi.field.familyPhone', 'Điện thoại gia đình') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of epiFamilyTable.data; track row.familyNo) {
+          <tr class="epi-row" (click)="openFamilyModal(row)">
+            <td>{{ row.famTypeName || row.famTypeCode }}</td>
+            <td>{{ row.famName }}</td>
+            <td>{{ row.genderName }}</td>
+            <td>{{ formatDisplayDate(row.famBorndate) }}</td>
+            <td>{{ row.famPhone }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="epi-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <!-- ===== Người liên hệ khẩn cấp ===== -->
+  <nz-card class="epi-card">
+    <div class="epi-card-header">
+      <strong>{{ i18n.t('epi.section.emergency', 'Người liên hệ khẩn cấp') }}</strong>
+      <button id="epi-add-emergency-btn" nz-button nzType="primary" nzSize="small" (click)="openEmergencyModal(null)">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('epi.btn.addNew', 'Thêm mới') }}
+      </button>
+    </div>
+    <nz-table id="epi-emergency-table" #epiEmergencyTable [nzData]="emergencies()" [nzLoading]="emergencyLoading()" [nzShowPagination]="false" nzSize="small">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('epi.field.fullName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('epi.field.relationship', 'Quan hệ') }}</th>
+          <th>{{ i18n.t('epi.field.phone', 'Điện thoại') }}</th>
+          <th>{{ i18n.t('epi.field.email', 'Email') }}</th>
+          <th>{{ i18n.t('epi.field.address', 'Địa chỉ') }}</th>
+          <th class="epi-col-center">{{ i18n.t('epi.field.primaryContact', 'Liên hệ chính') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of epiEmergencyTable.data; track row.emergencyNo) {
+          <tr class="epi-row" (click)="openEmergencyModal(row)">
+            <td>{{ row.emerName }}</td>
+            <td>{{ row.emerTypeName }}</td>
+            <td>{{ row.emerPhone }}</td>
+            <td>{{ row.emerEmail }}</td>
+            <td>{{ row.emerAddress }}</td>
+            <td class="epi-col-center">
+              <label nz-checkbox [ngModel]="isChecked(row.isEmergencyAddress)" [nzDisabled]="true"></label>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="epi-col-center">{{ i18n.t('epi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- ===== Modal: Chỉnh sửa Cá nhân ===== -->
+<nz-modal
+  id="epi-personal-modal"
+  [nzVisible]="personalModalVisible()"
+  [nzTitle]="i18n.t('epi.modal.editPersonal', 'Chỉnh sửa thông tin cá nhân')"
+  [nzWidth]="900"
+  (nzOnCancel)="closePersonalModal()"
+  (nzVisibleChange)="personalModalVisible.set($event)"
+  [nzOkLoading]="personalSaving()"
+  [nzOkText]="i18n.t('epi.btn.submitRequest', 'Gửi yêu cầu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+  (nzOnOk)="savePersonal()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.fullName', 'Họ tên') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-localName" nz-input [ngModel]="personalForm.localName" name="mpLocalName" disabled /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.engName', 'Tên tiếng Anh') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-engName" nz-input [ngModel]="personalForm.engName" name="mpEngName" disabled /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6" class="epi-checkbox-col">
+          <label id="epi-mp-armyOrNot" nz-checkbox [(ngModel)]="personalForm.armyOrNot" name="mpArmyOrNot">{{ i18n.t('epi.field.militaryService', 'Tham gia quân đội') }}</label>
+        </div>
+        <div nz-col [nzSpan]="6" class="epi-checkbox-col">
+          <label id="epi-mp-obstacleOrNot" nz-checkbox [(ngModel)]="personalForm.obstacleOrNot" name="mpObstacleOrNot">{{ i18n.t('epi.field.disability', 'Khuyết tật') }}</label>
+        </div>
+
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.idcardNo', 'CMND/CCCD') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-idcardNo" nz-input [(ngModel)]="personalForm.idcardNo" name="mpIdcardNo" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.idcardDate', 'Ngày cấp') }}</nz-form-label>
+            <nz-form-control><nz-date-picker id="epi-mp-idcardStartDate" [(ngModel)]="personalForm.idcardStartDate" name="mpIdcardStartDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.issuingAuthority', 'Nơi cấp') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-issuingAuthority" nz-input [(ngModel)]="personalForm.issuingAuthority" name="mpIssuingAuthority" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.cvUpdateStatus', 'CV update status') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-cvUpdateStatus" [(ngModel)]="personalForm.cvUpdateStatus" name="mpCvUpdateStatus" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of cvUpdateStatusOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.dob', 'Ngày sinh') }}</nz-form-label>
+            <nz-form-control><nz-date-picker id="epi-mp-dob" [(ngModel)]="personalForm.dob" name="mpDob" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.age', 'Độ tuổi') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-age" nz-input [ngModel]="computeAge(personalForm.dob)" name="mpAge" disabled /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.birthPlace', 'Nơi sinh') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-regPlace" nz-input [(ngModel)]="personalForm.regPlace" name="mpRegPlace" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.gender', 'Giới tính') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-sexCode" [(ngModel)]="personalForm.sexCode" name="mpSexCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of sexOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.education', 'Trình độ học vấn') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-finalDegreeCode" [(ngModel)]="personalForm.finalDegreeCode" name="mpFinalDegreeCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of educationOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.nationality', 'Quốc tịch') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-nationalityCode" [(ngModel)]="personalForm.nationalityCode" name="mpNationalityCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of nationalityOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.ethnicity', 'Dân tộc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-nationCode" [(ngModel)]="personalForm.nationCode" name="mpNationCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of ethnicityOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.religion', 'Tôn giáo') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-religion" nz-input [(ngModel)]="personalForm.religion" name="mpReligion" /></nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.phone', 'Điện thoại') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-cellphone" nz-input [(ngModel)]="personalForm.cellphone" name="mpCellphone" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.maritalStatus', 'Tình trạng hôn nhân') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-maritalStatusCode" [(ngModel)]="personalForm.maritalStatusCode" name="mpMaritalStatusCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of maritalOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.weddingDate', 'Ngày kết hôn') }}</nz-form-label>
+            <nz-form-control><nz-date-picker id="epi-mp-weddingDate" [(ngModel)]="personalForm.weddingDate" name="mpWeddingDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.politicalStatus', 'Tình trạng chính trị') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-politicalStatus" nz-input [(ngModel)]="personalForm.politicalStatus" name="mpPoliticalStatus" /></nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>EagleM</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-existSingle" [(ngModel)]="personalForm.existSingle" name="mpExistSingle" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.homePhone', 'ĐT gia đình') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-homePhone" nz-input [(ngModel)]="personalForm.homePhone" name="mpHomePhone" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.companyPhone', 'ĐT công ty') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-companyPhone" nz-input [(ngModel)]="personalForm.companyPhone" name="mpCompanyPhone" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.residence', 'Chỗ ở') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-mp-residentialDistinction" [(ngModel)]="personalForm.residentialDistinction" name="mpResidentialDistinction" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of residenceOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>EagleM ID</nz-form-label>
+            <nz-form-control><input id="epi-mp-singId" nz-input [(ngModel)]="personalForm.singId" name="mpSingId" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.houseTp', 'Hộ khẩu') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-houseTp" nz-input [(ngModel)]="personalForm.houseTp" name="mpHouseTp" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.email', 'Email') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-email" nz-input type="email" [(ngModel)]="personalForm.email" name="mpEmail" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.companyEmail', 'Email công ty') }}</nz-form-label>
+            <nz-form-control><input id="epi-mp-emailSecond" nz-input type="email" [(ngModel)]="personalForm.emailSecond" name="mpEmailSecond" /></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div class="epi-alert-note">
+        <span nz-icon nzType="info-circle"></span>
+        {{ i18n.t('epi.msg.applyNote', 'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.') }}
+      </div>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}</nz-form-label>
+        <nz-form-control>
+          <input id="epi-mp-attachFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onPersonalFilesChange($event)" />
+          <div class="epi-upload-hint">{{ i18n.t('epi.msg.uploadHint', 'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.') }}</div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Thêm/Sửa Địa chỉ ===== -->
+<nz-modal
+  id="epi-address-modal"
+  [nzVisible]="addressModalVisible()"
+  [nzTitle]="i18n.t('epi.modal.address', 'Địa chỉ')"
+  (nzOnCancel)="closeAddressModal()"
+  (nzVisibleChange)="addressModalVisible.set($event)"
+  [nzOkLoading]="addressSaving()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+  (nzOnOk)="saveAddress()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <nz-form-item>
+        <nz-form-label nzRequired>{{ i18n.t('epi.field.addressType', 'Loại địa chỉ') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="epi-addr-addressType" [(ngModel)]="addressForm.addressType" name="addrAddressType" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.chooseAddressType', '-- Chọn loại địa chỉ --')">
+            <nz-option *ngFor="let opt of addressTypeOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.effectiveDate', 'Ngày hiệu lực') }}</nz-form-label>
+        <nz-form-control><nz-date-picker id="epi-addr-effectiveStartDate" [(ngModel)]="addressForm.effectiveStartDate" name="addrEffectiveStartDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker></nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.address', 'Địa chỉ') }}</nz-form-label>
+        <nz-form-control><textarea id="epi-addr-addressContent" nz-input rows="3" [(ngModel)]="addressForm.addressContent" name="addrAddressContent"></textarea></nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Thêm/Sửa Gia đình ===== -->
+<nz-modal
+  id="epi-family-modal"
+  [nzVisible]="familyModalVisible()"
+  [nzTitle]="i18n.t('epi.section.family', 'Thông tin gia đình')"
+  (nzOnCancel)="closeFamilyModal()"
+  (nzVisibleChange)="familyModalVisible.set($event)"
+  [nzOkLoading]="familySaving()"
+  [nzOkText]="i18n.t('epi.btn.submitRequest', 'Gửi yêu cầu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+  (nzOnOk)="saveFamily()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('epi.field.relationship', 'Quan hệ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-fam-famTypeCode" [(ngModel)]="familyForm.famTypeCode" name="famFamTypeCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.chooseRelationship', '-- Chọn quan hệ --')">
+                <nz-option *ngFor="let opt of familyRelationOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('epi.field.fullName', 'Họ tên') }}</nz-form-label>
+            <nz-form-control><input id="epi-fam-famName" nz-input [(ngModel)]="familyForm.famName" name="famFamName" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.gender', 'Giới tính') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-fam-gender" [(ngModel)]="familyForm.gender" name="famGender" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.choose', '-- Chọn --')">
+                <nz-option *ngFor="let opt of sexOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.dob', 'Ngày sinh') }}</nz-form-label>
+            <nz-form-control><nz-date-picker id="epi-fam-famBorndate" [(ngModel)]="familyForm.famBorndate" name="famFamBorndate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.phone', 'Điện thoại') }}</nz-form-label>
+            <nz-form-control><input id="epi-fam-famPhone" nz-input [(ngModel)]="familyForm.famPhone" name="famFamPhone" /></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div class="epi-alert-note">
+        <span nz-icon nzType="info-circle"></span>
+        {{ i18n.t('epi.msg.applyNote', 'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.') }}
+      </div>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}</nz-form-label>
+        <nz-form-control>
+          <input id="epi-fam-attachFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onFamilyFilesChange($event)" />
+          <div class="epi-upload-hint">{{ i18n.t('epi.msg.uploadHint', 'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.') }}</div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<!-- ===== Modal: Thêm/Sửa Liên hệ khẩn cấp ===== -->
+<nz-modal
+  id="epi-emergency-modal"
+  [nzVisible]="emergencyModalVisible()"
+  [nzTitle]="i18n.t('epi.section.emergency', 'Người liên hệ khẩn cấp')"
+  (nzOnCancel)="closeEmergencyModal()"
+  (nzVisibleChange)="emergencyModalVisible.set($event)"
+  [nzOkLoading]="emergencySaving()"
+  [nzOkText]="i18n.t('epi.btn.submitRequest', 'Gửi yêu cầu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+  (nzOnOk)="saveEmergency()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('epi.field.fullName', 'Họ tên') }}</nz-form-label>
+            <nz-form-control><input id="epi-emer-emerName" nz-input [(ngModel)]="emergencyForm.emerName" name="emerEmerName" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.relationship', 'Quan hệ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epi-emer-emerTypeCode" [(ngModel)]="emergencyForm.emerTypeCode" name="emerEmerTypeCode" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('epi.select.chooseRelationship', '-- Chọn quan hệ --')">
+                <nz-option *ngFor="let opt of emergencyRelationOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.phone', 'Điện thoại') }}</nz-form-label>
+            <nz-form-control><input id="epi-emer-emerPhone" nz-input [(ngModel)]="emergencyForm.emerPhone" name="emerEmerPhone" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.email', 'Email') }}</nz-form-label>
+            <nz-form-control><input id="epi-emer-emerEmail" nz-input type="email" [(ngModel)]="emergencyForm.emerEmail" name="emerEmerEmail" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('epi.field.address', 'Địa chỉ') }}</nz-form-label>
+            <nz-form-control><input id="epi-emer-emerAddress" nz-input [(ngModel)]="emergencyForm.emerAddress" name="emerEmerAddress" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <label id="epi-emer-isEmergencyAddress" nz-checkbox [(ngModel)]="emergencyForm.isEmergencyAddress" name="emerIsEmergencyAddress">
+            {{ i18n.t('epi.field.isPrimaryContact', 'Là liên hệ chính') }}
+          </label>
+        </div>
+      </div>
+
+      <div class="epi-alert-note">
+        <span nz-icon nzType="info-circle"></span>
+        {{ i18n.t('epi.msg.applyNote', 'Yêu cầu sẽ được gửi đến người quản lý để xét duyệt, không cập nhật trực tiếp hồ sơ.') }}
+      </div>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('epi.field.attachFiles', 'File đính kèm') }}</nz-form-label>
+        <nz-form-control>
+          <input id="epi-emer-attachFiles" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" (change)="onEmergencyFilesChange($event)" />
+          <div class="epi-upload-hint">{{ i18n.t('epi.msg.uploadHint', 'Hỗ trợ: PDF, Word, Excel, hình ảnh. Có thể chọn nhiều file.') }}</div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

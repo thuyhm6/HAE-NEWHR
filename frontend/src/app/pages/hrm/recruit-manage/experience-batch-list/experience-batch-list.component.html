@@ -1,0 +1,249 @@
+<div class="ebl-page">
+  <div class="ebl-toolbar">
+    <label class="ebl-label">{{ i18n.t('ebl.label.registerDate', 'Ngày đăng ký') }}</label>
+    <nz-select
+      id="ebl-register-seq"
+      style="min-width:220px"
+      [ngModel]="selectedRegisterSeq()"
+      (ngModelChange)="onRegisterChange($event)"
+      nzAllowClear
+      [nzPlaceHolder]="i18n.t('common.placeholder.select', '-- Chọn --')"
+    >
+      @for (r of registerList(); track r.registerSeq) {
+        <nz-option [nzValue]="r.registerSeq" [nzLabel]="(r.registerDate || '') + (r.registerRemark ? ' - ' + r.registerRemark : '')"></nz-option>
+      }
+    </nz-select>
+    <button id="ebl-register-btn" nz-button nzType="primary" nzSize="small" (click)="openRegisterModal()">
+      <span nz-icon nzType="plus"></span> {{ i18n.t('ebl.btn.register', 'Đăng ký') }}
+    </button>
+
+    <div class="ebl-toolbar-actions">
+      @if (!allProcessed()) {
+        <button id="ebl-template-btn" nz-button nzSize="small" (click)="downloadTemplate()">
+          <span nz-icon nzType="download"></span> {{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+        </button>
+        <button id="ebl-confirm-btn" nz-button nzType="primary" nzSize="small" (click)="confirmExecute()">
+          <span nz-icon nzType="check-circle"></span> {{ i18n.t('common.confirm', 'Xác nhận') }}
+        </button>
+      }
+      <button id="ebl-search-btn" nz-button nzSize="small" (click)="reload()">
+        <span nz-icon nzType="search"></span> {{ i18n.t('common.search', 'Tìm kiếm') }}
+      </button>
+      @if (!allProcessed()) {
+        <button id="ebl-delete-btn" nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+          <span nz-icon nzType="delete"></span> {{ i18n.t('common.delete', 'Xóa') }}
+        </button>
+      }
+      <button id="ebl-export-btn" nz-button nzSize="small" (click)="exportExcel()">
+        <span nz-icon nzType="file-excel"></span> {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+      </button>
+      @if (!allProcessed()) {
+        <button id="ebl-import-btn" nz-button nzSize="small" (click)="openImportModal()">
+          <span nz-icon nzType="upload"></span> {{ i18n.t('ebl.btn.insertFile', 'Chèn file') }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="ebl-total-count">Total:<span>{{ total() }}</span></div>
+
+  <nz-table
+    id="ebl-data-table"
+    [nzData]="rows()"
+    [nzLoading]="listLoading()"
+    [nzFrontPagination]="false"
+    [nzTotal]="total()"
+    [nzPageIndex]="pageIndex()"
+    [nzPageSize]="pageSize()"
+    [nzShowSizeChanger]="true"
+    [nzPageSizeOptions]="[20, 50, 100]"
+    (nzQueryParams)="onQueryParamsChange($event)"
+    [nzScroll]="{ x: '1800px' }"
+    nzSize="small"
+  >
+    <thead>
+      <tr>
+        <th nzWidth="44px" class="ebl-col-center">No.</th>
+        <th nzWidth="36px" class="ebl-col-center">
+          @if (!allProcessed()) {
+            <input type="checkbox" (change)="toggleSelectAll($any($event.target).checked)" />
+          }
+        </th>
+        <th class="ebl-col-center">{{ i18n.t('ebl.col.processed', 'Đã xử lý') }}</th>
+        <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+        <th>{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+        <th class="ebl-col-center">{{ i18n.t('ebl.col.startDate', 'Thời gian') }}</th>
+        <th>{{ i18n.t('ebl.col.decision', 'Quyết định') }}</th>
+        <th>{{ i18n.t('ebl.col.reason', 'Lý do') }}</th>
+        <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+        <th>{{ i18n.t('ebl.col.group', 'Nhóm nhân viên') }}</th>
+        <th>{{ i18n.t('ebl.col.level', 'Chức vụ') }}</th>
+        <th>{{ i18n.t('ebl.col.jobTitle', 'Chức danh') }}</th>
+        <th>{{ i18n.t('ebl.col.empType', 'Loại nhân viên') }}</th>
+        <th>{{ i18n.t('ebl.col.job', 'Công việc') }}</th>
+        <th>{{ i18n.t('ebl.col.costCenter', 'Mã chi phí') }}</th>
+        <th nzWidth="60px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.seq; let idx = $index) {
+        <tr>
+          <td class="ebl-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td class="ebl-col-center">
+            @if (row.activity !== '1') {
+              <input type="checkbox" [checked]="isRowSelected(row.seq)" (change)="toggleRowSelected(row.seq!, $any($event.target).checked)" />
+            }
+          </td>
+          <td class="ebl-col-center">
+            @if (row.activity === '1') {
+              <span class="ebl-badge-done">&#10003;</span>
+            } @else {
+              <span class="ebl-badge-pending">-</span>
+            }
+          </td>
+          <td>{{ row.localName }}</td>
+          <td>{{ row.empId }}</td>
+          <td class="ebl-col-center">{{ row.startDate }}</td>
+          <td>{{ row.transCodeName }}</td>
+          <td>{{ row.transReasonName }}</td>
+          <td>{{ row.deptName }}</td>
+          <td>{{ row.postFamilyName }}</td>
+          <td>{{ row.postGradeName }}</td>
+          <td>{{ row.positionNoName }}</td>
+          <td>{{ row.empTypeName }}</td>
+          <td>{{ row.mainBusinessName }}</td>
+          <td>{{ row.costCenter }}</td>
+          <td class="ebl-col-center">
+            <button nz-button nzSize="small" (click)="openEditModal(row)"><span nz-icon nzType="edit"></span></button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="16" class="ebl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</div>
+
+<!-- Modal Đăng ký ngày -->
+<nz-modal
+  [nzVisible]="registerModalVisible()"
+  [nzTitle]="i18n.t('ebl.modal.register.title', 'Đăng ký ngày')"
+  (nzOnCancel)="registerModalVisible.set(false)"
+  (nzVisibleChange)="registerModalVisible.set($event)"
+  nzWidth="400px"
+  [nzOkLoading]="savingRegister()"
+  (nzOnOk)="saveRegisterModal()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <label class="ebl-field-label ebl-required">{{ i18n.t('ebl.modal.register.date', 'Ngày đăng ký') }}</label>
+    <nz-date-picker id="ebl-reg-date" [ngModel]="formRegDate()" (ngModelChange)="formRegDate.set($event)" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+    <label class="ebl-field-label" style="margin-top:10px">{{ i18n.t('ebl.modal.register.remark', 'Ghi chú') }}</label>
+    <textarea nz-input rows="2" maxlength="2000" [ngModel]="formRegRemark()" (ngModelChange)="formRegRemark.set($event)"></textarea>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Chỉnh sửa dòng -->
+<nz-modal
+  [nzVisible]="editModalVisible()"
+  [nzTitle]="i18n.t('ebl.modal.edit.title', 'Chỉnh sửa thông tin')"
+  (nzOnCancel)="editModalVisible.set(false)"
+  (nzVisibleChange)="editModalVisible.set($event)"
+  nzWidth="800px"
+  [nzOkLoading]="editSaving()"
+  (nzOnOk)="saveEditModal()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('common.empId', 'Mã nhân viên') }}</label>
+        <input nz-input nzSize="small" [ngModel]="formEditEmpId()" disabled />
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('common.empName', 'Họ tên') }}</label>
+        <input nz-input nzSize="small" [ngModel]="formEditLocalName()" disabled />
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.startDate', 'Thời gian') }}</label>
+        <input nz-input nzSize="small" [ngModel]="formEditStartDate()" (ngModelChange)="formEditStartDate.set($event)" placeholder="YYYY/MM/DD" />
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.decision', 'Quyết định') }}</label>
+        <nz-select nzSize="small" [ngModel]="formEditTransCode()" (ngModelChange)="onEditTransCodeChange($event)" style="width:100%" nzAllowClear>
+          @for (opt of transCodeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.reason', 'Lý do') }}</label>
+        <nz-select nzSize="small" [ngModel]="formEditTransReason()" (ngModelChange)="formEditTransReason.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of transReasonOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('common.deptName', 'Phòng ban') }}</label>
+        <nz-tree-select [nzNodes]="deptTreeNodes()" [ngModel]="formEditDeptno()" (ngModelChange)="formEditDeptno.set($event)" nzSize="small" nzShowSearch style="width:100%"></nz-tree-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.group', 'Nhóm nhân viên') }}</label>
+        <nz-select nzSize="small" [ngModel]="formEditPostFamily()" (ngModelChange)="onEditPostFamilyChange($event)" style="width:100%" nzAllowClear>
+          @for (opt of postFamilyOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.level', 'Chức vụ') }}</label>
+        <nz-select nzSize="small" [ngModel]="formEditNewPostGradeNo()" (ngModelChange)="formEditNewPostGradeNo.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of postGradeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.jobTitle', 'Chức danh') }}</label>
+        <nz-select nzSize="small" [ngModel]="formEditPositionNo()" (ngModelChange)="formEditPositionNo.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of positionNoOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.empType', 'Loại nhân viên') }}</label>
+        <nz-select nzSize="small" [ngModel]="formEditEmpTypeCode()" (ngModelChange)="formEditEmpTypeCode.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of empTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.job', 'Công việc') }}</label>
+        <nz-select nzSize="small" [ngModel]="formEditMainBusiness()" (ngModelChange)="formEditMainBusiness.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of mainBusinessOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="ebl-field-label">{{ i18n.t('ebl.col.costCenter', 'Mã chi phí') }}</label>
+        <input nz-input nzSize="small" [ngModel]="formEditCostCenter()" (ngModelChange)="formEditCostCenter.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="ebl-field-label">{{ i18n.t('common.remark', 'Ghi chú') }}</label>
+        <input nz-input nzSize="small" maxlength="200" [ngModel]="formEditRemarks()" (ngModelChange)="formEditRemarks.set($event)" />
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Chèn file (Import Excel) -->
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('ebl.btn.insertFile', 'Chèn file')"
+  (nzOnCancel)="importModalVisible.set(false)"
+  (nzVisibleChange)="importModalVisible.set($event)"
+  nzWidth="420px"
+  [nzOkLoading]="importing()"
+  [nzOkDisabled]="!importFile()"
+  (nzOnOk)="submitImport()"
+  [nzOkText]="i18n.t('ebl.btn.insertFile', 'Chèn file')"
+  [nzCancelText]="i18n.t('common.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <input id="ebl-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+</nz-modal>

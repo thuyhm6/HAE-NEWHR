@@ -1,0 +1,60 @@
+.acr-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acr-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.acr-col-center {
+  text-align: center;
+}
+
+.acr-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.acr-emp-field input {
+  flex: 1;
+}
+
+.acr-modal-label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.acr-import-spinner {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.acr-muted {
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 8px;
+}
+
+.acr-import-result {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.acr-result-success {
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #389e0d;
+}
+
+.acr-result-error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+}

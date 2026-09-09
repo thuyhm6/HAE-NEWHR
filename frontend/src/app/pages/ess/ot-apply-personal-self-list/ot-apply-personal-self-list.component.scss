@@ -1,0 +1,29 @@
+.otsl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.otsl-search-card :global(.ant-form-item) {
+  margin-bottom: 0;
+}
+
+.otsl-export-btn {
+  margin-left: 8px;
+}
+
+.otsl-col-center {
+  text-align: center;
+}
+
+.otsl-col-bold {
+  font-weight: 600;
+}
+
+.otsl-col-muted {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.otsl-detail-link {
+  font-weight: 600;
+}

@@ -1,0 +1,135 @@
+<div class="vml-page">
+  <div class="vml-search-card">
+    <div class="vml-search-row">
+      <div class="vml-field">
+        <label class="vml-inline-label">{{ i18n.t('sys.basic.viewMenuList.search.keyword', 'Từ khóa (Mã, Tên)') }}</label>
+        <input
+          nz-input
+          [ngModel]="searchKeyword()"
+          (ngModelChange)="searchKeyword.set($event)"
+          (keydown.enter)="search()"
+          [placeholder]="i18n.t('sys.basic.viewMenuList.search.keyword.placeholder', 'Nhập mã hoặc tên menu')"
+        />
+      </div>
+      <div class="vml-search-actions">
+        <button nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close-circle"></span>{{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <a nz-button [href]="exportUrl">
+          <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="vml-table-card">
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small" nzBordered #vmlTable>
+      <thead>
+        <tr>
+          <th nzWidth="48px" class="vml-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('sys.basic.viewMenuList.col.menuCode', 'Menu Code') }}</th>
+          <th>{{ i18n.t('sys.basic.viewMenuList.col.nameVi', 'Tên TV') }}</th>
+          <th>{{ i18n.t('sys.basic.viewMenuList.col.nameEn', 'Tên TA') }}</th>
+          <th>{{ i18n.t('sys.basic.viewMenuList.col.parentMenu', 'Menu Cha') }}</th>
+          <th>{{ i18n.t('sys.basic.viewMenuList.col.url', 'URL') }}</th>
+          <th class="vml-col-center">{{ i18n.t('sys.basic.viewMenuList.col.orderNo', 'Thứ tự') }}</th>
+          <th class="vml-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th class="vml-col-center" nzWidth="100px">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of vmlTable.data; let idx = index">
+          <td class="vml-col-center">{{ idx + 1 }}</td>
+          <td>{{ row.menuCode }}</td>
+          <td>{{ row.nameVi }}</td>
+          <td>{{ row.nameEn }}</td>
+          <td>{{ row.parentMenuName }}</td>
+          <td>{{ row.menuUrl }}</td>
+          <td class="vml-col-center">{{ row.orderNo }}</td>
+          <td class="vml-col-center">
+            <nz-tag *ngIf="row.activity === 1" nzColor="success">Active</nz-tag>
+            <nz-tag *ngIf="row.activity !== 1">Inactive</nz-tag>
+          </td>
+          <td class="vml-col-center">
+            <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+              <span nz-icon nzType="edit"></span>
+            </button>
+            <button nz-button nzSize="small" nzDanger (click)="deleteRow(row)" [title]="i18n.t('common.delete', 'Xóa')">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa Menu -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('sys.basic.viewMenuList.msg.addTitle', 'Thêm mới Menu') : i18n.t('sys.basic.viewMenuList.msg.editTitle', 'Cập nhật Menu')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="750px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vml-form-grid">
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.menuCode', 'Mã Menu (Code)') }}</label>
+        <input nz-input [ngModel]="formMenuCode()" (ngModelChange)="formMenuCode.set($event)" />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.parentMenuCode', 'Mã Parent Menu') }}</label>
+        <input
+          nz-input
+          [ngModel]="formMenuParentNo()"
+          (ngModelChange)="formMenuParentNo.set($event)"
+          [placeholder]="i18n.t('sys.basic.viewMenuList.label.parentMenuCode.placeholder', 'Để trống nếu là gốc')"
+        />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label vml-required">{{ i18n.t('sys.basic.viewMenuList.label.nameVi', 'Tên Tiếng Việt') }}</label>
+        <input nz-input [ngModel]="formNameVi()" (ngModelChange)="formNameVi.set($event)" />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.nameEn', 'Tên Tiếng Anh') }}</label>
+        <input nz-input [ngModel]="formNameEn()" (ngModelChange)="formNameEn.set($event)" />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.nameZh', 'Tên Tiếng Trung') }}</label>
+        <input nz-input [ngModel]="formNameZh()" (ngModelChange)="formNameZh.set($event)" />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.nameKo', 'Tên Tiếng Hàn') }}</label>
+        <input nz-input [ngModel]="formNameKo()" (ngModelChange)="formNameKo.set($event)" />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.url', 'URL') }}</label>
+        <input nz-input [ngModel]="formMenuUrl()" (ngModelChange)="formMenuUrl.set($event)" />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.icon', 'Icon (Class)') }}</label>
+        <input nz-input [ngModel]="formMenuImg()" (ngModelChange)="formMenuImg.set($event)" />
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.depth', 'Cấp độ (Depth)') }}</label>
+        <nz-input-number style="width: 100%" [ngModel]="formDepth()" (ngModelChange)="formDepth.set($event)" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="vml-form-row">
+        <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.orderNo', 'Thứ tự') }}</label>
+        <nz-input-number style="width: 100%" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="vml-form-row vml-switch-row">
+        <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+        <span class="vml-switch-label">{{ i18n.t('sys.basic.viewMenuList.label.activity', 'Hoạt động') }}</span>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

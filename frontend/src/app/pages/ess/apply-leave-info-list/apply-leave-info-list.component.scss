@@ -1,0 +1,81 @@
+.ali-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ali-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ali-label {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.ali-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ali-toolbar-label {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.ali-cancel-btn {
+  margin-left: auto;
+}
+
+.ali-col-center {
+  text-align: center;
+}
+
+.ali-small {
+  font-size: 12px;
+}
+
+.ali-row {
+  cursor: pointer;
+}
+
+.ali-name-link {
+  color: #0d2bff;
+}
+
+.ali-name-link:hover {
+  text-decoration: underline;
+}
+
+.ali-detail-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.ali-detail-info-table th,
+.ali-detail-info-table td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.ali-detail-info-table th {
+  background: #f8fafc;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ali-approval-table {
+  margin-bottom: 16px;
+}
+
+.ali-section-title {
+  font-weight: 600;
+  margin: 12px 0 8px;
+}

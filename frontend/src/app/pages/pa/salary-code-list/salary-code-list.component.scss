@@ -1,0 +1,66 @@
+.vscl-page {
+  padding: 4px 0;
+}
+
+.vscl-search-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vscl-search-left,
+.vscl-search-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vscl-inline-label {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.vscl-table-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.vscl-col-center {
+  text-align: center;
+}
+
+.vscl-clickable {
+  cursor: pointer;
+}
+
+.vscl-form-row {
+  margin-bottom: 10px;
+}
+
+.vscl-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.vscl-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}
+
+.vscl-checkbox-group {
+  display: flex;
+  gap: 16px;
+}

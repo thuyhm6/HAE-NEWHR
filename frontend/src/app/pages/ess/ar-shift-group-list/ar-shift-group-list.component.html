@@ -1,0 +1,111 @@
+<div class="shg-page">
+  <nz-card class="shg-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="shg-search-emp-id"
+                nz-input
+                [ngModel]="searchEmpId()"
+                (ngModelChange)="searchEmpId.set($event)"
+                name="shgSearchEmpId"
+                [placeholder]="i18n.t('common.placeholder.empId', 'Nhập mã nhân viên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="shg-search-emp-name"
+                nz-input
+                [ngModel]="searchEmpName()"
+                (ngModelChange)="searchEmpName.set($event)"
+                name="shgSearchEmpName"
+                [placeholder]="i18n.t('common.placeholder.empName', 'Nhập tên nhân viên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="14" class="shg-search-actions">
+          <button id="shg-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="shg-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="shg-table-card">
+    <nz-table
+      id="shg-data-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      #shgTable
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="shg-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th nzWidth="100px" class="shg-col-center">{{ i18n.t('common.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('common.empName', 'Tên nhân viên') }}</th>
+          <th>{{ i18n.t('ess.shiftGroup.col.beforeShift', 'Ca trước thay đổi') }}</th>
+          <th nzWidth="200px">{{ i18n.t('ess.shiftGroup.col.afterShift', 'Ca sau thay đổi') }}</th>
+          <th nzWidth="150px">{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th>
+          <th>{{ i18n.t('common.note', 'Ghi chú') }}</th>
+          <th nzWidth="90px" class="shg-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of shgTable.data; track row.pkNo; let idx = $index) {
+          <tr>
+            <td class="shg-col-center">{{ idx + 1 }}</td>
+            <td class="shg-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.beforShiftName }}</td>
+            <td>
+              <nz-select [(ngModel)]="row.editShiftNo" class="shg-full-width" [nzSize]="'small'">
+                <nz-option
+                  *ngFor="let opt of shiftOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="shiftLabel(opt)"
+                ></nz-option>
+              </nz-select>
+            </td>
+            <td>
+              <nz-date-picker [(ngModel)]="row.editStartDate" nzFormat="dd/MM/yyyy" [nzSize]="'small'" class="shg-full-width"></nz-date-picker>
+            </td>
+            <td>
+              <input nz-input [(ngModel)]="row.editRemark" nzSize="small" />
+            </td>
+            <td class="shg-col-center">
+              <button nz-button nzType="primary" nzSize="small" [nzLoading]="row.saving" (click)="saveRow(row)">
+                <span nz-icon nzType="save"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="shg-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

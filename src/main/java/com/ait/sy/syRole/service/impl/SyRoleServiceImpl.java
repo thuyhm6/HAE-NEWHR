@@ -9,11 +9,20 @@ import com.ait.sy.syRole.service.SyRoleService;
 import com.ait.sy.sys.mapper.SyGlobalNameMapper;
 import com.ait.sy.sys.model.SyGlobalName;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -188,31 +197,51 @@ public class SyRoleServiceImpl implements SyRoleService {
 
     @Override
     public byte[] exportExcel() {
-        List<SyRoleDto> list = syRoleMapper.findAllWithNames("");
-        StringBuilder csv = new StringBuilder();
-        csv.append("Role No,Role ID,Name VI,Name EN,Name ZH,Name KO,CPNY ID,System Type,Activity,Order No\n");
+        try {
+            List<SyRoleDto> list = syRoleMapper.findAllWithNames("");
 
-        for (SyRoleDto dto : list) {
-            csv.append(escapeCsv(dto.getRoleNo())).append(",");
-            csv.append(escapeCsv(dto.getRoleId())).append(",");
-            csv.append(escapeCsv(dto.getNameVi())).append(",");
-            csv.append(escapeCsv(dto.getNameEn())).append(",");
-            csv.append(escapeCsv(dto.getNameZh())).append(",");
-            csv.append(escapeCsv(dto.getNameKo())).append(",");
-            csv.append(escapeCsv(dto.getCpnyId())).append(",");
-            csv.append(dto.getSysType()).append(",");
-            csv.append(dto.getActivity()).append(",");
-            csv.append(dto.getOrderNo()).append("\n");
+            try (XSSFWorkbook wb = new XSSFWorkbook()) {
+                XSSFSheet sheet = wb.createSheet("SY_ROLE");
+
+                CellStyle headerStyle = wb.createCellStyle();
+                headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+                List<String> headers = Arrays.asList(
+                        "Role No", "Role ID", "Name VI", "Name EN", "Name ZH", "Name KO", "CPNY ID", "System Type", "Activity", "Order No");
+                XSSFRow headerRow = sheet.createRow(0);
+                for (int col = 0; col < headers.size(); col++) {
+                    XSSFCell cell = headerRow.createCell(col);
+                    cell.setCellValue(headers.get(col));
+                    cell.setCellStyle(headerStyle);
+                }
+
+                int rowIdx = 1;
+                for (SyRoleDto dto : list) {
+                    XSSFRow dataRow = sheet.createRow(rowIdx++);
+                    int c = 0;
+                    dataRow.createCell(c++).setCellValue(dto.getRoleNo() != null ? dto.getRoleNo() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getRoleId() != null ? dto.getRoleId() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameVi() != null ? dto.getNameVi() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameEn() != null ? dto.getNameEn() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameZh() != null ? dto.getNameZh() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getNameKo() != null ? dto.getNameKo() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getCpnyId() != null ? dto.getCpnyId() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getSysType() != null ? dto.getSysType() : "");
+                    dataRow.createCell(c++).setCellValue(dto.getActivity() != null ? dto.getActivity() : 0);
+                    dataRow.createCell(c++).setCellValue(dto.getOrderNo() != null ? dto.getOrderNo() : 0);
+                }
+
+                for (int i = 0; i < headers.size(); i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                wb.write(bos);
+                return bos.toByteArray();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        return csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
-    }
-
-    private String escapeCsv(String val) {
-
-        if (val.contains(",") || val.contains("\"") || val.contains("\n")) {
-            return "\"" + val.replace("\"", "\"\"") + "\"";
-        }
-        return val;
     }
 }

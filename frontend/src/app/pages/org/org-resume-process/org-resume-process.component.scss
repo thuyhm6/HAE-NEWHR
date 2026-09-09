@@ -1,0 +1,142 @@
+/* Copy nguyên từ .process-container/.process-group/... trong assets/css/style.css (dùng cho bản
+   Thymeleaf gốc) - file đó chỉ nạp cho các trang Thymeleaf, không có trong bundle Angular, nên khai báo
+   lại ở đây (đổi tiền tố "process-"/"step-"/"group-"/"vertical-" thành "orp-" để tránh trùng class). */
+
+.orp-page {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+}
+
+.orp-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  flex-wrap: wrap;
+}
+
+.orp-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.orp-inline-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.orp-status-label {
+  color: #666;
+}
+
+.orp-status-value {
+  font-weight: 600;
+}
+
+.orp-status-active {
+  color: #52c41a;
+}
+
+.orp-status-inactive {
+  color: #ff4d4f;
+}
+
+.orp-btn-execute {
+  margin-left: auto;
+}
+
+.orp-process-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  overflow-x: auto;
+  background: #f8f9fa;
+}
+
+.orp-process-group {
+  border: 2px solid #fd7e14;
+  border-radius: 15px;
+  background-color: #fff5f0;
+  padding: 15px;
+  min-width: 250px;
+  position: relative;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.orp-process-header {
+  text-align: center;
+  color: #d35400;
+  font-weight: bold;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orp-process-header::before,
+.orp-process-header::after {
+  content: '•';
+  margin: 0 10px;
+  color: #fd7e14;
+}
+
+.orp-step-item {
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.orp-step-btn {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background: linear-gradient(to bottom, #ffffff 0%, #f1f1f1 100%);
+  color: #333;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.orp-step-btn.orp-active-step {
+  background: linear-gradient(to bottom, #f39c12 0%, #e67e22 100%);
+  color: #fff;
+  border-color: #d35400;
+}
+
+.orp-step-btn.orp-checkbox-step {
+  background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.orp-step-arrow-down {
+  text-align: center;
+  color: #aaa;
+  margin: -10px 0 5px 0;
+  font-size: 20px;
+}
+
+.orp-group-connector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  color: #aaa;
+  font-size: 24px;
+}
+
+.orp-vertical-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}

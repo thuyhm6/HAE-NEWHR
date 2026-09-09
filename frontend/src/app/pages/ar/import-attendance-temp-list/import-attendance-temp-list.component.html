@@ -1,0 +1,92 @@
+<div class="imp-page">
+  <nz-card class="imp-toolbar-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label [nzNoColon]="true">{{ i18n.t('impAtt.totalRows', 'Tổng số hàng:') }}</nz-form-label>
+        <nz-form-control>
+          <strong id="imp-total-rows">{{ totalRows() }}</strong>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzNoColon]="true">{{ i18n.t('impAtt.errorRows', 'Số hàng lỗi:') }}</nz-form-label>
+        <nz-form-control>
+          <strong id="imp-error-rows">{{ errorRows() }}</strong>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('impAtt.errorFilter', 'Gặp lỗi hay không') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="imp-error-only" [ngModel]="errorOnly()" (ngModelChange)="errorOnly.set($event)" name="impErrorOnly" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('impAtt.all', 'Tất cả')" style="min-width: 200px">
+            <nz-option nzValue="Y" [nzLabel]="i18n.t('impAtt.onlyError', 'Chỉ hiển thị dòng lỗi')"></nz-option>
+            <nz-option nzValue="N" [nzLabel]="i18n.t('impAtt.onlyValid', 'Chỉ hiển thị dòng hợp lệ')"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="imp-search-btn" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tra cứu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="imp-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">
+            <span nz-icon nzType="save"></span>
+            {{ i18n.t('common.save', 'Lưu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="imp-table-card">
+    <nz-table #impTable id="imp-result-table" [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: '1800px', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="imp-col-center">{{ i18n.t('impAtt.line', 'Line') }}</th>
+          <th>{{ i18n.t('impAtt.fullName', 'Họ tên') }}</th>
+          <th class="imp-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th class="imp-col-center">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.leaveType', 'Phân loại') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.startDate', 'Ngày bắt đầu') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.endDate', 'Ngày kết thúc') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.endTime', 'Thời gian kết thúc') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.duration', 'Thời lượng') }}</th>
+          <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.approvalStatus', 'Trạng thái duyệt') }}</th>
+          <th>{{ i18n.t('impAtt.validationResult', 'Kết quả kiểm chứng') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.uploadBy', 'Người tải') }}</th>
+          <th class="imp-col-center">{{ i18n.t('impAtt.uploadTime', 'Thời gian') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of impTable.data; track $index) {
+          <tr [class.imp-row-error]="(row.uploadErrorMsg ?? '').trim() !== ''">
+            <td class="imp-col-center">{{ row.lineId }}</td>
+            <td>{{ row.applyName }}</td>
+            <td class="imp-col-center">{{ row.empId }}</td>
+            <td class="imp-col-center">{{ row.deptName }}</td>
+            <td class="imp-col-center">{{ row.leaveTypeName }}</td>
+            <td class="imp-col-center">{{ row.leaveFromDate }}</td>
+            <td class="imp-col-center">{{ row.leaveFromTime }}</td>
+            <td class="imp-col-center">{{ row.leaveToDate }}</td>
+            <td class="imp-col-center">{{ row.leaveToTime }}</td>
+            <td class="imp-col-center">{{ row.applyLength }}</td>
+            <td>{{ row.leaveReason }}</td>
+            <td class="imp-col-center">{{ row.affirmFlagName }}</td>
+            <td>{{ row.uploadErrorMsg }}</td>
+            <td class="imp-col-center">{{ row.uploadBy }}</td>
+            <td class="imp-col-center">{{ row.uploadDate }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="15" class="imp-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

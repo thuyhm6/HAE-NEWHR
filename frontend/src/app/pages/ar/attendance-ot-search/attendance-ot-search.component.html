@@ -1,0 +1,148 @@
+<div class="ots-page">
+  <nz-card class="ots-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ots-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="otsKeyword" [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã hoặc họ tên')" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="ots-dept"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="otsDept"
+                nzMultiple
+                nzCheckable
+                nzShowSearch
+                [nzPlaceHolder]="i18n.t('common.select', 'Chọn phòng ban')"
+                style="width: 100%"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ots-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="otsFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ots-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="otsToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.empGroup', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ots-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="otsPostFamily" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of postFamilyOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.nameVi || opt.codeName || opt.codeNo"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.shiftType', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ots-shift" [ngModel]="shiftNo()" (ngModelChange)="shiftNo.set($event)" name="otsShift" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="opt.nameVi || opt.shiftNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('applyOt.otType', 'Loại tăng ca') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ots-item" [ngModel]="itemNo()" (ngModelChange)="itemNo.set($event)" name="otsItem" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="opt.itemName || opt.itemNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="ots-toolbar-actions">
+        <button id="ots-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="ots-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="ots-export-btn" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="export"></span>
+          {{ i18n.t('common.exportExcel', 'Xuất excel') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="ots-table-card">
+    <nz-table #otsTable id="ots-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="ots-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="ots-col-center">{{ i18n.t('attSearch.workDate', 'Ngày công') }}</th>
+          <th class="ots-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Tên nhân viên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('attSearch.position', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('attSearch.empGroup', 'Nhóm nhân viên') }}</th>
+          <th class="ots-col-center">{{ i18n.t('attSearch.shiftType', 'Ca làm việc') }}</th>
+          <th>{{ i18n.t('applyOt.otType', 'Loại tăng ca') }}</th>
+          <th class="ots-col-center">{{ i18n.t('attSearch.fromTime', 'Từ thời gian') }}</th>
+          <th class="ots-col-center">{{ i18n.t('attSearch.toTime', 'Đến thời gian') }}</th>
+          <th class="ots-col-right">{{ i18n.t('attSearch.quantity', 'Số lượng') }}</th>
+          <th class="ots-col-center">{{ i18n.t('attSearch.unit', 'Đơn vị') }}</th>
+          <th class="ots-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th class="ots-col-center">{{ i18n.t('applyOt.updater', 'Người cập nhật') }}</th>
+          <th class="ots-col-center">{{ i18n.t('applyOt.updateTime', 'Thời gian cập nhật') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of otsTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="ots-col-center">{{ idx + 1 }}</td>
+            <td class="ots-col-center">{{ row.arDateStr }}</td>
+            <td class="ots-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.postFamilyName }}</td>
+            <td class="ots-col-center">{{ row.shiftName }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="ots-col-center">{{ row.fromTime }}</td>
+            <td class="ots-col-center">{{ row.toTime }}</td>
+            <td class="ots-col-right">{{ row.quantity }}</td>
+            <td class="ots-col-center">{{ row.unit }}</td>
+            <td class="ots-col-center">{{ row.statusName }}</td>
+            <td>{{ row.remark }}</td>
+            <td class="ots-col-center">{{ row.updatedBy }}</td>
+            <td class="ots-col-center">{{ row.updateDate }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="17" class="ots-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

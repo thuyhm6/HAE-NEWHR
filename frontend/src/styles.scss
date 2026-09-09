@@ -1,0 +1,237 @@
+/* You can add global styles to this file, and also import other style files */
+
+.ant-layout-header {
+    height: 50px;
+    color: rgba(0, 0, 0, .85);
+    line-height: 50px;
+}
+
+.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item, .ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-submenu {
+    margin-top: -1px;
+    margin-bottom: 0;
+    padding: 0 16px;
+}
+
+.ant-table {
+    line-height: 1;
+}
+.ant-card-body {
+    padding: 6px 16px;
+}
+
+.ant-btn {
+    padding: 4px 8px;
+    line-height: 1;
+}
+
+.ant-form-item {
+    margin-bottom: 8px;
+}
+
+.ant-form-item-vertical .ant-col-24.ant-form-item-label, .ant-form-item-vertical .ant-col-xl-24.ant-form-item-label, .ant-form-item-vertical .ant-form-item-label, .ant-form-vertical .ant-form-item:not(.ant-form-item-horizontal) .ant-col-24.ant-form-item-label, .ant-form-vertical .ant-form-item:not(.ant-form-item-horizontal) .ant-col-xl-24.ant-form-item-label, .ant-form-vertical .ant-form-item:not(.ant-form-item-horizontal) .ant-form-item-label {
+    padding: 0;
+}
+
+/*
+ * QUAN TRỌNG - cách nhận diện class theo hậu tố dùng CHUNG cho toàn bộ file này (search-actions,
+ * page, search-card, table-card): KHÔNG được dùng riêng [class$="-xxx"] (kết thúc bằng) vì các host
+ * component của NG-ZORRO (nz-card, nz-col...) tự nối thêm class CỦA RIÊNG chúng vào SAU class mình
+ * gán, vd <nz-card class="mepil-table-card"> thực tế render ra
+ * class="ant-card mepil-table-card ant-card-bordered" - chuỗi class thật sự KHÔNG CÒN kết thúc bằng
+ * "-table-card" nữa (kết thúc bằng "-bordered") nên [class$="-table-card"] KHÔNG BAO GIỜ khớp được
+ * (đã xác minh bằng DevTools/computed style thực tế trên trình duyệt). Phải kết hợp thêm
+ * [class*="-xxx "] (chứa "-xxx" theo sau là 1 dấu cách - tức "-xxx" vẫn là kết thúc của 1 token class,
+ * chỉ khác là có thêm class khác nối tiếp phía sau) thì mới bắt được cả 2 trường hợp: class là token
+ * cuối cùng (dùng $=) và class có token khác chèn thêm phía sau (dùng *= kèm dấu cách để không khớp
+ * nhầm sang tên class khác chỉ tình cờ CHỨA chuỗi "-xxx" ở giữa, vd không muốn khớp "abc-xxx-yz").
+ */
+*:has(> [class$="-search-actions"]),
+*:has(> [class*="-search-actions "]) {
+    align-items: flex-end;
+}
+
+[class$="-search-actions"],
+[class*="-search-actions "] {
+    align-self: flex-end;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/*
+ * Layout "menu trên + tab-strip cố định, trong từng trang thì vùng tìm kiếm/nút chức năng + tiêu đề
+ * bảng cũng cố định, chỉ dữ liệu bảng (tbody) cuộn". Phần menu/tab-strip đã xử lý riêng ở
+ * app-shell.component.scss (.hae-dashboard-content-body). Phần bên dưới áp dụng cho MỌI trang theo
+ * đúng quy ước hậu tố class toàn dự án đã có sẵn (vd ai-page/ai-search-card/ai-table-card của
+ * ar-item) - không cần khai báo lại CSS này ở từng component, chỉ cần:
+ *   1. Đặt tên class đúng quy ước: root "-page", card tìm kiếm/nút "-search-card", card chứa bảng
+ *      "-table-card".
+ *   2. Thêm y: '100%' vào [nzScroll] của nz-table trong "-table-card" (NG-ZORRO tự tách <thead>
+ *      thành 1 bảng cố định + <tbody> thành vùng cuộn riêng khi có nzScroll.y, xem NzTableComponent).
+ */
+/*
+ * Component root do Router tự chèn (host tag như <app-manage-emp-position-info-list>, làm anh em ngay
+ * sau <router-outlet>, xem app-shell.component.html) KHÔNG có CSS mặc định nào cho display - trình
+ * duyệt coi mọi custom element không rõ display là "inline" (trừ khi chính component đó tự khai báo
+ * ":host { display: block }", dự án này chỉ làm vậy ở login.component.scss). Ở dạng inline, thuộc
+ * tính height KHÔNG áp dụng được (theo spec CSS), nên "-page" bên trong dù có height:100% cũng vô
+ * nghĩa - toàn bộ chuỗi height cố định search-card/table-card bị đứt ngay tại chính bước này dù mọi
+ * CSS ở "-page"/"-search-card"/"-table-card" đều đúng. Sửa 1 lần ở đây (thay vì thêm ":host{display:
+ * block}" vào từng file *.component.scss của mọi trang) theo đúng tinh thần "không lặp lại CSS ở từng
+ * component" của toàn bộ cơ chế này.
+ */
+router-outlet + * {
+    display: block;
+    height: 100%;
+    min-height: 0;
+}
+
+[class$="-page"],
+[class*="-page "] {
+    height: 100%;
+    min-height: 0;
+}
+
+/*
+ * Chỉ ép xếp chồng dọc (search-card cố định phía trên, table-card giãn hết phần còn lại) cho đúng
+ * khuôn trang danh sách kiểu ar-item (root có card con "-table-card"). Loại trừ trang chia cột
+ * trái/phải bằng Ant Grid (nz-row trực tiếp trên chính root "-page", vd shift/item-parameter/
+ * summary-formula: cây bên trái + "-table-card" bên phải nằm CẠNH nhau, không phải xếp CHỒNG) để
+ * không ép nhầm layout hàng ngang thành dọc.
+ */
+[class$="-page"]:not([nz-row]):has([class*="-table-card"]),
+[class*="-page "]:not([nz-row]):has([class*="-table-card"]) {
+    display: flex;
+    flex-direction: column;
+}
+
+[class$="-search-card"],
+[class*="-search-card "] {
+    flex-shrink: 0;
+}
+
+/*
+ * Card chứa bảng chiếm hết phần chiều cao còn lại (flex: 1). Toàn bộ chain bên dưới chỉ để "bơm"
+ * height: 100% xuống tới .ant-table-container (nz-table tự thêm 1 lớp <nz-table-inner-scroll> khi
+ * có [nzScroll], các thẻ div/table bên trong đều là block mặc định của antd, không tự co giãn theo
+ * cha) - nhờ đó nzScroll.y = '100%' mới có chỗ dựa để tính ra max-height thật (px) cho phần <tbody>
+ * cuộn, còn <thead> (.ant-table-header) và phân trang luôn đứng yên bên ngoài phần cuộn đó. Style
+ * global (không phải component-scoped) nên không cần ::ng-deep để xuyên qua nz-table.
+ *
+ * overflow-y: auto (không phải hidden) ở đây là fallback AN TOÀN cho các trang "-table-card" nào
+ * CHƯA kịp thêm y: '100%' vào [nzScroll] của nz-table (nz-table khi đó render toàn bộ thead+tbody
+ * chung 1 khối, không tự có vùng cuộn riêng) - nếu để hidden, dữ liệu vượt quá 100% chiều cao sẽ bị
+ * CẮT MẤT không cách nào xem được. Để auto, các trang này tạm thời cuộn cả card (thead cuộn theo
+ * tbody, chưa đạt hiệu ứng "tiêu đề bảng cố định") thay vì mất dữ liệu - vẫn đúng hành vi cũ, chỉ
+ * khác là cuộn trong phạm vi card thay vì cuộn cả trang. Khi trang nào được thêm nzScroll.y sau này
+ * sẽ tự động lên hiệu ứng thead cố định đầy đủ mà không cần sửa gì thêm ở đây.
+ */
+[class$="-table-card"],
+[class*="-table-card "] {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+[class$="-table-card"] > .ant-card-body,
+[class*="-table-card "] > .ant-card-body {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+[class$="-table-card"] nz-table,
+[class*="-table-card "] nz-table,
+[class$="-table-card"] .ant-spin-nested-loading,
+[class*="-table-card "] .ant-spin-nested-loading {
+    display: block;
+    height: 100%;
+    min-height: 0;
+}
+
+/*
+ * .ant-spin-container (do NzSpinComponent tự bọc quanh nội dung nz-table) xếp CHỒNG dọc [phân trang
+ * trên - nzPaginationPosition "top"/"both", tuỳ chọn] + div.ant-table + [phân trang dưới - mặc định],
+ * nên phải là flex-column: nếu để height:100% như .ant-table bên dưới thì div.ant-table (chỉ nên
+ * chiếm phần còn lại) sẽ chiếm hết 100% chỗ của .ant-spin-container, đẩy nz-pagination ra ngoài vùng
+ * hiển thị (mất khoảng trống cho phân trang) thay vì nhường 1 khoảng cố định bên dưới cho nó.
+ */
+[class$="-table-card"] .ant-spin-container,
+[class*="-table-card "] .ant-spin-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+/*
+ * div.ant-table cũng có thể xếp chồng [nz-table-title-footer ứng với nzTitle - tuỳ chọn] + .ant-table-
+ * container + [nz-table-title-footer ứng với nzFooter - tuỳ chọn], nên áp dụng đúng nguyên tắc trên:
+ * flex-column, nhường flex:1 cho .ant-table-container thay vì height:100% cứng, để chỗ cho title/footer
+ * (nếu trang nào dùng [nzTitle]/[nzFooter]) không bị .ant-table-container chiếm hết.
+ */
+[class$="-table-card"] .ant-table,
+[class*="-table-card "] .ant-table {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+/*
+ * .ant-table-container (bên trong div.ant-table) xếp CHỒNG dọc .ant-table-header (thead cố định) +
+ * .ant-table-body (tbody cuộn) + [.ant-table-summary - tuỳ chọn tfootFixed]. NG-ZORRO tự gán INLINE
+ * style "max-height: <nzScroll.y>" cho .ant-table-body (xem bodyStyleMap trong NzTableInnerScrollComponent,
+ * fesm2022/ng-zorro-antd-table.mjs) - khi y:'100%' thì max-height:100% được tính theo chính chiều cao
+ * .ant-table-container, TRÙNG với phần .ant-table-header cũng đang chiếm 1 phần chiều cao đó (CSS %
+ * không tự trừ chiều cao phần tử anh em) -> tbody đòi đủ 100% trong khi thead đã ăn mất 1 phần -> tbody
+ * tràn ra ngoài, ĐÈ LÊN phần phân trang/footer phía dưới. Chuyển .ant-table-container sang flex-column +
+ * ghi đè max-height của .ant-table-body bằng !important (bỏ cách tính theo %, vốn không thể tự trừ
+ * chiều cao thead) sang flex:1 - trình duyệt tự tính đúng "phần còn lại sau khi trừ thead" bằng flexbox,
+ * không cần biết trước thead cao bao nhiêu px.
+ */
+[class$="-table-card"] .ant-table-container,
+[class*="-table-card "] .ant-table-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+[class$="-table-card"] .ant-table-header,
+[class*="-table-card "] .ant-table-header,
+[class$="-table-card"] .ant-table-summary,
+[class*="-table-card "] .ant-table-summary {
+    flex-shrink: 0;
+}
+
+[class$="-table-card"] .ant-table-body,
+[class*="-table-card "] .ant-table-body {
+    max-height: none !important;
+    flex: 1 !important;
+    min-height: 0;
+}
+
+/*
+ * Khoảng "footer" cố định ở đáy table-card, dùng để hiển thị phân trang - flex-shrink:0 (chỉ có tác
+ * dụng từ khi .ant-spin-container ở trên đã là flex-column) giữ cho nz-pagination luôn đủ chỗ, không
+ * bị co lại hay bị div.ant-table đè lên. padding-top tạo khoảng cách trực quan với bảng phía trên,
+ * margin-bottom: 0 để không dư khoảng trắng thừa dưới đáy card.
+ */
+[class$="-table-card"] .ant-table-pagination,
+[class*="-table-card "] .ant-table-pagination {
+    flex-shrink: 0;
+    margin-bottom: 0 !important;
+    padding-top: 8px;
+}
+
+dl, ol, ul {
+    margin-top: 0;
+    margin-bottom: 0;
+}

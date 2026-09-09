@@ -51,6 +51,8 @@ import com.ait.hrm.empinfo.service.HrRewardService;
 import com.ait.hrm.empinfo.service.HrSpecialMatterService;
 import com.ait.hrm.empinfo.service.HrWorkExperienceService;
 import com.ait.sy.sys.dto.DataTablesResponse;
+import com.ait.util.AngularIndexService;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +65,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +82,9 @@ public class EssViewDeptController {
 
     @Autowired
     private ManageEmpPositionInfoService service;
+
+    @Autowired
+    private AngularIndexService angularIndexService;
 
     @Autowired
     private EssPersonalInfoService essPersonalInfoService;
@@ -134,23 +141,37 @@ public class EssViewDeptController {
     private EvsObjectService evsObjectService;
 
     @GetMapping("/viewEmpCalendar")
-    public String viewEmpCalendar() {
-        return "ess/viewDept/viewEmpCalendar";
+    public String viewEmpCalendar(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
+    /**
+     * Danh sach chuc vu nhan vien theo phong ban - gio do Angular phuc vu
+     * thay Thymeleaf (xem AngularIndexService), tuong tu HomeController#dashboard.
+     */
     @GetMapping("/ManageEmpPositionInfoList")
-    public String viewManageEmpPositionInfoList() {
-        return "ess/viewDept/ManageEmpPositionInfoList";
+    public String viewManageEmpPositionInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewDeptPersonalInfoManageList")
-    public String viewDeptPersonalInfoManageList() {
-        return "ess/viewDept/viewDeptPersonalInfoManageList";
+    public String viewDeptPersonalInfoManageList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
+    /**
+     * ManageCountInfoList/viewArPersonalSelfList/viewOtApplyPersonalSelfList/yearUseInfo/
+     * viewArPersonalList - gio do Angular phuc vu thay Thymeleaf (xem AngularIndexService),
+     * tuong tu EssViewDeptController#viewManageEmpPositionInfoList.
+     */
+
     @GetMapping("/viewManageEvsResultEmpList")
-    public String viewManageEvsResultEmpList() {
-        return "ess/viewDept/viewManageEvsResultEmpList";
+    public String viewManageEvsResultEmpList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/manageEmpPositionInfo/list")
@@ -208,9 +229,43 @@ public class EssViewDeptController {
         return ResponseEntity.ok(service.getInsideExperienceList(personId));
     }
 
+    @GetMapping("/api/manageEmpPositionInfo/export")
+    public void exportManageEmpPositionInfoList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNos,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            @RequestParam(required = false) String postFamily,
+            @RequestParam(required = false) String empTypeCode,
+            @RequestParam(required = false) String empOffice,
+            @RequestParam(required = false) String nationalityCode,
+            @RequestParam(required = false) String asOfDate,
+            HttpServletResponse response) throws IOException {
+        ManageEmpPositionInfoDto params = new ManageEmpPositionInfoDto();
+        params.setKeyword(keyword);
+        params.setDeptNos(deptNos);
+        params.setFromDate(fromDate);
+        params.setToDate(toDate);
+        params.setPostFamily(postFamily);
+        params.setEmpTypeCode(empTypeCode);
+        params.setEmpOffice(empOffice);
+        params.setNationalityCode(nationalityCode);
+        params.setAsOfDate(asOfDate);
+
+        try (Workbook workbook = service.exportExcel(params)) {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"manage_emp_position_info_list.xlsx\"");
+            workbook.write(response.getOutputStream());
+        } catch (Exception e) {
+            log.error("Loi xuat excel danh sach chuc vu nhan vien (controller)", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Loi he thong khi xuat excel.");
+        }
+    }
+
     @GetMapping("/viewArPersonalSelfList")
-    public String viewArPersonalSelfList() {
-        return "ess/viewDept/viewArPersonalSelfList";
+    public String viewArPersonalSelfList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/arPersonalSelf/items")
@@ -246,8 +301,9 @@ public class EssViewDeptController {
     }
 
     @GetMapping("/viewOtApplyPersonalSelfList")
-    public String viewOtApplyPersonalSelfList() {
-        return "ess/viewDept/viewOtApplyPersonalSelfList";
+    public String viewOtApplyPersonalSelfList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/otApplyPersonalSelf/items")
@@ -283,8 +339,9 @@ public class EssViewDeptController {
     }
 
     @GetMapping("/yearUseInfo")
-    public String viewYearUseInfo() {
-        return "ess/viewDept/yearUseInfo";
+    public String viewYearUseInfo(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/yearUseInfo/vacationRows")
@@ -302,13 +359,15 @@ public class EssViewDeptController {
     }
 
     @GetMapping("/viewArPersonalList")
-    public String viewArPersonalList() {
-        return "ess/viewDept/viewArPersonalList";
+    public String viewArPersonalList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewOtApplyPersonalList")
-    public String viewOtApplyPersonalList() {
-        return "ess/viewDept/viewOtApplyPersonalList";
+    public String viewOtApplyPersonalList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/arPersonalList/items")
@@ -335,8 +394,9 @@ public class EssViewDeptController {
     }
 
     @GetMapping("/ManageCountInfoList")
-    public String viewManageCountInfoList() {
-        return "ess/viewDept/ManageCountInfoList";
+    public String viewManageCountInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/manageCountInfo/summary")
@@ -352,8 +412,9 @@ public class EssViewDeptController {
     }
 
     @GetMapping("/viewEntryInfoList")
-    public String viewEntryInfoList() {
-        return "ess/viewDept/viewEntryInfoList";
+    public String viewEntryInfoList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/entryInfoList/list")
@@ -423,11 +484,14 @@ public class EssViewDeptController {
     // ==================== Hồ sơ nhân viên (viewPersonalInfoEss) ====================
 
     /**
-     * Mở giao diện Hồ sơ nhân viên (quản lý/HR xem và cập nhật hồ sơ của nhân viên khác)
+     * Mở giao diện Hồ sơ nhân viên (quản lý/HR xem hồ sơ của nhân viên khác) -
+     * giờ do Angular phục vụ thay Thymeleaf (xem AngularIndexService), tương tự
+     * EssViewDeptController#viewManageEmpPositionInfoList.
      */
     @GetMapping("/viewPersonalInfoEss")
-    public String viewPersonalInfoEss() {
-        return "ess/viewDept/viewPersonalInfoEss";
+    public String viewPersonalInfoEss(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**

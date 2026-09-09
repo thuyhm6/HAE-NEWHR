@@ -1,0 +1,269 @@
+.ecal-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ecal-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px 8px 0 0;
+  padding: 8px 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.ecal-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 auto;
+}
+
+.ecal-combo {
+  width: 130px;
+}
+
+.ecal-year {
+  width: 100px;
+}
+
+.ecal-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ecal-grid-wrap {
+  border: 1px solid #cbd5e1;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.ecal-hrow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.ecal-hcell {
+  padding: 8px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  letter-spacing: 0.5px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ecal-hcell:last-child {
+  border-right: none;
+}
+
+.ecal-col-sun {
+  color: #fca5a5 !important;
+}
+
+.ecal-col-sat {
+  color: #86efac !important;
+}
+
+.ecal-message {
+  padding: 20px;
+  text-align: center;
+  color: #64748b;
+  background: #fff;
+}
+
+.ecal-message-error {
+  color: #dc2626;
+}
+
+.ecal-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ecal-week:last-child {
+  border-bottom: none;
+}
+
+.ecal-day {
+  min-height: 90px;
+  padding: 6px 8px;
+  border-right: 1px solid #e2e8f0;
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+.ecal-day:last-child {
+  border-right: none;
+}
+
+.ecal-day-empty {
+  background: #f8fafc;
+  min-height: 0;
+}
+
+.ecal-day-today {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.ecal-day-rest {
+  background: linear-gradient(180deg, #fff 0%, #fef2f2 100%);
+}
+
+.ecal-day-work {
+  background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);
+}
+
+.ecal-day-holiday {
+  background: linear-gradient(180deg, #fff 0%, #fefce8 100%);
+}
+
+.ecal-day-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.ecal-day-num {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1e293b;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.ecal-day-num-sun {
+  color: #dc2626;
+}
+
+.ecal-day-num-sat {
+  color: #16a34a;
+}
+
+.ecal-status {
+  font-size: 0.62rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.ecal-status-rest {
+  background: linear-gradient(135deg, #fecaca, #fca5a5);
+  color: #7f1d1d;
+}
+
+.ecal-status-holiday {
+  background: linear-gradient(135deg, #fde68a, #fbbf24);
+  color: #78350f;
+}
+
+.ecal-status-work {
+  color: #166534;
+  background: linear-gradient(135deg, #bbf7d0, #86efac);
+}
+
+.ecal-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.ecal-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.58rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  line-height: 1.6;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.ecal-tag-we {
+  background: #fde8e8;
+  color: #991b1b;
+}
+
+.ecal-tag-wd {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.ecal-tag-hol {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 1px solid #fbbf24;
+}
+
+.ecal-tag-sh {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.ecal-remark {
+  margin-top: 3px;
+  font-size: 0.58rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-style: italic;
+}
+
+.ecal-legend {
+  display: flex;
+  gap: 16px;
+  padding: 8px 14px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  margin-top: -1px;
+  flex-wrap: wrap;
+}
+
+.ecal-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ecal-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ecal-lg-work {
+  background: linear-gradient(135deg, #86efac, #4ade80);
+}
+
+.ecal-lg-rest {
+  background: linear-gradient(135deg, #fca5a5, #f87171);
+}
+
+.ecal-lg-holiday {
+  background: linear-gradient(135deg, #fde68a, #fbbf24);
+}
+
+.ecal-lg-today {
+  background: linear-gradient(135deg, #93c5fd, #3b82f6);
+}

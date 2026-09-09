@@ -1,0 +1,417 @@
+<div class="rl-page">
+  <!-- ════ Panel trái ════ -->
+  <div class="rl-left-panel">
+    <div class="rl-search-box">
+      <div class="rl-search-row">
+        <input id="rl-search-name" nz-input nzSize="small" [ngModel]="searchName()" (ngModelChange)="searchName.set($event)" (keydown.enter)="search()" [placeholder]="i18n.t('recruit.list.placeholder.searchName', 'Họ tên...')" />
+        <input id="rl-search-emp-id" nz-input nzSize="small" [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" (keydown.enter)="search()" [placeholder]="i18n.t('recruit.list.placeholder.searchEmpId', 'Mã NV...')" style="max-width:90px" />
+        <button id="rl-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+          <span nz-icon nzType="search"></span>
+        </button>
+      </div>
+      <label nz-checkbox id="rl-chk-completed" [ngModel]="showCompleted()" (ngModelChange)="showCompleted.set($event); search()">
+        {{ i18n.t('recruit.list.tab.completed', 'Hoàn thành') }}
+      </label>
+    </div>
+
+    <div class="rl-toolbar">
+      <div class="rl-toolbar-left">
+        <input type="checkbox" (change)="toggleSelectAll($any($event.target).checked)" />
+        <span class="rl-list-count">{{ total() }} {{ i18n.t('recruit.list.label.employees', 'nhân viên') }}</span>
+      </div>
+      <div class="rl-toolbar-actions">
+        <button id="rl-new-btn" nz-button nzType="primary" nzSize="small" (click)="newEmployee()" [title]="i18n.t('common.add', 'Thêm')">
+          <span nz-icon nzType="plus"></span>
+        </button>
+        @if (showConfirmBtn) {
+          <button id="rl-confirm-btn" nz-button nzSize="small" nzType="primary" (click)="execute('CONFIRM')" [title]="i18n.t('recruit.list.btn.confirm', 'Xác nhận')">
+            <span nz-icon nzType="check-circle"></span>
+          </button>
+        }
+        @if (showCancelBtn) {
+          <button id="rl-cancel-btn" nz-button nzSize="small" (click)="execute('CANCEL')" [title]="i18n.t('recruit.list.btn.cancelConfirm', 'Hủy xác nhận')">
+            <span nz-icon nzType="close-circle"></span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="rl-employee-list">
+      @if (!rows().length) {
+        <div class="rl-no-data">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
+      }
+      @for (row of rows(); track row.personId) {
+        <div class="rl-emp-item" [class.selected]="selectedPersonId() === row.personId" (click)="selectEmployee(row.personId!)">
+          <input type="checkbox" class="rl-item-checkbox" [checked]="isRowSelected(row.personId)" (click)="$event.stopPropagation()" (change)="toggleRowSelected(row.personId!, $any($event.target).checked)" />
+          <div class="rl-item-body">
+            <div class="rl-item-name">{{ row.localName }}</div>
+            <div class="rl-item-sub">{{ row.empId }} | {{ row.deptName }}</div>
+            <div class="rl-item-sub">{{ row.dateStarted }}</div>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (rows().length) {
+      <div class="rl-paging">
+        <button nz-button nzSize="small" [disabled]="pageIndex() <= 1" (click)="pageChange(-1)"><span nz-icon nzType="left"></span></button>
+        <span class="rl-page-info">{{ pageIndex() }}/{{ totalPages }}</span>
+        <button nz-button nzSize="small" [disabled]="pageIndex() >= totalPages" (click)="pageChange(1)"><span nz-icon nzType="right"></span></button>
+      </div>
+    }
+  </div>
+
+  <!-- ════ Panel phải ════ -->
+  <div class="rl-right-panel">
+    <div class="rl-detail-header">
+      <span class="rl-detail-title">{{ formLocalName() || i18n.t('recruit.list.label.selectEmployee', '-- Chọn nhân viên --') }}</span>
+      @if (formEmpId()) {
+        <span class="rl-detail-empid">{{ formEmpId() }}</span>
+      }
+    </div>
+
+    <nz-tabs (nzSelectChange)="onTabChange($event.index!)" [nzSelectedIndex]="activeTabIndex()">
+      <!-- Tab 1: Thông tin chung -->
+      <nz-tab [nzTitle]="i18n.t('recruit.list.tab.general', 'Thông tin chung')">
+        <div class="rl-tab-body" nz-row [nzGutter]="12">
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.localName', 'Họ tên') }}</label>
+            <input id="rl-local-name" nz-input nzSize="small" [ngModel]="formLocalName()" (ngModelChange)="formLocalName.set($event)" maxlength="50" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.empId', 'Mã nhân viên') }}</label>
+            <input id="rl-emp-id" nz-input nzSize="small" [ngModel]="formEmpId()" (ngModelChange)="formEmpId.set($event)" maxlength="20" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.englishName', 'Tên tiếng Anh') }}</label>
+            <input id="rl-english-name" nz-input nzSize="small" [ngModel]="formEnglishName()" (ngModelChange)="formEnglishName.set($event)" maxlength="50" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.koreanName', 'Tên Hàn') }}</label>
+            <input id="rl-korean-name" nz-input nzSize="small" [ngModel]="formKoreanName()" (ngModelChange)="formKoreanName.set($event)" maxlength="50" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.sexcode', 'Giới tính') }}</label>
+            <nz-select id="rl-sexcode" nzSize="small" [ngModel]="formSexcode()" (ngModelChange)="formSexcode.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of sexOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.dob', 'Ngày sinh') }}</label>
+            <input id="rl-dob" nz-input nzSize="small" [ngModel]="formDob()" (ngModelChange)="formDob.set($event)" placeholder="YYYY/MM/DD" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.nationalityCode', 'Quốc tịch') }}</label>
+            <nz-select id="rl-nationality-code" nzSize="small" [ngModel]="formNationalityCode()" (ngModelChange)="formNationalityCode.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of nationalityOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.nationCode', 'Dân tộc') }}</label>
+            <nz-select id="rl-nation-code" nzSize="small" [ngModel]="formNationCode()" (ngModelChange)="formNationCode.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of nationOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.maritalStatusCode', 'Tình trạng hôn nhân') }}</label>
+            <nz-select id="rl-marital-status" nzSize="small" [ngModel]="formMaritalStatusCode()" (ngModelChange)="formMaritalStatusCode.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of maritalStatusOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.deptNo', 'Phòng ban') }}</label>
+            <nz-tree-select id="rl-dept-no" [nzNodes]="deptTreeNodes()" [ngModel]="formDeptNo()" (ngModelChange)="onDeptNoChange($event)" nzSize="small" nzShowSearch [nzPlaceHolder]="i18n.t('recruit.list.placeholder.selectDept', '-- Chọn phòng ban --')" style="width:100%"></nz-tree-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.postFamily', 'Nhóm nhân viên') }}</label>
+            <nz-select id="rl-post-family" nzSize="small" [ngModel]="formPostFamily()" (ngModelChange)="onPostFamilyChange($event)" style="width:100%" nzAllowClear>
+              @for (opt of postFamilyOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.postGradeNo', 'Cấp bậc') }}</label>
+            <nz-select id="rl-post-grade" nzSize="small" [ngModel]="formPostGradeNo()" (ngModelChange)="formPostGradeNo.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of postGradeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.positionNo', 'Vị trí') }}</label>
+            <nz-select id="rl-position-no" nzSize="small" [ngModel]="formPositionNo()" (ngModelChange)="formPositionNo.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of positionNoOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.empTypeCode', 'Loại nhân viên') }}</label>
+            <nz-select id="rl-emp-type" nzSize="small" [ngModel]="formEmpTypeCode()" (ngModelChange)="formEmpTypeCode.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of empTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.joinType', 'Loại tuyển dụng') }}</label>
+            <nz-select id="rl-join-type" nzSize="small" [ngModel]="formJoinType()" (ngModelChange)="onJoinTypeChange($event)" style="width:100%" nzAllowClear>
+              @for (opt of joinTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.joinDetailType', 'Chi tiết loại vào') }}</label>
+            <nz-select id="rl-join-detail-type" nzSize="small" [ngModel]="formJoinDetailType()" (ngModelChange)="formJoinDetailType.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of joinDetailTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.dateStarted', 'Ngày vào công ty') }}</label>
+            <input id="rl-date-started" nz-input nzSize="small" [ngModel]="formDateStarted()" (ngModelChange)="formDateStarted.set($event)" placeholder="YYYY/MM/DD" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.fullTimeEmployee', 'Hưởng lương chính thức') }}</label>
+            <nz-select id="rl-is-probation" nzSize="small" [ngModel]="formIsProbation()" (ngModelChange)="formIsProbation.set($event)" style="width:100%" nzAllowClear>
+              <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+              <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.endProbationDate', 'Ngày kết thúc thử việc') }}</label>
+            <input id="rl-end-probation" nz-input nzSize="small" [ngModel]="formEndProbationDate()" (ngModelChange)="formEndProbationDate.set($event)" placeholder="YYYY/MM/DD" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.contractStartDate', 'Ngày bắt đầu HĐ') }}</label>
+            <input id="rl-contract-start" nz-input nzSize="small" [ngModel]="formContractStartDate()" (ngModelChange)="formContractStartDate.set($event)" placeholder="YYYY/MM/DD" />
+          </div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.costCenter', 'Trung tâm chi phí') }}</label>
+            <nz-tree-select id="rl-cost-center" [nzNodes]="deptTreeNodes()" [ngModel]="formCostCenter()" (ngModelChange)="formCostCenter.set($event)" nzSize="small" nzShowSearch [nzPlaceHolder]="i18n.t('recruit.list.placeholder.selectDept', '-- Chọn phòng ban --')" style="width:100%"></nz-tree-select>
+          </div>
+        </div>
+        <div class="rl-save-row">
+          <button id="rl-save-general-btn" nz-button nzType="primary" nzSize="small" [nzLoading]="savingGeneral()" (click)="saveGeneral()">
+            <span nz-icon nzType="save"></span> {{ i18n.t('common.save', 'Lưu') }}
+          </button>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 2: Thông tin bổ sung -->
+      <nz-tab [nzTitle]="i18n.t('recruit.list.tab.extra', 'Thông tin bổ sung')">
+        <div class="rl-tab-body" nz-row [nzGutter]="12">
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.homePhone', 'ĐT nhà') }}</label><input id="rl-home-phone" nz-input nzSize="small" [ngModel]="formHomePhone()" (ngModelChange)="formHomePhone.set($event)" maxlength="100" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.companyPhone', 'Số điện thoại') }}</label><input id="rl-company-phone" nz-input nzSize="small" [ngModel]="formCompanyPhone()" (ngModelChange)="formCompanyPhone.set($event)" maxlength="100" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.officePhone', 'ĐT văn phòng') }}</label><input id="rl-office-phone" nz-input nzSize="small" [ngModel]="formOfficePhone()" (ngModelChange)="formOfficePhone.set($event)" maxlength="50" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.email', 'Email') }}</label><input id="rl-email" nz-input nzSize="small" [ngModel]="formEmail()" (ngModelChange)="formEmail.set($event)" maxlength="100" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.idcardNo', 'Số CMND/CCCD') }}</label><input id="rl-idcard-no" nz-input nzSize="small" [ngModel]="formIdcardNo()" (ngModelChange)="formIdcardNo.set($event)" maxlength="100" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.documentType', 'Loại giấy tờ') }}</label><input id="rl-document-type" nz-input nzSize="small" [ngModel]="formDocumentType()" (ngModelChange)="formDocumentType.set($event)" maxlength="20" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.idcardStartDate', 'Ngày cấp') }}</label><input id="rl-idcard-start-date" nz-input nzSize="small" [ngModel]="formIdcardStartDate()" (ngModelChange)="formIdcardStartDate.set($event)" maxlength="50" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.issuingAuthority', 'Nơi cấp') }}</label><input id="rl-issuing-authority" nz-input nzSize="small" [ngModel]="formIssuingAuthority()" (ngModelChange)="formIssuingAuthority.set($event)" maxlength="50" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.addressContent', 'Địa chỉ hiện tại') }}</label><input id="rl-address-content" nz-input nzSize="small" [ngModel]="formAddressContent()" (ngModelChange)="formAddressContent.set($event)" maxlength="100" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.hujiaddressContent', 'Hộ khẩu thường trú') }}</label><input id="rl-huji-address" nz-input nzSize="small" [ngModel]="formHujiaddressContent()" (ngModelChange)="formHujiaddressContent.set($event)" maxlength="100" /></div>
+          <div nz-col [nzSpan]="8">
+            <label class="rl-field-label">{{ i18n.t('recruit.list.field.nationality', 'Quốc gia') }}</label>
+            <nz-select id="rl-nationality" nzSize="small" [ngModel]="formNationality()" (ngModelChange)="formNationality.set($event)" style="width:100%" nzAllowClear>
+              @for (opt of nationalityOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+            </nz-select>
+          </div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.accountNo', 'Số TK ngân hàng') }}</label><input id="rl-account-no" nz-input nzSize="small" [ngModel]="formAccountNo()" (ngModelChange)="formAccountNo.set($event)" maxlength="100" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.oldPay', 'Lương cũ') }}</label><input id="rl-old-pay" nz-input nzSize="small" [ngModel]="formOldPay()" (ngModelChange)="formOldPay.set($event)" maxlength="40" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.experience', 'Thâm niên') }}</label><input id="rl-experience" nz-input nzSize="small" [ngModel]="formExperience()" (ngModelChange)="formExperience.set($event)" maxlength="30" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.recruitType', 'Kênh tuyển dụng') }}</label><input id="rl-recruit-type" nz-input nzSize="small" [ngModel]="formRecruitType()" (ngModelChange)="formRecruitType.set($event)" maxlength="30" /></div>
+          <div nz-col [nzSpan]="8"><label class="rl-field-label">{{ i18n.t('recruit.list.field.recommend', 'Người giới thiệu') }}</label><input id="rl-recommend" nz-input nzSize="small" [ngModel]="formRecommend()" (ngModelChange)="formRecommend.set($event)" maxlength="50" /></div>
+          <div nz-col [nzSpan]="24"><label class="rl-field-label">{{ i18n.t('recruit.list.field.remark', 'Ghi chú') }}</label><textarea nz-input nzSize="small" rows="2" maxlength="500" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea></div>
+        </div>
+        <div class="rl-save-row">
+          <button nz-button nzType="primary" nzSize="small" [nzLoading]="savingGeneral()" (click)="saveGeneral()">
+            <span nz-icon nzType="save"></span> {{ i18n.t('common.save', 'Lưu') }}
+          </button>
+        </div>
+      </nz-tab>
+
+      <!-- Tab 3: Giáo dục -->
+      <nz-tab [nzTitle]="i18n.t('recruit.list.tab.education', 'Thông tin Giáo dục')">
+        <div class="rl-subtab-toolbar">
+          <span class="rl-subtab-count">{{ eduList().length }}</span>
+          <button id="rl-edu-add-btn" nz-button nzType="primary" nzSize="small" (click)="openEduAddModal()">
+            <span nz-icon nzType="plus"></span> {{ i18n.t('common.add', 'Thêm') }}
+          </button>
+        </div>
+        <nz-table [nzData]="eduList()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="40px">No.</th>
+              <th>{{ i18n.t('recruit.list.edu.degreeCode', 'Học vị') }}</th>
+              <th>{{ i18n.t('recruit.list.edu.institutionName', 'Tên trường') }}</th>
+              <th>{{ i18n.t('recruit.list.edu.subject', 'Chuyên ngành') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.edu.startDate', 'Từ ngày') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.edu.endDate', 'Đến ngày') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.edu.finalDegree', 'Cuối') }}</th>
+              <th nzWidth="90px" class="rl-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of eduList(); track row.seq; let idx = $index) {
+              <tr>
+                <td class="rl-col-center">{{ idx + 1 }}</td>
+                <td>{{ row.degreeName || row.degreeCode }}</td>
+                <td>{{ row.institutionName }}</td>
+                <td>{{ row.subject }}</td>
+                <td class="rl-col-center">{{ row.startDate }}</td>
+                <td class="rl-col-center">{{ row.endDate }}</td>
+                <td class="rl-col-center">@if (row.finalDegreeWhether === 'Y') { <span nz-icon nzType="check"></span> }</td>
+                <td class="rl-col-center">
+                  <button nz-button nzSize="small" (click)="openEduEditModal(row)"><span nz-icon nzType="edit"></span></button>
+                  <button nz-button nzSize="small" nzDanger (click)="deleteEdu(row)"><span nz-icon nzType="delete"></span></button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="rl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <!-- Tab 4: Quá trình làm việc -->
+      <nz-tab [nzTitle]="i18n.t('recruit.list.tab.workExp', 'Quá trình làm việc')">
+        <div class="rl-subtab-toolbar">
+          <span class="rl-subtab-count">{{ workList().length }}</span>
+          <button id="rl-work-add-btn" nz-button nzType="primary" nzSize="small" (click)="openWorkAddModal()">
+            <span nz-icon nzType="plus"></span> {{ i18n.t('common.add', 'Thêm') }}
+          </button>
+        </div>
+        <nz-table [nzData]="workList()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="40px">No.</th>
+              <th>{{ i18n.t('recruit.list.work.cpnyName', 'Công ty') }}</th>
+              <th>{{ i18n.t('recruit.list.work.deptName', 'Phòng ban') }}</th>
+              <th>{{ i18n.t('recruit.list.work.position', 'Chức vụ') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.work.startDate', 'Từ ngày') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.work.endDate', 'Đến ngày') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.work.payroll', 'Lương') }}</th>
+              <th nzWidth="90px" class="rl-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of workList(); track row.seq; let idx = $index) {
+              <tr>
+                <td class="rl-col-center">{{ idx + 1 }}</td>
+                <td>{{ row.cpnyName }}</td>
+                <td>{{ row.deptName }}</td>
+                <td>{{ row.position }}</td>
+                <td class="rl-col-center">{{ row.startDate }}</td>
+                <td class="rl-col-center">{{ row.endDate }}</td>
+                <td class="rl-col-center">{{ row.payroll }}</td>
+                <td class="rl-col-center">
+                  <button nz-button nzSize="small" (click)="openWorkEditModal(row)"><span nz-icon nzType="edit"></span></button>
+                  <button nz-button nzSize="small" nzDanger (click)="deleteWork(row)"><span nz-icon nzType="delete"></span></button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="rl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <!-- Tab 5: Gia đình -->
+      <nz-tab [nzTitle]="i18n.t('recruit.list.tab.family', 'Thông tin gia đình')">
+        <div class="rl-subtab-toolbar">
+          <span class="rl-subtab-count">{{ familyList().length }}</span>
+          <button id="rl-family-add-btn" nz-button nzType="primary" nzSize="small" (click)="openFamilyAddModal()">
+            <span nz-icon nzType="plus"></span> {{ i18n.t('common.add', 'Thêm') }}
+          </button>
+        </div>
+        <nz-table [nzData]="familyList()" [nzShowPagination]="false" nzSize="small">
+          <thead>
+            <tr>
+              <th nzWidth="40px">No.</th>
+              <th>{{ i18n.t('recruit.list.family.famName', 'Họ tên') }}</th>
+              <th>{{ i18n.t('recruit.list.family.famTypeCode', 'Quan hệ') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.family.gender', 'Giới tính') }}</th>
+              <th class="rl-col-center">{{ i18n.t('recruit.list.family.famBorndate', 'Ngày sinh') }}</th>
+              <th>{{ i18n.t('recruit.list.family.famPhone', 'Điện thoại') }}</th>
+              <th nzWidth="90px" class="rl-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of familyList(); track row.seq; let idx = $index) {
+              <tr>
+                <td class="rl-col-center">{{ idx + 1 }}</td>
+                <td>{{ row.famName }}</td>
+                <td>{{ row.famTypeName || row.famTypeCode }}</td>
+                <td class="rl-col-center">{{ row.genderName || row.gender }}</td>
+                <td class="rl-col-center">{{ row.famBorndate }}</td>
+                <td>{{ row.famPhone }}</td>
+                <td class="rl-col-center">
+                  <button nz-button nzSize="small" (click)="openFamilyEditModal(row)"><span nz-icon nzType="edit"></span></button>
+                  <button nz-button nzSize="small" nzDanger (click)="deleteFamily(row)"><span nz-icon nzType="delete"></span></button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="rl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+    </nz-tabs>
+  </div>
+</div>
+
+<!-- Modal Giáo dục -->
+<nz-modal [nzVisible]="eduModalVisible()" [nzTitle]="i18n.t('recruit.list.tab.education', 'Thông tin Giáo dục')" (nzOnCancel)="eduModalVisible.set(false)" (nzVisibleChange)="eduModalVisible.set($event)" nzWidth="700px" [nzOkLoading]="eduSaving()" (nzOnOk)="saveEduModal()" [nzOkText]="i18n.t('common.save', 'Lưu')" [nzCancelText]="i18n.t('common.close', 'Đóng')">
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12">
+        <label class="rl-field-label">{{ i18n.t('recruit.list.edu.degreeCode', 'Học vị') }}</label>
+        <nz-select [ngModel]="formEduDegreeCode()" (ngModelChange)="formEduDegreeCode.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of degreeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.edu.degreesCode', 'Văn bằng') }}</label><input nz-input [ngModel]="formEduDegreesCode()" (ngModelChange)="formEduDegreesCode.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.edu.institutionName', 'Tên trường') }}</label><input nz-input [ngModel]="formEduInstitutionName()" (ngModelChange)="formEduInstitutionName.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.edu.subject', 'Chuyên ngành') }}</label><input nz-input [ngModel]="formEduSubject()" (ngModelChange)="formEduSubject.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.edu.startDate', 'Từ ngày') }}</label><input nz-input [ngModel]="formEduStartDate()" (ngModelChange)="formEduStartDate.set($event)" placeholder="YYYY/MM/DD" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.edu.endDate', 'Đến ngày') }}</label><input nz-input [ngModel]="formEduEndDate()" (ngModelChange)="formEduEndDate.set($event)" placeholder="YYYY/MM/DD" /></div>
+      <div nz-col [nzSpan]="12"><label nz-checkbox [ngModel]="formEduFinalDegree()" (ngModelChange)="formEduFinalDegree.set($event)">{{ i18n.t('recruit.list.edu.finalDegree', 'Bằng cuối') }}</label></div>
+      <div nz-col [nzSpan]="12"><label nz-checkbox [ngModel]="formEduAbroad()" (ngModelChange)="formEduAbroad.set($event)">{{ i18n.t('recruit.list.edu.studyAbroad', 'Du học') }}</label></div>
+      <div nz-col [nzSpan]="24"><label class="rl-field-label">{{ i18n.t('recruit.list.field.remark', 'Ghi chú') }}</label><textarea nz-input rows="2" [ngModel]="formEduRemark()" (ngModelChange)="formEduRemark.set($event)"></textarea></div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Quá trình làm việc -->
+<nz-modal [nzVisible]="workModalVisible()" [nzTitle]="i18n.t('recruit.list.tab.workExp', 'Quá trình làm việc')" (nzOnCancel)="workModalVisible.set(false)" (nzVisibleChange)="workModalVisible.set($event)" nzWidth="700px" [nzOkLoading]="workSaving()" (nzOnOk)="saveWorkModal()" [nzOkText]="i18n.t('common.save', 'Lưu')" [nzCancelText]="i18n.t('common.close', 'Đóng')">
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.work.cpnyName', 'Công ty') }}</label><input nz-input [ngModel]="formWorkCpnyName()" (ngModelChange)="formWorkCpnyName.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.work.deptName', 'Phòng ban') }}</label><input nz-input [ngModel]="formWorkDeptName()" (ngModelChange)="formWorkDeptName.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.work.position', 'Chức vụ') }}</label><input nz-input [ngModel]="formWorkPosition()" (ngModelChange)="formWorkPosition.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.work.payroll', 'Lương') }}</label><input nz-input [ngModel]="formWorkPayroll()" (ngModelChange)="formWorkPayroll.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.work.startDate', 'Từ ngày') }}</label><input nz-input [ngModel]="formWorkStartDate()" (ngModelChange)="formWorkStartDate.set($event)" placeholder="YYYY/MM/DD" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.work.endDate', 'Đến ngày') }}</label><input nz-input [ngModel]="formWorkEndDate()" (ngModelChange)="formWorkEndDate.set($event)" placeholder="YYYY/MM/DD" /></div>
+      <div nz-col [nzSpan]="24"><label class="rl-field-label">{{ i18n.t('recruit.list.work.leftReason', 'Lý do nghỉ') }}</label><input nz-input [ngModel]="formWorkLeftReason()" (ngModelChange)="formWorkLeftReason.set($event)" /></div>
+      <div nz-col [nzSpan]="24"><label class="rl-field-label">{{ i18n.t('recruit.list.field.remark', 'Ghi chú') }}</label><textarea nz-input rows="2" [ngModel]="formWorkRemark()" (ngModelChange)="formWorkRemark.set($event)"></textarea></div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Gia đình -->
+<nz-modal [nzVisible]="familyModalVisible()" [nzTitle]="i18n.t('recruit.list.tab.family', 'Thông tin gia đình')" (nzOnCancel)="familyModalVisible.set(false)" (nzVisibleChange)="familyModalVisible.set($event)" nzWidth="700px" [nzOkLoading]="familySaving()" (nzOnOk)="saveFamilyModal()" [nzOkText]="i18n.t('common.save', 'Lưu')" [nzCancelText]="i18n.t('common.close', 'Đóng')">
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.family.famName', 'Họ tên') }}</label><input nz-input [ngModel]="formFamName()" (ngModelChange)="formFamName.set($event)" /></div>
+      <div nz-col [nzSpan]="12">
+        <label class="rl-field-label">{{ i18n.t('recruit.list.family.famTypeCode', 'Quan hệ') }}</label>
+        <nz-select [ngModel]="formFamTypeCode()" (ngModelChange)="formFamTypeCode.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of famTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="rl-field-label">{{ i18n.t('recruit.list.family.gender', 'Giới tính') }}</label>
+        <nz-select [ngModel]="formFamGender()" (ngModelChange)="formFamGender.set($event)" style="width:100%" nzAllowClear>
+          @for (opt of sexOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.family.famBorndate', 'Ngày sinh') }}</label><input nz-input [ngModel]="formFamBorndate()" (ngModelChange)="formFamBorndate.set($event)" placeholder="YYYY/MM/DD" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.family.famPhone', 'Điện thoại') }}</label><input nz-input [ngModel]="formFamPhone()" (ngModelChange)="formFamPhone.set($event)" /></div>
+      <div nz-col [nzSpan]="12"><label class="rl-field-label">{{ i18n.t('recruit.list.family.occupation', 'Nghề nghiệp') }}</label><input nz-input [ngModel]="formFamOccupation()" (ngModelChange)="formFamOccupation.set($event)" /></div>
+      <div nz-col [nzSpan]="24"><label nz-checkbox [ngModel]="formFamEmergency()" (ngModelChange)="formFamEmergency.set($event)">{{ i18n.t('recruit.list.family.emergencyYn', 'Liên hệ khẩn cấp') }}</label></div>
+      <div nz-col [nzSpan]="24"><label class="rl-field-label">{{ i18n.t('recruit.list.field.remark', 'Ghi chú') }}</label><textarea nz-input rows="2" [ngModel]="formFamRemark()" (ngModelChange)="formFamRemark.set($event)"></textarea></div>
+    </div>
+  </ng-container>
+</nz-modal>

@@ -5,6 +5,7 @@ import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
 import com.ait.ar.attendanceMintenance.service.ArOvertimeManagentService;
 import com.ait.sy.syAffirm.dto.SyAffirmEmailDto;
 import com.ait.sy.syAffirm.service.SyAffirmEmailService;
+import com.ait.util.AngularIndexService;
 import com.ait.util.MailSendApprovalManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,14 +43,19 @@ public class ArOvertimeManagentController {
     @Autowired
     private MailSendApprovalManager mailSendApprovalManager;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/viewApplyOtManagentByAnyApproverList")
-    public String view() {
-        return "ar/attendanceMintenance/viewApplyOtManagentByAnyApproverList";
+    public String view(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/viewImportOtTempList")
-    public String viewImportOtTempList() {
-        return "ar/attendanceMintenance/viewImportOtTempList";
+    public String viewImportOtTempList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/api/overtime/list")

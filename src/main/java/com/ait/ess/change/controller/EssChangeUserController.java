@@ -4,19 +4,21 @@ import com.ait.sy.sys.service.HrAuthenticationService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.MenuService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.Collections;
 
 @Controller
@@ -34,9 +36,13 @@ public class EssChangeUserController {
     @Autowired
     private MenuService menuService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     @GetMapping("/changeUser")
-    public String changeUserPage(Model model, HttpSession session) {
-        return "ess/change/changeUser";
+    public String changeUserPage(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**

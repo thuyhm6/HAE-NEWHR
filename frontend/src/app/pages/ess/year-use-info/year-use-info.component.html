@@ -1,0 +1,107 @@
+<div class="yuif-page">
+  <nz-card class="yuif-search-card">
+    <div class="yuif-search-row">
+      <span class="yuif-search-label">{{ i18n.t('essDept.year', 'Năm') }}</span>
+      <nz-input-number
+        id="yuif-year"
+        [ngModel]="year()"
+        (ngModelChange)="year.set($event)"
+        [nzMin]="2000"
+        [nzMax]="2099"
+        [nzStep]="1"
+        [nzPrecision]="0"
+      ></nz-input-number>
+      <button id="yuif-search-btn" nz-button nzType="primary" (click)="search()">
+        <span nz-icon nzType="search"></span>
+        {{ i18n.t('yuif.btn.search', 'Tra cứu') }}
+      </button>
+    </div>
+  </nz-card>
+
+  <nz-card class="yuif-section-card" [nzTitle]="i18n.t('yuif.section.vacInfo', 'Thông tin nghỉ phép năm')">
+    <nz-table
+      id="yuif-vac-table"
+      [nzData]="vacationRows()"
+      [nzLoading]="vacLoading()"
+      [nzShowPagination]="false"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th class="yuif-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.startDate', 'Ngày bắt đầu') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.endDate', 'Ngày kết thúc') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.totalVac', 'Tổng phép năm') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.lastYearVac', 'Phép năm ngoài') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.addVac', 'Đặc biệt') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.useVac', 'Đã nghỉ') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.pendingVac', 'Chờ duyệt') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.remainVac', 'Còn lại') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of vacationRows(); track $index; let idx = $index) {
+          <tr>
+            <td class="yuif-col-center">{{ idx + 1 }}</td>
+            <td class="yuif-col-center">{{ row.strtDate }}</td>
+            <td class="yuif-col-center">{{ row.endDate }}</td>
+            <td class="yuif-col-center">{{ row.total }}</td>
+            <td class="yuif-col-center">{{ row.lastYearVac }}</td>
+            <td class="yuif-col-center">{{ row.addVac }}</td>
+            <td class="yuif-col-center">{{ row.useVac }}</td>
+            <td class="yuif-col-center">{{ row.affirmUseVac }}</td>
+            <td class="yuif-col-center">{{ row.remainVac }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="yuif-col-center">{{ i18n.t('yuif.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <nz-card class="yuif-table-card" [nzTitle]="i18n.t('yuif.section.leaveUsage', 'Tình trạng sử dụng phép năm')">
+    <nz-table
+      id="yuif-leave-table"
+      [nzData]="leaveUsageRows()"
+      [nzLoading]="leaveLoading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      #yuifLeaveTable
+    >
+      <thead>
+        <tr>
+          <th class="yuif-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.startDate', 'Ngày bắt đầu') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.endDate', 'Ngày kết thúc') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.endTime', 'Thời gian kết thúc') }}</th>
+          <th class="yuif-col-center">{{ i18n.t('yuif.col.duration', 'Thời lượng') }}</th>
+          <th>{{ i18n.t('yuif.col.approvalStatus', 'Trạng thái duyệt') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of yuifLeaveTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="yuif-col-center">{{ idx + 1 }}</td>
+            <td class="yuif-col-center">{{ row.leaveFromDate }}</td>
+            <td class="yuif-col-center">{{ row.leaveFromTime }}</td>
+            <td class="yuif-col-center">{{ row.leaveToDate }}</td>
+            <td class="yuif-col-center">{{ row.leaveToTime }}</td>
+            <td class="yuif-col-center">{{ row.applyLength }}</td>
+            <td>{{ row.affirmFlagName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="yuif-col-center">{{ i18n.t('yuif.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

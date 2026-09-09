@@ -1,0 +1,313 @@
+<div class="shift-page" nz-row [nzGutter]="16">
+  <!-- Left Pane: Shift Tree -->
+  <div nz-col [nzSpan]="5">
+    <nz-card class="shift-tree-card">
+      <h5 class="shift-title">{{ i18n.t('ar.viewshift.title.shiftlist', 'Danh sách Ca làm việc (Shift)') }}</h5>
+      <div class="shift-tree-toolbar">
+        <input
+          id="shift-search-tree"
+          nz-input
+          [ngModel]="searchTreeValue()"
+          (ngModelChange)="searchTreeValue.set($event)"
+          [placeholder]="i18n.t('ar.viewshift.placeholder.search', 'Tìm kiếm ca...')"
+        />
+        <button id="shift-add-btn" nz-button nzType="primary" [title]="i18n.t('ar.viewshift.title.addshift', 'Thêm mới ca làm việc')" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+        </button>
+        <button id="shift-edit-btn" nz-button [title]="i18n.t('ar.viewshift.title.editshift', 'Sửa ca đang chọn')" (click)="editSelectedShift()">
+          <span nz-icon nzType="edit"></span>
+        </button>
+        <button id="shift-delete-btn" nz-button nzDanger [title]="i18n.t('ar.viewshift.title.deleteshift', 'Xóa ca đang chọn')" (click)="deleteSelectedShift()">
+          <span nz-icon nzType="delete"></span>
+        </button>
+      </div>
+      <div class="shift-tree-container">
+        @if (treeLoading()) {
+          <div class="shift-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+        } @else {
+          <nz-tree [nzData]="shiftTreeNodes()" [nzSearchValue]="searchTreeValue()" (nzClick)="onTreeClick($event)"></nz-tree>
+        }
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Right Pane: Shift Detail Table -->
+  <div nz-col [nzSpan]="19">
+    <nz-card class="shift-table-card">
+      <div class="shift-table-header">
+        <span class="shift-table-title" id="shift-selected-parent-label">
+          {{ selectedShiftLabel() ? (i18n.t('ar.viewshift.title.bancicanshu', 'Tham số ca làm việc') + ': ' + selectedShiftLabel()) : i18n.t('ar.viewshift.title.bancicanshu', 'Tham số ca làm việc') }}
+        </span>
+        <button id="shift-add-detail-btn" nz-button nzType="primary" nzSize="small" (click)="openAddDetailModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('ar.viewshift.title.adddetail', 'Thêm chi tiết') }}
+        </button>
+      </div>
+
+      <nz-table #shiftDetailTable id="shift-detail-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="20" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[20, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+        <thead>
+          <tr>
+            <th nzWidth="60px" class="shift-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th class="shift-col-center">PK No</th>
+            <th>{{ i18n.t('ar.viewshift.title.hangmuc', 'Hạng mục (Item)') }}</th>
+            <th class="shift-col-center">{{ i18n.t('ar.viewshift.title.beginoffset', 'Độ lệch ngày b/đầu') }}</th>
+            <th class="shift-col-center">{{ i18n.t('ar.viewshift.title.start', 'Giờ bắt đầu') }}</th>
+            <th class="shift-col-center">{{ i18n.t('ar.viewshift.title.endoffset', 'Độ lệch ngày k/thúc') }}</th>
+            <th class="shift-col-center">{{ i18n.t('ar.viewshift.title.end', 'Giờ kết thúc') }}</th>
+            <th class="shift-col-center">{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</th>
+            <th class="shift-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+            <th nzWidth="100px" class="shift-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of shiftDetailTable.data; track row.pkNo; let idx = $index) {
+            <tr>
+              <td class="shift-col-center">{{ idx + 1 }}</td>
+              <td class="shift-col-center">{{ row.pkNo }}</td>
+              <td>{{ row.itemName }}</td>
+              <td class="shift-col-center">{{ row.beginDayOffset }}</td>
+              <td class="shift-col-center">{{ row.fromTimeStr }}</td>
+              <td class="shift-col-center">{{ row.endDayOffset }}</td>
+              <td class="shift-col-center">{{ row.toTimeStr }}</td>
+              <td class="shift-col-center">{{ row.orderno }}</td>
+              <td class="shift-col-center">
+                @if (row.activity === 1) {
+                  <nz-tag nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+                } @else {
+                  <nz-tag>{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+                }
+              </td>
+              <td class="shift-col-center">
+                <button nz-button nzSize="small" (click)="editDetail(row.pkNo)" [title]="i18n.t('common.edit', 'Sửa')">
+                  <span nz-icon nzType="edit"></span>
+                </button>
+                <button nz-button nzSize="small" nzDanger (click)="deleteDetail(row.pkNo)" [title]="i18n.t('common.delete', 'Xóa')">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="10" class="shift-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Ca làm việc (AR_SHIFT010) -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('ar.viewshift.modal.editTitle', 'Sửa Ca làm việc') : i18n.t('ar.viewshift.title.setupshift', 'Thiết lập Ca làm việc (Shift)')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="800px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.banciID', 'Mã nhóm (Shift ID)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-shift-id" nz-input [ngModel]="formShiftId()" (ngModelChange)="formShiftId.set($event)" name="shiftFShiftId" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12"></div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.nameVi', 'Tên Tiếng Việt') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-name-vi" nz-input [ngModel]="formNameVi()" (ngModelChange)="formNameVi.set($event)" name="shiftFNameVi" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.nameEn', 'Tên Tiếng Anh') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-name-en" nz-input [ngModel]="formNameEn()" (ngModelChange)="formNameEn.set($event)" name="shiftFNameEn" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.nameZh', 'Tên Tiếng Trung') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-name-zh" nz-input [ngModel]="formNameZh()" (ngModelChange)="formNameZh.set($event)" name="shiftFNameZh" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.nameKo', 'Tên Tiếng Hàn') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-name-ko" nz-input [ngModel]="formNameKo()" (ngModelChange)="formNameKo.set($event)" name="shiftFNameKo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.shortname', 'Tên rút gọn (Shortname)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-shortname" nz-input [ngModel]="formShiftShortname()" (ngModelChange)="formShiftShortname.set($event)" name="shiftFShortname" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.datatype', 'Kiểu dữ liệu (Datatype)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-f-datatype" [ngModel]="formDatatype()" (ngModelChange)="formDatatype.set($event)" name="shiftFDatatype" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.deptdistinguish', 'Phân chia phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-dept-distinguish" nz-input [ngModel]="formDeptDistinguishNo()" (ngModelChange)="formDeptDistinguishNo.set($event)" name="shiftFDeptDistinguish" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.kouchushijian', 'Thời gian khấu trừ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-f-deduct-time" [ngModel]="formDeductTime()" (ngModelChange)="formDeductTime.set($event)" name="shiftFDeductTime" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.ottimestart', 'Giờ bắt đầu OT') }}</nz-form-label>
+            <nz-form-control>
+              <input id="shift-f-ot-time-start" nz-input [ngModel]="formOtTimeStart()" (ngModelChange)="formOtTimeStart.set($event)" name="shiftFOtTimeStart" placeholder="HH:mm" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.otallowance', 'Phụ cấp OT') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-f-ot-allowance" [ngModel]="formOtAllowance()" (ngModelChange)="formOtAllowance.set($event)" name="shiftFOtAllowance" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.shiftlength', 'Độ dài ca (Shift length)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-f-shift-length" [ngModel]="formShiftLength()" (ngModelChange)="formShiftLength.set($event)" name="shiftFShiftLength" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="shiftFOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-switch id="shift-f-active" [ngModel]="formActive()" (ngModelChange)="formActive.set($event)" name="shiftFActive"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="shift-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveShift()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>
+
+<!-- Modal Chi tiết ca (AR_SHIFT020) -->
+<nz-modal
+  [nzVisible]="detailModalVisible()"
+  [nzTitle]="detailModalIsEdit() ? i18n.t('ar.viewshift.modal.editDetailTitle', 'Cập nhật Chi tiết') : i18n.t('ar.viewshift.title.shiftdetailtitle', 'Chi tiết tham số ca làm việc')"
+  (nzOnCancel)="closeDetailModal()"
+  (nzVisibleChange)="detailModalVisible.set($event)"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewshift.title.hangmuc', 'Hạng mục (Item)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="shift-fd-item" [ngModel]="formDetailItemNo()" (ngModelChange)="formDetailItemNo.set($event)" name="shiftFdItem" [nzPlaceHolder]="i18n.t('ar.viewshift.title.selecthangmuc', '-- Chọn hạng mục --')" nzShowSearch>
+                <nz-option *ngFor="let it of itemOptions()" [nzValue]="it.itemNo" [nzLabel]="itemLabel(it)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.beginoffset', 'Độ lệch ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-fd-begin-offset" [ngModel]="formDetailBeginDayOffset()" (ngModelChange)="formDetailBeginDayOffset.set($event)" name="shiftFdBeginOffset" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.start', 'Giờ bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-time-picker id="shift-fd-from-time" [ngModel]="formDetailFromTime()" (ngModelChange)="formDetailFromTime.set($event)" name="shiftFdFromTime" nzFormat="HH:mm" style="width: 100%"></nz-time-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.endoffset', 'Độ lệch ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-fd-end-offset" [ngModel]="formDetailEndDayOffset()" (ngModelChange)="formDetailEndDayOffset.set($event)" name="shiftFdEndOffset" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewshift.title.end', 'Giờ kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-time-picker id="shift-fd-to-time" [ngModel]="formDetailToTime()" (ngModelChange)="formDetailToTime.set($event)" name="shiftFdToTime" nzFormat="HH:mm" style="width: 100%"></nz-time-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="shift-fd-orderno" [ngModel]="formDetailOrderno()" (ngModelChange)="formDetailOrderno.set($event)" name="shiftFdOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-switch id="shift-fd-active" [ngModel]="formDetailActive()" (ngModelChange)="formDetailActive.set($event)" name="shiftFdActive"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeDetailModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="shift-fd-save-btn" nz-button nzType="primary" [nzLoading]="savingDetail()" (click)="saveDetail()">
+      {{ i18n.t('ar.viewshift.title.savedetail', 'Lưu chi tiết') }}
+    </button>
+  </div>
+</nz-modal>

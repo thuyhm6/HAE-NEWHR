@@ -1,0 +1,133 @@
+<div class="al-page">
+  <nz-card class="al-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('al.label.leaveType', 'Loại nghỉ phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="al-leave-type" [ngModel]="leaveTypeCode()" (ngModelChange)="leaveTypeCode.set($event)" name="alLeaveType" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('al.select.allOption', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of leaveTypeOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('al.label.affirmFlag', 'Trạng thái duyệt') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="al-affirm-flag" [ngModel]="affirmFlag()" (ngModelChange)="affirmFlag.set($event)" name="alAffirmFlag" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('al.select.allOption', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of affirmFlagOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('al.label.workDate', 'Ngày công') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="al-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="alFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>&nbsp;</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="al-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="alToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>&nbsp;</nz-form-label>
+            <nz-form-control>
+              <button id="al-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+                <span nz-icon nzType="search"></span>
+                {{ i18n.t('al.btn.search', 'Tra cứu') }}
+              </button>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="al-table-card">
+    <div class="al-toolbar">
+      <input
+        id="al-quick-filter"
+        nz-input
+        [ngModel]="quickFilter()"
+        (ngModelChange)="onQuickFilterChange($event)"
+        [placeholder]="i18n.t('al.placeholder.quickFilter', 'Lọc nhanh...')"
+        style="max-width: 240px"
+      />
+      <div class="al-toolbar-actions">
+        <button id="al-cancel-btn" nz-button nzDanger (click)="cancelSelected()">
+          <span nz-icon nzType="close-circle"></span>
+          {{ i18n.t('al.btn.cancel', 'Hủy bỏ') }}
+        </button>
+        <button id="al-apply-btn" nz-button nzType="primary" (click)="goApply()">
+          <span nz-icon nzType="plus-circle"></span>
+          {{ i18n.t('al.btn.applyLeave', 'Xin nghỉ phép') }}
+        </button>
+      </div>
+    </div>
+
+    <nz-table id="al-data-table" #alTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="al-col-center">
+            <label nz-checkbox [ngModel]="checkAll()" (ngModelChange)="toggleAll($event)"></label>
+          </th>
+          <th nzWidth="40px" class="al-col-center">NO</th>
+          <th>{{ i18n.t('al.col.leaveType', 'Loại nghỉ phép') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.applyDate', 'Ngày xin phép') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.fromDate', 'Ngày bắt đầu') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.fromTime', 'Giờ bắt đầu') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.toDate', 'Ngày kết thúc') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.toTime', 'Giờ kết thúc') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.duration', 'Thời lượng') }}</th>
+          <th>{{ i18n.t('al.col.reason', 'Lý do') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.status', 'Trạng thái') }}</th>
+          <th>{{ i18n.t('al.col.hrComment', 'Ý kiến nhân sự') }}</th>
+          <th class="al-col-center">{{ i18n.t('al.col.confirm', 'Xác nhận') }}</th>
+          <th>{{ i18n.t('al.col.inputBy', 'Người nhập') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of alTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="al-col-center" (click)="$event.stopPropagation()">
+              @if (isCancelable(row)) {
+                <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleRow(row, $event)"></label>
+              }
+            </td>
+            <td class="al-col-center">{{ idx + 1 }}</td>
+            <td>
+              <a class="al-name-link" (click)="openDetail(row)">{{ row.leaveTypeName || row.leaveTypeCode }}</a>
+            </td>
+            <td class="al-col-center">{{ row.applyDate }}</td>
+            <td class="al-col-center">{{ row.leaveFromDate }}</td>
+            <td class="al-col-center">{{ row.leaveFromTimeOnly }}</td>
+            <td class="al-col-center">{{ row.leaveToDate }}</td>
+            <td class="al-col-center">{{ row.leaveToTimeOnly }}</td>
+            <td class="al-col-center">{{ formatDuration(row.applyLength, row.dayHours) }}</td>
+            <td>{{ row.leaveReason }}</td>
+            <td class="al-col-center">{{ row.affirmFlagName || row.affirmFlag }}</td>
+            <td>{{ row.hrComment }}</td>
+            <td class="al-col-center">{{ row.confirmFlagName }}</td>
+            <td>{{ row.createdBy }}{{ row.createdIp ? ' ' + row.createdIp : '' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="14" class="al-col-center">{{ i18n.t('al.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #detailModal variant="leave"></app-apply-detail-modal>

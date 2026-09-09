@@ -1,0 +1,156 @@
+<div class="cp-page">
+  <nz-card class="cp-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewcycleparameter.title.gongsi', 'Mã công ty') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cp-search-cpny" nz-input [ngModel]="searchCpnyId()" (ngModelChange)="searchCpnyId.set($event)" name="cpSearchCpny" [placeholder]="i18n.t('ar.viewcycleparameter.placeholder.cpnyId', 'Nhập mã công ty')" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewcycleparameter.title.qujian', 'Khoảng mã') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cp-search-stat" nz-input [ngModel]="searchStatNo()" (ngModelChange)="searchStatNo.set($event)" name="cpSearchStat" [placeholder]="i18n.t('ar.viewcycleparameter.placeholder.statNo', 'Nhập khoảng mã')" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="cp-toolbar-actions">
+        <button id="cp-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="cp-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="cp-add-btn" nz-button nzType="default" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="cp-table-card">
+    <nz-table #cpTable id="cp-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="20" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[20, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="cp-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="cp-col-center">{{ i18n.t('ar.viewcycleparameter.title.gongsi', 'Mã công ty') }}</th>
+          <th class="cp-col-center">{{ i18n.t('ar.viewcycleparameter.title.qujian', 'Khoảng mã') }}</th>
+          <th class="cp-col-center">{{ i18n.t('ar.viewcycleparameter.title.kaishiriqi', 'Từ ngày') }}</th>
+          <th class="cp-col-center">{{ i18n.t('ar.viewcycleparameter.title.jieshuriqi', 'Đến ngày') }}</th>
+          <th class="cp-col-center">{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</th>
+          <th class="cp-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th nzWidth="100px" class="cp-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of cpTable.data; track row.paramNo; let idx = $index) {
+          <tr>
+            <td class="cp-col-center">{{ idx + 1 }}</td>
+            <td class="cp-col-center">{{ row.cpnyId }}</td>
+            <td class="cp-col-center">{{ row.statNo }}</td>
+            <td class="cp-col-center">{{ row.startDate }}</td>
+            <td class="cp-col-center">{{ row.endDate }}</td>
+            <td class="cp-col-center">{{ row.orderno }}</td>
+            <td class="cp-col-center">
+              @if (row.activity === 1) {
+                <nz-tag nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+              }
+            </td>
+            <td class="cp-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row.paramNo)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row.paramNo)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="cp-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('ar.viewcycleparameter.modal.editTitle', 'Cập nhật Thông số chu kỳ') : i18n.t('ar.viewcycleparameter.modal.addTitle', 'Thêm mới Thông số chu kỳ')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="640px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewcycleparameter.title.gongsi', 'Mã công ty') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cp-f-cpny" nz-input [ngModel]="formCpnyId()" (ngModelChange)="formCpnyId.set($event)" name="cpFCpny" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewcycleparameter.title.qujian', 'Khoảng mã') }}</nz-form-label>
+            <nz-form-control>
+              <input id="cp-f-stat" nz-input [ngModel]="formStatNo()" (ngModelChange)="formStatNo.set($event)" name="cpFStat" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewcycleparameter.title.kaishiriqi', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="cp-f-start-date" [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" name="cpFStartDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewcycleparameter.title.jieshuriqi', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="cp-f-end-date" [ngModel]="formEndDate()" (ngModelChange)="formEndDate.set($event)" name="cpFEndDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="cp-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="cpFOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-switch id="cp-f-active" [ngModel]="formActive()" (ngModelChange)="formActive.set($event)" name="cpFActive"></nz-switch>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="cp-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>

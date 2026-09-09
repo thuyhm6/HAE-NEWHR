@@ -1,0 +1,26 @@
+.dg-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dg-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.dg-col-center {
+  text-align: center;
+}
+
+.dg-emp-field {
+  display: flex;
+  gap: 4px;
+}
+
+.dg-emp-field input {
+  flex: 1;
+}

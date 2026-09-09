@@ -5,7 +5,7 @@ import com.ait.hrm.empinfo.service.HrEmployeeService;
 import com.ait.sy.sys.dto.MenuDTO;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.MenuService;
-import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
+import com.ait.util.AngularIndexService;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -43,6 +43,9 @@ public class HomeController {
     @Autowired
     private HrEmployeeService hrEmployeeService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     /**
      * Trang chu - redirect dua tren trang thai dang nhap
      */
@@ -57,19 +60,65 @@ public class HomeController {
     }
 
     /**
-     * Dashboard mac dinh cua he thong
+     * Dashboard mac dinh cua he thong - gio do Angular phuc vu thay Thymeleaf
      */
     @GetMapping("/dashboard")
-    public String dashboard(Model model, HttpSession session) {
-        return buildDashboardPage(model, session, "1", "Dashboard - HR System");
+    public String dashboard(HttpSession session, HttpServletResponse response) throws IOException {
+        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
+            return "redirect:/login";
+        }
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
-     * Trang chu HRM mo trong tab moi voi bo menu SYS_TYPE = 0
+     * API menu tree (cay cha-con) cho topbar Angular. sysType: "1" = ESS
+     * (dashboard mac dinh), "0" = HRM (hrm-dashboard)
+     */
+    @GetMapping("/api/dashboard/menu-tree")
+    @ResponseBody
+    public List<MenuDTO> getDashboardMenuTree(HttpSession session,
+            @RequestParam(value = "sysType", defaultValue = "1") String sysType) {
+        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
+            return java.util.Collections.emptyList();
+        }
+        return menuService.getMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(), sysType);
+    }
+
+    /**
+     * Dashboard HRM (SYS_TYPE = 0) - gio do Angular phuc vu thay Thymeleaf
+     */
+    @GetMapping("/hrm-dashboard")
+    public String hrmDashboard(HttpSession session, HttpServletResponse response) throws IOException {
+        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
+            return "redirect:/login";
+        }
+        angularIndexService.writeIndexHtml(response);
+        return null;
+    }
+
+    /**
+     * API dem so hop dong sap het han (7 ngay toi) cho hrm-dashboard Angular
+     */
+    @GetMapping("/api/hrm/expiring-contracts-count")
+    @ResponseBody
+    public int getExpiringContractsCount(HttpSession session) {
+        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
+            return 0;
+        }
+        return hrContractService.countExpiringContracts(7);
+    }
+
+    /**
+     * URL cu, giu lai de tuong thich nguoc - dieu huong sang route Angular moi
      */
     @GetMapping("/sys/hrm")
-    public String dashboardSysTypeZero(Model model, HttpSession session) {
-        return buildHrmPage(model, session);
+    public String dashboardSysTypeZero() {
+        return "redirect:/hrm-dashboard";
     }
 
     @GetMapping("/sys/viewSysTypeZeroMenuList")
@@ -171,50 +220,4 @@ public class HomeController {
         }
     }
 
-    private String buildHrmPage(Model model, HttpSession session) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
-            return "redirect:/login";
-        }
-
-        List<MenuDTO> userMenus = menuService.getMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(), "0");
-        int expiringContractsCount = hrContractService.countExpiringContracts(7);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("userMenus", userMenus);
-        model.addAttribute("title", "HR Management System");
-        model.addAttribute("message", "Chào mừng " + currentHrUser.getEmployeeName() + " đến với hệ thống HR!");
-        model.addAttribute("expiringContractsCount", expiringContractsCount);
-        model.addAttribute("sysMode", "hrm");
-        session.setAttribute("sysMode", "hrm");
-
-        return "login/hrm";
-    }
-
-    private String buildDashboardPage(Model model, HttpSession session, String sysType, String title) {
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
-            return "redirect:/login";
-        }
-
-        List<MenuDTO> userMenus = menuService.getMenusByUserPermissionBySysType(currentHrUser.getSyUser().getUserNo(),
-                sysType);
-        int expiringContractsCount = hrContractService.countExpiringContracts(7);
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("userMenus", userMenus);
-        model.addAttribute("title", title);
-        model.addAttribute("message", "Chào mừng " + currentHrUser.getEmployeeName() + " đến với hệ thống HR!");
-        model.addAttribute("expiringContractsCount", expiringContractsCount);
-        model.addAttribute("sysMode", "ess");
-        session.setAttribute("sysMode", "ess");
-
-        return "login/dashboard";
-    }
 }

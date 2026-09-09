@@ -1,0 +1,175 @@
+<div class="acrd-page">
+  <nz-card class="acrd-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <div class="acrd-search-emp-field">
+                <input id="acrd-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="acrdKeyword" [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã hoặc họ tên')" (keydown.enter)="search()" />
+                <button id="acrd-btn-emp-search" nz-button (click)="openEmployeePicker()"><span nz-icon nzType="search"></span></button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="acrd-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="acrdFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="acrd-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="acrdToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="acrd-dept"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="acrdDept"
+                nzMultiple
+                nzCheckable
+                nzShowSearch
+                [nzPlaceHolder]="i18n.t('common.select', 'Chọn phòng ban')"
+                style="width: 100%"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.shiftType', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="acrd-shift-filter" [ngModel]="shiftNoFilter()" (ngModelChange)="shiftNoFilter.set($event)" name="acrdShiftFilter" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="opt.nameVi || opt.shiftNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('acrd.col.missingCard', 'Trạng thái thiếu thẻ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="acrd-missing-card" [ngModel]="missingCard()" (ngModelChange)="missingCard.set($event)" name="acrdMissingCard" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('acrd.missingCard.all', 'Tất cả')">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('acrd.missingCard.yes', 'Thiếu thẻ')"></nz-option>
+                <nz-option nzValue="2" [nzLabel]="i18n.t('acrd.missingCard.no', 'Đủ thẻ')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="acrd-toolbar-actions">
+        <button id="acrd-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="acrd-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="acrd-export-btn" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="export"></span>
+          {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="acrd-table-card">
+    <nz-table
+      id="acrd-data-table"
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="acrd-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="acrd-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('acrd.col.team', 'TEAM') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+          <th class="acrd-col-center">{{ i18n.t('attSearch.workDate', 'Ngày công') }}</th>
+          <th class="acrd-col-center">{{ i18n.t('acrd.col.inDay', 'Ngày vào') }}</th>
+          <th class="acrd-col-center">{{ i18n.t('acrd.col.inTime', 'Thời gian vào') }}</th>
+          <th class="acrd-col-center">{{ i18n.t('acrd.col.outDay', 'Ngày ra') }}</th>
+          <th class="acrd-col-center">{{ i18n.t('acrd.col.outTime', 'Thời gian ra') }}</th>
+          <th>{{ i18n.t('acr.col.remark', 'Ghi chú') }}</th>
+          <th>{{ i18n.t('acrd.col.shiftName', 'Ca làm') }}</th>
+          <th>{{ i18n.t('acrd.col.changeShiftPerson', 'Người thay đổi Ca làm') }}</th>
+          <th class="acrd-col-center">{{ i18n.t('acrd.col.eatTime', 'Eat time') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index; let idx = $index) {
+          <tr>
+            <td class="acrd-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="acrd-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptTeam }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeNoName }}</td>
+            <td class="acrd-col-center">{{ row.arDateStr }}</td>
+            <td class="acrd-col-center">{{ row.inDay }}</td>
+            <td class="acrd-col-center">{{ row.inTime }}</td>
+            <td class="acrd-col-center">{{ row.outDay }}</td>
+            <td class="acrd-col-center">{{ row.outTime }}</td>
+            <td>{{ row.leaveContent }}</td>
+            <td>{{ shiftLabel(row) }}</td>
+            <td>{{ row.changeShiftPerson }}</td>
+            <td class="acrd-col-center">{{ row.eatTimes }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="15" class="acrd-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="pickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm nhân viên')"
+  (nzOnCancel)="closePicker()"
+  (nzVisibleChange)="pickerVisible.set($event)"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      id="acrd-picker-search"
+      [ngModel]="null"
+      (ngModelChange)="onPickerSelected($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã hoặc tên nhân viên')"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="pickerSearching()"
+      (nzOnSearch)="onPickerSearch($event)"
+      style="width: 100%"
+    >
+      <nz-option *ngFor="let emp of pickerSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
+    </nz-select>
+  </ng-container>
+</nz-modal>

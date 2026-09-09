@@ -1,0 +1,312 @@
+<div class="pioab-page">
+  <nz-card class="pioab-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empSearch.field.keyword', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <div class="pioab-search-emp-field">
+                <input
+                  id="pioab-search-emp-keyword"
+                  nz-input
+                  [ngModel]="searchKeyword()"
+                  (ngModelChange)="searchKeyword.set($event)"
+                  name="pioabSearchEmpKeyword"
+                  [placeholder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã hoặc tên nhân viên')"
+                  (keydown.enter)="openSearchEmployeePicker()"
+                />
+                <button nz-button (click)="openSearchEmployeePicker()"><span nz-icon nzType="search"></span></button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="pioab-search-from-date" [ngModel]="searchFromDate()" (ngModelChange)="searchFromDate.set($event)" name="pioabSearchFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="pioab-search-to-date" [ngModel]="searchToDate()" (ngModelChange)="searchToDate.set($event)" name="pioabSearchToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('arOtf.affirmFlag', 'Trạng thái đơn tăng ca') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="pioab-search-affirm-flag" [ngModel]="searchAffirmFlag()" (ngModelChange)="searchAffirmFlag.set($event)" name="pioabSearchAffirmFlag" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                <nz-option nzValue="14014309" [nzLabel]="i18n.t('arOtf.affirmFlag.waitApprove', 'Chờ duyệt')"></nz-option>
+                <nz-option nzValue="14014308" [nzLabel]="i18n.t('arOtf.affirmFlag.approved', 'Đã duyệt')"></nz-option>
+                <nz-option nzValue="14014307" [nzLabel]="i18n.t('arOtf.affirmFlag.approving', 'Đang duyệt')"></nz-option>
+                <nz-option nzValue="14014306" [nzLabel]="i18n.t('arOtf.affirmFlag.sent', 'Gửi')"></nz-option>
+                <nz-option nzValue="14014310" [nzLabel]="i18n.t('arOtf.status.cancelled', 'Đã hủy')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('arOtf.confirmFlag', 'Trạng thái xác nhận') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="pioab-search-confirm-flag" [ngModel]="searchConfirmFlag()" (ngModelChange)="searchConfirmFlag.set($event)" name="pioabSearchConfirmFlag" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                <nz-option nzValue="0" [nzLabel]="i18n.t('arOtf.confirmFlag.notConfirmed', 'Chưa xác nhận')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('arOtf.confirmFlag.confirmed', 'Đã xác nhận')"></nz-option>
+                <nz-option nzValue="2" [nzLabel]="i18n.t('arOtf.confirmFlag.rejected', 'Từ chối')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="pioab-toolbar-actions">
+        <button id="pioab-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="pioab-clear-search-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="pioab-add-row-btn" nz-button nzType="default" (click)="addEmptyRow()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <button id="pioab-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="saveChecked()">
+          <span nz-icon nzType="save"></span>
+          {{ i18n.t('common.save', 'Lưu') }}
+        </button>
+        <button id="pioab-cancel-batch-btn" nz-button nzDanger (click)="cancelBatch()">
+          <span nz-icon nzType="close-circle"></span>
+          {{ i18n.t('arOtf.cancelBatch', 'Hủy bỏ') }}
+        </button>
+        <button id="pioab-download-template-btn" nz-button (click)="downloadTemplate()">
+          <span nz-icon nzType="download"></span>
+          {{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+        </button>
+        <button id="pioab-import-btn" nz-button (click)="openImportModal()">
+          <span nz-icon nzType="upload"></span>
+          {{ i18n.t('common.importExcel', 'Import Excel') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="pioab-table-card">
+    <nz-table
+      id="pioab-data-table"
+      #pioabTable
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="25"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: '2600px', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="pioab-col-center">
+            <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAll($event)"></label>
+          </th>
+          <th nzWidth="40px" class="pioab-col-center">No</th>
+          <th nzWidth="220px">{{ i18n.t('common.empName', 'Nhân viên') }}</th>
+          <th nzWidth="140px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th nzWidth="110px">{{ i18n.t('arOtf.otType', 'Loại tăng ca') }}</th>
+          <th nzWidth="140px">{{ i18n.t('arOtf.otDate', 'Ngày tăng ca') }}</th>
+          <th nzWidth="200px">{{ i18n.t('arOtf.fromHour', 'Từ giờ') }}</th>
+          <th nzWidth="200px">{{ i18n.t('arOtf.toHour', 'Đến giờ') }}</th>
+          <th nzWidth="80px" class="pioab-col-center">{{ i18n.t('ps.col.indoorTime', 'Giờ vào') }}</th>
+          <th nzWidth="80px" class="pioab-col-center">{{ i18n.t('ps.col.outdoorTime', 'Giờ ra') }}</th>
+          <th nzWidth="60px" class="pioab-col-center">{{ i18n.t('common.hours', 'Số giờ') }}</th>
+          <th nzWidth="90px" class="pioab-col-center">{{ i18n.t('impOt.deductYn', "Báo cơm / Nghỉ ngơi (30')") }}</th>
+          <th nzWidth="220px">{{ i18n.t('common.reason', 'Lý do') }}</th>
+          <th nzWidth="70px" class="pioab-col-center">{{ i18n.t('essOt.usecarYn', 'Đặt xe') }}</th>
+          <th nzWidth="150px">{{ i18n.t('essOt.carAddress', 'Tuyến xe') }}</th>
+          <th nzWidth="180px">{{ i18n.t('essOt.carAddressDetail', 'Chi tiết điểm đón') }}</th>
+          <th nzWidth="110px" class="pioab-col-center">{{ i18n.t('arOtf.otTotalMonth', 'Tổng tăng ca tháng này') }}</th>
+          <th nzWidth="110px" class="pioab-col-center">{{ i18n.t('arOtf.otTotalYear', 'Tổng tăng ca năm này') }}</th>
+          <th nzWidth="110px" class="pioab-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th nzWidth="130px">{{ i18n.t('common.creator', 'Người tạo') }}</th>
+          <th nzWidth="130px">{{ i18n.t('common.updater', 'Người sửa') }}</th>
+          <th nzWidth="200px">{{ i18n.t('common.approver', 'Người duyệt') }}</th>
+          <th nzWidth="90px" class="pioab-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of pioabTable.data; track row.rowKey; let idx = $index) {
+          <tr>
+            <td class="pioab-col-center">
+              @if (isSelectable(row)) {
+                <label nz-checkbox [ngModel]="row.checked" (ngModelChange)="updateRow(row.rowKey, { checked: $event })"></label>
+              }
+            </td>
+            <td class="pioab-col-center">{{ idx + 1 }}</td>
+            <td>
+              @if (row.isNew) {
+                <nz-input-group nzCompact>
+                  <input nz-input style="width: calc(100% - 32px)" [ngModel]="row.empId ? row.empId + ' - ' + row.localName : ''" readonly [placeholder]="i18n.t('arOtf.selectEmp', 'Chọn NV...')" />
+                  <button nz-button (click)="openRowEmployeePicker(row.rowKey)"><span nz-icon nzType="search"></span></button>
+                </nz-input-group>
+              } @else {
+                <a class="pioab-name-link" (click)="openDetail(row)">{{ row.empId }} - {{ row.localName }}</a>
+              }
+            </td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.otTypeName }}</td>
+            <td>
+              <nz-date-picker [attr.id]="'pioab-date-' + idx" [ngModel]="row.applyOtDate" (ngModelChange)="onRowDateChange(row.rowKey, $event)" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </td>
+            <td>
+              <nz-date-picker [attr.id]="'pioab-from-' + idx" [ngModel]="row.otFromTime" (ngModelChange)="onFromTimeChange(row.rowKey, $event)" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm" style="width: 100%"></nz-date-picker>
+            </td>
+            <td>
+              <nz-date-picker [attr.id]="'pioab-to-' + idx" [ngModel]="row.otToTime" (ngModelChange)="onToTimeChange(row.rowKey, $event)" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm" style="width: 100%"></nz-date-picker>
+            </td>
+            <td class="pioab-col-center">{{ row.indoorTime }}</td>
+            <td class="pioab-col-center">{{ row.outdoorTime }}</td>
+            <td class="pioab-col-center">{{ row.otApplyHour }}</td>
+            <td class="pioab-col-center">
+              <label nz-checkbox [ngModel]="row.deductYn" (ngModelChange)="onDeductChange(row.rowKey, $event)"></label>
+            </td>
+            <td>
+              <input [attr.id]="'pioab-remark-' + idx" nz-input [ngModel]="row.applyOtRemark" (ngModelChange)="updateRow(row.rowKey, { applyOtRemark: $event })" />
+            </td>
+            <td class="pioab-col-center">
+              @if (row.isNew) {
+                <label nz-checkbox [ngModel]="row.usecarYn" (ngModelChange)="updateRow(row.rowKey, { usecarYn: $event })"></label>
+              } @else {
+                {{ row.usecarYn ? i18n.t('essOt.yes', 'Có') : i18n.t('common.no', 'Không') }}
+              }
+            </td>
+            <td>
+              @if (row.isNew) {
+                <nz-select [ngModel]="row.carAddress" (ngModelChange)="onCarAddressChange(row.rowKey, $event)" [nzDisabled]="!row.usecarYn" [nzAllowClear]="true" style="width: 100%">
+                  <nz-option *ngFor="let opt of carAddressOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+                </nz-select>
+              } @else {
+                {{ row.carAddressName || row.carAddress }}
+              }
+            </td>
+            <td>
+              @if (row.isNew) {
+                <nz-select [ngModel]="row.carAddressDetail" (ngModelChange)="updateRow(row.rowKey, { carAddressDetail: $event })" [nzDisabled]="!row.carAddress" [nzAllowClear]="true" style="width: 100%">
+                  <nz-option *ngFor="let opt of row.carAddressDetailOptions" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
+                </nz-select>
+              } @else {
+                {{ row.carAddressDetailName || row.carAddressDetail }}
+              }
+            </td>
+            <td class="pioab-col-center">{{ row.otTotalMonth }}</td>
+            <td class="pioab-col-center">{{ row.otTotalYear }}</td>
+            <td class="pioab-col-center">
+              @if (row.isNew) {
+                {{ i18n.t('arOtf.notSaved', 'Chưa lưu') }}
+              } @else if (row.affirmFlag === '14014306') {
+                <nz-tag nzColor="warning">{{ i18n.t('arOtf.affirmFlag.sent', 'Gửi') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014307') {
+                <nz-tag nzColor="processing">{{ i18n.t('arOtf.affirmFlag.approving', 'Đang duyệt') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014308') {
+                <nz-tag nzColor="success">{{ i18n.t('arOtf.affirmFlag.approved', 'Đã duyệt') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014309') {
+                <nz-tag nzColor="error">{{ i18n.t('arOtf.affirmFlag.waitApprove', 'Chờ duyệt') }}</nz-tag>
+              } @else if (row.affirmFlag === '14014310') {
+                <nz-tag>{{ i18n.t('arOtf.status.cancelled', 'Đã hủy') }}</nz-tag>
+              }
+            </td>
+            <td>
+              @if (!row.isNew) {
+                {{ row.createdBy }}<br /><small class="pioab-muted">{{ row.createDate }}</small>
+              }
+            </td>
+            <td>
+              @if (!row.isNew) {
+                {{ row.updatedBy }}<br /><small class="pioab-muted">{{ row.updateDate }}</small>
+              }
+            </td>
+            <td>
+              @if (row.isNew) {
+                @for (a of row.approvers; track $index; let aIdx = $index) {
+                  <div class="pioab-approver-item">
+                    <small class="pioab-approver-text">{{ a.empId }} - {{ a.localName }}</small>
+                    <button nz-button nzDanger nzSize="small" (click)="removeApprover(row.rowKey, aIdx)">
+                      <span nz-icon nzType="close"></span>
+                    </button>
+                  </div>
+                }
+                <button nz-button nzSize="small" nzType="dashed" (click)="openApproverModal(row.rowKey)">
+                  <span nz-icon nzType="plus"></span>
+                </button>
+              } @else {
+                <span [innerHTML]="row.affirmStr"></span>
+              }
+            </td>
+            <td class="pioab-col-center">
+              @if (row.isNew) {
+                <button nz-button nzDanger nzSize="small" (click)="removeNewRow(row.rowKey)">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              } @else if (row.affirmFlag === '14014308') {
+                <button nz-button nzType="primary" nzSize="small" (click)="resubmitLine(row.rowKey)" [title]="i18n.t('arOtf.msg.confirmResubmit', '')">
+                  <span nz-icon nzType="save"></span>
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="23" class="pioab-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #detailModal variant="ot"></app-apply-detail-modal>
+
+<nz-modal
+  [nzVisible]="pickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm nhân viên')"
+  (nzOnCancel)="closePicker()"
+  (nzVisibleChange)="pickerVisible.set($event)"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      id="pioab-picker-search"
+      [ngModel]="null"
+      (ngModelChange)="onPickerSelected($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã hoặc tên nhân viên')"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="pickerSearching()"
+      (nzOnSearch)="onPickerSearch($event)"
+      style="width: 100%"
+    >
+      <nz-option *ngFor="let emp of pickerSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
+    </nz-select>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('common.importExcel', 'Import Excel')"
+  (nzOnCancel)="closeImportModal()"
+  (nzVisibleChange)="importModalVisible.set($event)"
+>
+  <ng-container *nzModalContent>
+    <input id="pioab-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeImportModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="pioab-import-submit-btn" nz-button nzType="primary" [nzLoading]="importing()" (click)="submitImport()">
+      {{ i18n.t('common.importExcel', 'Import Excel') }}
+    </button>
+  </div>
+</nz-modal>

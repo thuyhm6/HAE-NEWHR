@@ -19,7 +19,6 @@
         <result column="E"               property="e"             jdbcType="VARCHAR" />
         <result column="N"               property="n"             jdbcType="VARCHAR" />
         <result column="O"               property="o"             jdbcType="VARCHAR" />
-        <result column="S"               property="s"             jdbcType="VARCHAR" />
         <result column="SUM_SCORE"       property="sum"           jdbcType="VARCHAR" />
         <result column="ACTIVITY"        property="activity"      jdbcType="VARCHAR" />
         <result column="CREATE_DATE"     property="createDate"    jdbcType="VARCHAR" />
@@ -45,9 +44,8 @@
         TO_CHAR(es.E)   AS E,
         TO_CHAR(es.N)   AS N,
         TO_CHAR(es.O)   AS O,
-        TO_CHAR(es.S)   AS S,
         TO_CHAR(NVL(es.A,0)+NVL(es.B,0)+NVL(es.C,0)+NVL(es.D,0)
-               +NVL(es.E,0)+NVL(es.N,0)+NVL(es.O,0)+NVL(es.S,0)) AS SUM_SCORE,
+               +NVL(es.E,0)+NVL(es.N,0)+NVL(es.O,0)) AS SUM_SCORE,
         es.ACTIVITY,
         TO_CHAR(es.CREATE_DATE, 'YYYY-MM-DD HH24:MI:SS') AS CREATE_DATE,
         GET_UPDATED_INFO(es.CREATED_BY) || ' ' || es.CREATED_IP AS CREATED_BY,
@@ -86,7 +84,7 @@
         INSERT INTO EVS_SCORE (
             SEQ, RESUME_SEQ, SCORE_TYPE, NO, NAME,
             DEPTNO, DEPTNAME, POST_GRADE_NO, POST_GRADE_NAME,
-            A, B, C, D, E, N, O, S,
+            A, B, C, D, E, N, O,
             ACTIVITY, CREATED_BY, CREATED_IP, CREATE_DATE
         ) VALUES (
             #{seq,           jdbcType=VARCHAR},
@@ -105,7 +103,6 @@
             #{e,             jdbcType=VARCHAR},
             #{n,             jdbcType=VARCHAR},
             #{o,             jdbcType=VARCHAR},
-            #{s,             jdbcType=VARCHAR},
             NVL(#{activity, jdbcType=VARCHAR}, '1'),
             #{adminID, jdbcType=VARCHAR},
             #{adminIP, jdbcType=VARCHAR},
@@ -129,7 +126,6 @@
             E               = NVL(#{e,             jdbcType=VARCHAR}, '0'),
             N               = NVL(#{n,             jdbcType=VARCHAR}, '0'),
             O               = NVL(#{o,             jdbcType=VARCHAR}, '0'),
-            S               = NVL(#{s,             jdbcType=VARCHAR}, '0'),
             ACTIVITY        = NVL(#{activity,  jdbcType=VARCHAR}, '1'),
             UPDATED_BY      = #{adminID,       jdbcType=VARCHAR},
             UPDATED_IP      = #{adminIP,       jdbcType=VARCHAR},

@@ -1,0 +1,138 @@
+<div class="vscl-page">
+  <div class="vscl-search-card">
+    <div class="vscl-search-left">
+      <span class="vscl-inline-label">{{ i18n.t('pa.salaryCode.itemType', 'Loại hạng mục') }}</span>
+      <nz-select style="min-width: 200px" [ngModel]="searchItemType()" (ngModelChange)="searchItemType.set($event)" nzAllowClear>
+        <nz-option [nzValue]="null" [nzLabel]="i18n.t('pa.salaryCode.itemType.all', 'Tất cả')"></nz-option>
+        <nz-option *ngFor="let t of itemTypes" [nzValue]="t.value" [nzLabel]="i18n.t(t.key, t.fallback)"></nz-option>
+      </nz-select>
+      <span class="vscl-inline-label">{{ i18n.t('pa.salaryCode.itemName', 'Tên hạng mục') }}</span>
+      <input
+        nz-input
+        style="max-width: 200px"
+        [ngModel]="searchItemName()"
+        (ngModelChange)="searchItemName.set($event)"
+        (keydown.enter)="search()"
+      />
+    </div>
+    <div class="vscl-search-right">
+      <button nz-button nzType="primary" nzSize="small" (click)="search()">
+        <span nz-icon nzType="search"></span>{{ i18n.t('pa.salaryCode.search', 'Tra cứu') }}
+      </button>
+      <button nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+        <span nz-icon nzType="plus-circle"></span>{{ i18n.t('pa.salaryCode.addNew', 'Thêm mới') }}
+      </button>
+      <button nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+        <span nz-icon nzType="delete"></span>{{ i18n.t('pa.salaryCode.delete', 'Xóa') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="vscl-table-card">
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="vscl-col-center">
+            <input type="checkbox" [checked]="rows().length > 0 && checkedSeqs().size === rows().length" (change)="toggleAll($any($event.target).checked)" />
+          </th>
+          <th nzWidth="48px" class="vscl-col-center">{{ i18n.t('pa.salaryCode.no', 'STT') }}</th>
+          <th>{{ i18n.t('pa.salaryCode.itemType', 'Loại hạng mục') }}</th>
+          <th>{{ i18n.t('pa.salaryCode.itemId', 'ID hạng mục') }}</th>
+          <th>{{ i18n.t('pa.salaryCode.itemName', 'Tên hạng mục') }}</th>
+          <th nzWidth="100px" class="vscl-col-center">{{ i18n.t('pa.salaryCode.dataType', 'Dữ liệu') }}</th>
+          <th>{{ i18n.t('pa.salaryCode.descr', 'Miêu tả') }}</th>
+          <th nzWidth="110px" class="vscl-col-center">{{ i18n.t('pa.salaryCode.companyUsage', 'Công ty sử dụng') }}</th>
+          <th class="vscl-col-center">{{ i18n.t('pa.salaryCode.createdBy', 'Người tạo') }}</th>
+          <th nzWidth="145px" class="vscl-col-center">{{ i18n.t('pa.salaryCode.createDate', 'Thời gian tạo') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" class="vscl-clickable" (click)="openEditModal(row)">
+          <td class="vscl-col-center" (click)="$event.stopPropagation()">
+            <input type="checkbox" [checked]="isChecked(row)" (change)="toggleChecked(row, $any($event.target).checked)" />
+          </td>
+          <td class="vscl-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td>{{ itemTypeName(row.itemType) }}</td>
+          <td>{{ row.itemId }}</td>
+          <td>{{ row.itemName }}</td>
+          <td class="vscl-col-center">{{ row.dataType }}</td>
+          <td>{{ row.descr }}</td>
+          <td class="vscl-col-center">{{ row.companyUsageStr }}</td>
+          <td class="vscl-col-center">{{ row.createdBy }}</td>
+          <td class="vscl-col-center">{{ row.createDate }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa hạng mục lương -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formItemNo() ? i18n.t('pa.salaryCode.editTitle', 'Chỉnh sửa hạng mục lương') : i18n.t('pa.salaryCode.addTitle', 'Thêm mới hạng mục lương')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="640px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label vscl-required">{{ i18n.t('pa.salaryCode.itemType', 'Loại hạng mục') }}</label>
+      <nz-select style="width: 260px" [ngModel]="formItemType()" (ngModelChange)="formItemType.set($event)">
+        <nz-option *ngFor="let t of itemTypes" [nzValue]="t.value" [nzLabel]="i18n.t(t.key, t.fallback)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label vscl-required">{{ i18n.t('pa.salaryCode.itemId', 'ID hạng mục') }}</label>
+      <input nz-input style="max-width: 300px" [ngModel]="formItemId()" (ngModelChange)="formItemId.set($event)" maxlength="50" />
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label vscl-required">{{ i18n.t('pa.salaryCode.nameEn', 'English Name') }}</label>
+      <input nz-input [ngModel]="formNameEn()" (ngModelChange)="formNameEn.set($event)" maxlength="200" />
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label vscl-required">{{ i18n.t('pa.salaryCode.nameKo', 'Korean Name') }}</label>
+      <input nz-input [ngModel]="formNameKo()" (ngModelChange)="formNameKo.set($event)" maxlength="200" />
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label vscl-required">{{ i18n.t('pa.salaryCode.nameVi', 'Vietnamese Name') }}</label>
+      <input nz-input [ngModel]="formNameVi()" (ngModelChange)="formNameVi.set($event)" maxlength="200" />
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label vscl-required">{{ i18n.t('pa.salaryCode.nameZh', 'Chinese Name') }}</label>
+      <input nz-input [ngModel]="formNameZh()" (ngModelChange)="formNameZh.set($event)" maxlength="200" />
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label">{{ i18n.t('pa.salaryCode.dataType', 'Dữ liệu') }}</label>
+      <nz-select style="width: 220px" [ngModel]="formDataType()" (ngModelChange)="formDataType.set($event)">
+        <nz-option nzValue="NUMBER(14,4)" [nzLabel]="i18n.t('pa.salaryCode.dataType.number', 'Dạng số')"></nz-option>
+        <nz-option nzValue="VARCHAR(100)" [nzLabel]="i18n.t('pa.salaryCode.dataType.varchar', 'Dạng ký tự')"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label">{{ i18n.t('pa.salaryCode.companyUsage', 'Công ty sử dụng') }}</label>
+      <div class="vscl-checkbox-group">
+        <label nz-checkbox [ngModel]="formCompanyHae()" (ngModelChange)="formCompanyHae.set($event)">HAE</label>
+        <label nz-checkbox [ngModel]="formCompanyHtsv()" (ngModelChange)="formCompanyHtsv.set($event)">HTSV</label>
+      </div>
+    </div>
+    <div class="vscl-form-row">
+      <label class="vscl-form-label">{{ i18n.t('pa.salaryCode.descr', 'Miêu tả') }}</label>
+      <textarea nz-input rows="3" [ngModel]="formDescr()" (ngModelChange)="formDescr.set($event)" maxlength="200"></textarea>
+    </div>
+  </ng-container>
+</nz-modal>

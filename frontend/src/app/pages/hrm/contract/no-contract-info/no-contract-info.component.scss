@@ -1,0 +1,51 @@
+.nci-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nci-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.nci-col-center {
+  text-align: center;
+}
+
+.nci-col-right {
+  text-align: right;
+}
+
+.nci-detail-title {
+  color: #1677ff;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.nci-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.nci-detail-table th {
+  text-align: left;
+  width: 40%;
+  padding: 5px 8px;
+  background: #fafafa;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.nci-detail-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.nci-detail-text {
+  color: #595959;
+  font-size: 13px;
+}

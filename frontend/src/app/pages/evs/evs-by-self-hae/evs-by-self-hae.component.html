@@ -1,0 +1,182 @@
+<div class="vebsh-page" *ngIf="hasAnyResume(); else emptyNotice">
+  <div class="vebsh-search-card">
+    <span class="vebsh-inline-label">{{ i18n.t('evs.viewEvsBySelfHAE.evalName', 'Tên đánh giá') }}</span>
+    <nz-select style="min-width: 280px" [(ngModel)]="searchResumeSeq" (ngModelChange)="search()">
+      <nz-option *ngFor="let opt of resumeOptions()" [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option>
+    </nz-select>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>
+      {{ i18n.t('evs.viewEvsBySelfHAE.btnSearch', 'Tra cứu') }}
+    </button>
+  </div>
+
+  <ng-container *ngIf="info() as d">
+    <div class="vebsh-card">
+      <div class="vebsh-card-title">{{ i18n.t('evs.viewEvsBySelfHAE.personalInfo', 'Thông tin cá nhân') }}</div>
+      <div class="vebsh-info-grid">
+        <table class="vebsh-info-table">
+          <thead><tr><th colspan="2">{{ i18n.t('evs.viewEvsBySelfHAE.basicInfo', 'Thông tin cơ bản') }}</th></tr></thead>
+          <tbody>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.fullName', 'Họ tên') }}</td><td>{{ d.localName }}</td></tr>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.position', 'Chức vụ') }}</td><td>{{ d.postGradeName }}</td></tr>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.dept', 'Phòng ban') }}</td><td>{{ d.deptname }}</td></tr>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.hireDate', 'Ngày vào làm') }}</td><td>{{ d.dateStarted }}</td></tr>
+          </tbody>
+        </table>
+        <table class="vebsh-info-table">
+          <thead><tr><th colspan="2">{{ i18n.t('evs.viewEvsBySelfHAE.evalCategory', 'Hạng mục đánh giá') }}</th></tr></thead>
+          <tbody>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.evalYear', 'Năm đánh giá') }}</td><td>{{ d.evsYear }}</td></tr>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.period', 'Thời gian') }}</td><td>{{ period() }}</td></tr>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.appraiser1', 'Người đánh giá lần 1') }}</td><td>{{ d.localName1 }}</td></tr>
+            <tr><td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.appraiser2', 'Người đánh giá lần 2') }}</td><td>{{ d.localName2 }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="vebsh-card">
+      <div class="vebsh-card-header">
+        <span class="vebsh-card-title-inline">{{ i18n.t('evs.viewEvsBySelfHAE.objectiveTitle', 'Mục tiêu đánh giá bản thân') }}</span>
+        <div class="vebsh-btn-group" *ngIf="editable()">
+          <button nz-button nzSize="small" [nzLoading]="saving()" (click)="save('0')">
+            {{ i18n.t('evs.viewEvsBySelfHAE.btnSaveDraft', 'Lưu tạm thời') }}
+          </button>
+          <button nz-button nzType="primary" nzSize="small" [nzLoading]="saving()" (click)="save('1')">
+            {{ i18n.t('evs.viewEvsBySelfHAE.btnExecute', 'Thực hiện') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="vebsh-section-title">{{ i18n.t('evs.viewEvsBySelfHAE.strategicTarget', 'Mục tiêu chiến lược') }}</div>
+      <table class="vebsh-info-table mb-2">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.no', 'No') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.evalItem', 'Hạng mục đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.target', 'Mục tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.ratio', 'Tỷ lệ(%)') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.selfScore', 'Điểm đánh giá bản thân (%)') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.total', 'Tổng') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!strategicItems().length"><td colspan="6" class="vebsh-col-center">0</td></tr>
+          <tr *ngFor="let item of strategicItems(); let idx = index">
+            <td class="vebsh-col-center">{{ idx + 1 }}</td>
+            <td>{{ item.itemName }}</td>
+            <td [innerHTML]="item.itemContent"></td>
+            <td class="vebsh-col-center">{{ item.itemScore }}</td>
+            <td class="vebsh-col-center">
+              <input
+                nz-input
+                nzSize="small"
+                type="number"
+                min="0"
+                [max]="item.itemScore ?? 100"
+                step="0.01"
+                style="width: 90px; text-align: center"
+                [ngModel]="scoreValue(item)"
+                (ngModelChange)="onScoreInput(item, $event)"
+                [readOnly]="!editable()"
+              />
+            </td>
+            <td class="vebsh-col-center">{{ rowTotal(item) > 0 ? rowTotal(item) : '-' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="vebsh-total-row">
+            <td colspan="5" class="vebsh-total-label">{{ i18n.t('evs.viewEvsBySelfHAE.col.total', 'Tổng') }}</td>
+            <td class="vebsh-col-center">{{ strategicTotal() }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="vebsh-section-title">{{ i18n.t('evs.viewEvsBySelfHAE.operationTarget', 'Mục tiêu vận hành') }}</div>
+      <table class="vebsh-info-table mb-2">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.no', 'No') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.evalItem', 'Hạng mục đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.target', 'Mục tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.ratio', 'Tỷ lệ(%)') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.selfScore', 'Điểm đánh giá bản thân (%)') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.total', 'Tổng') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!operationItems().length"><td colspan="6" class="vebsh-col-center">0</td></tr>
+          <tr *ngFor="let item of operationItems(); let idx = index">
+            <td class="vebsh-col-center">{{ idx + 1 }}</td>
+            <td>{{ item.itemName }}</td>
+            <td [innerHTML]="item.itemContent"></td>
+            <td class="vebsh-col-center">{{ item.itemScore }}</td>
+            <td class="vebsh-col-center">
+              <input
+                nz-input
+                nzSize="small"
+                type="number"
+                min="0"
+                [max]="item.itemScore ?? 100"
+                step="0.01"
+                style="width: 90px; text-align: center"
+                [ngModel]="scoreValue(item)"
+                (ngModelChange)="onScoreInput(item, $event)"
+                [readOnly]="!editable()"
+              />
+            </td>
+            <td class="vebsh-col-center">{{ rowTotal(item) > 0 ? rowTotal(item) : '-' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="vebsh-total-row">
+            <td colspan="5" class="vebsh-total-label">{{ i18n.t('evs.viewEvsBySelfHAE.col.total', 'Tổng') }}</td>
+            <td class="vebsh-col-center">{{ operationTotal() }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div class="vebsh-grand-total">
+        <span>{{ i18n.t('evs.viewEvsBySelfHAE.col.total', 'Tổng') }}</span>
+        <span>{{ grandTotal() }}</span>
+      </div>
+    </div>
+
+    <div class="vebsh-card">
+      <div class="vebsh-card-title">{{ i18n.t('evs.viewEvsBySelfHAE.part2', 'Phần 2: Thành tích và Hạn chế của bản thân') }}</div>
+      <table class="vebsh-opinion-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.achievement', 'Thành tích') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfHAE.col.limitation', 'Hạn chế') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="vebsh-info-label">{{ i18n.t('evs.result.col.self', 'Bản thân') }}</td>
+            <td><textarea nz-input rows="3" [ngModel]="achiev0()" (ngModelChange)="achiev0.set($event)" [readOnly]="!editable()"></textarea></td>
+            <td><textarea nz-input rows="3" [ngModel]="limit0()" (ngModelChange)="limit0.set($event)" [readOnly]="!editable()"></textarea></td>
+          </tr>
+          <tr>
+            <td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.appraiser1Comment', 'Người đánh giá cấp 1') }}</td>
+            <td [innerHTML]="d.affirmC1L1"></td>
+            <td [innerHTML]="d.affirmC2L1"></td>
+          </tr>
+          <tr>
+            <td class="vebsh-info-label">{{ i18n.t('evs.viewEvsBySelfHAE.appraiser2Comment', 'Người đánh giá cấp 2') }}</td>
+            <td [innerHTML]="d.affirmC1L2"></td>
+            <td [innerHTML]="d.affirmC2L2"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #emptyNotice>
+  <div class="vebsh-empty-notice">
+    <span nz-icon nzType="exclamation-circle" class="vebsh-empty-icon"></span>
+    <p class="vebsh-empty-text">{{ i18n.t('evs.viewConfirmTarget1.msg.notInEvalPeriod', 'Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!') }}</p>
+  </div>
+</ng-template>

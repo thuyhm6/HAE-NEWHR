@@ -1,0 +1,35 @@
+.soa-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.soa-time-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.soa-time-range nz-date-picker {
+  flex: 1;
+}
+
+.soa-stat-text {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.soa-readonly-text {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 13px;
+}
+
+.soa-col-center {
+  text-align: center;
+}
+
+.soa-submit-row {
+  text-align: right;
+  margin-top: 16px;
+}

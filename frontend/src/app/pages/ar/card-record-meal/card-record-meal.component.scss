@@ -1,0 +1,48 @@
+.acrm-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acrm-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.acrm-col-center {
+  text-align: center;
+}
+
+.acrm-modal-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.acrm-import-spinner {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.acrm-muted {
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 8px;
+}
+
+.acrm-import-result {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.acrm-result-success {
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+}
+
+.acrm-result-error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+}

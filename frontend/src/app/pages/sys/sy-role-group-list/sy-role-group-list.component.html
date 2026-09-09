@@ -1,0 +1,156 @@
+<div class="vrg-page">
+  <div class="vrg-left">
+    <div class="vrg-search-card">
+      <div class="vrg-search-row">
+        <div class="vrg-field">
+          <label class="vrg-inline-label">{{ i18n.t('sys.role.viewRolesGroupList.search.keyword', 'Từ khóa (ID, Tên)') }}</label>
+          <input
+            nz-input
+            [ngModel]="searchKeyword()"
+            (ngModelChange)="searchKeyword.set($event)"
+            (keydown.enter)="search()"
+            [placeholder]="i18n.t('sys.role.viewRolesGroupList.search.keyword.placeholder', 'Nhập mã hoặc tên nhóm quyền')"
+          />
+        </div>
+        <div class="vrg-search-actions">
+          <button nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close-circle"></span>{{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button nz-button nzType="primary" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+          </button>
+          <a nz-button [href]="exportUrl">
+            <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="vrg-table-card">
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }" #vrgTable>
+        <thead>
+          <tr>
+            <th nzWidth="48px" class="vrg-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th>{{ i18n.t('sys.role.viewRolesGroupList.col.roleGroupId', 'Mã Nhóm (ID)') }}</th>
+            <th>{{ i18n.t('sys.role.viewRolesGroupList.col.nameVi', 'Tên TV') }}</th>
+            <th class="vrg-col-center">{{ i18n.t('sys.role.viewRolesGroupList.col.sysType', 'Hệ thống') }}</th>
+            <th class="vrg-col-center">{{ i18n.t('sys.role.viewRolesGroupList.col.joinDefault', 'Mặc định') }}</th>
+            <th class="vrg-col-center">{{ i18n.t('sys.role.viewRolesGroupList.col.status', 'Trạng thái') }}</th>
+            <th class="vrg-col-center" nzWidth="90px">{{ i18n.t('common.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let row of vrgTable.data; let idx = index"
+            class="vrg-clickable"
+            [class.vrg-row-selected]="selectedGroupNo() === row.roleGroupNo"
+            (click)="selectGroup(row)"
+          >
+            <td class="vrg-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.roleGroupId }}</td>
+            <td>{{ row.nameVi }}</td>
+            <td class="vrg-col-center">
+              <nz-tag [nzColor]="row.sysType === 0 ? 'blue' : 'orange'">{{ row.sysType === 0 ? 'Hub' : 'Partner' }}</nz-tag>
+            </td>
+            <td class="vrg-col-center">
+              <span nz-icon *ngIf="row.joinDefault === 1" nzType="check" style="color: #52c41a"></span>
+            </td>
+            <td class="vrg-col-center">
+              <nz-tag *ngIf="row.activity === 1" nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              <nz-tag *ngIf="row.activity !== 1">{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+            </td>
+            <td class="vrg-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row, $event)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteRow(row, $event)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+
+  <div class="vrg-right">
+    <div class="vrg-right-header">
+      <span class="vrg-selected-label">
+        {{ selectedLabel() ? (i18n.t('sys.role.viewRolesGroupList.msg.panelPrefix', 'Phân quyền hạn -') + ' ' + selectedLabel()) : i18n.t('sys.role.viewRolesGroupList.panel.title', 'Phân quyền hạn') }}
+      </span>
+      <button nz-button nzType="primary" nzSize="small" [nzLoading]="savingRelations()" [disabled]="!selectedGroupNo()" (click)="saveRelations()">
+        <span nz-icon nzType="save"></span>{{ i18n.t('sys.role.viewRolesGroupList.btn.saveRelations', 'Lưu quyền hạn') }}
+      </button>
+    </div>
+
+    <div class="vrg-role-list">
+      <ng-container *ngIf="selectedGroupNo(); else vrgNoGroup">
+        <div *ngIf="!allRoles().length" class="vrg-empty">{{ i18n.t('sys.role.viewRolesGroupList.msg.noRoleData', 'Không có dữ liệu quyền hạn.') }}</div>
+        <label class="vrg-role-item" *ngFor="let role of allRoles()">
+          <input type="checkbox" [checked]="isRoleChecked(role.roleNo)" (change)="toggleRole(role.roleNo, $any($event.target).checked)" />
+          <span>{{ role.nameVi || role.roleNo }} <small class="vrg-role-id">({{ role.roleId }})</small></span>
+        </label>
+      </ng-container>
+      <ng-template #vrgNoGroup>
+        <div class="vrg-empty">{{ i18n.t('sys.role.viewRolesGroupList.hint.selectGroup', 'Vui lòng chọn một nhóm quyền bên trái để phân quyền.') }}</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa Nhóm quyền -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="i18n.t('sys.role.viewRolesGroupList.modal.title', 'Thông tin Nhóm quyền')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="700px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vrg-form-row">
+      <label class="vrg-form-label">{{ i18n.t('sys.role.viewRolesGroupList.label.roleGroupId', 'Mã Nhóm (ID)') }}</label>
+      <input nz-input [ngModel]="formRoleGroupId()" disabled [placeholder]="i18n.t('sys.role.viewRolesGroupList.label.roleGroupId.placeholder', 'Tự động sinh khi lưu')" />
+    </div>
+    <div class="vrg-form-grid">
+      <div class="vrg-form-row">
+        <label class="vrg-form-label vrg-required">{{ i18n.t('sys.role.viewRolesGroup.label.nameVi', 'Tên Tiếng Việt') }}</label>
+        <input nz-input [ngModel]="formNameVi()" (ngModelChange)="formNameVi.set($event)" />
+      </div>
+      <div class="vrg-form-row">
+        <label class="vrg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.nameEn', 'Tên Tiếng Anh') }}</label>
+        <input nz-input [ngModel]="formNameEn()" (ngModelChange)="formNameEn.set($event)" />
+      </div>
+      <div class="vrg-form-row">
+        <label class="vrg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.nameZh', 'Tên Tiếng Trung') }}</label>
+        <input nz-input [ngModel]="formNameZh()" (ngModelChange)="formNameZh.set($event)" />
+      </div>
+      <div class="vrg-form-row">
+        <label class="vrg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.nameKo', 'Tên Tiếng Hàn') }}</label>
+        <input nz-input [ngModel]="formNameKo()" (ngModelChange)="formNameKo.set($event)" />
+      </div>
+      <div class="vrg-form-row">
+        <label class="vrg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.sysType', 'Loại hệ thống') }}</label>
+        <nz-select style="width: 100%" [ngModel]="formSysType()" (ngModelChange)="formSysType.set($event)">
+          <nz-option [nzValue]="0" nzLabel="Hub"></nz-option>
+          <nz-option [nzValue]="1" nzLabel="Partner"></nz-option>
+        </nz-select>
+      </div>
+      <div class="vrg-form-row">
+        <label class="vrg-form-label">{{ i18n.t('sys.role.viewRolesGroup.label.orderNo', 'Thứ tự') }}</label>
+        <nz-input-number style="width: 100%" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)" [nzMin]="0"></nz-input-number>
+      </div>
+      <div class="vrg-form-row vrg-switch-row">
+        <nz-switch [ngModel]="formJoinDefault()" (ngModelChange)="formJoinDefault.set($event)"></nz-switch>
+        <span class="vrg-switch-label">{{ i18n.t('sys.role.viewRolesGroupList.label.joinDefault', 'Mặc định tham gia') }}</span>
+      </div>
+      <div class="vrg-form-row vrg-switch-row">
+        <nz-switch [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)"></nz-switch>
+        <span class="vrg-switch-label">{{ i18n.t('sys.role.viewRolesGroup.label.activity', 'Hoạt động') }}</span>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

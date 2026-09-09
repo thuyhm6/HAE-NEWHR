@@ -1,0 +1,148 @@
+<div class="sca-page">
+  <nz-card class="sca-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('essCwa.startDate', 'Ngày bắt đầu') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="sca-start-date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" name="scaStartDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('essCwa.endDate', 'Ngày kết thúc') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="sca-end-date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" name="scaEndDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="sca-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('essCwa.search', 'Tra cứu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="sca-batch-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('essCwa.batchIn', 'Vào:') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="sca-global-in" [ngModel]="globalInDateTime()" (ngModelChange)="globalInDateTime.set($event)" name="scaGlobalIn" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('essCwa.batchOut', 'Ra:') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="sca-global-out" [ngModel]="globalOutDateTime()" (ngModelChange)="globalOutDateTime.set($event)" name="scaGlobalOut" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="sca-apply-all-btn" nz-button (click)="applyAll()">{{ i18n.t('essCwa.applyAll', 'Thực hiện tất cả') }}</button>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item class="sca-submit-item">
+        <nz-form-control>
+          <button id="sca-submit-btn" nz-button nzType="primary" [nzLoading]="submitting()" (click)="submit()">
+            {{ i18n.t('essCwa.submit', 'Xin phép') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="sca-table-card">
+    <div class="sca-toolbar">
+      <input
+        id="sca-quick-filter"
+        nz-input
+        [ngModel]="quickFilter()"
+        (ngModelChange)="onQuickFilterChange($event)"
+        [placeholder]="i18n.t('essCwa.quickFilter', 'Lọc nhanh')"
+        style="max-width: 200px"
+      />
+    </div>
+
+    <nz-table
+      id="sca-data-table"
+      #scaTable
+      [nzData]="filteredRows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="sca-col-center">NO</th>
+          <th nzWidth="40px" class="sca-col-center">
+            <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAll($event)"></label>
+          </th>
+          <th class="sca-col-center">{{ i18n.t('essCwa.category', 'Phân loại') }}</th>
+          <th class="sca-col-center">{{ i18n.t('essCwa.workDate', 'Ngày công') }}</th>
+          <th class="sca-col-center">{{ i18n.t('essCwa.cardSwipe', 'Thời gian quẹt thẻ') }}</th>
+          <th class="sca-col-center" style="min-width: 340px">{{ i18n.t('essCwa.timeInput', 'Thời gian') }}</th>
+          <th class="sca-col-center" style="min-width: 160px">{{ i18n.t('essCwa.reason', 'Lý do') }}</th>
+          <th class="sca-col-center" style="min-width: 200px">{{ i18n.t('essCwa.approver', 'Người duyệt') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of scaTable.data; track row.pkNo; let idx = $index) {
+          <tr>
+            <td class="sca-col-center">{{ idx + 1 }}</td>
+            <td class="sca-col-center">
+              <label nz-checkbox [ngModel]="row.checked" (ngModelChange)="updateRow(row.pkNo, { checked: $event })"></label>
+            </td>
+            <td>{{ row.itemName }}</td>
+            <td class="sca-col-center">{{ row.arDateStr }}</td>
+            <td class="sca-col-center sca-small">
+              <div>{{ i18n.t('essCwa.inLabel', 'Vào') }}: {{ row.indoorTime }}</div>
+              <div>{{ i18n.t('essCwa.outLabel', 'Ra') }}: {{ row.outdoorTime }}</div>
+            </td>
+            <td>
+              <div class="sca-time-row">
+                <span class="sca-time-label">{{ i18n.t('essCwa.inLabel', 'Vào') }}</span>
+                <nz-date-picker
+                  [attr.id]="'sca-in-' + idx"
+                  [ngModel]="row.inDateTime"
+                  (ngModelChange)="updateRow(row.pkNo, { inDateTime: $event })"
+                  [nzShowTime]="{ nzFormat: 'HH:mm' }"
+                  nzFormat="dd/MM/yyyy HH:mm"
+                  style="flex: 1"
+                ></nz-date-picker>
+              </div>
+              <div class="sca-time-row">
+                <span class="sca-time-label">{{ i18n.t('essCwa.outLabel', 'Ra') }}</span>
+                <nz-date-picker
+                  [attr.id]="'sca-out-' + idx"
+                  [ngModel]="row.outDateTime"
+                  (ngModelChange)="updateRow(row.pkNo, { outDateTime: $event })"
+                  [nzShowTime]="{ nzFormat: 'HH:mm' }"
+                  nzFormat="dd/MM/yyyy HH:mm"
+                  style="flex: 1"
+                ></nz-date-picker>
+              </div>
+            </td>
+            <td>
+              <input
+                [attr.id]="'sca-remark-' + idx"
+                nz-input
+                [ngModel]="row.remark"
+                (ngModelChange)="updateRow(row.pkNo, { remark: $event })"
+              />
+            </td>
+            <td class="sca-small">{{ approverStr() }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="sca-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

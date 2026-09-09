@@ -1,0 +1,34 @@
+.tel-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tel-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tel-col-center {
+  text-align: center;
+}
+
+.tel-view-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tel-view-table th {
+  text-align: left;
+  width: 40%;
+  padding: 6px 8px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tel-view-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f0f0;
+}

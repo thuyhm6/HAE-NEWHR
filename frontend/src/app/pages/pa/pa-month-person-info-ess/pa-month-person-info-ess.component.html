@@ -1,0 +1,149 @@
+<div class="vpmpi-page">
+  <div class="vpmpi-search-card">
+    <div class="vpmpi-search-field">
+      <span class="vpmpi-inline-label">{{ i18n.t('pa.monthPersonInfo.paySchedule', 'Kế hoạch trả lương') }}</span>
+      <nz-select style="min-width: 280px" [ngModel]="selectedScheduleNo()" (ngModelChange)="selectedScheduleNo.set($event)">
+        <nz-option *ngFor="let opt of scheduleOptions()" [nzValue]="opt.payScheduleNo" [nzLabel]="scheduleLabel(opt)"></nz-option>
+      </nz-select>
+    </div>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>{{ i18n.t('pa.monthPersonInfo.search', 'Tra cứu') }}
+    </button>
+    <button *ngIf="stubs().length" nz-button nzSize="small" (click)="print()">
+      <span nz-icon nzType="printer"></span>{{ i18n.t('pa.monthPersonInfo.print', 'In') }}
+    </button>
+  </div>
+
+  <div class="vpmpi-loading" *ngIf="loading()">
+    <nz-spin nzSize="large"></nz-spin>
+    <div class="vpmpi-loading-text">{{ i18n.t('pa.monthPersonInfo.loading', 'Đang tải phiếu lương...') }}</div>
+  </div>
+
+  <div class="vpmpi-no-data" *ngIf="!loading() && searched() && !stubs().length">
+    <span nz-icon nzType="inbox" class="vpmpi-no-data-icon"></span>
+    <div>{{ i18n.t('pa.monthPersonInfo.noData', 'Không có dữ liệu') }}</div>
+  </div>
+
+  <div id="vpmpi-print-area">
+    <div class="vpmpi-pay-stub" *ngFor="let stub of stubs()">
+      <div class="vpmpi-stub-header">
+        <div class="vpmpi-logo"><img src="/assets/images/logo.png" alt="Logo" /></div>
+        <div class="vpmpi-title">{{ i18n.t('pa.monthPersonInfo.slipTitle', 'PHIẾU LƯƠNG THÁNG') }} {{ monthYear(stub.hrEndDate) }}</div>
+      </div>
+
+      <div class="vpmpi-section-title">{{ i18n.t('pa.monthPersonInfo.basicInfo', 'Thông tin Cơ bản') }}</div>
+      <table class="vpmpi-info-table">
+        <tr>
+          <th>{{ i18n.t('pa.monthPersonInfo.empName', 'Họ tên') }}</th><td>{{ stub.localName }}</td>
+          <th>{{ i18n.t('pa.monthPersonInfo.empId', 'Mã nhân viên') }}</th><td>{{ stub.empId }}</td>
+          <th>{{ i18n.t('pa.monthPersonInfo.dept', 'Phòng ban') }}</th><td>{{ stub.deptName }}</td>
+          <th>{{ i18n.t('pa.monthPersonInfo.empType', 'Loại nhân viên') }}</th><td>{{ stub.empTypeName }}</td>
+        </tr>
+        <tr>
+          <th>{{ i18n.t('pa.monthPersonInfo.empGroup', 'Nhóm nhân viên') }}</th><td>{{ stub.postFamily }}</td>
+          <th>{{ i18n.t('pa.monthPersonInfo.position', 'Chức vụ') }}</th><td>{{ stub.positionName }}</td>
+          <th>{{ i18n.t('pa.monthPersonInfo.grade', 'Chức danh') }}</th><td>{{ stub.postGrade }}</td>
+          <th>{{ i18n.t('pa.monthPersonInfo.workStatus', 'Loại hợp đồng') }}</th><td>{{ stub.empOfficeName }}</td>
+        </tr>
+        <tr>
+          <th colspan="2">{{ i18n.t('pa.monthPersonInfo.dependent', 'Số người phụ thuộc') }}</th>
+          <td colspan="6">{{ stub.dependentCount || 0 }}</td>
+        </tr>
+        <tr>
+          <th colspan="2">{{ i18n.t('pa.monthPersonInfo.socialInsuranceNo', 'Số thẻ bảo hiểm xã hội') }}</th>
+          <td colspan="6">{{ stub.socialInsuranceNo }}</td>
+        </tr>
+      </table>
+
+      <div class="vpmpi-section-title">{{ i18n.t('pa.monthPersonInfo.account', 'Tài khoản') }}</div>
+      <table class="vpmpi-detail-table">
+        <thead>
+          <tr>
+            <th class="text-center">{{ i18n.t('pa.monthPersonInfo.bankName', 'Ngân hàng') }}</th>
+            <th class="text-center">{{ i18n.t('pa.monthPersonInfo.accountNo', 'Số tài khoản') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-center">{{ stub.bankName }}</td>
+            <td class="text-center">{{ stub.bankAccountNo || stub.accountNo }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-container *ngIf="stub.standardItems?.length">
+        <div class="vpmpi-section-title">{{ i18n.t('pa.monthPersonInfo.standardItems', 'Hạng mục tiêu chuẩn') }}</div>
+        <table class="vpmpi-detail-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('pa.monthPersonInfo.itemName', 'Hạng mục') }}</th>
+              <th class="text-end">{{ i18n.t('pa.monthPersonInfo.amount', 'Số tiền') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of stub.standardItems">
+              <td>{{ item.itemName }}</td>
+              <td class="text-end">{{ formatNumber(item.itemValue) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+
+      <table class="vpmpi-triple-table">
+        <thead>
+          <tr>
+            <th colspan="2" class="text-center vpmpi-att-header">■ {{ i18n.t('pa.monthPersonInfo.attendanceItems', 'Chi tiết chấm công') }}</th>
+            <th colspan="2" class="text-center vpmpi-sal-header">■ {{ i18n.t('pa.monthPersonInfo.salaryItems', 'Chi tiết lương') }}</th>
+            <th colspan="2" class="text-center vpmpi-ded-header">■ {{ i18n.t('pa.monthPersonInfo.deductionItems', 'Chi tiết khoản trừ') }}</th>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('pa.monthPersonInfo.attendanceItem', 'Hạng mục chấm công') }}</th><th class="text-end">{{ i18n.t('pa.monthPersonInfo.value', 'Giá trị') }}</th>
+            <th>{{ i18n.t('pa.monthPersonInfo.salaryItem', 'Hạng mục') }}</th><th class="text-end">{{ i18n.t('pa.monthPersonInfo.amount', 'Số tiền') }}</th>
+            <th>{{ i18n.t('pa.monthPersonInfo.deductionItem', 'Hạng mục') }}</th><th class="text-end">{{ i18n.t('pa.monthPersonInfo.amount', 'Số tiền') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!tripleRows(stub).length"><td colspan="6" class="text-center vpmpi-muted">-</td></tr>
+          <tr *ngFor="let row of tripleRows(stub)">
+            <td>{{ row.attName }}</td>
+            <td class="text-end">{{ row.attValue != null ? formatNumber(row.attValue) : '' }}</td>
+            <td>{{ row.salName }}</td>
+            <td class="text-end">{{ row.salValue != null ? formatNumber(row.salValue) : '' }}</td>
+            <td>{{ row.dedName }}</td>
+            <td class="text-end">{{ row.dedValue != null ? formatNumber(row.dedValue) : '' }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"></td>
+            <td class="fw-bold">{{ i18n.t('pa.monthPersonInfo.total', 'Tổng') }}</td>
+            <td class="text-end fw-bold">{{ formatNumber(totalSalary(stub)) }}</td>
+            <td class="fw-bold">{{ i18n.t('pa.monthPersonInfo.total', 'Tổng') }}</td>
+            <td class="text-end fw-bold">{{ formatNumber(totalDeduction(stub)) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <table class="vpmpi-net-table">
+        <tr>
+          <td class="fw-bold">{{ i18n.t('pa.monthPersonInfo.netSalary', 'Lương thực lĩnh') }}</td>
+          <td class="text-end fw-bold">{{ formatNumber(netSalary(stub)) }}</td>
+        </tr>
+      </table>
+
+      <ng-container *ngIf="visibleOtherItems(stub).length">
+        <div class="vpmpi-section-title">{{ i18n.t('pa.monthPersonInfo.otherItems', 'Hạng mục khác') }}</div>
+        <table class="vpmpi-detail-table">
+          <tbody>
+            <tr *ngFor="let item of visibleOtherItems(stub)">
+              <td>{{ item.remark }}</td>
+              <td class="text-end">{{ formatNumber(item.returnValue) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+
+      <div class="vpmpi-note">{{ empOpinion() }}</div>
+    </div>
+  </div>
+</div>

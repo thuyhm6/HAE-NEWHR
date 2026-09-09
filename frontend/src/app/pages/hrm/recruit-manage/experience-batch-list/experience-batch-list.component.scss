@@ -1,0 +1,69 @@
+.ebl-page {
+  padding: 4px 0;
+}
+
+.ebl-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ebl-label {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ebl-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.ebl-total-count {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary, #999);
+  margin-bottom: 6px;
+}
+
+.ebl-col-center {
+  text-align: center;
+}
+
+.ebl-badge-done {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--ant-color-success, #52c41a);
+  color: #fff;
+  font-size: 11px;
+}
+
+.ebl-badge-pending {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--ant-color-text-tertiary, #999);
+  color: #fff;
+  font-size: 11px;
+}
+
+.ebl-field-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.ebl-required::before {
+  content: '* ';
+  color: #ff4d4f;
+}
+
+[nz-col] {
+  margin-bottom: 10px;
+}

@@ -18,4 +18,6 @@ public interface PaPayObjService {
     void saveList(List<PaPayObjDto> items);
 
     void deleteList(List<PaPayObjDto> keys);
+
+    byte[] exportExcel(PaPayObjDto params);
 }

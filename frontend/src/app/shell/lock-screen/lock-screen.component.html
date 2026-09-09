@@ -1,0 +1,31 @@
+<div class="hae-lock-overlay">
+  <div class="hae-lock-card">
+    <div class="hae-lock-icon-wrap">
+      <i nz-icon nzType="lock" nzTheme="outline"></i>
+    </div>
+    <h4>{{ i18n.t('lock.title', 'Màn hình đã khóa') }}</h4>
+    <p class="hae-lock-user" *ngIf="authService.currentUser() as u">{{ u.employeeName }} ({{ u.username }})</p>
+    <p class="hae-lock-message">{{ i18n.t('lock.message', 'Phiên làm việc đã tự động khóa do không có thao tác. Vui lòng nhập mật khẩu để tiếp tục.') }}</p>
+
+    <form (ngSubmit)="submit()">
+      <input
+        id="hae-lock-password"
+        nz-input
+        type="password"
+        name="password"
+        autofocus
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+        [placeholder]="i18n.t('login.password', 'Mật khẩu')"
+        autocomplete="current-password"
+      />
+
+      <p *ngIf="error()" class="hae-lock-error">{{ error() }}</p>
+
+      <button id="hae-lock-submit" nz-button nzType="primary" nzBlock type="submit" [nzLoading]="loading()">
+        <i nz-icon nzType="unlock"></i>
+        {{ i18n.t('lock.unlock', 'Mở khóa') }}
+      </button>
+    </form>
+  </div>
+</div>

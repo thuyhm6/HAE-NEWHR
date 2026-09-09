@@ -1,0 +1,65 @@
+.aec-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.aec-search-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aec-col-center {
+  text-align: center;
+}
+
+.aec-name-link {
+  color: #0d2bff;
+  cursor: pointer;
+}
+
+.aec-name-link:hover {
+  text-decoration: underline;
+}
+
+.aec-confirm-by {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 4px;
+}
+
+.aec-detail-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.aec-detail-info-table th,
+.aec-detail-info-table td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.aec-detail-info-table th {
+  background: #f8fafc;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.aec-approval-table {
+  margin-bottom: 16px;
+}
+
+.aec-section-title {
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+
+.aec-form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}

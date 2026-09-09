@@ -1,0 +1,453 @@
+<div class="vepp-page">
+  <div class="vepp-search-card">
+    <label class="vepp-inline-label">{{ i18n.t('evsParam.label.evalName', 'Tên đánh giá') }}</label>
+    <nz-select id="vepp-resume-seq" nzSize="small" style="width:320px" [ngModel]="searchResumeSeq()" (ngModelChange)="searchResumeSeq.set($event)">
+      @for (opt of resumeOptions(); track opt.seq) { <nz-option [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option> }
+    </nz-select>
+    <button id="vepp-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span> {{ i18n.t('evsParam.btn.search', 'Tra cứu') }}
+    </button>
+  </div>
+
+  <nz-tabs class="vepp-table-card" [nzSelectedIndex]="activeTabIndex()" (nzSelectChange)="activeTabIndex.set($event.index!)">
+    <!-- Tab 1: Cấp đánh giá -->
+    <nz-tab [nzTitle]="i18n.t('evsParam.tab.grade', 'Cấp đánh giá')">
+      <div class="vepp-tab-toolbar">
+        <span class="vepp-total">Total: {{ gradeRows().length }}</span>
+        <button id="vepp-grade-add-btn" nz-button nzType="primary" nzSize="small" (click)="openGradeAddModal()">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('evsParam.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <nz-table [nzData]="gradeRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="vepp-col-center">No.</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.evalType', 'Loại ĐG') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.evalGrade', 'Cấp ĐG') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.include', 'Bao gồm') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.startScore', 'Điểm đầu') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.endScore', 'Điểm cuối') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.score', 'Điểm') }}</th>
+            <th>{{ i18n.t('evsParam.col.remark', 'Ghi chú') }}</th>
+            <th nzWidth="90px" class="vepp-col-center">{{ i18n.t('evsParam.btn.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of gradeRows(); track row.seq; let idx = $index) {
+            <tr class="vepp-data-row" (click)="openGradeEditModal(row)">
+              <td class="vepp-col-center">{{ idx + 1 }}</td>
+              <td class="vepp-col-center">{{ row.evsTypeName || row.evsType }}</td>
+              <td class="vepp-col-center">{{ row.evsGradeName || row.evsGrade }}</td>
+              <td class="vepp-col-center">@if (row.isInclude === '1') { <span nz-icon nzType="check"></span> }</td>
+              <td class="vepp-col-center">{{ row.startScore }}</td>
+              <td class="vepp-col-center">{{ row.endScore }}</td>
+              <td class="vepp-col-center">{{ row.score }}</td>
+              <td>{{ row.remark }}</td>
+              <td class="vepp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteGrade(row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="9" class="vepp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- Tab 2: Cấp hạng mục đánh giá (ITEM) -->
+    <nz-tab [nzTitle]="i18n.t('evsParam.tab.item', 'Cấp hạng mục đánh giá')">
+      <div class="vepp-tab-toolbar">
+        <span class="vepp-total">Total: {{ itemRows().length }}</span>
+        <button id="vepp-item-add-btn" nz-button nzType="primary" nzSize="small" (click)="openParamAddModal('ITEM')">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('evsParam.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <nz-table [nzData]="itemRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="vepp-col-center">No.</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.code', 'Mã') }}</th>
+            <th>{{ i18n.t('evsParam.col.name', 'Tên') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.score', 'Điểm') }}</th>
+            <th nzWidth="90px" class="vepp-col-center">{{ i18n.t('evsParam.btn.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of itemRows(); track row.seq; let idx = $index) {
+            <tr class="vepp-data-row" (click)="openParamEditModal('ITEM', row)">
+              <td class="vepp-col-center">{{ idx + 1 }}</td>
+              <td class="vepp-col-center">{{ row.codeNo }}</td>
+              <td>{{ row.codeName }}</td>
+              <td class="vepp-col-center">{{ row.evsScore }}</td>
+              <td class="vepp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteParam('ITEM', row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="vepp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- Tab 3: Đối tượng đánh giá -->
+    <nz-tab [nzTitle]="i18n.t('evsParam.tab.object', 'Đối tượng đánh giá')">
+      <div class="vepp-tab-toolbar">
+        <span class="vepp-total">Total: {{ objectRows().length }}</span>
+        <button id="vepp-object-add-btn" nz-button nzType="primary" nzSize="small" (click)="openObjectAddModal()">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('evsParam.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <nz-table [nzData]="objectRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="vepp-col-center">No.</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.code', 'Mã') }}</th>
+            <th>{{ i18n.t('evsParam.col.name', 'Tên') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.include', 'Bao gồm') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.defaultGrade', 'Cấp mặc định') }}</th>
+            <th>{{ i18n.t('evsParam.col.formula', 'Hình thức tiêu chuẩn') }}</th>
+            <th nzWidth="90px" class="vepp-col-center">{{ i18n.t('evsParam.btn.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of objectRows(); track row.seq; let idx = $index) {
+            <tr class="vepp-data-row" (click)="openObjectEditModal(row)">
+              <td class="vepp-col-center">{{ idx + 1 }}</td>
+              <td class="vepp-col-center">{{ row.codeNo }}</td>
+              <td>{{ row.codeName }}</td>
+              <td class="vepp-col-center">@if (row.isInclude === '1') { <span nz-icon nzType="check"></span> }</td>
+              <td class="vepp-col-center">{{ row.evsGradeName || row.evsGrade }}</td>
+              <td>{{ formulaName(row.formula) }}</td>
+              <td class="vepp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteObject(row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="vepp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- Tab 4: Bảng đánh giá (LIST) -->
+    <nz-tab [nzTitle]="i18n.t('evsParam.tab.list', 'Bảng đánh giá')">
+      <div class="vepp-tab-toolbar">
+        <span class="vepp-total">Total: {{ listRows().length }}</span>
+        <button id="vepp-list-add-btn" nz-button nzType="primary" nzSize="small" (click)="openParamAddModal('LIST')">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('evsParam.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <nz-table [nzData]="listRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="vepp-col-center">No.</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.code', 'Mã') }}</th>
+            <th>{{ i18n.t('evsParam.col.name', 'Tên') }}</th>
+            <th>{{ i18n.t('evsParam.col.formula', 'Hình thức tiêu chuẩn') }}</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.initialStatus', 'Trạng thái ban đầu') }}</th>
+            <th nzWidth="90px" class="vepp-col-center">{{ i18n.t('evsParam.btn.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of listRows(); track row.seq; let idx = $index) {
+            <tr class="vepp-data-row" (click)="openParamEditModal('LIST', row)">
+              <td class="vepp-col-center">{{ idx + 1 }}</td>
+              <td class="vepp-col-center">{{ row.codeNo }}</td>
+              <td>{{ row.codeName }}</td>
+              <td>{{ formulaName(row.formula) }}</td>
+              <td class="vepp-col-center">{{ row.startStepName || row.startStep }}</td>
+              <td class="vepp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteParam('LIST', row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="vepp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- Tab 5: Nhóm nhân viên (GROUP) -->
+    <nz-tab [nzTitle]="i18n.t('evsParam.tab.group', 'Nhóm nhân viên')">
+      <div class="vepp-tab-toolbar">
+        <span class="vepp-total">Total: {{ groupRows().length }}</span>
+        <button id="vepp-group-add-btn" nz-button nzType="primary" nzSize="small" (click)="openParamAddModal('GROUP')">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('evsParam.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <nz-table [nzData]="groupRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="vepp-col-center">No.</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.code', 'Mã') }}</th>
+            <th>{{ i18n.t('evsParam.col.name', 'Tên') }}</th>
+            <th>{{ i18n.t('evsParam.col.formula', 'Hình thức tiêu chuẩn') }}</th>
+            <th nzWidth="90px" class="vepp-col-center">{{ i18n.t('evsParam.btn.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of groupRows(); track row.seq; let idx = $index) {
+            <tr class="vepp-data-row" (click)="openParamEditModal('GROUP', row)">
+              <td class="vepp-col-center">{{ idx + 1 }}</td>
+              <td class="vepp-col-center">{{ row.codeNo }}</td>
+              <td>{{ row.codeName }}</td>
+              <td>{{ formulaName(row.formula) }}</td>
+              <td class="vepp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteParam('GROUP', row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="vepp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- Tab 6: Nhóm chức vụ (FAMILY) -->
+    <nz-tab [nzTitle]="i18n.t('evsParam.tab.family', 'Nhóm chức vụ')">
+      <div class="vepp-tab-toolbar">
+        <span class="vepp-total">Total: {{ familyRows().length }}</span>
+        <button id="vepp-family-add-btn" nz-button nzType="primary" nzSize="small" (click)="openParamAddModal('FAMILY')">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('evsParam.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <nz-table [nzData]="familyRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="vepp-col-center">No.</th>
+            <th class="vepp-col-center">{{ i18n.t('evsParam.col.code', 'Mã') }}</th>
+            <th>{{ i18n.t('evsParam.col.name', 'Tên') }}</th>
+            <th>{{ i18n.t('evsParam.col.formula', 'Hình thức tiêu chuẩn') }}</th>
+            <th nzWidth="90px" class="vepp-col-center">{{ i18n.t('evsParam.btn.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of familyRows(); track row.seq; let idx = $index) {
+            <tr class="vepp-data-row" (click)="openParamEditModal('FAMILY', row)">
+              <td class="vepp-col-center">{{ idx + 1 }}</td>
+              <td class="vepp-col-center">{{ row.codeNo }}</td>
+              <td>{{ row.codeName }}</td>
+              <td>{{ formulaName(row.formula) }}</td>
+              <td class="vepp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteParam('FAMILY', row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="vepp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- Tab 7: Người đánh giá -->
+    <nz-tab [nzTitle]="i18n.t('evsParam.tab.affirm', 'Người đánh giá')">
+      <div class="vepp-tab-toolbar">
+        <span class="vepp-total">Total: {{ affirmRows().length }}</span>
+        <button id="vepp-affirm-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAffirmAddModal()">
+          <span nz-icon nzType="plus"></span> {{ i18n.t('evsParam.btn.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <nz-table [nzData]="affirmRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="44px" class="vepp-col-center">No.</th>
+            <th>{{ i18n.t('evsParam.col.evaluator', 'Người đánh giá') }}</th>
+            <th>{{ i18n.t('evsParam.col.evalGroup', 'Nhóm đánh giá') }}</th>
+            <th>{{ i18n.t('evsParam.col.ruleId', 'ID quy tắc') }}</th>
+            <th nzWidth="90px" class="vepp-col-center">{{ i18n.t('evsParam.btn.delete', 'Xóa') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of affirmRows(); track row.seq; let idx = $index) {
+            <tr class="vepp-data-row" (click)="openAffirmEditModal(row)">
+              <td class="vepp-col-center">{{ idx + 1 }}</td>
+              <td>{{ row.evsStepName || row.evsStep }}</td>
+              <td>{{ row.evsGroupName || row.evsGroup }}</td>
+              <td>{{ row.ruleName || row.ruleId }}</td>
+              <td class="vepp-col-center">
+                <button nz-button nzSize="small" nzDanger (click)="$event.stopPropagation(); deleteAffirm(row)"><span nz-icon nzType="delete"></span></button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="vepp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td></tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</div>
+
+<!-- Modal Cấp đánh giá -->
+<nz-modal
+  [nzVisible]="gradeModalVisible()"
+  [nzTitle]="i18n.t('evsParam.tab.grade', 'Cấp đánh giá')"
+  (nzOnCancel)="gradeModalVisible.set(false)"
+  (nzVisibleChange)="gradeModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="gradeSaving()"
+  (nzOnOk)="saveGrade()"
+  [nzOkText]="i18n.t('evsParam.btn.save', 'Lưu')"
+  [nzCancelText]="i18n.t('evsParam.btn.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.evalType', 'Loại ĐG') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formEvsType()" (ngModelChange)="formEvsType.set($event)" nzAllowClear>
+          @for (opt of gradeTypeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.evalGrade', 'Cấp ĐG') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formEvsGrade()" (ngModelChange)="formEvsGrade.set($event)" nzAllowClear>
+          @for (opt of gradeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label nz-checkbox [ngModel]="formIsInclude()" (ngModelChange)="formIsInclude.set($event)">{{ i18n.t('evsParam.col.include', 'Bao gồm') }}</label>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.startScore', 'Điểm đầu') }}</label>
+        <nz-input-number [ngModel]="formStartScore()" (ngModelChange)="formStartScore.set($event)" style="width:100%"></nz-input-number>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.endScore', 'Điểm cuối') }}</label>
+        <nz-input-number [ngModel]="formEndScore()" (ngModelChange)="formEndScore.set($event)" style="width:100%"></nz-input-number>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.score', 'Điểm') }}</label>
+        <nz-input-number [ngModel]="formScore()" (ngModelChange)="formScore.set($event)" style="width:100%"></nz-input-number>
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.remark', 'Ghi chú') }}</label>
+        <textarea nz-input rows="2" [ngModel]="formGradeRemark()" (ngModelChange)="formGradeRemark.set($event)"></textarea>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Param dùng chung (item/list/group/family) -->
+<nz-modal
+  [nzVisible]="paramModalVisible()"
+  [nzTitle]="i18n.t('evsParam.btn.addNew', 'Thêm mới')"
+  (nzOnCancel)="paramModalVisible.set(false)"
+  (nzVisibleChange)="paramModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="paramSaving()"
+  (nzOnOk)="saveParam()"
+  [nzOkText]="i18n.t('evsParam.btn.save', 'Lưu')"
+  [nzCancelText]="i18n.t('evsParam.btn.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.code', 'Mã') }} <span class="vepp-required"></span></label>
+        <input nz-input nzSize="small" maxlength="20" [ngModel]="formParamCodeNo()" (ngModelChange)="formParamCodeNo.set($event)" [disabled]="!!formParamSeq()" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.name', 'Tên') }}</label>
+        <input nz-input nzSize="small" maxlength="200" [ngModel]="formParamCodeName()" (ngModelChange)="formParamCodeName.set($event)" />
+      </div>
+      @if (paramCurrentType() === 'ITEM') {
+        <div nz-col [nzSpan]="12">
+          <label class="vepp-field-label">{{ i18n.t('evsParam.col.score', 'Điểm') }}</label>
+          <nz-input-number [ngModel]="formParamEvsScore()" (ngModelChange)="formParamEvsScore.set($event)" style="width:100%"></nz-input-number>
+        </div>
+      }
+      @if (paramCurrentType() === 'LIST' || paramCurrentType() === 'GROUP' || paramCurrentType() === 'FAMILY') {
+        <div nz-col [nzSpan]="12">
+          <label class="vepp-field-label">{{ i18n.t('evsParam.col.formula', 'Hình thức tiêu chuẩn') }}</label>
+          <nz-select nzSize="small" style="width:100%" [ngModel]="formParamFormula()" (ngModelChange)="formParamFormula.set($event)" nzAllowClear>
+            @for (opt of formulaOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+      }
+      @if (paramCurrentType() === 'LIST') {
+        <div nz-col [nzSpan]="12">
+          <label class="vepp-field-label">{{ i18n.t('evsParam.col.initialStatus', 'Trạng thái ban đầu') }}</label>
+          <nz-select nzSize="small" style="width:100%" [ngModel]="formParamStartStep()" (ngModelChange)="formParamStartStep.set($event)" nzAllowClear>
+            @for (opt of startStepOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+          </nz-select>
+        </div>
+      }
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Đối tượng đánh giá -->
+<nz-modal
+  [nzVisible]="objectModalVisible()"
+  [nzTitle]="i18n.t('evsParam.tab.object', 'Đối tượng đánh giá')"
+  (nzOnCancel)="objectModalVisible.set(false)"
+  (nzVisibleChange)="objectModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="objectSaving()"
+  (nzOnOk)="saveObject()"
+  [nzOkText]="i18n.t('evsParam.btn.save', 'Lưu')"
+  [nzCancelText]="i18n.t('evsParam.btn.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="12">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.code', 'Mã') }} <span class="vepp-required"></span></label>
+        <input nz-input nzSize="small" maxlength="20" [ngModel]="formObjectCodeNo()" (ngModelChange)="formObjectCodeNo.set($event)" [disabled]="!!formObjectSeq()" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.name', 'Tên') }}</label>
+        <input nz-input nzSize="small" maxlength="200" [ngModel]="formObjectCodeName()" (ngModelChange)="formObjectCodeName.set($event)" />
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label nz-checkbox [ngModel]="formObjectIsInclude()" (ngModelChange)="formObjectIsInclude.set($event)">{{ i18n.t('evsParam.col.include', 'Bao gồm') }}</label>
+      </div>
+      <div nz-col [nzSpan]="12">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.defaultGrade', 'Cấp mặc định') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formObjectEvsGrade()" (ngModelChange)="formObjectEvsGrade.set($event)" nzAllowClear>
+          @for (opt of gradeOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.formula', 'Hình thức tiêu chuẩn') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formObjectFormula()" (ngModelChange)="formObjectFormula.set($event)" nzAllowClear>
+          @for (opt of formulaOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal Người đánh giá -->
+<nz-modal
+  [nzVisible]="affirmModalVisible()"
+  [nzTitle]="i18n.t('evsParam.tab.affirm', 'Người đánh giá')"
+  (nzOnCancel)="affirmModalVisible.set(false)"
+  (nzVisibleChange)="affirmModalVisible.set($event)"
+  nzWidth="600px"
+  [nzOkLoading]="affirmSaving()"
+  (nzOnOk)="saveAffirm()"
+  [nzOkText]="i18n.t('evsParam.btn.save', 'Lưu')"
+  [nzCancelText]="i18n.t('evsParam.btn.cancel', 'Hủy')"
+>
+  <ng-container *nzModalContent>
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzSpan]="24">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.evaluator', 'Người đánh giá') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formAffirmStep()" (ngModelChange)="formAffirmStep.set($event)" nzAllowClear>
+          @for (opt of affirmStepOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.evalGroup', 'Nhóm đánh giá') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formAffirmGroup()" (ngModelChange)="formAffirmGroup.set($event)" nzAllowClear>
+          @for (opt of groupOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+      <div nz-col [nzSpan]="24">
+        <label class="vepp-field-label">{{ i18n.t('evsParam.col.ruleId', 'ID quy tắc') }}</label>
+        <nz-select nzSize="small" style="width:100%" [ngModel]="formAffirmRuleId()" (ngModelChange)="formAffirmRuleId.set($event)" nzAllowClear>
+          @for (opt of ruleIdOptions(); track opt.codeNo) { <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option> }
+        </nz-select>
+      </div>
+    </div>
+  </ng-container>
+</nz-modal>

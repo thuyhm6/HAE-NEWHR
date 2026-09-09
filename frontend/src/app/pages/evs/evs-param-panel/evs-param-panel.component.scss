@@ -1,0 +1,104 @@
+.vepp-page {
+  padding: 4px 0;
+}
+
+.vepp-search-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vepp-inline-label {
+  font-size: 12px;
+  color: #555;
+}
+
+.vepp-tab-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  flex-shrink: 0;
+}
+
+/*
+ * ".vepp-table-card" đặt trực tiếp lên <nz-tabs> (7 bảng, mỗi bảng nằm trong 1 tab). Style global
+ * [class$="-table-card"] đã cho chính nz-tabs flex:1;min-height:0;display:flex;flex-direction:column
+ * (trùng với .ant-tabs.ant-tabs-top mặc định của antd nên không xung đột), nhưng .ant-tabs-content-holder/
+ * .ant-tabs-content/.ant-tabs-tabpane là DOM nội bộ NzTabsComponent (không phải template của mình) nên
+ * phải ::ng-deep mới truyền tiếp height xuống tới nz-table được. .ant-tabs-content-holder gốc antd đã có
+ * flex:auto;min-height:0, chỉ thiếu display:flex để .ant-tabs-content bên trong co giãn theo.
+ */
+:host ::ng-deep .vepp-table-card {
+  .ant-tabs-content-holder {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ant-tabs-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /*
+   * Chỉ tabpane đang active mới cần chiếm hết chiều cao còn lại - dùng :not(.ant-tabs-tabpane-hidden)
+   * (class NzTabBodyComponent tự gắn khi ẩn tab) thay vì ghi đè thẳng .ant-tabs-tabpane, để không bao
+   * giờ đụng tới rule "display:none" của các tabpane đang ẩn dù CSS này nạp sau css gốc antd.
+   */
+  .ant-tabs-tabpane:not(.ant-tabs-tabpane-hidden) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /*
+   * Trong mỗi tabpane, nz-table còn có ".vepp-tab-toolbar" (thanh Total/nút Thêm mới) đứng trước nó
+   * nên không dùng được height:100% (giá trị mặc định từ style global [class$="-table-card"] nz-table,
+   * vốn giả định nz-table là con DUY NHẤT) - đổi sang flex:1 để nz-table nhường chỗ cho toolbar rồi mới
+   * chiếm hết phần còn lại.
+   */
+  .ant-tabs-tabpane nz-table {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+}
+
+.vepp-total {
+  font-size: 12px;
+  color: var(--ant-color-text-tertiary, #999);
+  font-weight: 600;
+}
+
+.vepp-col-center {
+  text-align: center;
+}
+
+.vepp-data-row {
+  cursor: pointer;
+}
+
+.vepp-field-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.vepp-required::before {
+  content: '*';
+  color: #ff4d4f;
+}
+
+[nz-col] {
+  margin-bottom: 10px;
+}

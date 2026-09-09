@@ -1,0 +1,115 @@
+<div class="vebssa-page" *ngIf="hasAnyResume(); else emptyNotice">
+  <div class="vebssa-search-card">
+    <span class="vebssa-inline-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.evalName', 'Tên đánh giá') }}</span>
+    <nz-select style="min-width: 280px" [(ngModel)]="searchResumeSeq" (ngModelChange)="search()">
+      <nz-option *ngFor="let opt of resumeOptions()" [nzValue]="opt.seq" [nzLabel]="opt.resumeName ?? ''"></nz-option>
+    </nz-select>
+    <button nz-button nzType="primary" nzSize="small" (click)="search()">
+      <span nz-icon nzType="search"></span>
+      {{ i18n.t('evs.viewEvsBySelfSSTAbility.btnSearch', 'Tra cứu') }}
+    </button>
+  </div>
+
+  <ng-container *ngIf="info() as d">
+    <div class="vebssa-card">
+      <div class="vebssa-card-title">{{ i18n.t('evs.viewEvsBySelfSSTAbility.personalInfo', 'Thông tin cá nhân') }}</div>
+      <div class="vebssa-info-grid">
+        <table class="vebssa-info-table">
+          <thead><tr><th colspan="2">{{ i18n.t('evs.viewEvsBySelfSSTAbility.basicInfo', 'Thông tin cơ bản') }}</th></tr></thead>
+          <tbody>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.fullName', 'Họ tên') }}</td><td>{{ d.localName }}</td></tr>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.position', 'Chức vụ') }}</td><td>{{ d.postGradeName }}</td></tr>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.dept', 'Phòng ban') }}</td><td>{{ d.deptname }}</td></tr>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.hireDate', 'Ngày vào làm') }}</td><td>{{ d.dateStarted }}</td></tr>
+          </tbody>
+        </table>
+        <table class="vebssa-info-table">
+          <thead><tr><th colspan="2">{{ i18n.t('evs.viewEvsBySelfSSTAbility.evalCategory', 'Hạng mục đánh giá') }}</th></tr></thead>
+          <tbody>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.evalYear', 'Năm đánh giá') }}</td><td>{{ d.evsYear }}</td></tr>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.period', 'Thời gian') }}</td><td>{{ period() }}</td></tr>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.appraiser1', 'Người đánh giá lần 1') }}</td><td>{{ d.localName1 }}</td></tr>
+            <tr><td class="vebssa-info-label">{{ i18n.t('evs.viewEvsBySelfSSTAbility.appraiser2', 'Người đánh giá lần 2') }}</td><td>{{ d.localName2 }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="vebssa-card">
+      <div class="vebssa-card-header">
+        <span class="vebssa-card-title-inline">{{ i18n.t('evs.viewEvsBySelfSSTAbility.section1', 'SECTION 1') }}</span>
+        <div class="vebssa-btn-group" *ngIf="editable()">
+          <button nz-button nzSize="small" [nzLoading]="saving()" (click)="save('0')">
+            {{ i18n.t('evs.viewEvsBySelfSSTAbility.btnSaveDraft', 'Lưu tạm thời') }}
+          </button>
+          <button nz-button nzType="primary" nzSize="small" [nzLoading]="saving()" (click)="save('1')">
+            {{ i18n.t('evs.viewEvsBySelfSSTAbility.btnExecute', 'Thực hiện') }}
+          </button>
+        </div>
+      </div>
+
+      <table class="vebssa-info-table mb-2">
+        <thead>
+          <tr>
+            <th>{{ i18n.t('evs.viewEvsBySelfSSTAbility.col.no', 'No') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfSSTAbility.col.distinction', 'Phân biệt') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfSSTAbility.col.evalItem', 'Hạng mục đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfSSTAbility.col.criterion', 'Chỉ tiêu đánh giá') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfSSTAbility.col.itemScore', 'Điểm chỉ tiêu') }}</th>
+            <th>{{ i18n.t('evs.viewEvsBySelfSSTAbility.col.selfScore', 'Tự đánh giá') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!items().length"><td colspan="6" class="vebssa-col-center">0</td></tr>
+          <tr *ngFor="let item of items(); let idx = index">
+            <td class="vebssa-col-center">{{ idx + 1 }}</td>
+            <td>{{ item.groupName }}</td>
+            <td>{{ item.itemName }}</td>
+            <td>{{ item.remark }}</td>
+            <td class="vebssa-col-center">{{ item.itemScore || '0' }}</td>
+            <td class="vebssa-col-center">
+              <nz-select
+                nzSize="small"
+                style="min-width: 110px"
+                [ngModel]="scoreValue(item)"
+                (ngModelChange)="onScoreChange(item, $event)"
+                [nzDisabled]="!editable()"
+                nzAllowClear
+              >
+                <nz-option *ngFor="let opt of scoreOptions()" [nzValue]="opt.evsScore" [nzLabel]="opt.codeName ?? opt.evsScore ?? ''"></nz-option>
+              </nz-select>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="vebssa-total-row">
+            <td colspan="4" class="vebssa-total-label">Total</td>
+            <td class="vebssa-col-center">{{ totalItemScore() }}</td>
+            <td class="vebssa-col-center">{{ totalSelfScore() }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="vebssa-card">
+      <div class="vebssa-card-title">{{ i18n.t('evs.viewEvsBySelfSSTAbility.section2', 'SECTION 2') }}</div>
+      <table class="vebssa-info-table">
+        <thead><tr><th>{{ i18n.t('evs.viewEvsBySelfSSTAbility.col.comment', 'Comment') }}</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>
+              <textarea nz-input rows="5" [ngModel]="affirmContent()" (ngModelChange)="affirmContent.set($event)" [readOnly]="!editable()"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #emptyNotice>
+  <div class="vebssa-empty-notice">
+    <span nz-icon nzType="exclamation-circle" class="vebssa-empty-icon"></span>
+    <p class="vebssa-empty-text">{{ i18n.t('evs.viewConfirmTarget1.msg.notInEvalPeriod', 'Không trong khoảng thời gian đánh giá hoặc bạn không phải là người đánh giá, xin liên hệ Phòng nhân sự!') }}</p>
+  </div>
+</ng-template>

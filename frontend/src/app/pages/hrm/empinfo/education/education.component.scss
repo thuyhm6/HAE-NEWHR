@@ -1,0 +1,15 @@
+.edu-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edu-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edu-col-center {
+  text-align: center;
+}

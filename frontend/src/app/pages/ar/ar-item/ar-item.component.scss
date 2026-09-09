@@ -1,0 +1,28 @@
+// Layout "vùng tìm kiếm + nút chức năng + tiêu đề bảng cố định, chỉ dữ liệu bảng (tbody) cuộn" -
+// đã chuyển thành rule CSS toàn cục theo quy ước hậu tố class "-page" / "-search-card" /
+// "-table-card" (xem [class$="-page"] ... trong frontend/src/styles.scss) để áp dụng tự động cho
+// mọi trang tuân thủ quy ước, không cần khai báo lại ở từng component.
+.ai-page {
+  gap: 16px;
+}
+
+.ai-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.ai-col-center {
+  text-align: center;
+}
+
+.ai-section-title {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1677ff;
+  border-bottom: 1px solid #f0f0f0;
+}

@@ -1,0 +1,118 @@
+<div class="ve-page">
+  <nz-card class="ve-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ve-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="veKeyword" [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã hoặc họ tên')" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="ve-dept"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="veDept"
+                nzMultiple
+                nzCheckable
+                nzShowSearch
+                [nzPlaceHolder]="i18n.t('common.select', 'Chọn phòng ban')"
+                style="width: 100%"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.workStatus', 'Trạng thái làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ve-emp-office" [ngModel]="empOffice()" (ngModelChange)="empOffice.set($event)" name="veEmpOffice" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of empOfficeOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.nameVi || opt.codeName || opt.codeNo"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewVacEmpList.title.vacYear', 'Năm phép') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ve-vac-year" nz-input [ngModel]="vacYear()" name="veVacYear" readonly />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="ve-toolbar-actions">
+        <button id="ve-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="ve-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="ve-export-btn" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="export"></span>
+          {{ i18n.t('common.exportExcel', 'Xuất excel') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="ve-table-card">
+    <nz-table #veTable id="ve-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="ve-col-center">No.</th>
+          <th class="ve-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+          <th class="ve-col-right">{{ i18n.t('ar.viewVacEmpList.col.totVacCnt', 'Tổng phép') }}</th>
+          <th class="ve-col-right">{{ i18n.t('ar.viewVacEmpList.col.lastYearVac', 'Phép năm trước') }}</th>
+          <th class="ve-col-right">{{ i18n.t('ar.viewVacEmpList.col.useVacCnt', 'Đã dùng') }}</th>
+          <th class="ve-col-right">{{ i18n.t('ar.viewVacEmpList.col.affirmUseVac', 'Chờ duyệt') }}</th>
+          @for (m of months; track m) {
+            <th class="ve-col-right">{{ i18n.t('ar.viewVacEmpList.col.month', 'Tháng') }} {{ m }}</th>
+          }
+          <th class="ve-col-right">{{ i18n.t('ar.viewVacEmpList.col.mentVac', 'Quy đổi') }}</th>
+          <th class="ve-col-right">{{ i18n.t('ar.viewVacEmpList.col.workMonth', 'Tháng công tác') }}</th>
+          <th class="ve-col-center">{{ i18n.t('ar.viewVacEmpList.col.isLocked', 'Khóa') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of veTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="ve-col-center">{{ idx + 1 }}</td>
+            <td class="ve-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="ve-col-right">{{ row.totVacCnt }}</td>
+            <td class="ve-col-right">{{ row.lastYearVac }}</td>
+            <td class="ve-col-right">{{ row.useVacCnt }}</td>
+            <td class="ve-col-right">{{ row.affirmUseVac }}</td>
+            @for (m of months; track m) {
+              <td class="ve-col-right">{{ monthValue(row, m) }}</td>
+            }
+            <td class="ve-col-right">{{ row.mentVac }}</td>
+            <td class="ve-col-right">{{ row.workMonth }}</td>
+            <td class="ve-col-center">{{ row.isLocked }}</td>
+            <td>{{ row.remark }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="18" class="ve-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

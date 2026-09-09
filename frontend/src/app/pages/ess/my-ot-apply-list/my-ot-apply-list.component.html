@@ -1,0 +1,118 @@
+<div class="poi-page">
+  <nz-card class="poi-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('poi.field.otType', 'Tăng ca') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="poi-ot-type" [ngModel]="otTypeCode()" (ngModelChange)="otTypeCode.set($event)" name="poiOtTypeCode" style="width: 150px" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+            <nz-option *ngFor="let opt of otTypeOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('common.approvalStatus', 'Trạng thái duyệt') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="poi-affirm-flag" [ngModel]="affirmFlag()" (ngModelChange)="affirmFlag.set($event)" name="poiAffirmFlag" style="width: 150px" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+            <nz-option *ngFor="let opt of affirmFlagOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('poi.field.dateRange', 'Thời gian') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="poi-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="poiFromDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <span class="poi-tilde">~</span>
+      <nz-form-item>
+        <nz-form-control>
+          <nz-date-picker id="poi-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="poiToDate" nzFormat="dd/MM/yyyy"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="poi-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="poi-table-card">
+    <div class="poi-toolbar">
+      <input
+        id="poi-quick-filter"
+        nz-input
+        [ngModel]="quickFilter()"
+        (ngModelChange)="onQuickFilterChange($event)"
+        [placeholder]="i18n.t('common.quickFilter', 'Lọc nhanh')"
+        style="max-width: 200px"
+      />
+      <div class="poi-toolbar-actions">
+        <button id="poi-cancel-btn" nz-button nzDanger (click)="cancelSelected()">
+          {{ i18n.t('common.cancel', 'Hủy') }}
+        </button>
+        <button id="poi-apply-btn" nz-button nzType="primary" (click)="goApply()">
+          {{ i18n.t('poi.btn.applyOt', 'Xin tăng ca') }}
+        </button>
+      </div>
+    </div>
+
+    <nz-table id="poi-data-table" #poiTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="poi-col-center">NO</th>
+          <th nzWidth="40px" class="poi-col-center">
+            <label nz-checkbox [ngModel]="checkAll()" (ngModelChange)="toggleAll($event)"></label>
+          </th>
+          <th>{{ i18n.t('poi.field.otType', 'Tăng ca') }}</th>
+          <th class="poi-col-center">{{ i18n.t('poi.col.otDate', 'Ngày tăng ca') }}</th>
+          <th class="poi-col-center">{{ i18n.t('common.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="poi-col-center">{{ i18n.t('common.endTime', 'Thời gian kết thúc') }}</th>
+          <th class="poi-col-center">{{ i18n.t('common.duration', 'Thời lượng') }}</th>
+          <th class="poi-col-center">{{ i18n.t('poi.col.mealRest', "Báo cơm / Nghỉ ngơi (30')") }}</th>
+          <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+          <th class="poi-col-center">{{ i18n.t('essOt.usecarYn', 'Đặt xe') }}</th>
+          <th>{{ i18n.t('essOt.carAddress', 'Tuyến xe') }}</th>
+          <th>{{ i18n.t('essOt.carAddressDetail', 'Chi tiết điểm đón') }}</th>
+          <th class="poi-col-center">{{ i18n.t('common.approvalStatus', 'Trạng thái duyệt') }}</th>
+          <th class="poi-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of poiTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="poi-col-center">{{ idx + 1 }}</td>
+            <td class="poi-col-center" (click)="$event.stopPropagation()">
+              @if (isCancelable(row)) {
+                <label nz-checkbox [ngModel]="isChecked(row)" (ngModelChange)="toggleRow(row, $event)"></label>
+              }
+            </td>
+            <td>
+              <a class="poi-name-link" (click)="openDetail(row)">{{ row.otTypeName || row.otTypeCode }}</a>
+            </td>
+            <td class="poi-col-center">{{ row.applyOtDate }}</td>
+            <td class="poi-col-center">{{ row.otFromTime }}</td>
+            <td class="poi-col-center">{{ row.otToTime }}</td>
+            <td class="poi-col-center">{{ formatHour(row.otApplyHour) }}</td>
+            <td class="poi-col-center">{{ yesNo(row.deductYn) }}</td>
+            <td>{{ row.applyOtRemark }}</td>
+            <td class="poi-col-center">{{ yesNo(row.usecarYn) }}</td>
+            <td>{{ row.carAddressName }}</td>
+            <td>{{ row.carAddressDetailName }}</td>
+            <td class="poi-col-center">{{ row.affirmFlagName || row.affirmFlag }}</td>
+            <td class="poi-col-center">{{ row.confirmFlagName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="14" class="poi-col-center">{{ i18n.t('poi.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #detailModal [variant]="detailVariant"></app-apply-detail-modal>

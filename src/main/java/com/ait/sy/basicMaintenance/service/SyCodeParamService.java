@@ -14,4 +14,6 @@ public interface SyCodeParamService {
     void delete(String codeNo, String cpnyId);
 
     void deleteByParamNo(String paramNo);
+
+    byte[] exportExcel(String parentCode, String cpnyId);
 }

@@ -1,0 +1,47 @@
+.as-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.as-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.as-col-center {
+  text-align: center;
+}
+
+.as-col-right {
+  text-align: right;
+}
+
+.as-sync-endpoint {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #e6f4ff;
+  border: 1px solid #91caff;
+  border-radius: 4px;
+}
+
+.as-sync-result {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.as-result-success {
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #389e0d;
+}
+
+.as-result-error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+}

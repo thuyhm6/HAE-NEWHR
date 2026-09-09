@@ -1,0 +1,13 @@
+.iot-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.iot-col-center {
+  text-align: center;
+}
+
+.iot-row-error td {
+  background-color: #fff1f0;
+}

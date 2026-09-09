@@ -1,0 +1,295 @@
+<div class="mci-page">
+  <nz-card class="mci-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('essDept.keyword', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="mci-keyword"
+                nz-input
+                [ngModel]="keyword()"
+                (ngModelChange)="keyword.set($event)"
+                name="mciKeyword"
+                [placeholder]="i18n.t('vdp.search.empKeyword.placeholder', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="mci-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="mciDeptNos"
+                [nzPlaceHolder]="i18n.t('vdp.search.dept.placeholder', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empGroup', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="mci-post-family"
+                [ngModel]="postFamily()"
+                (ngModelChange)="postFamily.set($event)"
+                name="mciPostFamily"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of postFamilyOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empType', 'Loại nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="mci-emp-type"
+                [ngModel]="empTypeCode()"
+                (ngModelChange)="empTypeCode.set($event)"
+                name="mciEmpTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="mci-emp-office"
+                [ngModel]="empOffice()"
+                (ngModelChange)="empOffice.set($event)"
+                name="mciEmpOffice"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empOfficeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('mci.field.asOfDate', 'Ngày truy vấn') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="mci-as-of-date"
+                [ngModel]="asOfDate()"
+                (ngModelChange)="asOfDate.set($event)"
+                name="mciAsOfDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row>
+        <div nz-col [nzSpan]="24" class="mci-search-actions">
+          <button id="mci-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="summaryLoading() || listLoading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('essDept.search', 'Tra cứu') }}
+          </button>
+          <button id="mci-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('essDept.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="mci-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('essDept.exportExcel', 'Xuất excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <div nz-row [nzGutter]="16" class="mci-stats-row">
+    <div nz-col [nzSpan]="8">
+      <nz-card class="mci-stat-card">
+        <div class="mci-total-box">
+          <div class="mci-total-label">{{ i18n.t('mci.stats.total', 'Tổng số nhân viên') }}</div>
+          <div class="mci-total-value">{{ totalCount() }}</div>
+        </div>
+      </nz-card>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <nz-card [nzTitle]="i18n.t('mci.stats.byGender', 'Theo giới tính')" class="mci-chart-card">
+        <apx-chart
+          [series]="genderChart().series"
+          [chart]="genderChart().chart"
+          [labels]="genderChart().labels"
+          [legend]="genderChart().legend"
+          [dataLabels]="genderChart().dataLabels"
+          [tooltip]="genderChart().tooltip"
+          [plotOptions]="genderChart().plotOptions"
+        ></apx-chart>
+      </nz-card>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <nz-card [nzTitle]="i18n.t('mci.stats.byEmpType', 'Theo loại nhân viên')" class="mci-chart-card">
+        <apx-chart
+          [series]="empTypeChart().series"
+          [chart]="empTypeChart().chart"
+          [labels]="empTypeChart().labels"
+          [legend]="empTypeChart().legend"
+          [dataLabels]="empTypeChart().dataLabels"
+          [tooltip]="empTypeChart().tooltip"
+          [plotOptions]="empTypeChart().plotOptions"
+        ></apx-chart>
+      </nz-card>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="16" class="mci-stats-row">
+    <div nz-col [nzSpan]="16">
+      <nz-card [nzTitle]="i18n.t('mci.stats.byDept', 'Theo phòng ban')" class="mci-chart-card">
+        <apx-chart
+          [series]="deptChart().series"
+          [chart]="deptChart().chart"
+          [xaxis]="deptChart().xaxis"
+          [yaxis]="deptChart().yaxis"
+          [plotOptions]="deptChart().plotOptions"
+          [dataLabels]="deptChart().dataLabels"
+          [tooltip]="deptChart().tooltip"
+          [fill]="deptChart().fill"
+          [colors]="deptChart().colors"
+        ></apx-chart>
+      </nz-card>
+    </div>
+    <div nz-col [nzSpan]="8">
+      <nz-card [nzTitle]="i18n.t('mci.stats.byPostFamily', 'Theo nhóm nhân viên')" class="mci-chart-card">
+        <apx-chart
+          [series]="postFamilyChart().series"
+          [chart]="postFamilyChart().chart"
+          [labels]="postFamilyChart().labels"
+          [legend]="postFamilyChart().legend"
+          [dataLabels]="postFamilyChart().dataLabels"
+          [tooltip]="postFamilyChart().tooltip"
+          [plotOptions]="postFamilyChart().plotOptions"
+        ></apx-chart>
+      </nz-card>
+    </div>
+  </div>
+
+  <div nz-row [nzGutter]="16" class="mci-stats-row">
+    <div nz-col [nzSpan]="12">
+      <nz-card [nzTitle]="i18n.t('mci.stats.byPostGrade', 'Theo chức danh')" class="mci-chart-card">
+        <apx-chart
+          [series]="postGradeChart().series"
+          [chart]="postGradeChart().chart"
+          [xaxis]="postGradeChart().xaxis"
+          [yaxis]="postGradeChart().yaxis"
+          [plotOptions]="postGradeChart().plotOptions"
+          [dataLabels]="postGradeChart().dataLabels"
+          [tooltip]="postGradeChart().tooltip"
+          [fill]="postGradeChart().fill"
+          [colors]="postGradeChart().colors"
+        ></apx-chart>
+      </nz-card>
+    </div>
+    <div nz-col [nzSpan]="12">
+      <nz-card [nzTitle]="i18n.t('mci.stats.byAge', 'Theo độ tuổi')" class="mci-chart-card">
+        <apx-chart
+          [series]="ageChart().series"
+          [chart]="ageChart().chart"
+          [xaxis]="ageChart().xaxis"
+          [yaxis]="ageChart().yaxis"
+          [plotOptions]="ageChart().plotOptions"
+          [dataLabels]="ageChart().dataLabels"
+          [tooltip]="ageChart().tooltip"
+          [fill]="ageChart().fill"
+          [colors]="ageChart().colors"
+        ></apx-chart>
+      </nz-card>
+    </div>
+  </div>
+
+  <nz-card class="mci-table-card" [nzTitle]="i18n.t('mci.detail.title', 'Danh sách nhân viên chi tiết')">
+    <nz-table
+      id="mci-data-table"
+      [nzData]="empRows()"
+      [nzLoading]="listLoading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="mci-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="mci-col-center">{{ i18n.t('common.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th class="mci-col-center">{{ i18n.t('common.empGroup', 'Nhóm NV') }}</th>
+          <th class="mci-col-center">{{ i18n.t('mci.col.postGrade', 'Chức danh') }}</th>
+          <th class="mci-col-center">{{ i18n.t('common.empType', 'Loại NV') }}</th>
+          <th class="mci-col-center">{{ i18n.t('mci.col.dob', 'Ngày sinh') }}</th>
+          <th class="mci-col-center">{{ i18n.t('mci.col.gender', 'Giới tính') }}</th>
+          <th class="mci-col-center">{{ i18n.t('common.dateJoined', 'Ngày vào làm') }}</th>
+          <th class="mci-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of empRows(); track $index; let idx = $index) {
+          <tr>
+            <td class="mci-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="mci-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td class="mci-col-center">{{ row.postFamilyName }}</td>
+            <td class="mci-col-center">{{ row.postGradeNo }}</td>
+            <td class="mci-col-center">{{ row.empTypeName }}</td>
+            <td class="mci-col-center">{{ row.dob }}</td>
+            <td class="mci-col-center">{{ row.sexName }}</td>
+            <td class="mci-col-center">{{ row.dateStarted }}</td>
+            <td class="mci-col-center">{{ row.empOfficeName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="mci-col-center">{{ i18n.t('mci.msg.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

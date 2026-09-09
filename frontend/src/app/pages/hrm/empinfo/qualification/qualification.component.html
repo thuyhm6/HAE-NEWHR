@@ -1,0 +1,248 @@
+<div class="qual-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="qualSearchEmpId" [placeholder]="i18n.t('hrm.viewQualification.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.localName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="qualSearchLocalName" [placeholder]="i18n.t('hrm.viewQualification.title.localNamePlaceholder', 'Nhập tên nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.qualName', 'Tên chứng chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-search-name" nz-input [ngModel]="searchQualName()" (ngModelChange)="searchQualName.set($event)" name="qualSearchName" [placeholder]="i18n.t('hrm.viewQualification.title.qualNamePlaceholder', 'Nhập tên chứng chỉ')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>&nbsp;</nz-form-label>
+            <nz-form-control>
+              <div class="qual-toolbar-actions">
+                <button id="qual-search-btn" nz-button nzType="primary" (click)="search()">
+                  <span nz-icon nzType="search"></span>
+                  {{ i18n.t('common.search', 'Tìm kiếm') }}
+                </button>
+                <button id="qual-clear-btn" nz-button (click)="clearSearch()">
+                  <span nz-icon nzType="close"></span>
+                  {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+                </button>
+                <button id="qual-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+                  <span nz-icon nzType="plus"></span>
+                  {{ i18n.t('common.addNew', 'Thêm mới') }}
+                </button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+
+    <nz-table
+      id="qual-data-table"
+      #qualTable
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="20"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[20, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: '1200px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="qual-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.viewQualification.title.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('hrm.viewQualification.title.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.viewQualification.title.qualName', 'Tên chứng chỉ') }}</th>
+          <th class="qual-col-center">{{ i18n.t('hrm.viewQualification.title.dateObtained', 'Ngày nhận') }}</th>
+          <th>{{ i18n.t('hrm.viewQualification.title.qualCardNo', 'Số hiệu') }}</th>
+          <th>{{ i18n.t('hrm.viewQualification.title.qualInstitute', 'Nơi cấp') }}</th>
+          <th class="qual-col-center">{{ i18n.t('hrm.viewQualification.title.validityDate', 'Ngày hết hạn') }}</th>
+          <th>{{ i18n.t('hrm.viewQualification.title.qualGrade', 'Xếp loại') }}</th>
+          <th nzWidth="100px" class="qual-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of qualTable.data; track row.qualNo; let idx = $index) {
+          <tr>
+            <td class="qual-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.qualName }}</td>
+            <td class="qual-col-center">{{ row.dateObtained }}</td>
+            <td>{{ row.qualCardNo }}</td>
+            <td>{{ row.qualInstitute }}</td>
+            <td class="qual-col-center">{{ row.validityDate }}</td>
+            <td>{{ row.qualGrade }}</td>
+            <td class="qual-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="10" class="qual-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.viewQualification.title.editTitle', 'Cập nhật Chứng chỉ') : i18n.t('hrm.viewQualification.title.addTitle', 'Thêm mới Chứng chỉ')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="800px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="qual-form-emp"
+                [ngModel]="formPersonId()"
+                (ngModelChange)="onEmployeeSelected($event)"
+                name="qualFormEmp"
+                nzShowSearch
+                [nzServerSearch]="true"
+                (nzOnSearch)="onEmployeeSearch($event)"
+                [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                [nzLoading]="employeeSearching()"
+              >
+                @if (formEmpLabel() && formPersonId()) {
+                  <nz-option [nzValue]="formPersonId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                }
+                @for (emp of employeeOptions(); track emp.personId) {
+                  <nz-option [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.viewQualification.title.qualName', 'Tên chứng chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-form-name" nz-input [ngModel]="formQualName()" (ngModelChange)="formQualName.set($event)" name="qualFormName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.dateObtained', 'Ngày nhận') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="qual-form-date-obtained" [ngModel]="formDateObtained()" (ngModelChange)="formDateObtained.set($event)" name="qualFormDateObtained" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.qualCardNo', 'Số chứng chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-form-card-no" nz-input [ngModel]="formQualCardNo()" (ngModelChange)="formQualCardNo.set($event)" name="qualFormCardNo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.qualInstitute', 'Nơi cấp') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-form-institute" nz-input [ngModel]="formQualInstitute()" (ngModelChange)="formQualInstitute.set($event)" name="qualFormInstitute" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.validityDate', 'Ngày hết hạn') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="qual-form-validity-date" [ngModel]="formValidityDate()" (ngModelChange)="formValidityDate.set($event)" name="qualFormValidityDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.qualLevel', 'Cấp độ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-form-level" nz-input [ngModel]="formQualLevel()" (ngModelChange)="formQualLevel.set($event)" name="qualFormLevel" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.qualGrade', 'Xếp loại') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-form-grade" nz-input [ngModel]="formQualGrade()" (ngModelChange)="formQualGrade.set($event)" name="qualFormGrade" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.acquisitionModes', 'Hình thức đạt được') }}</nz-form-label>
+            <nz-form-control>
+              <input id="qual-form-modes" nz-input [ngModel]="formAcquisitionModes()" (ngModelChange)="formAcquisitionModes.set($event)" name="qualFormModes" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.paymentAllowanceYN', 'Trả phụ cấp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="qual-form-allowance" [ngModel]="formPaymentAllowanceYN()" (ngModelChange)="formPaymentAllowanceYN.set($event)" name="qualFormAllowance" [nzPlaceHolder]="i18n.t('common.select', '-- Chọn --')" nzAllowClear>
+                <nz-option nzValue="Y" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+                <nz-option nzValue="N" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewQualification.title.qualSubmitDate', 'Ngày nộp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="qual-form-submit-date" [ngModel]="formQualSubmitDate()" (ngModelChange)="formQualSubmitDate.set($event)" name="qualFormSubmitDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="qual-form-remark" nz-input rows="2" [ngModel]="formQualRemark()" (ngModelChange)="formQualRemark.set($event)" name="qualFormRemark"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

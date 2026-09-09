@@ -1,0 +1,137 @@
+<div class="vppo-page">
+  <div class="vppo-search-card">
+    <div class="vppo-search-row">
+      <span class="vppo-inline-label">{{ i18n.t('pa.payObj.empSearch', 'Mã NV/Họ tên') }}</span>
+      <input nz-input style="max-width: 200px" [ngModel]="searchEmpSearch()" (ngModelChange)="searchEmpSearch.set($event)" (keydown.enter)="search()" />
+
+      <span class="vppo-inline-label">{{ i18n.t('pa.payObj.payScheduleNo', 'Kế hoạch trả lương') }}</span>
+      <nz-select style="min-width: 220px" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch nzAllowClear>
+        <nz-option *ngFor="let sch of scheduleOptions()" [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+      </nz-select>
+
+      <span class="vppo-inline-label">{{ i18n.t('pa.payObj.includeType', 'Phân biệt') }}</span>
+      <nz-select style="min-width: 150px" [ngModel]="searchIncludeType()" (ngModelChange)="searchIncludeType.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('pa.payObj.includeType.all', 'Tất cả')">
+        <nz-option nzValue="1" [nzLabel]="i18n.t('pa.payObj.includeType.join', 'Tham gia')"></nz-option>
+        <nz-option nzValue="0" [nzLabel]="i18n.t('pa.payObj.includeType.notJoin', 'Không tham gia')"></nz-option>
+      </nz-select>
+
+      <span class="vppo-inline-label">{{ i18n.t('pa.payObj.empOffice', 'Trạng thái') }}</span>
+      <nz-select style="min-width: 160px" [ngModel]="searchEmpOffice()" (ngModelChange)="searchEmpOffice.set($event)" nzAllowClear>
+        <nz-option *ngFor="let opt of empOfficeOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+      </nz-select>
+
+      <div class="vppo-search-actions">
+        <button nz-button nzType="primary" nzSize="small" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('pa.payObj.search', 'Tra cứu') }}
+        </button>
+        <button nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus-circle"></span>{{ i18n.t('pa.payObj.addNew', 'Thêm mới') }}
+        </button>
+        <button nz-button nzDanger nzSize="small" (click)="deleteSelected()">
+          <span nz-icon nzType="delete"></span>{{ i18n.t('pa.payObj.delete', 'Xóa') }}
+        </button>
+        <button nz-button nzSize="small" [class.vppo-dirty-btn]="dirtyCount() > 0" (click)="saveDirty()">
+          <span nz-icon nzType="save"></span>{{ i18n.t('pa.payObj.save', 'Lưu') }}{{ dirtyCount() > 0 ? ' (' + dirtyCount() + ')' : '' }}
+        </button>
+        <button nz-button nzSize="small" (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>{{ i18n.t('pa.payObj.exportExcel', 'Xuất Excel') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="vppo-table-card">
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="recordsTotal()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      nzShowSizeChanger
+      (nzPageIndexChange)="onPageIndexChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="36px" class="vppo-col-center">
+            <input type="checkbox" [checked]="rows().length > 0 && checkedKeys().size === rows().length" (change)="toggleAll($any($event.target).checked)" />
+          </th>
+          <th nzWidth="48px" class="vppo-col-center">{{ i18n.t('pa.payObj.no', 'No.') }}</th>
+          <th>{{ i18n.t('pa.payObj.empName', 'Họ tên') }}</th>
+          <th class="vppo-col-center">{{ i18n.t('pa.payObj.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('pa.payObj.deptName', 'Phòng ban') }}</th>
+          <th class="vppo-col-center" nzWidth="165px">{{ i18n.t('pa.payObj.includeType', 'Phân biệt') }}</th>
+          <th class="vppo-col-center">{{ i18n.t('pa.payObj.createdBy', 'Người tạo') }}</th>
+          <th class="vppo-col-center">{{ i18n.t('pa.payObj.createDate', 'Thời gian tạo') }}</th>
+          <th class="vppo-col-center">{{ i18n.t('pa.payObj.updatedBy', 'Người thay đổi') }}</th>
+          <th class="vppo-col-center">{{ i18n.t('pa.payObj.updateDate', 'Thời gian thay đổi') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows(); let idx = index" [class.vppo-dirty-row]="isDirty(row)">
+          <td class="vppo-col-center">
+            <input type="checkbox" [checked]="isChecked(rowKey(row))" (change)="toggleChecked(rowKey(row), $any($event.target).checked)" />
+          </td>
+          <td class="vppo-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+          <td>{{ row.empName }}</td>
+          <td class="vppo-col-center">{{ row.empId }}</td>
+          <td>{{ row.deptName }}</td>
+          <td class="vppo-col-center">
+            <nz-select style="width: 100%" [ngModel]="row.includeType" (ngModelChange)="onIncludeTypeChange(row, $event)">
+              <nz-option [nzValue]="1" [nzLabel]="i18n.t('pa.payObj.includeType.join', 'Tham gia')"></nz-option>
+              <nz-option [nzValue]="0" [nzLabel]="i18n.t('pa.payObj.includeType.notJoin', 'Không tham gia')"></nz-option>
+            </nz-select>
+          </td>
+          <td class="vppo-col-center">{{ row.createdBy }}</td>
+          <td class="vppo-col-center">{{ row.createDate }}</td>
+          <td class="vppo-col-center">{{ row.updatedBy }}</td>
+          <td class="vppo-col-center">{{ row.updateDate }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm mới đối tượng nhận lương -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="i18n.t('pa.payObj.addTitle', 'Thêm mới đối tượng nhận lương')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="550px"
+  (nzOnOk)="saveNew()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vppo-form-row">
+      <label class="vppo-form-label vppo-required">{{ i18n.t('pa.payObj.payScheduleNo', 'Kế hoạch trả lương') }}</label>
+      <nz-select style="width: 100%" [ngModel]="formPayScheduleNo()" (ngModelChange)="formPayScheduleNo.set($event)" nzShowSearch>
+        <nz-option *ngFor="let sch of scheduleOptions()" [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vppo-form-row">
+      <label class="vppo-form-label vppo-required">{{ i18n.t('pa.payObj.empId', 'Mã nhân viên') }}</label>
+      <nz-select
+        style="width: 100%"
+        [ngModel]="formEmpId()"
+        (ngModelChange)="onEmployeeSelect($event)"
+        nzShowSearch
+        [nzPlaceHolder]="i18n.t('pa.payObj.empSearch.placeholder', 'Nhập mã NV hoặc họ tên, bấm Enter để tìm...')"
+        (nzOnSearch)="onEmployeeSearch($event)"
+      >
+        <nz-option *ngFor="let emp of formEmployeeOptions()" [nzValue]="emp.empId" [nzLabel]="(emp.empId ?? '') + ' - ' + (emp.localName ?? '')"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vppo-form-row">
+      <label class="vppo-form-label">{{ i18n.t('pa.payObj.includeType', 'Phân biệt') }}</label>
+      <nz-select style="width: 200px" [ngModel]="formIncludeType()" (ngModelChange)="formIncludeType.set($event)">
+        <nz-option [nzValue]="1" [nzLabel]="i18n.t('pa.payObj.includeType.join', 'Tham gia')"></nz-option>
+        <nz-option [nzValue]="0" [nzLabel]="i18n.t('pa.payObj.includeType.notJoin', 'Không tham gia')"></nz-option>
+      </nz-select>
+    </div>
+  </ng-container>
+</nz-modal>

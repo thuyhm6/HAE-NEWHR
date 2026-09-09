@@ -1,0 +1,41 @@
+.epi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.epi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.epi-col-center {
+  text-align: center;
+}
+
+.epi-row {
+  cursor: pointer;
+}
+
+.epi-checkbox-col {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 6px;
+}
+
+.epi-alert-note {
+  background: #e6f4ff;
+  border: 1px solid #91caff;
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.epi-upload-hint {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}

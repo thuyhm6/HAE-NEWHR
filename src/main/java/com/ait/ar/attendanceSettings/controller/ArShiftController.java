@@ -3,12 +3,15 @@ package com.ait.ar.attendanceSettings.controller;
 import com.ait.ar.attendanceSettings.dto.ArShift010Dto;
 import com.ait.ar.attendanceSettings.dto.ArShift020Dto;
 import com.ait.ar.attendanceSettings.service.ArShiftService;
+import com.ait.util.AngularIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,10 +24,14 @@ public class ArShiftController {
     @Autowired
     private ArShiftService arShiftService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     // View HTML page
     @GetMapping("/viewShift")
-    public String viewShift() {
-        return "ar/attendanceSettings/viewShift";
+    public String viewShift(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // --- API FOR SHIFT 010 (Parent) ---

@@ -1,0 +1,169 @@
+<div class="sf-page" nz-row [nzGutter]="16">
+  <!-- Left Pane: Item Tree -->
+  <div nz-col [nzSpan]="6">
+    <nz-card class="sf-tree-card">
+      <h5 class="sf-title">{{ i18n.t('ar.viewSummaryFormula.title.itemList', 'Danh sách Hạng mục') }}</h5>
+      <input
+        id="sf-search-tree"
+        nz-input
+        [ngModel]="searchTreeValue()"
+        (ngModelChange)="searchTreeValue.set($event)"
+        [placeholder]="i18n.t('ar.viewArItemParam.placeholder.searchTree', 'Tìm kiếm hạng mục...')"
+        class="sf-search-input"
+      />
+      <div class="sf-tree-container">
+        @if (treeLoading()) {
+          <div class="sf-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+        } @else {
+          <nz-tree [nzData]="itemTreeNodes()" [nzSearchValue]="searchTreeValue()" (nzClick)="onTreeClick($event)"></nz-tree>
+        }
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Right Pane: Formula Table -->
+  <div nz-col [nzSpan]="18">
+    <nz-card class="sf-table-card">
+      <div class="sf-table-header">
+        <span class="sf-table-title" id="sf-selected-parent-label">
+          {{ selectedItemLabel() ? (i18n.t('ar.viewSummaryFormula.title.formulaOf', 'Công thức thuộc:') + ' ' + selectedItemLabel()) : i18n.t('ar.viewSummaryFormula.title.formulaConfig', 'Cấu hình công thức') }}
+        </span>
+        <button id="sf-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+
+      <nz-table #sfTable id="sf-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="20" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" [nzScroll]="{ x: 'max-content', y: '100%' }">
+        <thead>
+          <tr>
+            <th nzWidth="60px" class="sf-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th>{{ i18n.t('ar.viewSummaryFormula.title.condition', 'Điều kiện') }}</th>
+            <th>{{ i18n.t('ar.viewSummaryFormula.title.formula', 'Công thức') }}</th>
+            <th nzWidth="100px" class="sf-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of sfTable.data; track row.formularNo; let idx = $index) {
+            <tr>
+              <td class="sf-col-center">{{ idx + 1 }}</td>
+              <td>{{ row.condition }}</td>
+              <td class="sf-formula-cell">{{ row.formular }}</td>
+              <td class="sf-col-center">
+                <button nz-button nzSize="small" (click)="editFormula(row.formularNo)" [title]="i18n.t('common.edit', 'Sửa')">
+                  <span nz-icon nzType="edit"></span>
+                </button>
+                <button nz-button nzSize="small" nzDanger (click)="deleteFormula(row.formularNo)" [title]="i18n.t('common.delete', 'Xóa')">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="sf-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? (i18n.t('ar.viewSummaryFormula.modal.editTitlePrefix', 'Cập nhật Công thức Số:') + ' ' + formFormularNo()) : i18n.t('ar.viewSummaryFormula.modal.addTitle', 'Thêm mới Công thức')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="900px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div class="sf-info-box">
+        <strong>{{ i18n.t('ar.viewSummaryFormula.label.configuringItem', 'Hạng mục đang cấu hình:') }}</strong>
+        {{ selectedItemLabel() || i18n.t('ar.viewSummaryFormula.label.notSelected', 'Chưa chọn') }}
+      </div>
+
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryFormula.title.conditionFull', 'Điều kiện (Condition)') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="sf-f-condition" nz-input [ngModel]="formCondition()" (ngModelChange)="formCondition.set($event)" name="sfFCondition" rows="2" [placeholder]="i18n.t('ar.viewSummaryFormula.placeholder.condition', 'Nhập điều kiện ...')"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewSummaryFormula.title.formulaFull', 'Công thức (Formular)') }}</nz-form-label>
+            <nz-form-control>
+              <textarea #formularTextarea id="sf-f-formular" nz-input [ngModel]="formFormular()" (ngModelChange)="formFormular.set($event)" name="sfFFormular" rows="3" [placeholder]="i18n.t('ar.viewSummaryFormula.placeholder.formula', 'Nhập công thức ...')"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="sf-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="sfFOrderno" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewSummaryParamItem.title.activityFull', 'Trạng thái (1: Hoạt động, 0: Ngừng)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="sf-f-active" [ngModel]="formActive()" (ngModelChange)="formActive.set($event)" name="sfFActive">
+                <nz-option [nzValue]="true" [nzLabel]="'1 - ' + i18n.t('common.active', 'Hoạt động')"></nz-option>
+                <nz-option [nzValue]="false" [nzLabel]="'0 - ' + i18n.t('common.inactive', 'Ngừng')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <!-- Tools Section -->
+      <div class="sf-tools-section">
+        <h6 class="sf-tools-title"><span nz-icon nzType="tool"></span> {{ i18n.t('ar.viewSummaryFormula.title.tools', 'Công cụ') }}</h6>
+        <div nz-row [nzGutter]="8">
+          <div nz-col [nzSpan]="8">
+            <div class="sf-tool-card">
+              <div class="sf-tool-header">{{ i18n.t('ar.viewSummaryFormula.title.toolAttItems', 'Danh sách hạng mục chấm công') }}</div>
+              <div class="sf-tool-body">
+                @for (it of attItems(); track it.itemId) {
+                  <div class="sf-tool-item" (click)="insertToFormular('ATT_ITEM.' + it.itemId)">{{ it.itemName }}</div>
+                }
+              </div>
+            </div>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <div class="sf-tool-card">
+              <div class="sf-tool-header">{{ i18n.t('ar.viewSummaryFormula.title.toolStaItems', 'Bảng tổng hợp chấm công') }}</div>
+              <div class="sf-tool-body">
+                @for (it of staItems(); track it.staItemId) {
+                  <div class="sf-tool-item" (click)="insertToFormular('STA_ITEM.' + it.staItemId)">{{ it.itemName }}</div>
+                }
+              </div>
+            </div>
+          </div>
+          <div nz-col [nzSpan]="8">
+            <div class="sf-tool-card">
+              <div class="sf-tool-header">{{ i18n.t('ar.viewSummaryFormula.title.toolBasicInfo', 'Thông tin cơ bản') }}</div>
+              <div class="sf-tool-body">
+                @for (it of basicInfos(); track it.distinctField) {
+                  <div class="sf-tool-item" (click)="insertToFormular('STA_ITEM.' + it.distinctField)">{{ it.fieldName }}</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="sf-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('ar.viewSummaryParamItem.btn.saveData', 'Lưu dữ liệu') }}
+    </button>
+  </div>
+</nz-modal>

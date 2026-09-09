@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -26,9 +28,13 @@ public class PaMonthPersonInfoController {
     @Autowired
     private PaPayStubService paPayStubService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/viewPaMonthPersonInfoEssList")
-    public String viewPaMonthPersonInfoEssList() {
-        return "pa/salary/viewPaMonthPersonInfoEssList";
+    public String viewPaMonthPersonInfoEssList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     // ── API Danh sách kế hoạch trả lương đã mở (PA_OPEN_FLAG = 1) ──────────────

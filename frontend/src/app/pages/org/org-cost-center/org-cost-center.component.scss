@@ -1,0 +1,73 @@
+.occ-page {
+  padding: 4px 0;
+}
+
+.occ-search-card {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.occ-search-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.occ-field {
+  min-width: 220px;
+}
+
+.occ-inline-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.occ-search-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.occ-table-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.occ-col-center {
+  text-align: center;
+}
+
+.occ-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.occ-form-row {
+  margin-bottom: 12px;
+}
+
+.occ-form-row-full {
+  grid-column: 1 / -1;
+}
+
+.occ-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.occ-required::after {
+  content: ' *';
+  color: #ff4d4f;
+}

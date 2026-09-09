@@ -1,0 +1,19 @@
+.vne-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vne-col-center {
+  text-align: center;
+}
+
+.vne-detail-link {
+  color: #0d2bff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vne-detail-link:hover {
+  text-decoration: underline;
+}

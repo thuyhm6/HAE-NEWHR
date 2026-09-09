@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,13 +33,13 @@ public class SyUserController {
     @Autowired
     private SyUserService syUserService;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/sys/syRole/viewLoginUser")
-    public String viewLoginUser(Model model, HttpSession session) {
-        if (!isAdmin(session)) {
-            return "error/403";
-        }
-        model.addAttribute("title", "Quan ly Nguoi dung");
-        return "sys/syRole/viewLoginUser";
+    public String viewLoginUser(javax.servlet.http.HttpServletResponse response) throws java.io.IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @GetMapping("/sys/api/user/list")
@@ -116,10 +115,10 @@ public class SyUserController {
 
         try {
             byte[] fileBytes = syUserService.exportExcel();
-            String fileName = URLEncoder.encode("DanhSach_NguoiDung.csv", StandardCharsets.UTF_8);
+            String fileName = URLEncoder.encode("DanhSach_NguoiDung.xlsx", StandardCharsets.UTF_8);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(new MediaType("text", "csv", StandardCharsets.UTF_8));
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
             headers.setContentDispositionFormData("attachment", fileName);
             return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
         } catch (Exception e) {

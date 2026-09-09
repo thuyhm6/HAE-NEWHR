@@ -1,0 +1,25 @@
+.ck-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ck-search-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.ck-col-center {
+  text-align: center;
+}
+
+.ck-name-link {
+  color: #0d2bff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ck-name-link:hover {
+  text-decoration: underline;
+}

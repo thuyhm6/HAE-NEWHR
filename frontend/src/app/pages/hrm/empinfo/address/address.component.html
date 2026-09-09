@@ -1,0 +1,180 @@
+<div class="addr-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.addressSearch.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="addr-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="addrSearchEmpId" [placeholder]="i18n.t('hrm.addressSearch.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.addressSearch.title.localName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="addr-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="addrSearchLocalName" [placeholder]="i18n.t('hrm.addressSearch.title.localNamePlaceholder', 'Nhập tên nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.addressSearch.title.addressContent', 'Nội dung địa chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="addr-search-content" nz-input [ngModel]="searchAddressContent()" (ngModelChange)="searchAddressContent.set($event)" name="addrSearchContent" [placeholder]="i18n.t('hrm.addressSearch.title.addressContentPlaceholder', 'Nhập nội dung địa chỉ')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>&nbsp;</nz-form-label>
+            <nz-form-control>
+              <div class="addr-toolbar-actions">
+                <button id="addr-search-btn" nz-button nzType="primary" (click)="search()">
+                  <span nz-icon nzType="search"></span>
+                  {{ i18n.t('common.search', 'Tìm kiếm') }}
+                </button>
+                <button id="addr-clear-btn" nz-button (click)="clearSearch()">
+                  <span nz-icon nzType="close"></span>
+                  {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+                </button>
+                <button id="addr-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+                  <span nz-icon nzType="plus"></span>
+                  {{ i18n.t('common.addNew', 'Thêm mới') }}
+                </button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+
+    <nz-table
+      id="addr-data-table"
+      #addrTable
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="20"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[20, 50, 100]"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="addr-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.addressSearch.title.empCode', 'Mã NV') }}</th>
+          <th>{{ i18n.t('hrm.addressSearch.title.fullName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.addressSearch.title.addressType', 'Loại địa chỉ') }}</th>
+          <th class="addr-col-center">{{ i18n.t('hrm.addressSearch.title.effectiveDate', 'Ngày hiệu lực') }}</th>
+          <th>{{ i18n.t('hrm.addressSearch.title.addressContent', 'Nội dung địa chỉ') }}</th>
+          <th>{{ i18n.t('hrm.addressSearch.title.nationality', 'Quốc gia') }}</th>
+          <th nzWidth="100px" class="addr-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of addrTable.data; track row.addressNo; let idx = $index) {
+          <tr>
+            <td class="addr-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.addressType }}</td>
+            <td class="addr-col-center">{{ row.effectiveStartDate }}</td>
+            <td>{{ row.addressContent }}</td>
+            <td>{{ row.nationality }}</td>
+            <td class="addr-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="addr-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.addressSearch.title.editTitle', 'Cập nhật Địa chỉ') : i18n.t('hrm.addressSearch.title.addTitle', 'Thêm mới Địa chỉ')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="700px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="addr-form-emp"
+                [ngModel]="formPersonId()"
+                (ngModelChange)="onEmployeeSelected($event)"
+                name="addrFormEmp"
+                nzShowSearch
+                [nzServerSearch]="true"
+                (nzOnSearch)="onEmployeeSearch($event)"
+                [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                [nzLoading]="employeeSearching()"
+              >
+                @if (formEmpLabel() && formPersonId()) {
+                  <nz-option [nzValue]="formPersonId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                }
+                @for (emp of employeeOptions(); track emp.personId) {
+                  <nz-option [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.addressSearch.title.addressType', 'Loại địa chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="addr-form-type" nz-input [ngModel]="formAddressType()" (ngModelChange)="formAddressType.set($event)" name="addrFormType" placeholder="Thường trú/Tạm trú..." />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.addressSearch.title.effectiveDate', 'Ngày hiệu lực') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="addr-form-effective-date" [ngModel]="formEffectiveStartDate()" (ngModelChange)="formEffectiveStartDate.set($event)" name="addrFormEffectiveDate" nzFormat="dd/MM/yyyy" style="width:100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.addressSearch.title.nationality', 'Quốc gia') }}</nz-form-label>
+            <nz-form-control>
+              <input id="addr-form-nationality" nz-input [ngModel]="formNationality()" (ngModelChange)="formNationality.set($event)" name="addrFormNationality" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.addressSearch.title.addressContent', 'Nội dung địa chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="addr-form-content" nz-input rows="3" [ngModel]="formAddressContent()" (ngModelChange)="formAddressContent.set($event)" name="addrFormContent"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

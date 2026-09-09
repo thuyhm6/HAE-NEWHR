@@ -1,0 +1,91 @@
+<div class="ps-page">
+  <nz-card class="ps-search-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('ps.label.fromDate', 'Thời gian từ') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker
+            id="ps-from-date"
+            [ngModel]="fromDate()"
+            (ngModelChange)="fromDate.set($event)"
+            name="psFromDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('ps.label.toDate', 'Thời gian đến') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker
+            id="ps-to-date"
+            [ngModel]="toDate()"
+            (ngModelChange)="toDate.set($event)"
+            name="psToDate"
+            nzFormat="dd/MM/yyyy"
+          ></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-control>
+          <button id="ps-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ps.btn.search', 'Tra cứu') }}
+          </button>
+          <button id="ps-clear-btn" nz-button (click)="clearSearch()" class="ps-clear-btn">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('ps.btn.clearFilter', 'Xóa lọc') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="ps-table-card">
+    <nz-table
+      #psTable
+      id="ps-data-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="ps-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="ps-col-center">{{ i18n.t('ps.col.date', 'Ngày') }}</th>
+          <th class="ps-col-center">{{ i18n.t('ps.col.dateName', 'Loại ngày') }}</th>
+          <th>{{ i18n.t('ps.col.workStatus', 'Trạng thái làm việc') }}</th>
+          <th class="ps-col-center">{{ i18n.t('ps.col.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="ps-col-center">{{ i18n.t('ps.col.endTime', 'Thời gian kết thúc') }}</th>
+          <th class="ps-col-center">{{ i18n.t('ps.col.indoorTime', 'Giờ vào') }}</th>
+          <th class="ps-col-center">{{ i18n.t('ps.col.outdoorTime', 'Giờ ra') }}</th>
+          <th class="ps-col-center">{{ i18n.t('ps.col.workHours', 'Số giờ làm việc') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of psTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="ps-col-center">{{ idx + 1 }}</td>
+            <td class="ps-col-center">{{ row.ddateStr }}</td>
+            <td class="ps-col-center">{{ row.dateName }}</td>
+            <td>{{ row.overTypeIdName }}</td>
+            <td class="ps-col-center">{{ row.shiftStartTime }}</td>
+            <td class="ps-col-center">{{ row.shiftEndTime }}</td>
+            <td class="ps-col-center">{{ row.indoorTime }}</td>
+            <td class="ps-col-center">{{ row.outdoorTime }}</td>
+            <td class="ps-col-center">{{ row.workHours }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="ps-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

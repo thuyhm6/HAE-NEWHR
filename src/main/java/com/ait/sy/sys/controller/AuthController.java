@@ -7,6 +7,8 @@ import com.ait.sy.sys.service.PermissionService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
 import com.ait.sy.sys.service.impl.HrAuthenticationServiceImpl;
+import com.ait.sy.sys.dto.CurrentUserDTO;
+import com.ait.util.AngularIndexService;
 import com.ait.util.CsrfUtil;
 import com.ait.util.I18nUtil;
 import com.ait.util.IpUtil;
@@ -15,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -53,6 +54,9 @@ public class AuthController {
     @Autowired
     private PasswordUpdateService passwordUpdateService;
 
+    @Autowired
+    private AngularIndexService angularIndexService;
+
     /**
      * Chặn cache trang login để tránh gửi lại csrfToken cũ sau khi session đã bị
      * invalidate (timeout/logout)
@@ -67,8 +71,8 @@ public class AuthController {
      * Hiển thị trang đăng nhập (main route)
      */
     @GetMapping("/login")
-    public String loginPage(Model model, HttpSession session, HttpServletRequest request,
-            HttpServletResponse response) {
+    public String loginPage(HttpSession session, HttpServletRequest request,
+            HttpServletResponse response) throws java.io.IOException {
         // Không cho browser/proxy cache trang login, tránh việc form gửi lại
         // csrfToken cũ (đã hết hạn theo session cũ) sau khi timeout/logout
         disableCache(response);
@@ -79,22 +83,15 @@ public class AuthController {
             return "redirect:/dashboard";
         }
 
-        // Tạo CSRF token
+        // Pre-warm CSRF token trong session (Angular sẽ tự gọi GET /api/csrf-token
+        // để lấy token này, nhưng tạo sẵn ở đây tránh race điều kiện)
         csrfUtil.saveCsrfToken(session);
-        String csrfToken = csrfUtil.getCsrfToken(session);
         log.info("[CSRF-DEBUG] GET /login sessionId={} isNew={} csrfToken={}", session.getId(), session.isNew(),
-                maskToken(csrfToken));
+                maskToken(csrfUtil.getCsrfToken(session)));
 
-        // Thêm thông tin rate limiting
-        int remainingAttempts = hrAuthenticationServiceImpl.getRemainingLoginAttempts(request);
-        long timeUntilReset = hrAuthenticationServiceImpl.getTimeUntilRateLimitReset(request);
-
-        model.addAttribute("title", "Đăng nhập - HR System");
-        model.addAttribute("csrfToken", csrfToken);
-        model.addAttribute("remainingAttempts", remainingAttempts);
-        model.addAttribute("timeUntilReset", timeUntilReset);
-
-        return "login/login";
+        // Trang login giờ do Angular phục vụ (thay Thymeleaf)
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
@@ -111,8 +108,8 @@ public class AuthController {
      * Hiển thị trang đăng nhập (alternative route)
      */
     @GetMapping("/auth/login")
-    public String authLoginPage(Model model, HttpSession session, HttpServletRequest request,
-            HttpServletResponse response) {
+    public String authLoginPage(HttpSession session, HttpServletRequest request,
+            HttpServletResponse response) throws java.io.IOException {
         // Không cho browser/proxy cache trang login, tránh việc form gửi lại
         // csrfToken cũ (đã hết hạn theo session cũ) sau khi timeout/logout
         disableCache(response);
@@ -123,166 +120,180 @@ public class AuthController {
             return "redirect:/dashboard";
         }
 
-        // Tạo CSRF token
+        // Pre-warm CSRF token trong session
         csrfUtil.saveCsrfToken(session);
-        String csrfToken = csrfUtil.getCsrfToken(session);
 
-        // Thêm thông tin rate limiting
-        int remainingAttempts = hrAuthenticationServiceImpl.getRemainingLoginAttempts(request);
-        long timeUntilReset = hrAuthenticationServiceImpl.getTimeUntilRateLimitReset(request);
-
-        model.addAttribute("title", "Đăng nhập - HR System");
-        model.addAttribute("csrfToken", csrfToken);
-        model.addAttribute("remainingAttempts", remainingAttempts);
-        model.addAttribute("timeUntilReset", timeUntilReset);
-
-        return "login/login";
+        // Trang login giờ do Angular phục vụ (thay Thymeleaf)
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     /**
-     * Xử lý đăng nhập với HR system (3 bảng) - Đã được bảo mật
+     * Thiết lập session sau khi xác thực thành công - dùng cho POST /api/auth/login (Angular). Trước đây
+     * còn dùng chung với form POST /login (Thymeleaf, đã xoá) - nay chỉ còn 1 nơi gọi.
      */
-    @PostMapping("/login")
-    public String login(@RequestParam String username,
-            @RequestParam String password,
-            @RequestParam(name = "lang", required = false) String lang,
-            @RequestParam(required = false) String csrfToken,
-            HttpServletRequest request,
-            HttpServletResponse response,
-            HttpSession session,
-            Model model,
-            RedirectAttributes redirectAttributes) {
+    private void establishSession(HrUserInfo hrUserInfo, String lang, HttpServletRequest request,
+            HttpServletResponse response, HttpSession session) {
+        request.changeSessionId();
+        session.setAttribute("currentHrUser", hrUserInfo);
+        session.setAttribute("isLoggedIn", true);
+
+        // Lưu ngôn ngữ đã chọn vào session (nếu có)
+        if (lang != null && !lang.trim().isEmpty()) {
+            session.setAttribute("language", lang.trim());
+            // Đồng bộ Spring LocaleResolver để Thymeleaf dùng đúng locale (vi_VN, en_US...)
+            // LocaleChangeInterceptor chỉ tạo Locale("vi") không có country code,
+            // nên messages_vi_VN.properties sẽ không được tìm thấy nếu không override ở đây.
+            Locale locale = I18nUtil.createLocale(lang.trim());
+            LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
+            if (localeResolver != null) {
+                localeResolver.setLocale(request, response, locale);
+            }
+        }
+
+        // Lưu địa chỉ IP của client vào session
+        String clientIp = IpUtil.getClientIpAddr(request);
+        session.setAttribute("adminIP", clientIp);
+
+        // Lưu ID cá nhân (PERSON_ID) vào session làm adminID
+        session.setAttribute("adminID", hrUserInfo.getPersonId());
+
+        // Lưu Company ID (CPNY_ID) vào session
+        session.setAttribute("cpnyId", hrUserInfo.getSyUser().getCpnyId());
+
+        // Lấy thông tin phân quyền đầy đủ
+        UserPermissionInfo permissionInfo = permissionService
+                .getUserPermissionInfo(hrUserInfo.getSyUser().getUserNo());
+        session.setAttribute("currentPermissionInfo", permissionInfo);
+        session.setAttribute("hasSysTypeZeroMenus",
+                menuService.hasMenusByUserPermissionBySysType(hrUserInfo.getSyUser().getUserNo(), "0"));
+    }
+
+    /**
+     * API lấy CSRF token + thông tin rate limiting cho Angular (trang login gọi
+     * khi khởi tạo)
+     */
+    @GetMapping("/api/csrf-token")
+    @ResponseBody
+    public Map<String, Object> getCsrfTokenApi(HttpSession session, HttpServletRequest request) {
+        csrfUtil.saveCsrfToken(session);
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("csrfToken", csrfUtil.getCsrfToken(session));
+        resp.put("remainingAttempts", hrAuthenticationServiceImpl.getRemainingLoginAttempts(request));
+        resp.put("timeUntilReset", hrAuthenticationServiceImpl.getTimeUntilRateLimitReset(request));
+        return resp;
+    }
+
+    /**
+     * API đăng nhập JSON cho Angular - tái dùng nguyên logic xác thực/thiết lập
+     * session của form login cũ (establishSession), chỉ khác định dạng
+     * request/response.
+     */
+    @PostMapping(value = "/api/auth/login", consumes = "application/json")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiLogin(@RequestBody Map<String, String> body,
+            HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+
+        String username = body.get("username");
+        String password = body.get("password");
+        String lang = body.get("lang");
+        Map<String, Object> resp = new HashMap<>();
+
+        if (!csrfUtil.validateCsrfToken(request)) {
+            log.warn("CSRF token mismatch for /api/auth/login from IP: {}", IpUtil.getClientIpAddr(request));
+            resp.put("success", false);
+            resp.put("message", "Phiên làm việc không hợp lệ. Vui lòng tải lại trang.");
+            return ResponseEntity.status(403).body(resp);
+        }
+
+        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            resp.put("success", false);
+            resp.put("message", "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu");
+            return ResponseEntity.badRequest().body(resp);
+        }
 
         try {
-            // Kiểm tra CSRF token
-            String sessionCsrf = csrfUtil.getCsrfToken(session);
-            log.info(
-                    "[CSRF-DEBUG] POST /login sessionId={} isNew={} requestedSessionId={} requestedSessionIdValid={} requestedSessionIdFromCookie={} sessionToken={} formToken={}",
-                    session.getId(), session.isNew(), request.getRequestedSessionId(),
-                    request.isRequestedSessionIdValid(), request.isRequestedSessionIdFromCookie(),
-                    maskToken(sessionCsrf), maskToken(csrfToken));
-            if (sessionCsrf == null || !sessionCsrf.equals(csrfToken)) {
-                log.warn("CSRF token mismatch for login attempt from IP: {}", IpUtil.getClientIpAddr(request));
-                model.addAttribute("error", "Phiên làm việc không hợp lệ. Vui lòng thử lại.");
-                csrfUtil.saveCsrfToken(session);
-                model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
-                return "login/login";
-            }
-
-            // Validate input
-            if (username == null || username.trim().isEmpty()) {
-                model.addAttribute("error", "Vui lòng nhập tên đăng nhập");
-                model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
-                return "login/login";
-            }
-
-            if (password == null || password.trim().isEmpty()) {
-                model.addAttribute("error", "Vui lòng nhập mật khẩu");
-                model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
-                return "login/login";
-            }
-
-            // Xác thực user với HR system (3 bảng) - với bảo mật nâng cao
             HrUserInfo hrUserInfo = hrAuthenticationServiceImpl.authenticate(username.trim(), password, request,
                     session);
 
             if (hrUserInfo != null && hrUserInfo.isActive()) {
-                // Đăng nhập thành công
-                request.changeSessionId();
-                session.setAttribute("currentHrUser", hrUserInfo);
-                session.setAttribute("isLoggedIn", true);
-
-                // Lưu ngôn ngữ đã chọn vào session (nếu có)
-                if (lang != null && !lang.trim().isEmpty()) {
-                    session.setAttribute("language", lang.trim());
-                    // Đồng bộ Spring LocaleResolver để Thymeleaf dùng đúng locale (vi_VN, en_US...)
-                    // LocaleChangeInterceptor chỉ tạo Locale("vi") không có country code,
-                    // nên messages_vi_VN.properties sẽ không được tìm thấy nếu không override ở đây.
-                    Locale locale = I18nUtil.createLocale(lang.trim());
-                    LocaleResolver localeResolver = RequestContextUtils.getLocaleResolver(request);
-                    if (localeResolver != null) {
-                        localeResolver.setLocale(request, response, locale);
-                    }
-                }
-
-                // Lưu địa chỉ IP của client vào session
-                String clientIp = IpUtil.getClientIpAddr(request);
-                session.setAttribute("adminIP", clientIp);
-
-                // Lưu ID cá nhân (PERSON_ID) vào session làm adminID
-                String personId = hrUserInfo.getPersonId();
-                session.setAttribute("adminID", personId);
-
-                // Lưu Company ID (CPNY_ID) vào session
-                String cpnyId = hrUserInfo.getSyUser().getCpnyId();
-                session.setAttribute("cpnyId", cpnyId);
-
-                // Lấy thông tin phân quyền đầy đủ
-                UserPermissionInfo permissionInfo = permissionService
-                        .getUserPermissionInfo(hrUserInfo.getSyUser().getUserNo());
-                session.setAttribute("currentPermissionInfo", permissionInfo);
-                session.setAttribute("hasSysTypeZeroMenus",
-                        menuService.hasMenusByUserPermissionBySysType(hrUserInfo.getSyUser().getUserNo(), "0"));
-
-                // Debug logging đã được xóa để tránh log object
-
-                String employeeName = hrUserInfo.getEmployeeName();
-                String welcomeMessage = employeeName != null && !employeeName.trim().isEmpty()
-                        ? "Đăng nhập thành công! Chào mừng " + employeeName
-                        : "Đăng nhập thành công! Chào mừng " + hrUserInfo.getUsername();
-                redirectAttributes.addFlashAttribute("success", welcomeMessage);
-
-                return "redirect:/dashboard";
-            } else {
-                // Đăng nhập thất bại
-                int remainingAttempts = hrAuthenticationServiceImpl.getRemainingLoginAttempts(request);
-                long timeUntilReset = hrAuthenticationServiceImpl.getTimeUntilRateLimitReset(request);
-
-                String errorMessage = "Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản không có quyền truy cập";
-                if (remainingAttempts <= 2) {
-                    errorMessage += String.format(". Còn %d lần thử. Sau %d giây mới có thể thử lại.",
-                            remainingAttempts, timeUntilReset);
-                }
-
-                model.addAttribute("error", errorMessage);
-                model.addAttribute("username", username); // Giữ lại username để user không phải nhập lại
-                model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
-                model.addAttribute("remainingAttempts", remainingAttempts);
-                model.addAttribute("timeUntilReset", timeUntilReset);
-                return "login/login";
+                establishSession(hrUserInfo, lang, request, response, session);
+                resp.put("success", true);
+                resp.put("redirectUrl", "/dashboard");
+                resp.put("requirePasswordChange", Boolean.TRUE.equals(session.getAttribute("requirePasswordChange")));
+                return ResponseEntity.ok(resp);
             }
 
+            int remainingAttempts = hrAuthenticationServiceImpl.getRemainingLoginAttempts(request);
+            long timeUntilReset = hrAuthenticationServiceImpl.getTimeUntilRateLimitReset(request);
+            String errorMessage = "Tên đăng nhập hoặc mật khẩu không đúng, hoặc tài khoản không có quyền truy cập";
+            if (remainingAttempts <= 2) {
+                errorMessage += String.format(". Còn %d lần thử. Sau %d giây mới có thể thử lại.",
+                        remainingAttempts, timeUntilReset);
+            }
+            resp.put("success", false);
+            resp.put("message", errorMessage);
+            resp.put("remainingAttempts", remainingAttempts);
+            resp.put("timeUntilReset", timeUntilReset);
+            return ResponseEntity.status(401).body(resp);
         } catch (SecurityException e) {
-            // Rate limiting exception
-            model.addAttribute("error", "Qua nhieu lan dang nhap that bai. Vui long thu lai sau.");
-            model.addAttribute("username", username);
-            model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
-            return "login/login";
+            resp.put("success", false);
+            resp.put("message", "Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau.");
+            return ResponseEntity.status(429).body(resp);
         } catch (Exception e) {
-            log.error("Login error for user [{}]", username, e);
-            model.addAttribute("error", "Có lỗi xảy ra. Vui lòng thử lại sau.");
-            model.addAttribute("username", username);
-            model.addAttribute("csrfToken", csrfUtil.getCsrfToken(session));
-            return "login/login";
+            log.error("Loi API dang nhap cho user [{}]", username, e);
+            resp.put("success", false);
+            resp.put("message", "Có lỗi xảy ra. Vui lòng thử lại sau.");
+            return ResponseEntity.internalServerError().body(resp);
         }
     }
 
     /**
-     * Trang chủ sau khi đăng nhập
+     * API lấy thông tin user hiện tại cho Angular (topbar, guard, modal đổi mật
+     * khẩu lần đầu). Trả DTO riêng, không serialize thẳng HrUserInfo/SyUser vì
+     * entity đó chứa field mật khẩu.
      */
-    @GetMapping("/home")
-    public String homePage(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
+    @GetMapping("/api/auth/me")
+    @ResponseBody
+    public ResponseEntity<CurrentUserDTO> getCurrentUser(HttpSession session) {
         HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (currentHrUser == null || currentHrUser.getSyUser() == null) {
+            return ResponseEntity.status(401).build();
+        }
         UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
+        CurrentUserDTO dto = new CurrentUserDTO(
+                currentHrUser.getUsername(),
+                currentHrUser.getEmployeeName(),
+                currentHrUser.getPhotoUrl(),
+                currentHrUser.getPersonId(),
+                currentHrUser.getCpnyId(),
+                currentHrUser.getSyUser().getUserType(),
+                permissionInfo != null && permissionInfo.isAdmin(),
+                Boolean.TRUE.equals(session.getAttribute("requirePasswordChange")),
+                Boolean.TRUE.equals(session.getAttribute("hasSysTypeZeroMenus")));
+        return ResponseEntity.ok(dto);
+    }
 
-        // Thêm thông tin user vào model
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("title", "Trang chủ - HR System");
-        model.addAttribute("message", "Chào mừng " + currentHrUser.getEmployeeName() + " đến với hệ thống HR!");
+    /**
+     * API khóa màn hình - gọi khi client phát hiện idle timeout (30 phút không
+     * thao tác). Vô hiệu hoá session ngay (giống logout) nhưng trả JSON 200 thay
+     * vì redirect, để overlay khoá màn hình hiển thị tại chỗ (không mất trạng
+     * thái trang đang xem). Nhờ session đã bị huỷ, nếu người dùng F5 lại trình
+     * duyệt trong lúc đang khoá thì GET /api/auth/me sẽ trả 401 và authGuard tự
+     * chuyển về /login thay vì cho phép "mở khoá" bằng cách refresh.
+     */
+    @PostMapping("/api/auth/lock")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> lockScreen(HttpSession session) {
+        session.removeAttribute("currentHrUser");
+        session.removeAttribute("currentPermissionInfo");
+        session.removeAttribute("hasSysTypeZeroMenus");
+        session.removeAttribute("isLoggedIn");
+        session.invalidate();
 
-        return "login/home";
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        return ResponseEntity.ok(resp);
     }
 
     /**
@@ -299,44 +310,6 @@ public class AuthController {
 
         redirectAttributes.addFlashAttribute("success", "Đăng xuất thành công!");
         return "redirect:/login";
-    }
-
-    /**
-     * Trang thông tin cá nhân
-     */
-    @GetMapping("/profile")
-    public String profilePage(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("title", "Thông tin cá nhân");
-
-        return "login/profile";
-    }
-
-    /**
-     * Trang quản lý phân quyền (chỉ admin)
-     */
-    @GetMapping("/permissions")
-    public String permissionsPage(Model model, HttpSession session) {
-        // Lấy thông tin user từ session (đã được kiểm tra bởi interceptor)
-        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
-        UserPermissionInfo permissionInfo = (UserPermissionInfo) session.getAttribute("currentPermissionInfo");
-
-        // Kiểm tra quyền admin
-        if (!permissionInfo.isAdmin()) {
-            model.addAttribute("error", "Bạn không có quyền truy cập trang này");
-            return "error/403";
-        }
-
-        model.addAttribute("currentHrUser", currentHrUser);
-        model.addAttribute("permissionInfo", permissionInfo);
-        model.addAttribute("title", "Quản lý phân quyền");
-
-        return "admin/permissions";
     }
 
     /**

@@ -1,0 +1,36 @@
+.poi-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.poi-tilde {
+  margin: 0 -8px 0 -8px;
+}
+
+.poi-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.poi-toolbar-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.poi-col-center {
+  text-align: center;
+}
+
+.poi-name-link {
+  color: #0d2bff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.poi-name-link:hover {
+  text-decoration: underline;
+}

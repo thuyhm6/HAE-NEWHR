@@ -1,0 +1,242 @@
+.vps-page {
+  padding: 4px 0;
+}
+
+.vps-search-card {
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vps-search-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vps-field {
+  min-width: 200px;
+  flex: 1;
+}
+
+.vps-inline-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.vps-search-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.vps-loading,
+.vps-no-data {
+  text-align: center;
+  padding: 48px 0;
+  color: #999;
+}
+
+.vps-loading-text {
+  margin-top: 8px;
+}
+
+.vps-no-data-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* ── Layout phiếu lương A4 (giữ nguyên style bản gốc) ── */
+.vps-pay-stub {
+  width: 210mm;
+  max-width: 100%;
+  margin: 0 auto 24px auto;
+  padding: 10mm 12mm;
+  background: #fff;
+  border: 1px solid #bbb;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  font-size: 11px;
+  font-family: Arial, sans-serif;
+  color: #111;
+}
+
+.vps-stub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  border-bottom: 2.5px solid #922b21;
+  padding-bottom: 8px;
+}
+
+.vps-logo img {
+  height: 32px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.vps-title {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+  color: #1a1a2e;
+  letter-spacing: 1px;
+}
+
+.vps-section-title {
+  background: #922b21;
+  color: #fff;
+  font-weight: bold;
+  padding: 3px 8px;
+  margin: 8px 0 0 0;
+  font-size: 11px;
+}
+
+.vps-info-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vps-info-table th {
+  background: #f2e0e0;
+  color: #333;
+  font-weight: bold;
+  padding: 4px 8px;
+  border: 1px solid #c8c8c8;
+  white-space: nowrap;
+  font-size: 10px;
+  text-align: center;
+}
+
+.vps-info-table td {
+  padding: 4px 8px;
+  border: 1px solid #c8c8c8;
+  font-size: 10px;
+  background: #fff;
+}
+
+.vps-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.vps-detail-table th {
+  padding: 4px 8px;
+  border: 1px solid #c8c8c8;
+  font-size: 10px;
+  background: #f2e0e0;
+  color: #333;
+  font-weight: bold;
+  text-align: center;
+}
+
+.vps-detail-table td {
+  padding: 3px 8px;
+  border: 1px solid #c8c8c8;
+  font-size: 10px;
+  background: #fff;
+}
+
+.vps-detail-table tbody tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+.vps-triple-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.vps-triple-table th,
+.vps-triple-table td {
+  padding: 5px 6px;
+  border: 1px solid #c8c8c8;
+  font-size: 10px;
+}
+
+.vps-att-header {
+  background: #1a5276;
+  color: #fff;
+  font-weight: bold;
+}
+
+.vps-sal-header {
+  background: #922b21;
+  color: #fff;
+  font-weight: bold;
+}
+
+.vps-ded-header {
+  background: #1a5276;
+  color: #fff;
+  font-weight: bold;
+}
+
+.vps-triple-table thead tr:nth-child(2) th {
+  background: #f2e0e0;
+  color: #333;
+  font-weight: bold;
+  text-align: center;
+}
+
+.vps-triple-table tbody td {
+  background: #fff;
+}
+
+.vps-triple-table tbody tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+.vps-triple-table tfoot td {
+  background: #ececec;
+  font-weight: bold;
+  border: 1px solid #c8c8c8;
+}
+
+.vps-net-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+
+.vps-net-table td {
+  padding: 6px 10px;
+  border: 1.5px solid #999;
+  background: #fef9e7;
+  font-size: 13px;
+  font-weight: bold;
+  color: #111;
+}
+
+.vps-note {
+  font-size: 10px;
+  color: #555;
+  margin-top: 10px;
+  font-style: italic;
+  border-top: 1px dashed #ccc;
+  padding-top: 6px;
+}
+
+.vps-muted {
+  color: #999;
+}
+
+.text-end {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.fw-bold {
+  font-weight: bold;
+}

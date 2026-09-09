@@ -1,0 +1,136 @@
+<div class="vpas-page" nz-row [nzGutter]="16">
+  <!-- Left Pane: Danh sách người phụ trách -->
+  <div nz-col [nzSpan]="10">
+    <div class="vpas-card">
+      <div class="vpas-card-header">
+        <h5 class="vpas-title">{{ i18n.t('pa.supervisor.leftPaneTitle', 'Danh sách người phụ trách') }}</h5>
+        <button id="vpas-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus-circle"></span>{{ i18n.t('pa.supervisor.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+      <input
+        id="vpas-filter-input"
+        nz-input
+        [ngModel]="listFilter()"
+        (ngModelChange)="listFilter.set($event)"
+        [placeholder]="i18n.t('pa.supervisor.searchPlaceholder', 'Tìm kiếm theo mã NV, tên, phòng ban...')"
+        style="margin-bottom: 8px"
+      />
+      <nz-table
+        id="vpas-supervisor-table"
+        [nzData]="filteredSupervisors()"
+        [nzPageSize]="20"
+        nzShowSizeChanger
+        [nzPageSizeOptions]="[20, 50, 100]"
+        nzSize="small"
+        nzBordered
+        #vpasTable
+      >
+        <thead>
+          <tr>
+            <th nzWidth="48px" class="vpas-col-center">{{ i18n.t('pa.supervisor.no', 'STT') }}</th>
+            <th>{{ i18n.t('pa.supervisor.empId', 'Mã nhân viên') }}</th>
+            <th>{{ i18n.t('pa.supervisor.localName', 'Họ tên') }}</th>
+            <th>{{ i18n.t('pa.supervisor.dept', 'Phòng ban') }}</th>
+            <th nzWidth="90px" class="vpas-col-center">{{ i18n.t('pa.supervisor.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let row of vpasTable.data; let idx = index"
+            class="vpas-clickable"
+            [class.vpas-row-selected]="selectedPersonId() === row.personId"
+            (click)="selectSupervisor(row)"
+          >
+            <td class="vpas-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td class="vpas-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row, $event)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteSupervisor(row, $event)" [title]="i18n.t('pa.supervisor.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+
+  <!-- Right Pane: Cây phân quyền phòng ban -->
+  <div nz-col [nzSpan]="14">
+    <div class="vpas-card">
+      <h5 class="vpas-title" id="vpas-right-title">
+        {{ i18n.t('pa.supervisor.rightPaneTitle', 'Phân quyền phòng ban') }}{{ selectedEmpName() ? ': ' + selectedEmpName() : '' }}
+      </h5>
+      <ng-container *ngIf="selectedPersonId(); else vpasInfoPlaceholder">
+        <div class="vpas-tree-container">
+          <nz-tree
+            *ngIf="!deptLoading(); else vpasTreeLoading"
+            id="vpas-dept-tree"
+            [nzData]="deptTreeNodes()"
+            nzCheckable
+            [nzCheckedKeys]="checkedKeys()"
+            (nzCheckedKeysChange)="onDeptCheckedKeysChange($event)"
+          ></nz-tree>
+          <ng-template #vpasTreeLoading>
+            <div class="vpas-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+          </ng-template>
+        </div>
+        <div class="vpas-tree-actions">
+          <button id="vpas-save-depts-btn" nz-button nzType="primary" [nzLoading]="deptSaving()" (click)="saveDepts()">
+            {{ i18n.t('pa.supervisor.saveDepts', 'Lưu phân quyền') }}
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #vpasInfoPlaceholder>
+        <div class="vpas-info-placeholder">{{ i18n.t('pa.supervisor.infoPlaceholder', 'Vui lòng chọn 1 người phụ trách bên trái để phân quyền phòng ban.') }}</div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa người phụ trách -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('pa.supervisor.addTitle', 'Thêm mới người phụ trách') : i18n.t('pa.supervisor.editTitle', 'Chỉnh sửa người phụ trách')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="500px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="vpas-form-row">
+      <label class="vpas-form-label vpas-required">{{ i18n.t('pa.supervisor.supervisor', 'Nhân viên') }}</label>
+      <nz-select
+        *ngIf="formIsAdd(); else vpasEmpPlaintext"
+        id="vpas-f-employee"
+        style="width: 100%"
+        [ngModel]="formPersonId()"
+        (ngModelChange)="onEmployeeSelect($event)"
+        nzShowSearch
+        [nzPlaceHolder]="i18n.t('pa.supervisor.empSelectPlaceholder', 'Chọn nhân viên...')"
+        (nzOnSearch)="onEmployeeSearch($event)"
+      >
+        <nz-option *ngFor="let emp of formEmployeeOptions()" [nzValue]="emp.personId" [nzLabel]="(emp.empId ?? '') + ' - ' + (emp.localName ?? '')"></nz-option>
+      </nz-select>
+      <ng-template #vpasEmpPlaintext>
+        <div class="vpas-plaintext">{{ formEmpDisplay() }}</div>
+      </ng-template>
+    </div>
+    <div class="vpas-form-row">
+      <label class="vpas-form-label">{{ i18n.t('pa.supervisor.activity', 'Trạng thái') }}</label>
+      <nz-select id="vpas-f-activity" style="width: 180px" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)">
+        <nz-option [nzValue]="1" [nzLabel]="i18n.t('pa.supervisor.activity.active', 'Hoạt động')"></nz-option>
+        <nz-option [nzValue]="0" [nzLabel]="i18n.t('pa.supervisor.activity.inactive', 'Không hoạt động')"></nz-option>
+      </nz-select>
+    </div>
+    <div class="vpas-form-row">
+      <label class="vpas-form-label">{{ i18n.t('pa.supervisor.orderNo', 'Thứ tự') }}</label>
+      <nz-input-number id="vpas-f-orderno" [ngModel]="formOrderNo()" (ngModelChange)="formOrderNo.set($event)" style="width: 100%"></nz-input-number>
+    </div>
+  </ng-container>
+</nz-modal>

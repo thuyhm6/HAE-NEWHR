@@ -21,7 +21,7 @@
         <result property="insertBy"      column="INSERT_BY"/>
     </resultMap>
 
-    <!-- EMPID của AR_MAC_RECORDS_HAE_EAT LEFT JOIN HR_EMPLOYEE. Nếu không tìm thấy thì LOCAL_NAME thay bằng EMPLOYEE_NAME -->
+    <!-- EMPID của AR_MAC_RECORDS_MEAL_HAE LEFT JOIN HR_EMPLOYEE. Nếu không tìm thấy thì LOCAL_NAME thay bằng EMPLOYEE_NAME -->
     <sql id="baseQuery">
         SELECT A.SEQ,
                A.EMPID,
@@ -49,7 +49,7 @@
                A.REMARK,
                GET_CODE_NAME(B.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
                A.INSERT_BY
-          FROM AR_MAC_RECORDS_HAE_EAT A
+          FROM AR_MAC_RECORDS_MEAL_HAE A
           LEFT JOIN HR_EMPLOYEE B ON A.EMPID = B.EMPID
          WHERE 1 = 1
         <if test="keyword != null and keyword != ''">
@@ -102,7 +102,7 @@
     <select id="countDuplicateEat" resultType="int"
             parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
         SELECT COUNT(*)
-          FROM AR_MAC_RECORDS_HAE_EAT
+          FROM AR_MAC_RECORDS_MEAL_HAE
          WHERE EMPID     = #{empId,    jdbcType=VARCHAR}
            AND R_TIME = TO_DATE(#{cardTime, jdbcType=VARCHAR}, 'YYYY/MM/DD HH24:MI')
            AND EAT_NAME = #{doorName, jdbcType=VARCHAR}
@@ -111,7 +111,7 @@
     <!-- Insert từ thiết bị Access Control (reader suất ăn DeviceIDX 1033, 1034) -->
     <insert id="insertFromDevice"
             parameterType="com.ait.ar.attendanceMintenance.dto.ArMacRecordEatDto">
-        INSERT INTO AR_MAC_RECORDS_HAE_EAT (
+        INSERT INTO AR_MAC_RECORDS_MEAL_HAE (
             SEQ,
             CPNY_ID,
             EMPID,

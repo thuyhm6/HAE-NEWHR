@@ -1,0 +1,25 @@
+.vere-page {
+  padding: 4px 0;
+}
+
+.vere-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.vere-card-header {
+  font-weight: 600;
+  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.vere-col-center {
+  text-align: center;
+}
+
+.vere-muted {
+  color: #999;
+}

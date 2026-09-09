@@ -8,9 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -21,15 +22,13 @@ public class OrgCostCenterController {
     @Autowired
     private OrgCostCenterService service;
 
+    @Autowired
+    private com.ait.util.AngularIndexService angularIndexService;
+
     @GetMapping("/org/orgManage/viewOrgCostCenter")
-    public String viewOrgCostCenter(Model model, HttpSession session) {
-        HrUserInfo user = (HrUserInfo) session.getAttribute("currentHrUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-        model.addAttribute("currentHrUser", user);
-        model.addAttribute("title", "Quản lý trung tâm chi phí");
-        return "org/orgManage/viewOrgCostCenter";
+    public String viewOrgCostCenter(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
     }
 
     @PostMapping("/org/api/costCenter/list")

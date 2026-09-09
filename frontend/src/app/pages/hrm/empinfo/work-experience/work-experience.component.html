@@ -1,0 +1,234 @@
+<div class="wexp-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="wexpSearchEmpId" [placeholder]="i18n.t('hrm.viewWorkInformation.title.empIdPlaceholder', 'Nhập mã nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.localName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="wexpSearchLocalName" [placeholder]="i18n.t('hrm.viewWorkInformation.title.localNamePlaceholder', 'Nhập tên nhân viên')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.companyName', 'Tên công ty') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-search-company" nz-input [ngModel]="searchCompanyName()" (ngModelChange)="searchCompanyName.set($event)" name="wexpSearchCompany" [placeholder]="i18n.t('hrm.viewWorkInformation.title.companyNamePlaceholder', 'Nhập tên công ty')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>&nbsp;</nz-form-label>
+            <nz-form-control>
+              <div class="wexp-toolbar-actions">
+                <button id="wexp-search-btn" nz-button nzType="primary" (click)="search()">
+                  <span nz-icon nzType="search"></span>
+                  {{ i18n.t('common.search', 'Tìm kiếm') }}
+                </button>
+                <button id="wexp-clear-btn" nz-button (click)="clearSearch()">
+                  <span nz-icon nzType="close"></span>
+                  {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+                </button>
+                <button id="wexp-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+                  <span nz-icon nzType="plus"></span>
+                  {{ i18n.t('common.addNew', 'Thêm mới') }}
+                </button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+
+    <nz-table
+      id="wexp-data-table"
+      #wexpTable
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="20"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[20, 50, 100]"
+      nzSize="small"
+      [nzScroll]="{ x: '1500px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="wexp-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.companyName', 'Công ty') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.deptName', 'Bộ phận') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.position', 'Vị trí') }}</th>
+          <th class="wexp-col-center">{{ i18n.t('common.startDate', 'Từ ngày') }}</th>
+          <th class="wexp-col-center">{{ i18n.t('common.endDate', 'Đến ngày') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.duty', 'Nhiệm vụ') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.resignReason', 'Lý do nghỉ') }}</th>
+          <th>{{ i18n.t('hrm.viewWorkInformation.title.payYear', 'Mức lương') }}</th>
+          <th>{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+          <th nzWidth="100px" class="wexp-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of wexpTable.data; track row.workExpNo; let idx = $index) {
+          <tr>
+            <td class="wexp-col-center">{{ idx + 1 }}</td>
+            <td>{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.cpnyName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.position }}</td>
+            <td class="wexp-col-center">{{ row.startDate }}</td>
+            <td class="wexp-col-center">{{ row.endDate }}</td>
+            <td>{{ row.duty }}</td>
+            <td>{{ row.resignReason }}</td>
+            <td>{{ row.payYear }}</td>
+            <td>{{ row.remark }}</td>
+            <td class="wexp-col-center">
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="13" class="wexp-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.viewWorkInformation.title.editTitle', 'Cập nhật Kinh nghiệm làm việc') : i18n.t('hrm.viewWorkInformation.title.addTitle', 'Thêm mới Kinh nghiệm làm việc')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="800px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('common.employee', 'Nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="wexp-form-emp"
+                [ngModel]="formPersonId()"
+                (ngModelChange)="onEmployeeSelected($event)"
+                name="wexpFormEmp"
+                nzShowSearch
+                [nzServerSearch]="true"
+                (nzOnSearch)="onEmployeeSearch($event)"
+                [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                [nzLoading]="employeeSearching()"
+              >
+                @if (formEmpLabel() && formPersonId()) {
+                  <nz-option [nzValue]="formPersonId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                }
+                @for (emp of employeeOptions(); track emp.personId) {
+                  <nz-option [nzValue]="emp.personId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.viewWorkInformation.title.companyName', 'Tên công ty') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-form-company" nz-input [ngModel]="formCpnyName()" (ngModelChange)="formCpnyName.set($event)" name="wexpFormCompany" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.deptName', 'Bộ phận') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-form-dept" nz-input [ngModel]="formDeptName()" (ngModelChange)="formDeptName.set($event)" name="wexpFormDept" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.position', 'Vị trí') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-form-position" nz-input [ngModel]="formPosition()" (ngModelChange)="formPosition.set($event)" name="wexpFormPosition" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.startDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-form-start" nz-input [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" name="wexpFormStart" placeholder="YYYYMMDD" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.endDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-form-end" nz-input [ngModel]="formEndDate()" (ngModelChange)="formEndDate.set($event)" name="wexpFormEnd" placeholder="YYYYMMDD" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.duty', 'Nhiệm vụ') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="wexp-form-duty" nz-input rows="2" [ngModel]="formDuty()" (ngModelChange)="formDuty.set($event)" name="wexpFormDuty"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.payYear', 'Mức lương') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-form-pay" nz-input [ngModel]="formPayYear()" (ngModelChange)="formPayYear.set($event)" name="wexpFormPay" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewWorkInformation.title.resignReason', 'Lý do nghỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="wexp-form-resign" nz-input [ngModel]="formResignReason()" (ngModelChange)="formResignReason.set($event)" name="wexpFormResign" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="wexp-form-remark" nz-input rows="2" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)" name="wexpFormRemark"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>

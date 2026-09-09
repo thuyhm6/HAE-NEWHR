@@ -1,0 +1,66 @@
+:host {
+  display: block;
+}
+
+.hae-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 20, 20, 0.92);
+  backdrop-filter: blur(4px);
+}
+
+.hae-lock-card {
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 2rem 1.75rem;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.hae-lock-icon-wrap {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff1e6;
+  color: #d05800;
+  font-size: 24px;
+}
+
+.hae-lock-card h4 {
+  margin: 0 0 0.5rem;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hae-lock-user {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  color: #d05800;
+}
+
+.hae-lock-message {
+  margin: 0 0 1.25rem;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 13px;
+}
+
+.hae-lock-error {
+  margin: 0.5rem 0 0;
+  color: #ff4d4f;
+  font-size: 13px;
+  text-align: left;
+}
+
+.hae-lock-card button[type='submit'] {
+  margin-top: 1rem;
+}

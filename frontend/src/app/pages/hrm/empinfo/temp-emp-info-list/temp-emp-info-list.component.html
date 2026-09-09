@@ -1,0 +1,331 @@
+<div class="tel-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.localName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-search-local-name" nz-input [ngModel]="searchLocalName()" (ngModelChange)="searchLocalName.set($event)" name="telSearchLocalName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="telSearchEmpId" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.deptNo', 'Mã phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-search-dept" nz-input [ngModel]="searchDeptNo()" (ngModelChange)="searchDeptNo.set($event)" name="telSearchDept" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.position', 'Chức vụ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-search-position" nz-input [ngModel]="searchPosition()" (ngModelChange)="searchPosition.set($event)" name="telSearchPosition" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.createDateFrom', 'Ngày tạo từ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-search-create-from" type="date" nz-input [ngModel]="searchCreateDateFrom()" (ngModelChange)="searchCreateDateFrom.set($event)" name="telSearchCreateFrom" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.createDateTo', 'Ngày tạo đến') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-search-create-to" type="date" nz-input [ngModel]="searchCreateDateTo()" (ngModelChange)="searchCreateDateTo.set($event)" name="telSearchCreateTo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.active', 'Hoạt động') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="tel-search-activity" [ngModel]="searchActivity()" (ngModelChange)="searchActivity.set($event)" name="telSearchActivity" [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')" nzAllowClear>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.active', 'Hoạt động')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.inactive', 'Không hoạt động')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.otFlag', 'Trạng thái OT') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="tel-search-ot" [ngModel]="searchOtFlag()" (ngModelChange)="searchOtFlag.set($event)" name="telSearchOt" [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')" nzAllowClear>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('hrm.viewTempEmpInfoList.title.hasOt', 'Có OT')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('hrm.viewTempEmpInfoList.title.noOt', 'Không OT')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="tel-toolbar-actions">
+        <button id="tel-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.create', 'Thêm mới') }}
+        </button>
+        <button id="tel-search-btn" nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="tel-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clear', 'Xóa bộ lọc') }}
+        </button>
+        <button id="tel-export-btn" nz-button (click)="exportResults()">
+          <span nz-icon nzType="download"></span>
+          {{ i18n.t('common.export', 'Xuất kết quả') }}
+        </button>
+      </div>
+    </form>
+
+    <nz-table
+      id="tel-data-table"
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="[10, 25, 50, 100]"
+      [nzShowSizeChanger]="true"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      nzSize="small"
+      [nzScroll]="{ x: '1400px' }"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="tel-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('hrm.viewTempEmpInfoList.title.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('hrm.viewTempEmpInfoList.title.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('hrm.viewTempEmpInfoList.title.deptNo', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hrm.viewTempEmpInfoList.title.position', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('hrm.viewTempEmpInfoList.title.specialNo', 'Số đặc biệt') }}</th>
+          <th class="tel-col-center">{{ i18n.t('common.active', 'Hoạt động') }}</th>
+          <th class="tel-col-center">{{ i18n.t('common.createDate', 'Ngày tạo') }}</th>
+          <th class="tel-col-center">{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th>
+          <th class="tel-col-center">{{ i18n.t('common.endDate', 'Ngày kết thúc') }}</th>
+          <th class="tel-col-center">{{ i18n.t('hrm.viewTempEmpInfoList.title.otFlag', 'Trạng thái OT') }}</th>
+          <th nzWidth="120px" class="tel-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.specialNo; let idx = $index) {
+          <tr>
+            <td class="tel-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td><nz-tag nzColor="blue">{{ row.empId }}</nz-tag></td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptNo }}</td>
+            <td>{{ row.position }}</td>
+            <td><nz-tag>{{ row.specialNo }}</nz-tag></td>
+            <td class="tel-col-center">
+              @if (row.activity === 1) {
+                <nz-tag nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('common.inactive', 'Không hoạt động') }}</nz-tag>
+              }
+            </td>
+            <td class="tel-col-center">{{ row.createDate }}</td>
+            <td class="tel-col-center">{{ row.startDate }}</td>
+            <td class="tel-col-center">{{ row.endDate }}</td>
+            <td class="tel-col-center">
+              @if (row.otFlag === 1) {
+                <nz-tag nzColor="warning">{{ i18n.t('hrm.viewTempEmpInfoList.title.hasOt', 'Có OT') }}</nz-tag>
+              } @else {
+                <nz-tag>{{ i18n.t('hrm.viewTempEmpInfoList.title.noOt', 'Không OT') }}</nz-tag>
+              }
+            </td>
+            <td class="tel-col-center">
+              <button nz-button nzSize="small" (click)="viewDetail(row)" [title]="i18n.t('common.view', 'Xem')">
+                <span nz-icon nzType="eye"></span>
+              </button>
+              <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzSize="small" nzDanger (click)="deleteOne(row)" [title]="i18n.t('common.delete', 'Xóa')">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="12" class="tel-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('hrm.viewTempEmpInfoList.title.editTitle', 'Chỉnh sửa thông tin nhân viên') : i18n.t('hrm.viewTempEmpInfoList.title.addTitle', 'Thêm mới nhân viên')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="800px"
+  [nzOkLoading]="saving()"
+  (nzOnOk)="saveRecord()"
+  [nzOkText]="i18n.t('common.save', 'Lưu')"
+  [nzCancelText]="i18n.t('common.close', 'Đóng')"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.viewTempEmpInfoList.title.empId', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              @if (modalIsEdit()) {
+                <input id="tel-form-emp-id" nz-input [ngModel]="formEmpId()" name="telFormEmpId" readonly />
+              } @else {
+                <nz-select
+                  id="tel-form-emp"
+                  [ngModel]="formEmpId()"
+                  (ngModelChange)="onEmployeeSelected($event)"
+                  name="telFormEmp"
+                  nzShowSearch
+                  [nzServerSearch]="true"
+                  (nzOnSearch)="onEmployeeSearch($event)"
+                  [nzPlaceHolder]="i18n.t('hrm.editContract.placeholder.selectEmployee', 'Tìm và chọn nhân viên...')"
+                  [nzLoading]="employeeSearching()"
+                >
+                  @if (formEmpLabel() && formEmpId()) {
+                    <nz-option [nzValue]="formEmpId()" [nzLabel]="formEmpLabel()!"></nz-option>
+                  }
+                  @for (emp of employeeOptions(); track emp.empId) {
+                    <nz-option [nzValue]="emp.empId" [nzLabel]="emp.empId + ' - ' + emp.localName"></nz-option>
+                  }
+                </nz-select>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('hrm.viewTempEmpInfoList.title.localName', 'Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-form-local-name" nz-input [ngModel]="formLocalName()" (ngModelChange)="formLocalName.set($event)" name="telFormLocalName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.deptNo', 'Mã phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-form-dept" nz-input [ngModel]="formDeptNo()" (ngModelChange)="formDeptNo.set($event)" name="telFormDept" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.position', 'Chức vụ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-form-position" nz-input [ngModel]="formPosition()" (ngModelChange)="formPosition.set($event)" name="telFormPosition" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.specialNo', 'Số đặc biệt') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-form-special-no" nz-input [ngModel]="formSpecialNo()" (ngModelChange)="formSpecialNo.set($event)" name="telFormSpecialNo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.active', 'Hoạt động') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="tel-form-activity" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)" name="telFormActivity">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.active', 'Hoạt động')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.inactive', 'Không hoạt động')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-form-start" type="date" nz-input [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" name="telFormStart" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.endDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <input id="tel-form-end" type="date" nz-input [ngModel]="formEndDate()" (ngModelChange)="formEndDate.set($event)" name="telFormEnd" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.otFlag', 'Trạng thái OT') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="tel-form-ot" [ngModel]="formOtFlag()" (ngModelChange)="formOtFlag.set($event)" name="telFormOt">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('hrm.viewTempEmpInfoList.title.hasOt', 'Có OT')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('hrm.viewTempEmpInfoList.title.noOt', 'Không OT')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.viewTempEmpInfoList.title.specialContent', 'Nội dung đặc biệt') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="tel-form-content" nz-input rows="2" [ngModel]="formSpecialContent()" (ngModelChange)="formSpecialContent.set($event)" name="telFormContent"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+</nz-modal>
+
+<nz-modal
+  [nzVisible]="viewModalVisible()"
+  [nzTitle]="i18n.t('common.view', 'Xem') + ' - ' + (viewRow()?.empId || '')"
+  (nzOnCancel)="closeViewModal()"
+  (nzVisibleChange)="viewModalVisible.set($event)"
+  nzWidth="700px"
+>
+  <ng-container *nzModalContent>
+    @if (viewRow(); as v) {
+      <table class="tel-view-table">
+        <tr><th>{{ i18n.t('hrm.viewTempEmpInfoList.title.empId', 'Mã nhân viên') }}</th><td>{{ v.empId || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('hrm.viewTempEmpInfoList.title.localName', 'Họ tên') }}</th><td>{{ v.localName || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('hrm.viewTempEmpInfoList.title.deptNo', 'Phòng ban') }}</th><td>{{ v.deptNo || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('hrm.viewTempEmpInfoList.title.position', 'Chức vụ') }}</th><td>{{ v.position || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('hrm.viewTempEmpInfoList.title.specialNo', 'Số đặc biệt') }}</th><td>{{ v.specialNo || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('common.active', 'Hoạt động') }}</th><td>{{ v.activity === 1 ? i18n.t('common.active', 'Hoạt động') : i18n.t('common.inactive', 'Không hoạt động') }}</td></tr>
+        <tr><th>{{ i18n.t('hrm.viewTempEmpInfoList.title.otFlag', 'Trạng thái OT') }}</th><td>{{ v.otFlag === 1 ? i18n.t('hrm.viewTempEmpInfoList.title.hasOt', 'Có OT') : i18n.t('hrm.viewTempEmpInfoList.title.noOt', 'Không OT') }}</td></tr>
+        <tr><th>{{ i18n.t('common.startDate', 'Ngày bắt đầu') }}</th><td>{{ v.startDate || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('common.endDate', 'Ngày kết thúc') }}</th><td>{{ v.endDate || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('common.createDate', 'Ngày tạo') }}</th><td>{{ v.createDate || '-' }}</td></tr>
+        <tr><th>{{ i18n.t('hrm.viewTempEmpInfoList.title.specialContent', 'Nội dung đặc biệt') }}</th><td>{{ v.specialContent || '-' }}</td></tr>
+      </table>
+    }
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeViewModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </div>
+</nz-modal>

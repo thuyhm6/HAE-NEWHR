@@ -1,0 +1,263 @@
+<div class="as-page">
+  <nz-card class="as-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="asKeyword" [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã hoặc họ tên')" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="as-dept"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="asDept"
+                nzMultiple
+                nzCheckable
+                nzShowSearch
+                [nzPlaceHolder]="i18n.t('common.select', 'Chọn phòng ban')"
+                style="width: 100%"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="as-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="asFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="as-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="asToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.empGroup', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="as-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="asPostFamily" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.selectAttCode', '-- Chọn mã chấm công --')">
+                <nz-option *ngFor="let opt of postFamilyOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.nameVi || opt.codeName || opt.codeNo"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.shiftType', 'Ca làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="as-shift" [ngModel]="shiftNo()" (ngModelChange)="shiftNo.set($event)" name="asShift" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="opt.nameVi || opt.shiftNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.leaveType', 'Loại nghỉ phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="as-item" [ngModel]="itemNo()" (ngModelChange)="itemNo.set($event)" name="asItem" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of itemOptions()" [nzValue]="opt.itemNo" [nzLabel]="opt.itemName || opt.itemNo || ''"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="as-toolbar-actions">
+        <button id="as-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="as-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="as-export-btn" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="export"></span>
+          {{ i18n.t('common.exportExcel', 'Xuất excel') }}
+        </button>
+        <button id="as-sync-cleverse-btn" nz-button (click)="openSyncModal()">
+          <span nz-icon nzType="swap"></span>
+          {{ i18n.t('attSearch.syncCleverseDev', 'Test Đồng Bộ Cleverse (DEV)') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="as-table-card">
+    <nz-table #asTable id="as-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="as-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="as-col-center">{{ i18n.t('attSearch.workDate', 'Ngày công') }}</th>
+          <th class="as-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Tên nhân viên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('attSearch.position', 'Chức vụ') }}</th>
+          <th class="as-col-center">{{ i18n.t('attSearch.shiftType', 'Ca làm việc') }}</th>
+          <th>{{ i18n.t('attSearch.leaveType', 'Loại nghỉ phép') }}</th>
+          <th class="as-col-center">{{ i18n.t('attSearch.fromTime', 'Từ thời gian') }}</th>
+          <th class="as-col-center">{{ i18n.t('attSearch.toTime', 'Đến thời gian') }}</th>
+          <th class="as-col-right">{{ i18n.t('attSearch.quantity', 'Số lượng') }}</th>
+          <th class="as-col-center">{{ i18n.t('attSearch.unit', 'Đơn vị') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of asTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="as-col-center">{{ idx + 1 }}</td>
+            <td class="as-col-center">{{ row.arDateStr }}</td>
+            <td class="as-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="as-col-center">{{ row.shiftName }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="as-col-center">{{ row.fromTime }}</td>
+            <td class="as-col-center">{{ row.toTime }}</td>
+            <td class="as-col-right">{{ row.quantity }}</td>
+            <td class="as-col-center">{{ row.unit }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="12" class="as-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Test Sync Cleverse (DEV) -->
+<nz-modal
+  [nzVisible]="syncModalVisible()"
+  [nzTitle]="i18n.t('attSearch.syncModal.title', 'Test Gửi Chấm Công Lên Cleverse')"
+  (nzOnCancel)="closeSyncModal()"
+  (nzVisibleChange)="syncModalVisible.set($event)"
+  nzWidth="760px"
+>
+  <ng-container *nzModalContent>
+    <div class="as-sync-endpoint">
+      <strong>DEV Endpoint:</strong> <code>https://epdev.cleverse.kr/soap/org/neoHrWs</code>
+    </div>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.enterCd', 'Mã công ty') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-enter-cd" nz-input [ngModel]="syncEnterCd()" (ngModelChange)="syncEnterCd.set($event)" name="asSyncEnterCd" maxlength="10" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.sabun', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-sabun" nz-input [ngModel]="syncSabun()" (ngModelChange)="syncSabun.set($event)" name="asSyncSabun" maxlength="13" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.gntCd', 'Mã chấm công') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-gnt-cd" nz-input [ngModel]="syncGntCd()" (ngModelChange)="syncGntCd.set($event)" name="asSyncGntCd" maxlength="10" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.sYmd', 'Ngày bắt đầu (YYYYMMDD)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-s-ymd" nz-input [ngModel]="syncSYmd()" (ngModelChange)="syncSYmd.set($event)" name="asSyncSYmd" maxlength="8" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.eYmd', 'Ngày kết thúc (YYYYMMDD)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-e-ymd" nz-input [ngModel]="syncEYmd()" (ngModelChange)="syncEYmd.set($event)" name="asSyncEYmd" maxlength="8" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.instanceId', 'Instance ID') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-instance-id" nz-input [ngModel]="syncInstanceId()" (ngModelChange)="syncInstanceId.set($event)" name="asSyncInstanceId" maxlength="25" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.cancelYn', 'Hủy (Y/N)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="as-sync-cancel-yn" [ngModel]="syncCancelYn()" (ngModelChange)="syncCancelYn.set($event)" name="asSyncCancelYn">
+                <nz-option nzValue="N" nzLabel="N"></nz-option>
+                <nz-option nzValue="Y" nzLabel="Y"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.ifId', 'Interface ID') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-if-id" nz-input [ngModel]="syncIfId()" (ngModelChange)="syncIfId.set($event)" name="asSyncIfId" maxlength="13" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="as-sync-status" [ngModel]="syncStatus()" (ngModelChange)="syncStatus.set($event)" name="asSyncStatus">
+                <nz-option nzValue="0" nzLabel="0"></nz-option>
+                <nz-option nzValue="1" nzLabel="1"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('attSearch.syncModal.reason', 'Lý do') }}</nz-form-label>
+            <nz-form-control>
+              <input id="as-sync-reason" nz-input [ngModel]="syncReason()" (ngModelChange)="syncReason.set($event)" name="asSyncReason" maxlength="128" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+    @if (syncResult(); as res) {
+      <div class="as-sync-result" [class.as-result-success]="res.success" [class.as-result-error]="!res.success">
+        @if (res.success) {
+          {{ i18n.t('attSearch.syncModal.result', 'Kết quả') }}: {{ res.result }}
+        } @else {
+          {{ res.message }}
+        }
+      </div>
+    }
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeSyncModal()">{{ i18n.t('common.cancel', 'Hủy') }}</button>
+    <button id="as-sync-send-btn" nz-button nzType="primary" [nzLoading]="syncSending()" (click)="sendSyncCleverse()">
+      <span nz-icon nzType="send"></span>
+      {{ i18n.t('attSearch.syncModal.send', 'Gửi') }}
+    </button>
+  </div>
+</nz-modal>

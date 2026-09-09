@@ -1,0 +1,30 @@
+.vae-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.vae-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.vae-col-center {
+  text-align: center;
+}
+
+.vae-detail-link {
+  color: #0d2bff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.vae-detail-link:hover {
+  text-decoration: underline;
+}
+
+.vae-modal-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}

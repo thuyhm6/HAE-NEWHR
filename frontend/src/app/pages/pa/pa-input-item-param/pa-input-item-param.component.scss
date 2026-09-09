@@ -1,0 +1,61 @@
+.vpiip-page {
+  padding: 4px 0;
+}
+
+.vpiip-search-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--ant-color-fill-tertiary, #fafafa);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.vpiip-search-left,
+.vpiip-search-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vpiip-inline-label {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.vpiip-table-card {
+  background: var(--ant-color-bg-container, #fff);
+  border: 1px solid var(--ant-color-border, #f0f0f0);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.vpiip-col-center {
+  text-align: center;
+}
+
+.vpiip-clickable {
+  cursor: pointer;
+}
+
+.vpiip-form-row {
+  margin-bottom: 10px;
+}
+
+.vpiip-form-label {
+  display: block;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 2px;
+}
+
+.vpiip-plaintext {
+  padding: 4px 0;
+  font-size: 13px;
+}

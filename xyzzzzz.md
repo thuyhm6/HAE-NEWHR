@@ -2133,7 +2133,7 @@ Thêm cho tôi chức năng upload file excel (có thể tham khảo chức năn
 
 Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordForSelf.html - Lịch sử ra vào công ty nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_SST với các trường tham khảo hình ảnh, kết hợp với bảng HR_EMPLOYEE để lấy thông tin nhân viên, trường CARD_NO tương ứng với EMPID HR_EMPLOYEE, sẽ có những dữ liệu trong bảng AR_MAC_RECORDS_SST mà giá trị của trường CARD_NO không nằm trong HR_EMPLOYEE, nếu vậy thì vẫn lấy CARD_NO và LOCAL_NAME sẽ thay bằng CARD_NO.  Định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày hiện tại. có chức năng xuất excel, khi bấm vào sẽ xuất dữ liệu ra file excel.
 
-Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordMeal.html - Tra cứu suất ăn nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_HAE_EAT với các trường tham khảo hình ảnh, câu lệnh lẫy dữ liệu sử dụng SQL: SELECT  A.SEQ,
+Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordMeal.html - Tra cứu suất ăn nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. Dữ liệu lấy từ bảng AR_MAC_RECORDS_MEAL_HAE với các trường tham khảo hình ảnh, câu lệnh lẫy dữ liệu sử dụng SQL: SELECT  A.SEQ,
 			          A.EMPID,
 			          A.EAT_DATE,
 			          A.EAT_NAME,
@@ -2152,15 +2152,15 @@ Giống như viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordMea
 					  A.REMARK,
 					  GET_CODE_NAME(B.POST_GRADE_NO,#{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
 					  INSERT_BY
-				 FROM AR_MAC_RECORDS_HAE_EAT A,
+				 FROM AR_MAC_RECORDS_MEAL_HAE A,
 					  HR_EMPLOYEE B
 				WHERE  A.EMPID =  B.EMPID(+). 
- trường EMPID của bảng AR_MAC_RECORDS_HAE_EAT tương ứng với EMPID của HR_EMPLOYEE, sẽ có những dữ liệu trong bảng AR_MAC_RECORDS_HAE_EAT mà giá trị của trường EMPID không nằm trong HR_EMPLOYEE, nếu vậy thì vẫn lấy EMPID và LOCAL_NAME sẽ thay bằng EMPLOYEE_NAME.       
+ trường EMPID của bảng AR_MAC_RECORDS_MEAL_HAE tương ứng với EMPID của HR_EMPLOYEE, sẽ có những dữ liệu trong bảng AR_MAC_RECORDS_MEAL_HAE mà giá trị của trường EMPID không nằm trong HR_EMPLOYEE, nếu vậy thì vẫn lấy EMPID và LOCAL_NAME sẽ thay bằng EMPLOYEE_NAME.       
          Định dạng ngày tháng dạng YYYY/MM/DD. mặc định ban đầu lấy ngày hiện tại. có chức năng xuất excel, khi bấm vào sẽ xuất dữ liệu ra file excel.
 
          với việc Đọc dữ liệu quẹt thẻ từ server nơi chưass dữ liệu quẹt thẻ. hãy thêm cho tôi 1 tính năng tự động chạy vào phút thứ 5 của mỗi tiếng, tức là 08:05, 09:05, ... và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu quẹt thẻ được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu quẹt thẻ, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu quẹt thẻ nhiều lần trong ngày.
 
-Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordMeal.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HAE_EAT. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
+Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordMeal.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_MEAL_HAE. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
 							+ " DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) AS LocalDateTime, e.OccuredDateTime as UTCDateTime,"
 							+ " P.DepartmentID, P.DepartmentID AS DeptName	"
 							+ " from ACS_CARDHOLDER_VIEW P join ACS_EVENT_ACCESS_VIEW E on P.PSNID = E.PSNId right "
@@ -2175,9 +2175,9 @@ FirstName Tương ứng với	EMPLOYEE_NAME
  LocalDateTime Tương ứng với	CARD_TIME
  DoorName Tương ứng với	DOOR_NAME
  DeptName Tương ứng với	DEPART_NAME 10
-  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_HAE_EAT thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
+  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_MEAL_HAE thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
 
-  Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordForSelf.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_HAE_EAT. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
+  Giống như chức năng đọc dữ liệu quẹt thẻ - acrOpenImportModal của viewArCardRecord.html, hãy tạo cho tôi chức năng đọc dữ liệu suất ăn - avrmOpenImportModal của viewArCardRecordForSelf.html, khi bấm vào sẽ kết nối với máy chủ chứa dữ liệu suất ăn để lấy dữ liệu ra và hiển thị lên giao diện, đồng thời lưu dữ liệu đó vào bảng AR_MAC_RECORDS_MEAL_HAE. máy chủ có thông tin như máy chủ chứa dữ liệu quẹt thẻ, câu lệnh lấy dữ liệu là: sql =   " select P.EmployeeNo, p.FirstName,cr.ReaderIDX as ReaderCode ,CR.ReaderName, CR.DoorID, CR.DoorName,"
 							+ " DATEADD(mi, DATEDIFF(mi, GETUTCDATE(), GETDATE()), E.OccuredDateTime) AS LocalDateTime, e.OccuredDateTime as UTCDateTime,"
 							+ " P.DepartmentID, P.DepartmentID AS DeptName	"
 							+ " from ACS_CARDHOLDER_VIEW P join ACS_EVENT_ACCESS_VIEW E on P.PSNID = E.PSNId right "
@@ -2192,7 +2192,7 @@ FirstName Tương ứng với	EMPLOYEE_NAME
  LocalDateTime Tương ứng với	CARD_TIME
  DoorName Tương ứng với	DOOR_NAME
  DeptName Tương ứng với	DEPART_NAME 10
-  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_HAE_EAT thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
+  CPNY_ID tương ứng với #{cpnyId, jdbcType=VARCHAR} khi lưu vào bảng AR_MAC_RECORDS_MEAL_HAE thì cần check trùng dữ liệu, nếu đã tồn tại dữ liệu có cùng EMPID, CARD_TIME và DOOR_NAME thì sẽ không lưu nữa để tránh bị trùng dữ liệu. có chức năng tự động chạy vào phút thứ 07:00 và 14:00 và chỉ đọc dữ liệu trong ngày hiện tại và trươc đó 2 ngày để tránh việc đọc dữ liệu cũ quá nhiều. Việc này sẽ giúp cho dữ liệu suất ăn được cập nhật liên tục mà không cần phải chờ người dùng bấm nút Đọc dữ liệu suất ăn, đồng thời cũng tránh được việc dữ liệu bị trùng do người dùng bấm nút Đọc dữ liệu suất ăn nhiều lần trong ngày.
 
 
 Căn cứ viewArCardRecord.html, Hãy tạo cho tôi file viewArCardRecordDay.html - Dữ liệu quet thẻ - Ca làm nằm trong module /ar/attendanceMintenance. Giao diện tham khảo hình ảnh. câu lệnh lẫy dữ liệu sử dụng SQL: SELECT D.LOCAL_NAME,
@@ -2501,3 +2501,69 @@ Thay đổi lại giao diện của viewRegPersonalTarget.html. Objective Confir
 
 
 ở đây Loại tổ chức - deptType đang là code, hãy lấy theo name thông qua get_global_name(code, #{lang}).  ngoài ra chỗ Trưởng phòng thì managerEmpId đang hiển thị là personId, hãy chuyển sang empid thông qua get_empid(managerEmpId)
+
+Tôi muốn thêm chức năng cho phép người dùng ngay từ giao diện login có thể gửi những góp ý, phản hồi về hệ thống, cụ thể là khi người dùng bấm vào nút Góp ý ở giao diện login thì sẽ hiện ra modal để người dùng nhập nội dung góp ý, sau đó bấm Gửi thì sẽ lưu vào bảng SY_FEEDBACK với các trường tham khảo hình ảnh (Khi thêm mới thì trường FEEDBACK_ID căn cứ vào SY_FEEDBACK_SEQ.NEXTVAL). Tiếp theo ở phần <!-- Notification --> của topbar.html, thêm 1 link /sys/viewFeedback - Thông tin góp ý, để khi người quản lý bấm vào đấy, sẽ hiện ra giao diện xem được những thông tin người dùng đã gửi.
+
+
+bạn là người hiểu rõ về dự án này của tôi. hãy chuyển đổi dự án này từ thymeleaf (Frontend) sang Angular + NG-ZORRO. hãy build/nhúng Angular vào project Spring Boot của dự án. để khi tôi bấm vào Run and Debug thì sẽ tự động sử dụng đến Angular chứ khoogn dùng đến Thymeleaf cũ nữa, và khi đăng nhập thành công thì cũng điều hướng đến dashboard có Angular
+
+Tôi đang trong quá trình chuyển đổi dự án từ thymeleaf (Frontend) sangAngular + NG-ZORRO. Khi đăng nhập tôi thấy dashboard.html vẫn đang sử dụng thymeleaf, tôi muốn khi đăng nhập thành công thì điều hướng đến dashboard có Angular. Hãy build/nhúng Angular vào project Spring Boot của dự án. để khi tôi bấm vào Run and Debug thì sẽ tự động sử dụng đến Angular chứ không dùng đến Thymeleaf cũ nữa.
+
+
+hãy chuyển giao diện /ess/empinfo/viewEssApplyInfo.html này về dạng Angular + NG-ZORRO dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table (tham khảo manage-emp-position-info). sau khi hoàn thành thì có thể xóa file /ess/empinfo/viewEssApplyInfo.html cũ đi.
+
+hãy chuyển giao diện /ess/viewDept/ManageEmpPositionInfoList.html này về dạng Angular + NG-ZORRO dữ liệu hiển thị ra không dùng dataTables nữa mà dùng nz-table. sau khi hoàn thành thì có thể xóa file /ess/viewDept/ManageEmpPositionInfoList.html cũ đi.
+
+
+hãy chuyển giao diện /ess/viewDept/viewPersonalInfoEss.html này về dạng Angular + NG-ZORRO. sau khi hoàn thành thì có thể xóa file /ess/viewDept/viewPersonalInfoEss.html cũ đi.
+
+bạn đã loại bỏ mất những thành phần trong topbar.html. hãy đưa những thành phần của topbar.html vào theo dạng Angular + NG-ZORRO. và sau đó có thể xóa topbar.html đi nếu nó khoogn cần thiết nữa.
+
+
+ở phần menu bên trái nz-sider hãy chuyển thành nền #ee7f47 giúp tôi, chữ sẽ chuyển sang màu trắng đậm để nổi bật lên. Ngoài ra những menu cha ban đầu khi hiển thị hãy căn đều sang bên trái giúp tôi, các menu con sẽ thụt vào để thể hiện rõ sự phân cấp. có thêm icon cho menu cha và menu con.
+
+chỉ show ra menu con của 1 menu cha duy nhất, khi bấm vào menu con của menu cha khác, thì menu con của menu cha kia sẽ bị thu lại, tức là 1 lần chỉ hiển thị danh sách menu con của 1 menu cha
+
+vì giờ đã chuyển sang Angular + NG-ZORRO, vì vậy hãy xóa tất cả những gì liên quan đến thymeleaf đi, bao gồm cả thư việc và cấu hình. chỉ giữ lại những file giao diện html để làm dữ liệu tham khảo để làm giao diện dạng Angular sau này. 
+hãy loại bỏ tất cả những gì liên quan đến Thymeleaf khi chạy. chỉ giữ lại những file .html cũ, để tôi chuyển dần sang angular
+
+
+ở giao diện manage-emp-position-info phần phân trang hãy đưa ra lựa chọn 25, 50, 100, 200, 500. và thêm Tổng số dòng dữ liệu nữa
+
+khi bấm vào menu thì mở các tab mới, không hiển thị tên của tab đó lên ô địa chỉ chỉ trình duyệt, ngoài ra khi bấm chuột phải vào tab, hãy hiện cho tôi các lựa chọn: Đóng tab, Đóng tất cả tab, Đóng tất cả tab bên trái, Đóng tấ cả tab bên phải.
+
+Vẫn xóa topbar.html, khi bấm vào link HR Management System vẫn điều hướng bình thường sang hrm.html. nhưng bây giờ hãy chuyển sang dạng Angular + NG-ZORRO / PrimeNG (Frontend) cho hrm.html, và khi bấm vào link HR Management System thì vẫn điều hướng sang hrm.html nhưng không hiển thị tên của tab đó lên ô địa chỉ chỉ trình duyệt nữa. sau khi chuyển sang Angular + NG-ZORRO cho hrm.html thì có thể xóa hrm.html cũ đi.
+
+hãy chuyển giao diện /login/login.html này về dạng Angular + NG-ZORRO. sau khi hoàn thành thì có thể xóa file /login/login.html cũ đi.
+
+tôi thấy các giao diện đều có  phần search-card, hãy cố định nó, thanh cuộn chỉ cuộn phần dữ liệu hiển thị ra thôi, nếu được hãy cố định luôn cho tôi phần tiêu đề (th) của bảng, chỉ cuộn dữ liệu (td) thôi.
+tôi thấy vẫn không được, bạn hãy tham khảo view-pa-pay-schedule của D:\Java\WorkSpace\New_HR\HVV-VHR\frontend-ng\src\app. ở dụ án HVV-VHR làm rất tốt việc này
+
+90000556
+90000551
+90000564
+90000563
+90000562
+90000561
+90000560
+90000559
+
+
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000556','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000551','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000564','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000563','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000562','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000561','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000559','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+INSERT INTO AR_STA_FORMULAR      (FORMULAR_NO,ITEM_NO,CONDITION,FORMULAR,CPNY_ID,CREATE_DATE,CREATED_BY)    VALUES     (AR_STA_FORMULAR_SEQ.NEXTVAL,'90000560','ATT_ITEM.STATUS_NAME <> '试用'','SUM(  ATT_ITEM.MEAL_OT_INCEN_270) ','HTSV',SYSDATE,'11111111');
+
+Hệ thống ESS
+Quản lý chấm công 
+Quản lý nhân sự 
+Quản lý tổ chức 
+Quản lý tính lương 
+Quản lý đào tạo
+Quản lý đánh giá 
+Quản lý báo cáo
+Quản lý hệ thống

@@ -1,0 +1,25 @@
+.pun-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pun-search-row {
+  margin-bottom: 16px;
+}
+
+.pun-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.pun-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pun-col-center {
+  text-align: center;
+}

@@ -1,0 +1,291 @@
+<div class="itp-page" nz-row [nzGutter]="16">
+  <!-- Left Pane: Item Tree -->
+  <div nz-col [nzSpan]="5">
+    <nz-card class="itp-tree-card">
+      <h5 class="itp-title">{{ i18n.t('ar.viewArItemParam.title.itemTree', 'Danh sách Hạng mục') }}</h5>
+      <input
+        id="itp-search-tree"
+        nz-input
+        [ngModel]="searchTreeValue()"
+        (ngModelChange)="searchTreeValue.set($event)"
+        [placeholder]="i18n.t('ar.viewArItemParam.placeholder.searchTree', 'Tìm kiếm hạng mục...')"
+        class="itp-search-input"
+      />
+      <div class="itp-tree-container">
+        @if (treeLoading()) {
+          <div class="itp-tree-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+        } @else {
+          <nz-tree [nzData]="itemTreeNodes()" [nzSearchValue]="searchTreeValue()" (nzClick)="onTreeClick($event)"></nz-tree>
+        }
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- Right Pane: Parameter Table -->
+  <div nz-col [nzSpan]="19">
+    <nz-card class="itp-table-card">
+      <div class="itp-table-header">
+        <span class="itp-table-title" id="itp-selected-parent-label">
+          {{ selectedItemLabel() ? (i18n.t('ar.viewArItemParam.title.paramListFor', 'Danh sách tham số:') + ' ' + selectedItemLabel()) : i18n.t('ar.viewArItemParam.title.paramListDefault', 'Danh sách tham số') }}
+        </span>
+        <button id="itp-add-btn" nz-button nzType="primary" nzSize="small" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+      </div>
+
+      <nz-table #itpTable id="itp-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="20" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[20, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+        <thead>
+          <tr>
+            <th nzWidth="60px" class="itp-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th class="itp-col-center">{{ i18n.t('ar.viewArItemParam.title.paramNo', 'Mã tham số (No)') }}</th>
+            <th>{{ i18n.t('ar.viewArItemParam.title.company', 'Công ty / Pháp nhân') }}</th>
+            <th class="itp-col-center">{{ i18n.t('ar.viewArItemParam.title.groupNo', 'Nhóm hiệu') }}</th>
+            <th class="itp-col-center">{{ i18n.t('ar.viewArItemParam.title.minValue', 'Giới hạn tối thiểu') }}</th>
+            <th class="itp-col-center">{{ i18n.t('ar.viewArItemParam.title.maxValue', 'Giới hạn tối đa') }}</th>
+            <th class="itp-col-center">{{ i18n.t('ar.viewArItemParam.title.dependItem', 'Hạng mục phụ thuộc') }}</th>
+            <th class="itp-col-center">{{ i18n.t('ar.viewArItemParam.title.replaceItem', 'Hạng mục thay thế') }}</th>
+            <th class="itp-col-center">{{ i18n.t('ar.viewitemparameter.title.cankaoshuaka', 'Tham chiếu quẹt thẻ') }}</th>
+            <th>{{ i18n.t('ar.viewArItemParam.title.hrPolicy', 'Chính sách nhân sự') }}</th>
+            <th class="itp-col-center">{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</th>
+            <th class="itp-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+            <th nzWidth="100px" class="itp-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of itpTable.data; track row.arParamNo; let idx = $index) {
+            <tr>
+              <td class="itp-col-center">{{ idx + 1 }}</td>
+              <td class="itp-col-center">{{ row.arParamNo }}</td>
+              <td>{{ row.companyName }}</td>
+              <td class="itp-col-center">{{ row.groupNo }}</td>
+              <td class="itp-col-center">{{ row.minValue }}</td>
+              <td class="itp-col-center">{{ row.maxValue }}</td>
+              <td class="itp-col-center">{{ row.dependItem }}</td>
+              <td class="itp-col-center">{{ row.replaceItem }}</td>
+              <td class="itp-col-center">{{ row.cardFlag === 1 ? i18n.t('common.yes', 'Có') : i18n.t('common.no', 'Không') }}</td>
+              <td>{{ row.detailContent }}</td>
+              <td class="itp-col-center">{{ row.orderno }}</td>
+              <td class="itp-col-center">
+                @if (row.activity === 1) {
+                  <nz-tag nzColor="success">{{ i18n.t('common.active', 'Hoạt động') }}</nz-tag>
+                } @else {
+                  <nz-tag>{{ i18n.t('common.inactive', 'Ngừng') }}</nz-tag>
+                }
+              </td>
+              <td class="itp-col-center">
+                <button nz-button nzSize="small" (click)="openEditModal(row.arParamNo)" [title]="i18n.t('common.edit', 'Sửa')">
+                  <span nz-icon nzType="edit"></span>
+                </button>
+                <button nz-button nzSize="small" nzDanger (click)="deleteOne(row.arParamNo)" [title]="i18n.t('common.delete', 'Xóa')">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="13" class="itp-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-card>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('ar.viewArItemParam.modal.editTitle', 'Cập nhật Thông Số Hạng Mục') : i18n.t('ar.viewArItemParam.modal.addTitle', 'Thêm Thông Số Hạng Mục')"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="900px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <h4 class="itp-section-title">{{ i18n.t('common.basicInfo', 'Thông tin Cơ Bản') }}</h4>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewArItemParam.title.company', 'Pháp nhân (Công ty)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="itp-f-cpny" [ngModel]="formCpnyId()" (ngModelChange)="formCpnyId.set($event)" name="itpFCpny" [nzPlaceHolder]="i18n.t('common.selectCompany', '-- Chọn công ty --')">
+                <nz-option *ngFor="let c of companyOptions()" [nzValue]="c.cpnyId" [nzLabel]="c.nameVi || c.cpnyId"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('ar.viewArItemParam.title.belongItem', 'Thuộc hạng mục') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="itp-f-item" [ngModel]="formItemNo()" [nzDisabled]="true" name="itpFItem">
+                <nz-option *ngFor="let it of itemOptions()" [nzValue]="it.itemNo" [nzLabel]="itemLabel(it)"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.groupNo', 'Nhóm hiệu (Group No)') }}</nz-form-label>
+            <nz-form-control>
+              <input id="itp-f-group-no" nz-input [ngModel]="formGroupNo()" (ngModelChange)="formGroupNo.set($event)" name="itpFGroupNo" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.unitRef', 'Đơn vị tham chiếu') }}</nz-form-label>
+            <nz-form-control>
+              <input id="itp-f-unit" nz-input [ngModel]="formUnit()" (ngModelChange)="formUnit.set($event)" name="itpFUnit" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.unitValue', 'Giá trị đơn vị') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="itp-f-unit-value" [ngModel]="formUnitValue()" (ngModelChange)="formUnitValue.set($event)" name="itpFUnitValue" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewitemparameter.title.zuixiaozhi', 'Giá trị tối thiểu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="itp-f-min-value" [ngModel]="formMinValue()" (ngModelChange)="formMinValue.set($event)" name="itpFMinValue" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewitemparameter.title.zuidazhi', 'Giá trị tối đa') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="itp-f-max-value" [ngModel]="formMaxValue()" (ngModelChange)="formMaxValue.set($event)" name="itpFMaxValue" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.dependItem', 'Hạng mục phụ thuộc') }}</nz-form-label>
+            <nz-form-control>
+              <input id="itp-f-depend-item" nz-input [ngModel]="formDependItem()" (ngModelChange)="formDependItem.set($event)" name="itpFDependItem" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.replaceItem', 'Hạng mục thay thế') }}</nz-form-label>
+            <nz-form-control>
+              <input id="itp-f-replace-item" nz-input [ngModel]="formReplaceItem()" (ngModelChange)="formReplaceItem.set($event)" name="itpFReplaceItem" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <h4 class="itp-section-title">{{ i18n.t('ar.viewArItemParam.title.cardParam', 'Thông số Quẹt thẻ') }}</h4>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewitemparameter.title.cankaoshuaka', 'Tham chiếu quẹt thẻ') }}</nz-form-label>
+            <nz-form-control><nz-switch id="itp-f-card-flag" [ngModel]="formCardFlag()" (ngModelChange)="formCardFlag.set($event)" name="itpFCardFlag"></nz-switch></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.cardFromFlag', 'Cờ bắt đầu quẹt') }}</nz-form-label>
+            <nz-form-control><nz-switch id="itp-f-card-from-flag" [ngModel]="formCardFromFlag()" (ngModelChange)="formCardFromFlag.set($event)" name="itpFCardFromFlag"></nz-switch></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.cardToFlag', 'Cờ kết thúc quẹt') }}</nz-form-label>
+            <nz-form-control><nz-switch id="itp-f-card-to-flag" [ngModel]="formCardToFlag()" (ngModelChange)="formCardToFlag.set($event)" name="itpFCardToFlag"></nz-switch></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.cardFromOffset', 'Độ lệch thời gian bắt đầu (phút)') }}</nz-form-label>
+            <nz-form-control><nz-input-number id="itp-f-card-from-offset" [ngModel]="formCardFromOffset()" (ngModelChange)="formCardFromOffset.set($event)" name="itpFCardFromOffset" style="width: 100%"></nz-input-number></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.cardFromRelation', 'Chiều độ lệch bắt đầu') }}</nz-form-label>
+            <nz-form-control><input id="itp-f-card-from-relation" nz-input [ngModel]="formCardFromRelation()" (ngModelChange)="formCardFromRelation.set($event)" name="itpFCardFromRelation" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.cardToOffset', 'Độ lệch thời gian kết thúc (phút)') }}</nz-form-label>
+            <nz-form-control><nz-input-number id="itp-f-card-to-offset" [ngModel]="formCardToOffset()" (ngModelChange)="formCardToOffset.set($event)" name="itpFCardToOffset" style="width: 100%"></nz-input-number></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.cardToRelation', 'Chiều độ lệch kết thúc') }}</nz-form-label>
+            <nz-form-control><input id="itp-f-card-to-relation" nz-input [ngModel]="formCardToRelation()" (ngModelChange)="formCardToRelation.set($event)" name="itpFCardToRelation" /></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <h4 class="itp-section-title">{{ i18n.t('ar.viewArItemParam.title.applyParam', 'Thông số Form xin phép (Apply)') }}</h4>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewitemparameter.title.shifoucankaoshenqing', 'Tham chiếu làm đơn xin phép') }}</nz-form-label>
+            <nz-form-control><nz-switch id="itp-f-apply-flag" [ngModel]="formApplyFlag()" (ngModelChange)="formApplyFlag.set($event)" name="itpFApplyFlag"></nz-switch></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.applyType', 'Loại đơn (CODE)') }}</nz-form-label>
+            <nz-form-control><input id="itp-f-apply-type" nz-input [ngModel]="formApplyType()" (ngModelChange)="formApplyType.set($event)" name="itpFApplyType" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.applyFullday', 'Giá trị tương đương cả ngày') }}</nz-form-label>
+            <nz-form-control><nz-input-number id="itp-f-apply-fullday" [ngModel]="formApplyFulldayValue()" (ngModelChange)="formApplyFulldayValue.set($event)" name="itpFApplyFullday" style="width: 100%"></nz-input-number></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.applyCardPriority', 'Ưu tiên thẻ quẹt hơn đơn') }}</nz-form-label>
+            <nz-form-control><nz-switch id="itp-f-apply-card-priority" [ngModel]="formApplyCardPriority()" (ngModelChange)="formApplyCardPriority.set($event)" name="itpFApplyCardPriority"></nz-switch></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.dateType', 'Loại ngày nghỉ áp dụng (CODE)') }}</nz-form-label>
+            <nz-form-control><input id="itp-f-date-type" nz-input [ngModel]="formDateType()" (ngModelChange)="formDateType.set($event)" name="itpFDateType" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArItemParam.title.hrPolicy', 'Ghi chú chính sách nhân sự') }}</nz-form-label>
+            <nz-form-control><input id="itp-f-detail-content" nz-input [ngModel]="formDetailContent()" (ngModelChange)="formDetailContent.set($event)" name="itpFDetailContent" /></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.sortOrder', 'Sắp xếp') }}</nz-form-label>
+            <nz-form-control><nz-input-number id="itp-f-orderno" [ngModel]="formOrderno()" (ngModelChange)="formOrderno.set($event)" name="itpFOrderno" style="width: 100%"></nz-input-number></nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control><nz-switch id="itp-f-active" [ngModel]="formActive()" (ngModelChange)="formActive.set($event)" name="itpFActive"></nz-switch></nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="itp-save-btn" nz-button nzType="primary" [nzLoading]="savingRecord()" (click)="saveRecord()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>

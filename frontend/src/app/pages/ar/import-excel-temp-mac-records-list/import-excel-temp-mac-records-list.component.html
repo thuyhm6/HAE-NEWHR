@@ -1,0 +1,86 @@
+<div class="impmac-page">
+  <nz-card class="impmac-toolbar-card">
+    <form nz-form [nzLayout]="'inline'">
+      <nz-form-item>
+        <nz-form-label [nzNoColon]="true">{{ i18n.t('impMac.totalRows', 'Tổng số hàng:') }}</nz-form-label>
+        <nz-form-control>
+          <strong id="impmac-total-rows">{{ totalRows() }}</strong>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzNoColon]="true">{{ i18n.t('impMac.errorRows', 'Số hàng lỗi:') }}</nz-form-label>
+        <nz-form-control>
+          <strong id="impmac-error-rows">{{ errorRows() }}</strong>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('impMac.errorFilter', 'Lọc theo lỗi') }}</nz-form-label>
+        <nz-form-control>
+          <nz-select id="impmac-error-only" [ngModel]="errorOnly()" (ngModelChange)="errorOnly.set($event)" name="impmacErrorOnly" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('impMac.all', 'Tất cả')" style="min-width: 220px">
+            <nz-option nzValue="Y" [nzLabel]="i18n.t('impMac.onlyError', 'Chỉ hiển thị dòng lỗi')"></nz-option>
+            <nz-option nzValue="N" [nzLabel]="i18n.t('impMac.onlyValid', 'Chỉ hiển thị dòng hợp lệ')"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="impmac-search-btn" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tra cứu') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-control>
+          <button id="impmac-confirm-btn" nz-button nzType="primary" nzDanger [nzLoading]="confirming()" (click)="confirmImport()">
+            <span nz-icon nzType="check-circle"></span>
+            {{ i18n.t('common.confirm', 'Xác nhận') }}
+          </button>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="impmac-table-card">
+    <nz-table #impmacTable id="impmac-data-table" [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="impmac-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="impmac-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th class="impmac-col-center">{{ i18n.t('attSearch.workDate', 'Ngày công') }}</th>
+          <th class="impmac-col-center">{{ i18n.t('acr.col.swipeDate', 'Ngày quẹt thẻ') }}</th>
+          <th class="impmac-col-center">{{ i18n.t('acr.col.swipeTime', 'Giờ quẹt thẻ') }}</th>
+          <th class="impmac-col-center">{{ i18n.t('acr.col.doorType', 'Loại') }}</th>
+          <th>{{ i18n.t('acr.col.remark', 'Ghi chú') }}</th>
+          <th>{{ i18n.t('impMac.validationResult', 'Kết quả kiểm tra') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of impmacTable.data; track $index; let idx = $index) {
+          <tr [class.impmac-row-error]="(row.uploadErrorMsg ?? '').trim() !== ''">
+            <td class="impmac-col-center">{{ idx + 1 }}</td>
+            <td class="impmac-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td class="impmac-col-center">{{ row.arDateStr }}</td>
+            <td class="impmac-col-center">{{ row.rDate }}</td>
+            <td class="impmac-col-center">{{ row.rTime }}</td>
+            <td class="impmac-col-center">{{ row.doorType }}</td>
+            <td>{{ row.remark }}</td>
+            <td>
+              @if ((row.uploadErrorMsg ?? '').trim() === '') {
+                <span class="impmac-ok"><span nz-icon nzType="check"></span></span>
+              } @else {
+                <span class="impmac-error-text">{{ row.uploadErrorMsg }}</span>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="impmac-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

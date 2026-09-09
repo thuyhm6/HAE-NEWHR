@@ -1,0 +1,125 @@
+<div class="dm-page">
+  <nz-card class="dm-search-card">
+    <div nz-row [nzGutter]="12" class="dm-search-row">
+      <div nz-col [nzSpan]="4">
+        <label class="dm-label">{{ i18n.t('ar.viewDepartManagerList.title.date', 'Ngày') }}:</label>
+        <nz-date-picker id="dm-lock-date" [ngModel]="lockDate()" (ngModelChange)="lockDate.set($event)" name="dmLockDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+      </div>
+      <div nz-col [nzSpan]="8">
+        <label class="dm-label">{{ i18n.t('ar.viewDepartManagerList.title.dept', 'Phòng ban') }}:</label>
+        <nz-tree-select
+          id="dm-dept"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="selectedDeptCodes()"
+          (ngModelChange)="selectedDeptCodes.set($event)"
+          name="dmDept"
+          nzMultiple
+          nzCheckable
+          nzShowSearch
+          [nzPlaceHolder]="i18n.t('ar.viewDepartManagerList.placeholder.dept', 'Mã / Tên phòng')"
+          style="width: 100%"
+        ></nz-tree-select>
+      </div>
+      <div nz-col [nzSpan]="12" class="dm-search-actions">
+        <button id="dm-search-btn" nz-button nzType="primary" nzSize="small" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tra cứu') }}
+        </button>
+        <button id="dm-save-btn" nz-button nzType="default" nzSize="small" (click)="save()" [nzLoading]="saving()">
+          <span nz-icon nzType="save"></span>
+          {{ i18n.t('common.save', 'Lưu') }}
+        </button>
+        <button id="dm-export-btn" nz-button nzType="primary" nzSize="small" (click)="exportExcel()">
+          <span nz-icon nzType="export"></span>
+          {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+        </button>
+      </div>
+    </div>
+
+    <div class="dm-mass-toolbar">
+      <div class="dm-mass-group">
+        <div class="dm-mass-group-title">{{ i18n.t('ar.viewDepartManagerList.group.annualLeave', 'Nghỉ phép năm') }}</div>
+        <label nz-checkbox [ngModel]="massToggle().lockAttenAnnualFlag" (ngModelChange)="onMassToggleChange('lockAttenAnnualFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.day', 'Ca ngày') }}</label>
+        <label nz-checkbox [ngModel]="massToggle().lockAttenAnnualNightFlag" (ngModelChange)="onMassToggleChange('lockAttenAnnualNightFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.night', 'Ca đêm') }}</label>
+      </div>
+      <div class="dm-mass-group">
+        <div class="dm-mass-group-title">{{ i18n.t('ar.viewDepartManagerList.group.leave', 'Nghỉ phép') }}</div>
+        <label nz-checkbox [ngModel]="massToggle().lockAttenFlag" (ngModelChange)="onMassToggleChange('lockAttenFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.day', 'Ca ngày') }}</label>
+        <label nz-checkbox [ngModel]="massToggle().lockAttenNightFlag" (ngModelChange)="onMassToggleChange('lockAttenNightFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.night', 'Ca đêm') }}</label>
+      </div>
+      <div class="dm-mass-group">
+        <div class="dm-mass-group-title">{{ i18n.t('ar.viewDepartManagerList.group.ot', 'Tăng ca') }}</div>
+        <label nz-checkbox [ngModel]="massToggle().lockOtFlag" (ngModelChange)="onMassToggleChange('lockOtFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.day', 'Ca ngày') }}</label>
+        <label nz-checkbox [ngModel]="massToggle().lockOtNightFlag" (ngModelChange)="onMassToggleChange('lockOtNightFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.night', 'Ca đêm') }}</label>
+      </div>
+      <div class="dm-mass-group">
+        <div class="dm-mass-group-title">{{ i18n.t('ar.viewDepartManagerList.group.abnormal', 'Bất thường') }}</div>
+        <label nz-checkbox [ngModel]="massToggle().lockAttenExFlag" (ngModelChange)="onMassToggleChange('lockAttenExFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.day', 'Ca ngày') }}</label>
+        <label nz-checkbox [ngModel]="massToggle().lockAttenExNightFlag" (ngModelChange)="onMassToggleChange('lockAttenExNightFlag', $event)">{{ i18n.t('ar.viewDepartManagerList.shift.night', 'Ca đêm') }}</label>
+      </div>
+      <div class="dm-mass-actions">
+        <button id="dm-mass-open-btn" nz-button nzSize="small" (click)="applyMassToggle('0')">
+          <span nz-icon nzType="unlock"></span>
+          {{ i18n.t('ar.viewDepartManagerList.btn.openPermission', 'Mở xin phép') }}
+        </button>
+        <button id="dm-mass-close-btn" nz-button nzSize="small" nzDanger (click)="applyMassToggle('1')">
+          <span nz-icon nzType="lock"></span>
+          {{ i18n.t('ar.viewDepartManagerList.btn.closePermission', 'Đóng xin phép') }}
+        </button>
+      </div>
+    </div>
+  </nz-card>
+
+  <nz-card class="dm-table-card">
+    <div class="dm-table-wrapper">
+      <table id="dm-data-table" class="dm-table">
+        <thead>
+          <tr>
+            <th rowspan="2" class="dm-col-dept">{{ i18n.t('ar.viewDepartManagerList.col.dept', 'Phòng ban') }}</th>
+            <th rowspan="2">{{ i18n.t('ar.viewDepartManagerList.title.date', 'Ngày') }}</th>
+            <th colspan="2">{{ i18n.t('ar.viewDepartManagerList.group.annualLeave', 'Nghỉ phép năm') }}</th>
+            <th colspan="2">{{ i18n.t('ar.viewDepartManagerList.group.leave', 'Nghỉ phép') }}</th>
+            <th colspan="2">{{ i18n.t('ar.viewDepartManagerList.group.ot', 'Tăng ca') }}</th>
+            <th colspan="2">{{ i18n.t('ar.viewDepartManagerList.group.abnormal', 'Bất thường') }}</th>
+            <th rowspan="2">{{ i18n.t('common.updater', 'Người thay đổi') }}</th>
+            <th rowspan="2">{{ i18n.t('common.updateDate', 'Thời gian thay đổi') }}</th>
+          </tr>
+          <tr>
+            @for (key of flagKeys; track key) {
+              <th class="dm-col-flag">
+                {{ isNightFlag(key) ? i18n.t('ar.viewDepartManagerList.shift.night', 'Ca đêm') : i18n.t('ar.viewDepartManagerList.shift.day', 'Ca ngày') }}
+                <label nz-checkbox [ngModel]="selectAllCol()[key]" (ngModelChange)="toggleColumnAll(key, $event)"></label>
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of visibleRows(); track row.deptNo) {
+            <tr [class.dm-row-modified]="row.isModified">
+              <td class="dm-col-dept" [style.paddingLeft.px]="row.level * 20 + 10">
+                @if (row.hasChildren) {
+                  <span nz-icon [nzType]="row.isOpen ? 'minus-square' : 'plus-square'" class="dm-tree-toggle" (click)="toggleExpand(row.deptNo)"></span>
+                } @else {
+                  <span class="dm-tree-toggle-placeholder"></span>
+                }
+                <span class="dm-dept-name" [title]="row.deptNo">{{ row.raw.dispDeptName }}</span>
+              </td>
+              <td class="dm-col-center">{{ row.raw.lockDate }}</td>
+              @for (key of flagKeys; track key) {
+                <td class="dm-col-center">
+                  <label nz-checkbox [ngModel]="row.flags[key]" (ngModelChange)="toggleFlag(row.deptNo, key, $event)"></label>
+                </td>
+              }
+              <td class="dm-col-center">{{ row.raw.updatedBy }}</td>
+              <td class="dm-col-center dm-col-small">{{ row.raw.updateDate }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="12" class="dm-col-center dm-empty">{{ i18n.t('ar.viewDepartManagerList.msg.noData', 'Không có dữ liệu (có thể hệ thống chưa đồng bộ phòng ban).') }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </nz-card>
+</div>

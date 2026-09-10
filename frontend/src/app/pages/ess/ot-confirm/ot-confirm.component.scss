@@ -1,0 +1,65 @@
+.otc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.otc-search-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.otc-col-center {
+  text-align: center;
+}
+
+.otc-name-link {
+  color: #0d2bff;
+  cursor: pointer;
+}
+
+.otc-name-link:hover {
+  text-decoration: underline;
+}
+
+.otc-confirm-by {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.otc-detail-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.otc-detail-info-table th,
+.otc-detail-info-table td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.otc-detail-info-table th {
+  background: #f8fafc;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.otc-approval-table {
+  margin-bottom: 16px;
+}
+
+.otc-section-title {
+  font-weight: 600;
+  margin: 12px 0 8px;
+}
+
+.otc-form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}

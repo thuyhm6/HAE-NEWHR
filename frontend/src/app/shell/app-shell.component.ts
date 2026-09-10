@@ -106,6 +106,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ess/workgroup/viewWorkGroupExperList': '/ess/workgroup/viewWorkGroupExperList',
     '/ess/arConfirm/viewAttendanceExConfirm': '/ess/arConfirm/viewAttendanceExConfirm',
     '/ess/arConfirm/viewLeaveConfirmList': '/ess/arConfirm/viewLeaveConfirmList',
+    '/ess/arConfirm/viewPOtApplyInfoConfirmList': '/ess/arConfirm/viewPOtApplyInfoConfirmList',
     '/ess/infoApplyLeave/viewApplyLeaveInfoList': '/ess/infoApplyLeave/viewApplyLeaveInfoList',
     '/ess/empinfo/viewEssApplyInfo': '/ess/empinfo/viewEssApplyInfo',
     '/ess/empinfo/viewPersonalInfoForEss': '/ess/empinfo/viewPersonalInfoForEss',
@@ -285,6 +286,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     total: 0,
     leave: 0,
     anomalous: 0,
+    overtime: 0,
     personalChange: 0,
   });
   private pendingCountsTimer?: ReturnType<typeof setInterval>;

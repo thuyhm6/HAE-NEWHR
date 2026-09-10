@@ -162,6 +162,18 @@
               </li>
               <li
                 nz-menu-item
+                (click)="
+                  openLink('/ess/arConfirm/viewPOtApplyInfoConfirmList', i18n.t('topbar.notification.ot', 'Tăng ca'))
+                "
+              >
+                <span class="hae-dashboard-notif-item-label">
+                  <i nz-icon nzType="field-time" nzTheme="outline"></i>
+                  <span>{{ i18n.t('topbar.notification.ot', 'Tăng ca') }}</span>
+                </span>
+                <nz-badge [nzCount]="hrmPendingCounts().overtime" [nzOverflowCount]="99"></nz-badge>
+              </li>
+              <li
+                nz-menu-item
                 (click)="openLink('/sys/viewFeedback', i18n.t('topbar.notification.feedback', 'Thông tin góp ý'))"
               >
                 <span class="hae-dashboard-notif-item-label">

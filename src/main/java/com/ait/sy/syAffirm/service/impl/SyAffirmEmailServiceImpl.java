@@ -128,15 +128,18 @@ public class SyAffirmEmailServiceImpl implements SyAffirmEmailService {
         try {
             int leave = mapper.countHrmPendingLeave();
             int anomalous = mapper.countHrmPendingAnomalous();
+            int overtime = mapper.countHrmPendingOt();
             int personalChange = hrmApproveMapper.countPendingPersonalChanges();
             counts.put("leave", leave);
             counts.put("anomalous", anomalous);
+            counts.put("overtime", overtime);
             counts.put("personalChange", personalChange);
-            counts.put("total", leave + anomalous + personalChange);
+            counts.put("total", leave + anomalous + overtime + personalChange);
         } catch (Exception e) {
             log.error("Failed to get HRM pending counts", e);
             counts.put("leave", 0);
             counts.put("anomalous", 0);
+            counts.put("overtime", 0);
             counts.put("personalChange", 0);
             counts.put("total", 0);
         }

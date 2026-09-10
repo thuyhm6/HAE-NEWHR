@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.ess.arConfirm.mapper.EssOtConfirmMapper">
+
+    <resultMap id="EssOtConfirmResultMap" type="com.ait.ess.arConfirm.dto.EssOtConfirmDto">
+        <result property="applyNo"        column="APPLY_NO"/>
+        <result property="personId"       column="PERSON_ID"/>
+        <result property="applyTime"      column="APPLY_TIME"/>
+        <result property="otTypeCode"     column="OT_TYPE_CODE"/>
+        <result property="otTypeCodeName" column="OT_TYPE_CODE_NAME"/>
+        <result property="otApplyHour"    column="OT_APPLY_HOUR"/>
+        <result property="applyOtDate"    column="APPLY_OT_DATE"/>
+        <result property="otFromDate"     column="FROM_DATE"/>
+        <result property="otToDate"       column="TO_DATE"/>
+        <result property="otFromTime"     column="OT_FROM_TIME"/>
+        <result property="otToTime"       column="OT_TO_TIME"/>
+        <result property="activity"       column="ACTIVITY"/>
+        <result property="confirmFlag"    column="CONFIRM_FLAG"/>
+        <result property="applyOtRemark"  column="APPLY_OT_REMARK"/>
+        <result property="localName"      column="LOCAL_NAME"/>
+        <result property="empId"          column="EMPID"/>
+        <result property="deptNo"         column="DEPTNO"/>
+        <result property="empOffice"      column="EMP_OFFICE"/>
+        <result property="otOver"         column="OT_OVER"/>
+        <result property="deptName"       column="DEPT_NAME"/>
+        <result property="postGradeNo"    column="POST_GRADE_NO"/>
+        <result property="postGradeName"  column="POST_GRADE_NAME"/>
+        <result property="postFamily"     column="POST_FAMILY"/>
+        <result property="postFamilyName" column="POST_FAMILY_NAME"/>
+        <result property="confirmBy"      column="CONFIRM_BY"/>
+        <result property="otTotail"       column="OT_TOTAIL"/>
+    </resultMap>
+
+    <!-- SQL base dùng chung cho countList và selectListPage - UNION ALL giữa ESS_APPLY_OT (tăng ca
+         thường) và ESS_APPLY_OT_OVER (tăng ca vượt), phân biệt bằng cột OT_OVER ('0'/'1') -->
+    <sql id="baseQuery">
+        SELECT ESS.APPLY_NO,
+               ESS.PERSON_ID,
+               ESS.APPLY_DATE_TIME,
+               ESS.APPLY_TIME,
+               ESS.OT_TYPE_CODE,
+               ESS.OT_TYPE_CODE_NAME,
+               ESS.OT_APPLY_HOUR,
+               ESS.APPLY_OT_DATE,
+               ESS.FROM_DATE,
+               ESS.TO_DATE,
+               ESS.OT_FROM_TIME,
+               ESS.OT_TO_TIME,
+               ESS.ACTIVITY,
+               ESS.CONFIRM_FLAG,
+               ESS.APPLY_OT_REMARK,
+               ESS.LOCAL_NAME,
+               ESS.EMPID,
+               ESS.DEPTNO,
+               ESS.EMP_OFFICE,
+               ESS.OT_OVER,
+               ESS.DEPT_NAME,
+               ESS.POST_GRADE_NO,
+               ESS.POST_GRADE_NAME,
+               ESS.POST_FAMILY,
+               ESS.POST_FAMILY_NAME,
+               ESS.CONFIRM_BY,
+               ESS.OT_TOTAIL
+          FROM (SELECT OT.APPLY_NO,
+                       OT.PERSON_ID,
+                       OT.APPLY_TIME APPLY_DATE_TIME,
+                       TO_CHAR(OT.APPLY_TIME, 'DD/MM/YYYY') APPLY_TIME,
+                       OT.OT_TYPE_CODE,
+                       get_global_name(OT.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) OT_TYPE_CODE_NAME,
+                       OT.OT_APPLY_HOUR,
+                       OT.APPLY_OT_DATE APPLY_OT_DATE_RAW,
+                       TO_CHAR(OT.APPLY_OT_DATE, 'DD/MM/YYYY') APPLY_OT_DATE,
+                       TO_CHAR(OT.OT_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_DATE,
+                       TO_CHAR(OT.OT_TO_TIME, 'DD/MM/YYYY HH24:MI') TO_DATE,
+                       TO_CHAR(OT.OT_FROM_TIME, 'HH24:MI') OT_FROM_TIME,
+                       TO_CHAR(OT.OT_TO_TIME, 'HH24:MI') OT_TO_TIME,
+                       OT.ACTIVITY,
+                       OT.CONFIRM_FLAG,
+                       OT.APPLY_OT_REMARK,
+                       HR.LOCAL_NAME,
+                       HR.EMPID,
+                       HR.DEPTNO,
+                       HR.EMP_OFFICE,
+                       '0' OT_OVER,
+                       get_dept_name(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+                       HR.POST_GRADE_NO,
+                       get_global_name(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
+                       HR.POST_FAMILY,
+                       get_global_name(HR.POST_FAMILY, #{lang, jdbcType=VARCHAR}) POST_FAMILY_NAME,
+                       GET_UPDATED_INFO(OT.CONFIRM_BY) CONFIRM_BY,
+                       GET_AR_OT_TOTAIL(TO_CHAR(OT.APPLY_OT_DATE, 'YYYY/MM/DD'),
+                                        #{cpnyId, jdbcType=VARCHAR},
+                                        OT.PERSON_ID,
+                                        '30') OT_TOTAIL
+                  FROM ESS_APPLY_OT OT, HR_EMPLOYEE HR
+                 WHERE OT.PERSON_ID = HR.PERSON_ID
+                   AND OT.AFFIRM_FLAG = 14014308
+                   AND OT.ACTIVITY = '1'
+                   AND OT.PERSON_ID NOT LIKE '111111%'
+                   AND OT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                UNION ALL
+                SELECT OTO.APPLY_NO,
+                       OTO.PERSON_ID,
+                       OTO.APPLY_TIME APPLY_DATE_TIME,
+                       TO_CHAR(OTO.APPLY_TIME, 'DD/MM/YYYY') APPLY_TIME,
+                       OTO.OT_TYPE_CODE,
+                       '(OT Over) ' || get_global_name(OTO.OT_TYPE_CODE, #{lang, jdbcType=VARCHAR}) OT_TYPE_CODE_NAME,
+                       OTO.OT_APPLY_HOUR,
+                       OTO.APPLY_OT_DATE APPLY_OT_DATE_RAW,
+                       TO_CHAR(OTO.APPLY_OT_DATE, 'DD/MM/YYYY') APPLY_OT_DATE,
+                       TO_CHAR(OTO.OT_FROM_TIME, 'DD/MM/YYYY HH24:MI') FROM_DATE,
+                       TO_CHAR(OTO.OT_TO_TIME, 'DD/MM/YYYY HH24:MI') TO_DATE,
+                       TO_CHAR(OTO.OT_FROM_TIME, 'HH24:MI') OT_FROM_TIME,
+                       TO_CHAR(OTO.OT_TO_TIME, 'HH24:MI') OT_TO_TIME,
+                       OTO.ACTIVITY,
+                       OTO.CONFIRM_FLAG,
+                       OTO.APPLY_OT_REMARK,
+                       HR.LOCAL_NAME,
+                       HR.EMPID,
+                       HR.DEPTNO,
+                       HR.EMP_OFFICE,
+                       '1' OT_OVER,
+                       get_dept_name(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+                       HR.POST_GRADE_NO,
+                       get_global_name(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NAME,
+                       HR.POST_FAMILY,
+                       get_global_name(HR.POST_FAMILY, #{lang, jdbcType=VARCHAR}) POST_FAMILY_NAME,
+                       GET_UPDATED_INFO(OTO.CONFIRM_BY) CONFIRM_BY,
+                       GET_AR_OT_TOTAIL(TO_CHAR(OTO.APPLY_OT_DATE, 'YYYY/MM/DD'),
+                                        #{cpnyId, jdbcType=VARCHAR},
+                                        OTO.PERSON_ID,
+                                        '301') OT_TOTAIL
+                  FROM ESS_APPLY_OT_OVER OTO, HR_EMPLOYEE HR
+                 WHERE OTO.PERSON_ID = HR.PERSON_ID
+                   AND OTO.AFFIRM_FLAG = 14014308
+                   AND OTO.ACTIVITY = '1'
+                   AND OTO.PERSON_ID NOT LIKE '111111%'
+                   AND OTO.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}) ESS
+         WHERE 1 = 1
+        <choose>
+            <when test="searchConfirmFlag != null and searchConfirmFlag != ''">
+                AND ESS.CONFIRM_FLAG = #{searchConfirmFlag, jdbcType=VARCHAR}
+            </when>
+            <otherwise>
+                AND ESS.CONFIRM_FLAG = '0'
+            </otherwise>
+        </choose>
+        <if test="searchEmpId != null and searchEmpId != ''">
+            AND (UPPER(ESS.EMPID) LIKE '%' || UPPER(#{searchEmpId, jdbcType=VARCHAR}) || '%'
+              OR CONVERTTOUNSIGN(UPPER(ESS.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{searchEmpId, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="searchDeptNos != null and searchDeptNos.size() > 0">
+            AND ESS.DEPTNO IN
+            <foreach collection="searchDeptNos" item="deptNo" open="(" separator="," close=")">
+                #{deptNo, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="searchOtTypeCode != null and searchOtTypeCode != ''">
+            AND ESS.OT_TYPE_CODE = #{searchOtTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="searchOtOver != null and searchOtOver != ''">
+            AND ESS.OT_OVER = #{searchOtOver, jdbcType=VARCHAR}
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+            AND ESS.APPLY_OT_DATE_RAW &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+            AND ESS.APPLY_OT_DATE_RAW &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+    </sql>
+
+    <select id="countList" resultType="int">
+        SELECT COUNT(*) FROM (
+            <include refid="baseQuery"/>
+        )
+    </select>
+
+    <select id="selectListPage" resultMap="EssOtConfirmResultMap">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY ESS.APPLY_DATE_TIME DESC
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <update id="callOtConfirm" statementType="CALLABLE">
+        {CALL PKG_AFFIRM_EMAIL.PR_OT_CONFIRM(
+            #{applyNo,   jdbcType=VARCHAR, mode=IN},
+            #{flag,      jdbcType=VARCHAR, mode=IN},
+            #{hrComment, jdbcType=VARCHAR, mode=IN},
+            #{adminID,   jdbcType=VARCHAR, mode=IN},
+            #{adminIP,   jdbcType=VARCHAR, mode=IN},
+            #{message,   jdbcType=VARCHAR, mode=OUT}
+        )}
+    </update>
+
+</mapper>

@@ -39,5 +39,7 @@ public interface SyAffirmEmailMapper {
 
     int countHrmPendingAnomalous();
 
+    int countHrmPendingOt();
+
     List<SyAffirmEmailDto> selectNoticeedEmailList(SyAffirmEmailDto dto);
 }

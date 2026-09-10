@@ -169,6 +169,12 @@ export const routes: Routes = [
           import('./pages/ess/leave-confirm/leave-confirm.component').then((m) => m.LeaveConfirmComponent),
       },
       {
+        // /ess/arConfirm/viewPOtApplyInfoConfirmList - xem EssOtConfirmController#viewPOtApplyInfoConfirmList.
+        path: 'ess/arConfirm/viewPOtApplyInfoConfirmList',
+        loadComponent: () =>
+          import('./pages/ess/ot-confirm/ot-confirm.component').then((m) => m.OtConfirmComponent),
+      },
+      {
         // /ess/infoApplyLeave/viewApplyLeaveInfoList - xem EssInfoApplyLeaveController#viewApplyLeaveInfoList.
         path: 'ess/infoApplyLeave/viewApplyLeaveInfoList',
         loadComponent: () =>

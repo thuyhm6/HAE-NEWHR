@@ -281,6 +281,25 @@
            AND EC.CONFIRM_FLAG = '0'
     </select>
 
+    <select id="countHrmPendingOt" resultType="int">
+        SELECT COUNT(1)
+          FROM (SELECT OT.APPLY_NO
+                  FROM ESS_APPLY_OT OT
+                 WHERE OT.AFFIRM_FLAG = 14014308
+                   AND OT.ACTIVITY = '1'
+                   AND OT.PERSON_ID NOT LIKE '111111%'
+                   AND OT.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND OT.CONFIRM_FLAG = '0'
+                UNION ALL
+                SELECT OTO.APPLY_NO
+                  FROM ESS_APPLY_OT_OVER OTO
+                 WHERE OTO.AFFIRM_FLAG = 14014308
+                   AND OTO.ACTIVITY = '1'
+                   AND OTO.PERSON_ID NOT LIKE '111111%'
+                   AND OTO.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                   AND OTO.CONFIRM_FLAG = '0')
+    </select>
+
     <!-- Danh sách thông báo đơn đã duyệt (AFFIRM_TYPE IN 3,4) trong 2 tháng gần nhất -->
     <select id="selectNoticeedEmailList" parameterType="com.ait.sy.syAffirm.dto.SyAffirmEmailDto"
             resultMap="SyAffirmEmailResultMap">

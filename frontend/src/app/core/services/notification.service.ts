@@ -13,6 +13,7 @@ export interface HrmPendingCounts {
   total: number;
   leave: number;
   anomalous: number;
+  overtime: number;
   personalChange: number;
 }
 

@@ -1,0 +1,365 @@
+<div class="otc-page">
+  <nz-card class="otc-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="otc-search-emp-id"
+                nz-input
+                [ngModel]="searchEmpId()"
+                (ngModelChange)="searchEmpId.set($event)"
+                name="otcSearchEmpId"
+                [placeholder]="i18n.t('common.placeholder.empId', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="otc-search-dept-no"
+                nz-input
+                [ngModel]="searchDeptNo()"
+                (ngModelChange)="searchDeptNo.set($event)"
+                name="otcSearchDeptNo"
+                [placeholder]="i18n.t('otc.placeholder.deptNo', 'Nhập mã phòng ban')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.fromDate', 'Từ ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="otc-from-date"
+                [ngModel]="fromDate()"
+                (ngModelChange)="fromDate.set($event)"
+                name="otcFromDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.toDate', 'Đến ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="otc-to-date"
+                [ngModel]="toDate()"
+                (ngModelChange)="toDate.set($event)"
+                name="otcToDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('essOt.otType', 'Hình thức tăng ca') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="otc-search-ot-type"
+                [ngModel]="searchOtTypeCode()"
+                (ngModelChange)="searchOtTypeCode.set($event)"
+                name="otcSearchOtTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of otTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('otc.filter.otOver', 'Loại đăng ký') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="otc-search-ot-over"
+                [ngModel]="searchOtOver()"
+                (ngModelChange)="searchOtOver.set($event)"
+                name="otcSearchOtOver"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('common.selectAll', '-- Tất cả --')"
+              >
+                <nz-option nzValue="0" [nzLabel]="i18n.t('otc.otOver.normal', 'Tăng ca thường')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('otc.otOver.over', 'Tăng ca vượt')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('applyAtt.search.confirmFlag', 'Trạng thái xác nhận') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="otc-search-confirm-flag"
+                [ngModel]="confirmFlag()"
+                (ngModelChange)="confirmFlag.set($event)"
+                name="otcConfirmFlag"
+              >
+                <nz-option nzValue="" [nzLabel]="i18n.t('common.selectAll', '-- Tất cả --')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('applyAtt.confirmFlag.notConfirmed', 'Chưa xác nhận')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('applyAtt.confirmFlag.confirmed', 'Đã xác nhận')"></nz-option>
+                <nz-option nzValue="2" [nzLabel]="i18n.t('applyAtt.confirmFlag.rejected', 'Từ chối')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="20" class="otc-search-actions">
+          <button id="otc-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="otc-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="otc-batch-approve-btn" nz-button nzType="primary" (click)="batchAction('1')">
+            <span nz-icon nzType="check-circle"></span>
+            {{ i18n.t('lc.btn.batchApprove', 'Duyệt hàng loạt') }}
+          </button>
+          <button id="otc-batch-reject-btn" nz-button nzDanger (click)="batchAction('2')">
+            <span nz-icon nzType="close-circle"></span>
+            {{ i18n.t('lc.btn.batchReject', 'Từ chối hàng loạt') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="otc-table-card">
+    <nz-table
+      id="otc-data-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzTotal]="total()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="[25, 50, 100]"
+      (nzQueryParams)="onQueryParamsChange($event)"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="otc-col-center">
+            <label nz-checkbox [ngModel]="checkAll()" (ngModelChange)="toggleCheckAll($event)"></label>
+          </th>
+          <th nzWidth="50px" class="otc-col-center">{{ i18n.t('common.no.serial', 'NO.') }}</th>
+          <th class="otc-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('applyAtt.applicant', 'Người xin phép') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('ck.col.postFamilyName', 'Nhóm nhân viên') }}</th>
+          <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+          <th class="otc-col-center">{{ i18n.t('lc.col.applyDate', 'Ngày xin phép') }}</th>
+          <th>{{ i18n.t('essOt.otType', 'Hình thức tăng ca') }}</th>
+          <th class="otc-col-center">{{ i18n.t('aec.col.arDateStr', 'Ngày công') }}</th>
+          <th>{{ i18n.t('lc.col.leaveTime', 'Thời gian') }}</th>
+          <th class="otc-col-center">{{ i18n.t('ess.viewApply.title.length', 'Thời lượng') }}</th>
+          <th class="otc-col-center">{{ i18n.t('otc.col.otTotail', 'Tổng tăng ca') }}</th>
+          <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+          <th class="otc-col-center">{{ i18n.t('lc.col.affirmStatus', 'Trạng thái duyệt') }}</th>
+          <th>{{ i18n.t('lc.col.hrComment', 'Ý kiến nhân sự') }}</th>
+          <th class="otc-col-center">{{ i18n.t('lc.col.hrConfirm', 'Nhân sự xác nhận') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.applyNo; let idx = $index) {
+          <tr>
+            <td class="otc-col-center">
+              <label nz-checkbox [(ngModel)]="row.checked"></label>
+            </td>
+            <td class="otc-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td class="otc-col-center">{{ row.empId }}</td>
+            <td>
+              <a class="otc-name-link" (click)="openDetail(row)">{{ row.localName }}</a>
+            </td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postFamilyName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="otc-col-center">{{ row.applyTime }}</td>
+            <td>{{ row.otTypeCodeName }}</td>
+            <td class="otc-col-center">{{ row.applyOtDate }}</td>
+            <td>{{ row.otFromTime }} ~ {{ row.otToTime }}</td>
+            <td class="otc-col-center">{{ row.otApplyHour }}</td>
+            <td class="otc-col-center">{{ row.otTotail }}</td>
+            <td>{{ row.applyOtRemark }}</td>
+            <td class="otc-col-center">
+              <nz-tag nzColor="success">{{ i18n.t('lc.status.approved', 'Đã duyệt') }}</nz-tag>
+            </td>
+            <td>
+              <input nz-input nzSize="small" [(ngModel)]="row.editHrComment" placeholder="Nhập ý kiến..." />
+            </td>
+            <td class="otc-col-center">
+              @if (row.confirmBy) {
+                <div class="otc-confirm-by">{{ row.confirmBy }}</div>
+              }
+              <button nz-button nzType="primary" nzSize="small" (click)="confirmLine(row, '1')">
+                <span nz-icon nzType="check"></span>
+              </button>
+              <button nz-button nzDanger nzSize="small" (click)="confirmLine(row, '2')">
+                <span nz-icon nzType="close"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="17" class="otc-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<nz-modal
+  id="otc-detail-modal"
+  [nzVisible]="showDetailModal()"
+  [nzTitle]="i18n.t('applyAtt.applyTitle', 'Thông tin phê duyệt')"
+  [nzWidth]="900"
+  (nzOnCancel)="closeDetail()"
+  (nzVisibleChange)="showDetailModal.set($event)"
+  [nzFooter]="otcDetailFooter"
+>
+  <ng-container *nzModalContent>
+    @if (detail(); as d) {
+      <div class="otc-detail-body">
+        <table class="otc-detail-info-table">
+          <tr>
+            <th>{{ i18n.t('applyAtt.subject', 'Tiêu đề') }}</th>
+            <td>{{ d.otInfo?.otTypeName }}</td>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('applyAtt.applicant', 'Người xin phép') }}</th>
+            <td>{{ d.employeeInfo?.localName }} / {{ d.employeeInfo?.postGradeName }} / {{ d.employeeInfo?.deptName }}</td>
+          </tr>
+        </table>
+
+        <nz-table [nzData]="d.approvalList ?? []" [nzLoading]="detailLoading()" [nzShowPagination]="false" nzSize="small" class="otc-approval-table">
+          <thead>
+            <tr>
+              <th nzWidth="50px" class="otc-col-center">{{ i18n.t('common.no.serial', 'STT') }}</th>
+              <th nzWidth="90px" class="otc-col-center">{{ i18n.t('applyAtt.approvalSeq', 'Trình tự duyệt') }}</th>
+              <th nzWidth="110px" class="otc-col-center">{{ i18n.t('applyAtt.approvalStatus', 'Trạng thái duyệt') }}</th>
+              <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+              <th>{{ i18n.t('applyAtt.opinion', 'Ý kiến') }}</th>
+              <th nzWidth="170px" class="otc-col-center">{{ i18n.t('applyAtt.actionTime', 'Thời gian thực hiện') }}</th>
+              <th nzWidth="120px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of d.approvalList; track $index; let idx = $index) {
+              <tr>
+                <td class="otc-col-center">{{ approvalStt(item, idx) }}</td>
+                <td class="otc-col-center">{{ item.affirmTypeName }}</td>
+                <td class="otc-col-center">{{ item.affirmFlagName }}</td>
+                <td>{{ item.affirmName }}</td>
+                <td>{{ item.affirmContent }}</td>
+                <td class="otc-col-center">{{ item.updateDate }}</td>
+                <td>{{ item.deptName }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="otc-col-center">{{ i18n.t('applyAtt.noApprovalData', 'Không có dữ liệu phê duyệt') }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+
+        <h4 class="otc-section-title">{{ i18n.t('applyAtt.empInfo', 'Thông tin nhân viên') }}</h4>
+        <table class="otc-detail-info-table">
+          <tr>
+            <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+            <td>{{ d.employeeInfo?.localName }}</td>
+            <th>{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+            <td>{{ d.employeeInfo?.empId }}</td>
+          </tr>
+          <tr>
+            <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+            <td>{{ d.employeeInfo?.deptName }}</td>
+            <th>{{ i18n.t('common.position', 'Chức vụ') }}</th>
+            <td>{{ d.employeeInfo?.postGradeName }}</td>
+          </tr>
+        </table>
+
+        <h4 class="otc-section-title">{{ i18n.t('otc.detail.otInfo', 'Thông tin tăng ca') }}</h4>
+        <table class="otc-detail-info-table">
+          <thead>
+            <tr>
+              <th>{{ i18n.t('essOt.otType', 'Hình thức tăng ca') }}</th>
+              <th>{{ i18n.t('aec.col.arDateStr', 'Ngày công') }}</th>
+              <th>{{ i18n.t('common.startTime', 'Thời gian bắt đầu') }}</th>
+              <th>{{ i18n.t('common.endTime', 'Thời gian kết thúc') }}</th>
+              <th>{{ i18n.t('ess.viewApply.title.length', 'Thời lượng') }}</th>
+              <th>{{ i18n.t('common.reason', 'Lý do') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="otc-col-center">{{ d.otInfo?.otTypeName }}</td>
+              <td class="otc-col-center">{{ d.otInfo?.applyOtDate }}</td>
+              <td class="otc-col-center">{{ d.otInfo?.otFromTime }}</td>
+              <td class="otc-col-center">{{ d.otInfo?.otToTime }}</td>
+              <td class="otc-col-center">{{ d.otInfo?.otApplyHour }}</td>
+              <td class="otc-col-center">{{ d.otInfo?.applyOtRemark }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    }
+  </ng-container>
+</nz-modal>
+
+<ng-template #otcDetailFooter>
+  <button nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+</ng-template>
+
+<nz-modal
+  id="otc-reject-modal"
+  [nzVisible]="showRejectModal()"
+  [nzTitle]="i18n.t('lc.btn.batchReject', 'Từ chối hàng loạt')"
+  (nzOnCancel)="closeRejectModal()"
+  (nzVisibleChange)="showRejectModal.set($event)"
+  [nzFooter]="otcRejectFooter"
+>
+  <ng-container *nzModalContent>
+    <label class="otc-form-label">{{ i18n.t('lc.dialog.hrComment', 'Nhập ý kiến') }}</label>
+    <textarea
+      nz-input
+      rows="3"
+      [ngModel]="rejectComment()"
+      (ngModelChange)="rejectComment.set($event)"
+      placeholder="Nhập ý kiến từ chối..."
+    ></textarea>
+  </ng-container>
+</nz-modal>
+
+<ng-template #otcRejectFooter>
+  <button nz-button (click)="closeRejectModal()">{{ i18n.t('common.no', 'Không') }}</button>
+  <button nz-button nzType="primary" nzDanger (click)="confirmBatchReject()">{{ i18n.t('lc.btn.reject', 'Từ chối') }}</button>
+</ng-template>

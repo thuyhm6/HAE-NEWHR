@@ -1,5 +1,7 @@
 package com.ait.org.orgManage.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.org.orgManage.model.OrgEmployee;
 import com.ait.org.orgManage.model.OrgInfo;
 import com.ait.org.orgManage.service.OrgStructureService;
@@ -67,7 +69,7 @@ public class OrgComposeController {
             return ResponseEntity.ok(info);
         } catch (Exception e) {
             log.error("Failed to load org detail resumeNo={} deptNo={}", resumeNo, deptNo, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi tai chi tiet phong ban."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong khi tai chi tiet phong ban."));
         }
     }
 
@@ -92,10 +94,10 @@ public class OrgComposeController {
         try {
             getAuthenticatedUser(session);
             orgStructureService.saveOrgInfo(orgInfo, isNew);
-            return ResponseEntity.ok(Map.of("message", "Lưu thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("message", "Lưu thành công"));
         } catch (Exception e) {
             log.error("Failed to save org info", e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi luu thong tin to chuc."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong khi luu thong tin to chuc."));
         }
     }
 
@@ -106,10 +108,10 @@ public class OrgComposeController {
         try {
             getAuthenticatedUser(session);
             orgStructureService.deleteOrgInfo(resumeNo, deptNo);
-            return ResponseEntity.ok(Map.of("message", "Xóa thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("message", "Xóa thành công"));
         } catch (Exception e) {
             log.error("Failed to delete org info resumeNo={} deptNo={}", resumeNo, deptNo, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi xoa thong tin to chuc."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong khi xoa thong tin to chuc."));
         }
     }
 
@@ -125,10 +127,10 @@ public class OrgComposeController {
             List<String> empIds = (List<String>) payload.get("empIds");
 
             orgStructureService.transferEmployees(resumeNo, targetDeptNo, empIds);
-            return ResponseEntity.ok(Map.of("message", "Điều chuyển thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("message", "Điều chuyển thành công"));
         } catch (Exception e) {
             log.error("Failed to transfer employees payload={}", payload, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi dieu chuyen nhan vien."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong khi dieu chuyen nhan vien."));
         }
     }
 
@@ -165,10 +167,10 @@ public class OrgComposeController {
             String isPartTime = (String) payload.get("isPartTime");
 
             orgStructureService.updateOrgManager(resumeNo, deptNo, managerEmpId, isPartTime);
-            return ResponseEntity.ok(Map.of("message", "Cập nhật thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("message", "Cập nhật thành công"));
         } catch (Exception e) {
             log.error("Failed to update org manager payload={}", payload, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong khi cap nhat truong bo phan."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong khi cap nhat truong bo phan."));
         }
     }
 

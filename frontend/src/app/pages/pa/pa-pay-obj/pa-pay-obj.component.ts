@@ -14,6 +14,7 @@ import { EmployeeSearchResult, EmpSearchService } from '../../hrm/empinfo/shared
 import { PaPayScheduleRow, PaPayScheduleService } from '../pa-pay-schedule/pa-pay-schedule.service';
 import { PaPayObjRow, PaPayObjService, SyCodeOption } from './pa-pay-obj.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface DirtyRow {
   payScheduleNo: string;
   empId: string;
@@ -33,6 +34,9 @@ interface DirtyRow {
   styleUrl: './pa-pay-obj.component.scss',
 })
 export class PaPayObjComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(PaPayObjService);
   private readonly payScheduleService = inject(PaPayScheduleService);
   private readonly empService = inject(EmpSearchService);
@@ -52,7 +56,7 @@ export class PaPayObjComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsTotal = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly checkedKeys = signal<Set<string>>(new Set());
 
   private dirtyRows = new Map<string, DirtyRow>();
@@ -113,6 +117,11 @@ export class PaPayObjComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  onPayScheduleNoChange(value: string | null): void {
+    this.searchPayScheduleNo.set(value);
+    this.search();
   }
 
   search(): void {

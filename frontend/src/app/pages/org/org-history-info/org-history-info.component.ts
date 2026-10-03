@@ -15,6 +15,7 @@ import { I18nService } from '../../../i18n/i18n.service';
 import { buildOrgTree, collectAllTreeKeys } from '../org-tree.util';
 import { OrgComposeService, OrgCostCenterOption, OrgEmployeeRow, OrgInfoRow, OrgResumeOption } from '../org-compose/org-compose.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Lịch sử thay đổi cơ cấu tổ chức (viewHistoryOrgInfo) - bản chỉ xem của org-compose: xem lại cơ cấu tổ
  * chức + danh sách nhân viên của 1 phiên bản thay đổi bất kỳ trong quá khứ, KHÔNG có thao tác thêm/sửa/
@@ -41,6 +42,10 @@ import { OrgComposeService, OrgCostCenterOption, OrgEmployeeRow, OrgInfoRow, Org
   styleUrl: './org-history-info.component.scss',
 })
 export class OrgHistoryInfoComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(OrgComposeService);
   protected readonly i18n = inject(I18nService);
 

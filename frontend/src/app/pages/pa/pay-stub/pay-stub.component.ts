@@ -211,12 +211,17 @@ export class PayStubComponent implements OnInit {
       table { max-width:100% !important; word-break:break-word; border-collapse:collapse; width:100%; }
       .vps-pay-stub { width:100%; max-width:194mm; margin:0 auto; padding:4mm 0; background:#fff; page-break-after:always; }
       .vps-pay-stub:last-child { page-break-after:avoid; }
+      .vps-block, table, tr { page-break-inside:avoid; break-inside:avoid-page; }
+      .vps-section-title { break-after:avoid-page; page-break-after:avoid; }
       .vps-stub-header { display:flex; align-items:center; margin-bottom:8px; border-bottom:2.5px solid #922b21; padding-bottom:6px; }
       .vps-logo img { height:32px; margin-right:6px; vertical-align:middle; }
       .vps-title { font-size:15px; font-weight:bold; text-align:center; flex:1; color:#1a1a2e; }
       .vps-section-title { background:#922b21; color:#fff; font-weight:bold; padding:2px 6px; margin:6px 0 0 0; font-size:10px; }
       th, td { padding:5px 6px; border:1px solid #c8c8c8; font-size:9px; }
       th { background:#f2e0e0; color:#333; text-align:center; }
+      td { background:#fff; }
+      .vps-detail-table tbody tr:nth-child(even) td, .vps-triple-table tbody tr:nth-child(even) td { background:#fafafa; }
+      .vps-triple-table tfoot td { background:#ececec; }
       .vps-att-header { background:#1a5276 !important; color:#fff; }
       .vps-sal-header { background:#922b21 !important; color:#fff; }
       .vps-ded-header { background:#1a5276 !important; color:#fff; }

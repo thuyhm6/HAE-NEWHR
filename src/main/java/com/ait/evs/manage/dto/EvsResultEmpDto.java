@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class EvsResultEmpDto {
 
     private String evsYear;
+    private String firstHalfYear;
+    private String secondHalfYear;
     private String evsPerformance;
     private String evsAbility;
 }

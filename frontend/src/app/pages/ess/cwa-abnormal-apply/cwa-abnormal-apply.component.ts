@@ -14,6 +14,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { CwaAbnormalApplyService, CwaAbnormalRow, CwaApplyItem } from './cwa-abnormal-apply.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 interface CwaRowVm {
   pkNo: string;
   itemNo: string;
@@ -76,6 +77,9 @@ function buildDate(dmy: string, hh: string, mi: string): Date | null {
   styleUrl: './cwa-abnormal-apply.component.scss',
 })
 export class CwaAbnormalApplyComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(CwaAbnormalApplyService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

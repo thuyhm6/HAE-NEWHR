@@ -37,7 +37,7 @@
             </div>
           </div>
 
-          <nz-table [nzData]="filteredRows(type)" [nzLoading]="loading(type)" [nzPageSize]="25" [nzShowSizeChanger]="true" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }">
+          <nz-table [nzData]="filteredRows(type)" [nzLoading]="loading(type)" [nzPageSize]="defaultPageSize" [nzPageSizeOptions]="pageSizeOptions" [nzShowSizeChanger]="true" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }">
             <thead>
               <tr>
                 <th nzWidth="36px" class="vesp-col-center">

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -7,6 +7,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -14,6 +15,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyMenuListService, SyMenuRow } from './sy-menu-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý Menu hệ thống (viewMenuList) - xem ghi chú trong
  * sy-menu-list.service.ts.
@@ -29,6 +31,7 @@ import { SyMenuListService, SyMenuRow } from './sy-menu-list.service';
     NzInputModule,
     NzInputNumberModule,
     NzModalModule,
+    NzSelectModule,
     NzSwitchModule,
     NzTableModule,
     NzTagModule,
@@ -37,6 +40,9 @@ import { SyMenuListService, SyMenuRow } from './sy-menu-list.service';
   styleUrl: './sy-menu-list.component.scss',
 })
 export class SyMenuListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(SyMenuListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -45,6 +51,12 @@ export class SyMenuListComponent implements OnInit {
   protected readonly searchKeyword = signal('');
   protected readonly rows = signal<SyMenuRow[]>([]);
   protected readonly loading = signal(false);
+
+  /** Danh sách đầy đủ (không lọc theo từ khóa) dùng để đổ vào dropdown chọn Menu Cha. */
+  protected readonly allMenus = signal<SyMenuRow[]>([]);
+  protected readonly parentMenuOptions = computed(() =>
+    this.allMenus().filter((m) => !this.formMenuNo() || m.menuNo !== this.formMenuNo())
+  );
 
   protected readonly formVisible = signal(false);
   protected readonly formSaving = signal(false);
@@ -64,7 +76,7 @@ export class SyMenuListComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.i18n.load();
-    await this.search();
+    await Promise.all([this.search(), this.loadAllMenus()]);
   }
 
   async search(): Promise<void> {
@@ -76,6 +88,15 @@ export class SyMenuListComponent implements OnInit {
       this.message.error(this.i18n.t('common.loadError', 'Lỗi tải dữ liệu'));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** Tải lại toàn bộ danh sách menu (không lọc) để cập nhật dropdown Menu Cha. */
+  async loadAllMenus(): Promise<void> {
+    try {
+      this.allMenus.set(await this.service.getList(''));
+    } catch {
+      this.allMenus.set([]);
     }
   }
 
@@ -142,7 +163,7 @@ export class SyMenuListComponent implements OnInit {
       if (res.success !== false) {
         this.message.success(res.message || this.i18n.t('common.saveSuccess', 'Lưu thành công'));
         this.formVisible.set(false);
-        await this.search();
+        await Promise.all([this.search(), this.loadAllMenus()]);
       } else {
         this.message.error(res.message || this.i18n.t('common.error', 'Lỗi'));
       }
@@ -164,7 +185,7 @@ export class SyMenuListComponent implements OnInit {
           const res = await this.service.delete(menuNo);
           if (res.success !== false) {
             this.message.success(res.message || this.i18n.t('common.deleteSuccess', 'Xóa thành công'));
-            await this.search();
+            await Promise.all([this.search(), this.loadAllMenus()]);
           } else {
             this.message.error(res.message || this.i18n.t('common.error', 'Lỗi'));
           }

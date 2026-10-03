@@ -1,0 +1,179 @@
+<!-- Tiền tố id = p (ecmk: Phê duyệt, ecc: Xác nhận) - xem EduCourseReviewComponent -->
+<div class="erv-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.ORG_NAME_LOCAL', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                [id]="p + '-search-dept'"
+                name="ervSearchDept"
+                [nzNodes]="deptNodes()"
+                [ngModel]="searchDept()"
+                (ngModelChange)="searchDept.set($event)"
+                nzAllowClear
+                nzShowSearch
+                [nzDropdownStyle]="{ 'max-height': '320px' }"
+                [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input [id]="p + '-search-keyword'" nz-input name="ervSearchKeyword" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input [id]="p + '-search-course'" nz-input name="ervSearchCourse" [ngModel]="searchCourse()" (ngModelChange)="searchCourse.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>
+              {{ mode === 'maker' ? i18n.t('ess.trans.title.affirmStatus', 'Trạng thái') : i18n.t('ess.humanConfirm.title.confirmStatus', 'Trạng thái') }}
+            </nz-form-label>
+            <nz-form-control>
+              <nz-select [id]="p + '-search-flag'" name="ervSearchFlag" [ngModel]="searchFlag()" (ngModelChange)="searchFlag.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (o of filterOptions; track o.value) {
+                  <nz-option [nzValue]="o.value" [nzLabel]="i18n.t(o.key, o.fallback)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.START_DATE1', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker [id]="p + '-search-start'" name="ervSearchStart" [ngModel]="searchStart()" (ngModelChange)="searchStart.set($event)" nzFormat="dd/MM/yyyy" class="erv-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.END_DATE1', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker [id]="p + '-search-end'" name="ervSearchEnd" [ngModel]="searchEnd()" (ngModelChange)="searchEnd.set($event)" nzFormat="dd/MM/yyyy" class="erv-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="16" class="erv-toolbar-actions">
+          <button [id]="p + '-search-btn'" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.SEARCH', 'Tìm kiếm') }}
+          </button>
+          <button [id]="p + '-clear-btn'" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button [id]="p + '-pass-btn'" nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="passChecked()">
+            <span nz-icon nzType="check"></span>
+            {{ mode === 'maker' ? i18n.t('hrm.contractInfo.ADOPT', 'Duyệt') : i18n.t('hr.viewPersonalInfo.title.AFFIRM', 'Xác nhận') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="erv-quick-filter">
+      <input [id]="p + '-quick-filter'" nz-input name="ervQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #ervTable
+      [id]="p + '-data-table'"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="40px" [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()" (nzCheckedChange)="toggleAll($event)"></th>
+          <th nzWidth="60px" class="erv-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="erv-center">{{ i18n.t('ess.infoApply.EMPID', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ess.viewApply.title.applyName', 'Người xin phép') }}</th>
+          <th>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hr.viewPersonalInfo.title.POST_GRADE_NAME', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('edu.trainArchives.KECHENGMINGCHENGQICI.a', 'Tên khóa đào tạo') }}</th>
+          <th class="erv-center">{{ i18n.t('edu.planManager.SHISHIRIQI.a', 'Ngày thực hiện') }}</th>
+          <th class="erv-center">{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</th>
+          <th class="erv-center">{{ i18n.t('edu.planManager.KECHENGBIAO.a', 'Lịch đào tạo') }}</th>
+          <th class="erv-center">{{ i18n.t('ess.empInfo.date_application', 'Thời gian') }}</th>
+          <th>{{ i18n.t('pa.salarycode.affirm.reason', 'Lý do') }}</th>
+          @if (mode === 'confirm') {
+            <th>{{ i18n.t('ess.viewApply.title.affirmCondition', 'Trạng thái duyệt') }}</th>
+            <th nzWidth="150px">{{ i18n.t('edu.courseConfirm.QUERENQINGKUANG.a', 'Trạng thái xác nhận') }}</th>
+          } @else {
+            <th nzWidth="150px">{{ i18n.t('ess.viewApply.title.affirmCondition', 'Trạng thái duyệt') }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ervTable.data; track row.applyNo; let idx = $index) {
+          <tr class="erv-row" [class.erv-row-selected]="checked().has(row.applyNo)">
+            <td [nzChecked]="checked().has(row.applyNo)" [nzDisabled]="!canCheck(row)" (nzCheckedChange)="toggleRow(row, $event)"></td>
+            <td class="erv-center" (click)="toggleRow(row)">{{ (ervTable.nzPageIndex - 1) * ervTable.nzPageSize + idx + 1 }}</td>
+            <td class="erv-center" (click)="toggleRow(row)">{{ row.empid }}</td>
+            <td (click)="toggleRow(row)">{{ row.stuLocalName }}</td>
+            <td (click)="toggleRow(row)">{{ row.deptName }}</td>
+            <td (click)="toggleRow(row)">{{ row.postGradeName }}</td>
+            <td (click)="toggleRow(row)">{{ row.trainTypeCodeName }}</td>
+            <td (click)="toggleRow(row)">{{ courseTitle(row) }}</td>
+            <td class="erv-center erv-nowrap">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="erv-center">{{ classHour(row) }}</td>
+            <td class="erv-center">
+              @if (row.syllabusCount) {
+                <a (click)="syllabusPlanNo.set(row.planNo ?? null)">{{ i18n.t('edu.planManager.CHAKANKECHENGBIAO.a', 'Xem') }}</a>
+              }
+            </td>
+            <td class="erv-center">{{ row.createDate }}</td>
+            <td>{{ row.applyTask }}</td>
+            @if (mode === 'confirm') {
+              <td class="erv-nowrap">
+                {{ row.makerLocalName }}
+                <span [class.erv-pass]="row.applyFlag === '2'" [class.erv-reject]="row.applyFlag === '0'">[{{ applyLabel(row) }}]</span>
+              </td>
+            }
+            <td>
+              @if (mode === 'maker' || row.applyFlag === '2') {
+                <nz-select
+                  [id]="p + '-flag-' + row.applyNo"
+                  class="erv-full"
+                  nzSize="small"
+                  [ngModel]="rowFlag(row)"
+                  (ngModelChange)="changeRow(row, $event)"
+                  [nzDisabled]="!canChange(row) || saving()"
+                >
+                  @for (o of rowOptions; track o.value) {
+                    <nz-option [nzValue]="o.value" [nzLabel]="i18n.t(o.key, o.fallback)"></nz-option>
+                  }
+                </nz-select>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="mode === 'confirm' ? 15 : 14" class="erv-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-edu-syllabus-modal [planNo]="syllabusPlanNo()" (closed)="syllabusPlanNo.set(null)"></app-edu-syllabus-modal>

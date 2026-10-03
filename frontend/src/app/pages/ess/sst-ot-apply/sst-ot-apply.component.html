@@ -1,123 +1,80 @@
 <div class="soa-page">
+  <nz-card class="soa-empinfo-card">
+    @if (myInfo(); as info) {
+      <nz-descriptions [nzColumn]="2" nzBordered nzSize="small">
+        <nz-descriptions-item [nzTitle]="i18n.t('common.empName', 'Họ tên')">{{ info.localName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.empId', 'Mã nhân viên')">{{ info.empId }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.deptName', 'Phòng ban')">{{ info.deptName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('vdp.card.dept', 'Trưởng phòng')">{{ info.headDepartment }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.empGroup', 'Nhóm nhân viên')">{{ info.postFamilyName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.position', 'Chức vụ')">{{ info.dutyName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.jobTitle', 'Chức danh')">{{ info.positionNoName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.dateStarted', 'Ngày vào làm')">{{ info.dateStarted }}</nz-descriptions-item>
+      </nz-descriptions>
+    }
+  </nz-card>
+
   <nz-card class="soa-form-card">
-    <form nz-form [nzLayout]="'vertical'">
-      <div nz-row [nzGutter]="12">
-        <div nz-col [nzSpan]="6">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.applyDate', 'Ngày') }}</nz-form-label>
-            <nz-form-control>
-              <nz-date-picker id="soa-apply-date" [ngModel]="applyDate()" (ngModelChange)="onDateChange($event)" name="soaApplyDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="18">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.otStatus', 'Tình hình tăng ca') }}</nz-form-label>
-            <nz-form-control>
-              <div class="soa-stat-text">{{ monthInfoText() }}</div>
-              <div class="soa-stat-text">{{ yearInfoText() }}</div>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+    <form nz-form>
+      <nz-descriptions nzBordered nzSize="small" [nzColumn]="2">
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.applyDate', 'Ngày')">
+          <nz-date-picker id="soa-apply-date" [ngModel]="applyDate()" (ngModelChange)="onDateChange($event)" name="soaApplyDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.otStatus', 'Tình hình tăng ca')">
+          <div class="soa-stat-text">{{ monthInfoText() }}</div>
+          <div class="soa-stat-text">{{ yearInfoText() }}</div>
+        </nz-descriptions-item>
 
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.otStartTimeLabel', 'Thời gian bắt đầu tăng ca') }}</nz-form-label>
-            <nz-form-control>
-              <div class="soa-time-range">
-                <nz-date-picker id="soa-ot-from-time" [ngModel]="otFromTime()" (ngModelChange)="otFromTime.set($event); onTimeChange()" name="soaOtFromTime" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
-                <span>~</span>
-                <nz-date-picker id="soa-ot-to-time" [ngModel]="otToTime()" (ngModelChange)="otToTime.set($event); onTimeChange()" name="soaOtToTime" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
-              </div>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.otType', 'Hình thức tăng ca') }}</nz-form-label>
-            <nz-form-control>
-              <span id="soa-ot-type-name" class="soa-readonly-text">{{ otTypeName() }}</span>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.otStartTimeLabel', 'Thời gian bắt đầu tăng ca')">
+          <div class="soa-time-range">
+            <nz-date-picker id="soa-ot-from-time" [ngModel]="otFromTime()" (ngModelChange)="otFromTime.set($event); onTimeChange()" name="soaOtFromTime" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
+            <span>~</span>
+            <nz-date-picker id="soa-ot-to-time" [ngModel]="otToTime()" (ngModelChange)="otToTime.set($event); onTimeChange()" name="soaOtToTime" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
+          </div>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.otType', 'Hình thức tăng ca')">
+          <span id="soa-ot-type-name" class="soa-readonly-text">{{ otTypeName() }}</span>
+        </nz-descriptions-item>
 
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.inOutTime', 'Thời gian vào ra') }}</nz-form-label>
-            <nz-form-control>
-              <div>{{ i18n.t('essOt.inTime', 'Thời gian vào') }}: <strong id="soa-indoor-time">{{ indoorTime() }}</strong></div>
-              <div>{{ i18n.t('essOt.outTime', 'Thời gian ra') }}: <strong id="soa-outdoor-time">{{ outdoorTime() }}</strong></div>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.shift', 'Ca') }}</nz-form-label>
-            <nz-form-control>
-              <span id="soa-shift-name" class="soa-readonly-text">{{ shiftName() }}</span>
-              <span id="soa-work-time" class="soa-readonly-text">{{ workTime() }}</span>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.shift', 'Ca')">
+          <span id="soa-shift-name" class="soa-readonly-text">{{ shiftName() }}</span>
+          <span id="soa-work-time" class="soa-readonly-text">{{ workTime() }}</span>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.inOutTime', 'Thời gian vào ra')">
+          <div>{{ i18n.t('essOt.inTime', 'Thời gian vào') }}: <strong id="soa-indoor-time">{{ indoorTime() }}</strong></div>
+          <div>{{ i18n.t('essOt.outTime', 'Thời gian ra') }}: <strong id="soa-outdoor-time">{{ outdoorTime() }}</strong></div>
+        </nz-descriptions-item>
 
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.duration', 'Thời lượng') }}</nz-form-label>
-            <nz-form-control>
-              <span id="soa-duration" class="soa-readonly-text">{{ durationText() }}</span>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.mealBreak', 'Báo cơm') }}</nz-form-label>
-            <nz-form-control>
-              <label id="soa-meal-check" nz-checkbox [ngModel]="mealChecked()" (ngModelChange)="mealChecked.set($event); onMealCheckChange()" name="soaMealCheck">{{ i18n.t('essOt.yes', 'Có') }}</label>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.duration', 'Thời lượng')">
+          <span id="soa-duration" class="soa-readonly-text">{{ durationText() }}</span>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.mealBreak', 'Báo cơm')">
+          <label id="soa-meal-check" nz-checkbox [ngModel]="mealChecked()" (ngModelChange)="mealChecked.set($event); onMealCheckChange()" name="soaMealCheck">{{ i18n.t('essOt.yes', 'Có') }}</label>
+        </nz-descriptions-item>
 
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.usecarYn', 'Đặt xe') }}</nz-form-label>
-            <nz-form-control>
-              <label id="soa-usecar-yn" nz-checkbox [ngModel]="usecarChecked()" (ngModelChange)="onUsecarChange($event)" name="soaUsecarYn">{{ i18n.t('essOt.yes', 'Có') }}</label>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="12">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.carAddress', 'Tuyến xe') }}</nz-form-label>
-            <nz-form-control>
-              <nz-select id="soa-car-address" [ngModel]="carAddress()" (ngModelChange)="onCarAddressChange($event)" name="soaCarAddress" [nzDisabled]="!usecarChecked()" [nzAllowClear]="true">
-                <nz-option *ngFor="let opt of carAddressOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.usecarYn', 'Đặt xe')">
+          <label id="soa-usecar-yn" nz-checkbox [ngModel]="usecarChecked()" (ngModelChange)="onUsecarChange($event)" name="soaUsecarYn">{{ i18n.t('essOt.yes', 'Có') }}</label>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.carAddress', 'Tuyến xe')">
+          <nz-select id="soa-car-address" [ngModel]="carAddress()" (ngModelChange)="onCarAddressChange($event)" name="soaCarAddress" [nzDisabled]="!usecarChecked()" [nzAllowClear]="true" style="width: 100%">
+            <nz-option *ngFor="let opt of carAddressOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+          </nz-select>
+        </nz-descriptions-item>
 
-        <div nz-col [nzSpan]="24">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.carAddressDetail', 'Chi tiết điểm đón') }}</nz-form-label>
-            <nz-form-control>
-              <nz-select id="soa-car-address-detail" [ngModel]="carAddressDetail()" (ngModelChange)="carAddressDetail.set($event)" name="soaCarAddressDetail" [nzDisabled]="!carAddress()" [nzAllowClear]="true">
-                <nz-option *ngFor="let opt of carAddressDetailOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.carAddressDetail', 'Chi tiết điểm đón')" [nzSpan]="2">
+          <nz-select id="soa-car-address-detail" [ngModel]="carAddressDetail()" (ngModelChange)="carAddressDetail.set($event)" name="soaCarAddressDetail" [nzDisabled]="!carAddress()" [nzAllowClear]="true" style="width: 100%">
+            <nz-option *ngFor="let opt of carAddressDetailOptions()" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+          </nz-select>
+        </nz-descriptions-item>
 
-        <div nz-col [nzSpan]="24">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('essOt.reason', 'Lý do') }}</nz-form-label>
-            <nz-form-control>
-              <textarea id="soa-reason" nz-input rows="3" [ngModel]="reason()" (ngModelChange)="reason.set($event)" name="soaReason"></textarea>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-      </div>
+        <nz-descriptions-item [nzTitle]="i18n.t('essOt.reason', 'Lý do')" [nzSpan]="2">
+          <textarea id="soa-reason" nz-input rows="3" [ngModel]="reason()" (ngModelChange)="reason.set($event)" name="soaReason"></textarea>
+        </nz-descriptions-item>
+      </nz-descriptions>
     </form>
+  </nz-card>
 
+  <nz-card class="soa-approver-card">
     <nz-table id="soa-approver-table" [nzData]="approverList()" [nzShowPagination]="false" nzSize="small">
       <thead>
         <tr>
@@ -126,6 +83,7 @@
           <th nzWidth="130px" class="soa-col-center">{{ i18n.t('sa.col.empId', 'Mã nhân viên') }}</th>
           <th>{{ i18n.t('sa.col.dept', 'Phòng ban') }}</th>
           <th>{{ i18n.t('sa.col.position', 'Chức danh') }}</th>
+          <th nzWidth="150px" class="soa-col-center">{{ i18n.t('sys.affirm.title.affirmTypeNames', 'Loại phê duyệt') }}</th>
           <th nzWidth="60px" class="soa-col-center">
             <button id="soa-add-approver-btn" type="button" nz-button nzType="primary" nzSize="small" nzShape="circle" (click)="showAddApproverRow()" [title]="i18n.t('sa.btn.addApprover', 'Thêm người phê duyệt')">
               <span nz-icon nzType="plus"></span>
@@ -155,6 +113,18 @@
             </td>
             <td></td>
             <td class="soa-col-center">
+              <nz-select
+                id="soa-new-approver-type"
+                [ngModel]="newApproverApprovType()"
+                (ngModelChange)="newApproverApprovType.set($event)"
+                name="soaNewApproverType"
+                style="width: 100%"
+              >
+                <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('sa.approvType.approval', 'Phê duyệt')"></nz-option>
+                <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('sa.approvType.notice', 'Thông báo')"></nz-option>
+              </nz-select>
+            </td>
+            <td class="soa-col-center">
               <button id="soa-cancel-approver-btn" type="button" nz-button nzSize="small" (click)="cancelAddApprover()">
                 <span nz-icon nzType="close"></span>
               </button>
@@ -169,6 +139,18 @@
             <td></td>
             <td></td>
             <td class="soa-col-center">
+              <nz-select
+                id="soa-approver-type-{{ idx }}"
+                [ngModel]="item.approvType"
+                (ngModelChange)="changeApproverType(idx, $event)"
+                name="soaApproverType{{ idx }}"
+                style="width: 100%"
+              >
+                <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('sa.approvType.approval', 'Phê duyệt')"></nz-option>
+                <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('sa.approvType.notice', 'Thông báo')"></nz-option>
+              </nz-select>
+            </td>
+            <td class="soa-col-center">
               <button id="soa-remove-approver-{{ idx }}" type="button" nz-button nzDanger nzSize="small" (click)="removeApprover(idx)">
                 <span nz-icon nzType="delete"></span>
               </button>
@@ -177,7 +159,7 @@
         } @empty {
           @if (!addingApprover()) {
             <tr>
-              <td colspan="6" class="soa-col-center">{{ i18n.t('essOt.msg.noApprover', 'Không có người phê duyệt') }}</td>
+              <td colspan="7" class="soa-col-center">{{ i18n.t('essOt.msg.noApprover', 'Không có người phê duyệt') }}</td>
             </tr>
           }
         }

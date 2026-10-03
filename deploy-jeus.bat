@@ -23,10 +23,10 @@ setlocal EnableDelayedExpansion
 set JAVA_HOME_JDK11=C:\Program Files\Java\jdk-11.0.30
 
 :: --- Database ---
-set DB_URL=jdbc:oracle:thin:@//10.42.200.55:1526/HAEHR
+set DB_URL=jdbc:oracle:thin:@//10.44.7.18:1521/HAEHR
 set DB_USERNAME=HAE_HR
-set DB_PASSWORD=`1q2w3a4s
-set PHOTO_UPLOAD_PATH=D:/source/VHR/HAE_HR/resources/photo/HAE
+set DB_PASSWORD=`1qaz2wsx
+set PHOTO_UPLOAD_PATH=D:/JEUS7.0/resource/HAE_VHR/resources/photo/HAE
 set SESSION_COOKIE_SECURE=false
 
 :: --- Tomcat 9.x (KHONG dung Tomcat 10+ vi Spring Boot 2.7.x dung javax.* namespace) ---
@@ -34,9 +34,9 @@ set TOMCAT_HOME=C:\apache-tomcat-9.0.98
 set TOMCAT_APP_NAME=ROOT
 
 :: --- JEUS 7.0 ---
-set JEUS_HOME=C:\tmaxsoft\jeus7
-set JEUS_APP_NAME=HR-11
-set JEUS_CONTEXT_PATH=/HR-11
+set JEUS_HOME=D:\JEUS7.0
+set JEUS_APP_NAME=HAE_VHR
+set JEUS_CONTEXT_PATH=/HAE_VHR
 set JEUS_SERVER_HOST=localhost
 set JEUS_ADMIN_PORT=9736
 set JEUS_SERVER_NAME=server1

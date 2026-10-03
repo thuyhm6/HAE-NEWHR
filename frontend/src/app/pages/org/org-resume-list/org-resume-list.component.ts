@@ -13,6 +13,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { OrgResumeListService, OrgResumeRow } from './org-resume-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const ACTIVE_CODE = '14013948';
 const INACTIVE_CODE = 'INACTIVE';
 
@@ -53,6 +54,9 @@ const EMPTY_FORM: ResumeForm = {
   styleUrl: './org-resume-list.component.scss',
 })
 export class OrgResumeListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(OrgResumeListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -71,7 +75,7 @@ export class OrgResumeListComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsFiltered = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
 
   protected readonly formVisible = signal(false);
   protected readonly formSaving = signal(false);

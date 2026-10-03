@@ -6,17 +6,21 @@
         <tr>
           <th nzWidth="60px" class="vere-col-center">No.</th>
           <th class="vere-col-center">{{ i18n.t('evs.viewEvsResultEmp.evalYear', 'Năm đánh giá') }}</th>
+          <th class="vere-col-center">{{ i18n.t('evs.viewEvsResultEmp.firstHalfYear', 'Nửa năm đầu') }}</th>
+          <th class="vere-col-center">{{ i18n.t('evs.viewEvsResultEmp.secondHalfYear', 'Nửa năm sau') }}</th>
           <th class="vere-col-center">{{ i18n.t('evs.viewEvsResultEmp.performance', 'Thành tích') }}</th>
           <th class="vere-col-center">{{ i18n.t('evs.viewEvsResultEmp.ability', 'Năng lực') }}</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngIf="!rows().length">
-          <td colspan="4" class="vere-col-center vere-muted">{{ i18n.t('evs.viewEvsResultEmp.noData', 'Không có dữ liệu') }}</td>
+          <td colspan="6" class="vere-col-center vere-muted">{{ i18n.t('evs.viewEvsResultEmp.noData', 'Không có dữ liệu') }}</td>
         </tr>
         <tr *ngFor="let row of rows(); let idx = index">
           <td class="vere-col-center">{{ idx + 1 }}</td>
           <td class="vere-col-center">{{ row.evsYear }}</td>
+          <td class="vere-col-center">{{ row.firstHalfYear }}</td>
+          <td class="vere-col-center">{{ row.secondHalfYear }}</td>
           <td class="vere-col-center">{{ row.evsPerformance }}</td>
           <td class="vere-col-center">{{ row.evsAbility }}</td>
         </tr>

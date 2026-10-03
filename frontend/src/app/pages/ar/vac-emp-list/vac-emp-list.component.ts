@@ -19,6 +19,7 @@ import { AttendanceExForBatchService, SyCodeOption } from '../../ess/attendance-
 import { ArPersonalListService, AuthorizedDeptNode } from '../../ess/ar-personal-list/ar-personal-list.service';
 import { VacEmpFilter, VacEmpRow, VacEmpListService } from './vac-emp-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const EMP_OFFICE_PARENT_CODE = '15118';
 const EMP_OFFICE_DEFAULT = '15119';
 
@@ -50,6 +51,10 @@ const EMP_OFFICE_DEFAULT = '15119';
   styleUrl: './vac-emp-list.component.scss',
 })
 export class VacEmpListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(VacEmpListService);
   private readonly deptService = inject(ArPersonalListService);
   private readonly codeService = inject(AttendanceExForBatchService);

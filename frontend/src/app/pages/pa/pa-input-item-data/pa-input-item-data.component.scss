@@ -179,3 +179,12 @@
   padding: 4px 0;
   font-size: 13px;
 }
+
+.vpid-emp-lookup {
+  display: flex;
+  gap: 8px;
+}
+
+.vpid-emp-lookup input {
+  flex: 1;
+}

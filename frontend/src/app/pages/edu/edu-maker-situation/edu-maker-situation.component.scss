@@ -1,0 +1,45 @@
+.ems-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ems-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.ems-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.ems-full {
+  width: 100%;
+}
+
+.ems-center {
+  text-align: center;
+}
+
+.ems-nowrap {
+  white-space: nowrap;
+}
+
+// Màu trạng thái giống bản gốc: đã duyệt / chờ xác nhận xanh, từ chối đỏ
+.ems-pass {
+  color: #1677ff;
+}
+
+.ems-reject {
+  color: #ff4d4f;
+}

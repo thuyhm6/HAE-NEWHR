@@ -13,6 +13,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyCodeOption, WorkGroupExperListService, WorkGroupRow } from './work-group-exper-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Lịch sử thay đổi ca làm của bản thân - port lại từ
  * ess/workgroup/viewWorkGroupExperList.html (Thymeleaf, đã xoá) sang Angular
@@ -29,6 +30,10 @@ import { SyCodeOption, WorkGroupExperListService, WorkGroupRow } from './work-gr
   styleUrl: './work-group-exper-list.component.scss',
 })
 export class WorkGroupExperListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(WorkGroupExperListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

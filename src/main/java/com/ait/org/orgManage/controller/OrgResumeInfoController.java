@@ -1,5 +1,7 @@
 package com.ait.org.orgManage.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.org.orgManage.model.OrgResumeInfo;
 import com.ait.org.orgManage.service.OrgResumeInfoService;
 import com.ait.sy.sys.dto.DataTablesRequest;
@@ -62,7 +64,7 @@ public class OrgResumeInfoController {
             List<OrgResumeInfo> list = resumeService.getResumeListForDropdown();
             return ResponseEntity.ok(list);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(List.of());
+            return ResponseEntity.status(500).body(CollectionUtil.listOf());
         }
     }
 
@@ -75,10 +77,10 @@ public class OrgResumeInfoController {
             List<String> types = (List<String>) payload.get("types");
 
             String result = resumeService.executeResumeProcess(resumeNo, types);
-            return ResponseEntity.ok(Map.of("message", result));
+            return ResponseEntity.ok(CollectionUtil.mapOf("message", result));
         } catch (Exception e) {
             log.error("Failed to execute resume process", e);
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi thực hiện xử lý hồ sơ"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Lỗi hệ thống khi thực hiện xử lý hồ sơ"));
         }
     }
 
@@ -103,12 +105,12 @@ public class OrgResumeInfoController {
             getAuthenticatedUser(session);
             OrgResumeInfo info = resumeService.getResumeByNo(no);
             if (info == null) {
-                return ResponseEntity.status(404).body(Map.of("error", "Không tìm thấy dữ liệu"));
+                return ResponseEntity.status(404).body(CollectionUtil.mapOf("error", "Không tìm thấy dữ liệu"));
             }
             return ResponseEntity.ok(info);
         } catch (Exception e) {
             log.error("Failed to get resume by no {}", no, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi tải dữ liệu"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Lỗi hệ thống khi tải dữ liệu"));
         }
     }
 
@@ -120,7 +122,7 @@ public class OrgResumeInfoController {
 
             String error = resumeService.validateResume(info);
             if (error != null) {
-                return ResponseEntity.badRequest().body(Map.of("error", error));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", error));
             }
 
             info.setCreatedBy(user.getUsername());
@@ -130,12 +132,12 @@ public class OrgResumeInfoController {
 
             boolean success = resumeService.addResume(info);
             if (success) {
-                return ResponseEntity.ok(Map.of("message", "Thêm mới thành công"));
+                return ResponseEntity.ok(CollectionUtil.mapOf("message", "Thêm mới thành công"));
             }
-            return ResponseEntity.status(500).body(Map.of("error", "Thất bại"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Thất bại"));
         } catch (Exception e) {
             log.error("Failed to add resume", e);
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi thêm mới"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Lỗi hệ thống khi thêm mới"));
         }
     }
 
@@ -147,7 +149,7 @@ public class OrgResumeInfoController {
 
             String error = resumeService.validateResume(info);
             if (error != null) {
-                return ResponseEntity.badRequest().body(Map.of("error", error));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", error));
             }
 
             // Allow update of specific fields, prevent overwriting creation info if needed
@@ -157,12 +159,12 @@ public class OrgResumeInfoController {
 
             boolean success = resumeService.updateResume(info);
             if (success) {
-                return ResponseEntity.ok(Map.of("message", "Cập nhật thành công"));
+                return ResponseEntity.ok(CollectionUtil.mapOf("message", "Cập nhật thành công"));
             }
-            return ResponseEntity.status(500).body(Map.of("error", "Thất bại"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Thất bại"));
         } catch (Exception e) {
             log.error("Failed to update resume {}", info.getNo(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi cập nhật"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Lỗi hệ thống khi cập nhật"));
         }
     }
 
@@ -173,12 +175,12 @@ public class OrgResumeInfoController {
             getAuthenticatedUser(session);
             boolean success = resumeService.deleteResume(no);
             if (success) {
-                return ResponseEntity.ok(Map.of("message", "Xóa thành công"));
+                return ResponseEntity.ok(CollectionUtil.mapOf("message", "Xóa thành công"));
             }
-            return ResponseEntity.status(500).body(Map.of("error", "Xóa thất bại"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Xóa thất bại"));
         } catch (Exception e) {
             log.error("Failed to delete resume {}", no, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Lỗi hệ thống khi xóa"));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Lỗi hệ thống khi xóa"));
         }
     }
 

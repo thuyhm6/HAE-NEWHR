@@ -1,5 +1,7 @@
 package com.ait.sy.sys.service;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.sy.sys.dto.DataTablesRequest;
 import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
@@ -93,15 +95,15 @@ public abstract class BaseHrService {
     }
 
     public Map<String, String> createErrorResponse(String errorMessage) {
-        return Map.of("error", errorMessage);
+        return CollectionUtil.mapOf("error", errorMessage);
     }
 
     public Map<String, Object> createSuccessResponse(String message, Object data) {
-        return Map.of("message", message, "data", data);
+        return CollectionUtil.mapOf("message", message, "data", data);
     }
 
     public Map<String, String> createSuccessResponse(String message) {
-        return Map.of("message", message);
+        return CollectionUtil.mapOf("message", message);
     }
 
     public String validateRequiredFields(Map<String, Object> fields) {

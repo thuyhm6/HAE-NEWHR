@@ -1,0 +1,168 @@
+<!-- Tiền tố id = p (ems: makerSituation, emsh: makerSituationHUB) - xem EduMakerSituationComponent -->
+<div class="ems-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        @if (showEmpFilter()) {
+          <div nz-col [nzXs]="24" [nzMd]="6">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t('hrm.empinfo.ORG_NAME_LOCAL', 'Phòng ban') }}</nz-form-label>
+              <nz-form-control>
+                <nz-tree-select
+                  [id]="p + '-search-dept'"
+                  name="emsSearchDept"
+                  [nzNodes]="deptNodes()"
+                  [ngModel]="searchDept()"
+                  (ngModelChange)="searchDept.set($event)"
+                  nzAllowClear
+                  nzShowSearch
+                  [nzDropdownStyle]="{ 'max-height': '320px' }"
+                  [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+                ></nz-tree-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+          <div nz-col [nzXs]="24" [nzMd]="6">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+              <nz-form-control>
+                <input [id]="p + '-search-keyword'" nz-input name="emsSearchKeyword" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input [id]="p + '-search-course'" nz-input name="emsSearchCourse" [ngModel]="searchCourse()" (ngModelChange)="searchCourse.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.trans.title.affirmStatus', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select [id]="p + '-search-flag'" name="emsSearchFlag" [ngModel]="searchFlag()" (ngModelChange)="searchFlag.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (o of flagOptions; track o.value) {
+                  <nz-option [nzValue]="o.value" [nzLabel]="i18n.t(o.key, o.fallback)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.START_DATE1', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker [id]="p + '-search-start'" name="emsSearchStart" [ngModel]="searchStart()" (ngModelChange)="searchStart.set($event)" nzFormat="dd/MM/yyyy" class="ems-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.END_DATE1', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker [id]="p + '-search-end'" name="emsSearchEnd" [ngModel]="searchEnd()" (ngModelChange)="searchEnd.set($event)" nzFormat="dd/MM/yyyy" class="ems-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col nzFlex="auto" class="ems-toolbar-actions">
+          <button [id]="p + '-search-btn'" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.SEARCH', 'Tìm kiếm') }}
+          </button>
+          <button [id]="p + '-clear-btn'" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="ems-quick-filter">
+      <input [id]="p + '-quick-filter'" nz-input name="emsQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #emsTable
+      [id]="p + '-data-table'"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="ems-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="ems-center">{{ i18n.t('ess.infoApply.EMPID', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ess.viewApply.title.applyName', 'Người xin phép') }}</th>
+          <th>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hr.viewPersonalInfo.title.POST_GRADE_NAME', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('edu.trainArchives.KECHENGMINGCHENGQICI.a', 'Tên khóa đào tạo') }}</th>
+          <th class="ems-center">{{ i18n.t('edu.planManager.SHISHIRIQI.a', 'Ngày thực hiện') }}</th>
+          <th class="ems-center">{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</th>
+          <th class="ems-center">{{ i18n.t('edu.planManager.KECHENGBIAO.a', 'Lịch đào tạo') }}</th>
+          <th class="ems-center">{{ i18n.t('ess.empInfo.date_application', 'Thời gian') }}</th>
+          <th>{{ i18n.t('pa.salarycode.affirm.reason', 'Lý do') }}</th>
+          @if (!hub) {
+            <th class="ems-center">{{ i18n.t('hrm.empinfo.PERSON_NUMBER', 'Số lượng') }}</th>
+          }
+          <th>{{ i18n.t('ess.viewApply.title.affirmCondition', 'Trạng thái duyệt') }}</th>
+          <th>{{ i18n.t('edu.courseConfirm.QUERENQINGKUANG.a', 'Trạng thái xác nhận') }}</th>
+          <th class="ems-center">{{ i18n.t('ess.affirmApply.title.quxiaoshenqing', 'Hủy bỏ') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of emsTable.data; track row.applyNo; let idx = $index) {
+          <tr>
+            <td class="ems-center">{{ (emsTable.nzPageIndex - 1) * emsTable.nzPageSize + idx + 1 }}</td>
+            <td class="ems-center">{{ row.empid }}</td>
+            <td>{{ row.stuLocalName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ courseTitle(row) }}</td>
+            <td class="ems-center ems-nowrap">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="ems-center">{{ classHour(row) }}</td>
+            <td class="ems-center">
+              @if (row.syllabusCount) {
+                <a (click)="syllabusPlanNo.set(row.planNo ?? null)">{{ i18n.t('edu.planManager.CHAKANKECHENGBIAO.a', 'Xem') }}</a>
+              }
+            </td>
+            <td class="ems-center">{{ row.createDate }}</td>
+            <td>{{ row.applyTask }}</td>
+            @if (!hub) {
+              <td class="ems-center">{{ row.applyCount ?? 0 }}/{{ row.plannedCount ?? 0 }}</td>
+            }
+            <td class="ems-nowrap">
+              {{ row.makerLocalName }}
+              <span [class.ems-pass]="row.applyFlag === '2'" [class.ems-reject]="row.applyFlag === '0'">[{{ applyLabel(row) }}]</span>
+            </td>
+            <td class="ems-nowrap">
+              @if (row.applyFlag === '2') {
+                <span [class.ems-pass]="row.confirmFlag !== '2' && row.confirmFlag !== '0'" [class.ems-reject]="row.confirmFlag === '0'">[{{ confirmLabel(row) }}]</span>
+              }
+            </td>
+            <td class="ems-center">
+              @if (canCancel(row)) {
+                <a class="ems-reject" (click)="cancelApply(row)">{{ i18n.t('inct.salesman.button.cancelImport', 'Hủy bỏ') }}</a>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="hub ? 15 : 16" class="ems-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<app-edu-syllabus-modal [planNo]="syllabusPlanNo()" (closed)="syllabusPlanNo.set(null)"></app-edu-syllabus-modal>

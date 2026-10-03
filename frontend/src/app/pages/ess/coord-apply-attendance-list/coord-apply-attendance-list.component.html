@@ -103,7 +103,7 @@
       [nzTotal]="total()"
       [nzPageIndex]="pageIndex()"
       [nzPageSize]="pageSize()"
-      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzPageSizeOptions]="pageSizeOptions"
       [nzShowSizeChanger]="true"
       (nzQueryParams)="onQueryParamsChange($event)"
       [nzScroll]="{ x: 'max-content', y: '100%' }"

@@ -30,7 +30,7 @@
     </div>
 
     <div class="vrsg-table-card">
-      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="20" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }" #vrsgTable>
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered [nzScroll]="{ x: 'max-content', y: '100%' }" #vrsgTable>
         <thead>
           <tr>
             <th nzWidth="48px" class="vrsg-col-center">{{ i18n.t('common.stt', 'STT') }}</th>

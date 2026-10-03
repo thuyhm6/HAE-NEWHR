@@ -1,5 +1,7 @@
 package com.ait.sy.sys.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PasswordMigrationService;
 import javax.servlet.http.HttpSession;
@@ -131,18 +133,18 @@ public class PasswordMigrationController {
 
     private ResponseEntity<Map<String, Object>> checkAdminAccess(HttpSession session) {
         if (session == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            return ResponseEntity.status(401).body(CollectionUtil.mapOf("error", "Not authenticated"));
         }
 
         HrUserInfo user = (HrUserInfo) session.getAttribute("currentHrUser");
         if (user == null || user.getSyUser() == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+            return ResponseEntity.status(401).body(CollectionUtil.mapOf("error", "Not authenticated"));
         }
 
         String userType = user.getSyUser().getUserType();
         boolean isAdmin = "ADMIN".equalsIgnoreCase(userType) || "SYS".equalsIgnoreCase(userType);
         if (!isAdmin) {
-            return ResponseEntity.status(403).body(Map.of("error", "Forbidden"));
+            return ResponseEntity.status(403).body(CollectionUtil.mapOf("error", "Forbidden"));
         }
 
         return null;

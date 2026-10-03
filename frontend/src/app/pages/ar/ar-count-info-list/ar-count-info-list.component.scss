@@ -1,0 +1,22 @@
+.acil-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acil-search-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.acil-col-center {
+  text-align: center;
+}
+
+.acil-col-nowrap {
+  white-space: nowrap;
+}
+
+.acil-col-bold {
+  font-weight: 600;
+}

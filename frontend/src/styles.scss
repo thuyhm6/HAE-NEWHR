@@ -235,3 +235,8 @@ dl, ol, ul {
     margin-top: 0;
     margin-bottom: 0;
 }
+
+.ant-descriptions-bordered.ant-descriptions-small .ant-descriptions-item-content,
+.ant-descriptions-bordered.ant-descriptions-small .ant-descriptions-item-label {
+    padding: 4px 8px;
+}

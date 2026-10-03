@@ -26,6 +26,7 @@ import {
   CompanyOption,
 } from '../ar-item-param-list/ar-item-param-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý Thông số Hạng mục dạng cây-bảng (Tree-Table) - port lại từ
  * ar/attendanceSettings/viewItemParameter.html (đã xoá). Trái là cây phẳng
@@ -67,6 +68,10 @@ import {
   styleUrl: './item-parameter.component.scss',
 })
 export class ItemParameterComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   protected readonly service = inject(ArItemParamListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

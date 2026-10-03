@@ -455,83 +455,161 @@ public class SendEmailServiceImpl implements SendEmailService{
 		return resultList;
 	}
 	
+	/** Tiền tố MISDOCID khi gửi đơn sang Clever/EagleOffice */
+	private static final String MIS_DOC_PREFIX = "HAEVHR_001_";
+	/** Trạng thái văn bản trên Clever không cần đồng bộ */
+	private static final String DOC_STATUS_SKIP = "4";
+	/** Trạng thái người ký trên Clever: 0 = chưa xử lý */
+	private static final int SIGNER_STATUS_PENDING = 0;
+	/** FLAG của PR_AFFIRM_EXECUTE: 1 = duyệt */
+	private static final int AFFIRM_FLAG_APPROVE = 1;
+
 	/**
-	 * 同步eagleoffice中审批信息的状态（HAE）
-	 * @param request
-	 * @return List
+	 * Đồng bộ trạng thái phê duyệt từ Clever/EagleOffice về HR (HAE).
+	 * 1. Lấy các đơn đang trong quá trình phê duyệt.
+	 * 2. Tra cứu trạng thái trên Clever theo MISDOCID.
+	 * 3. Khớp người ký trên Clever với các bước duyệt đang chờ để cập nhật.
+	 *
+	 * Không dùng @Transactional cho toàn bộ hàm: mỗi đơn được xử lý độc lập,
+	 * lỗi ở một đơn không được rollback / chặn các đơn khác, và email đã gửi thì không thể rollback.
 	 */
-	public void synchronizationApprovalStatus(){
-		/*获得web service服务*/
-		NeoOrgWsProxy neoOrgWsProxy = mailManger.getNeoOrgWsProxy();
-		
-		List approvalList = this.sendEmailMapper.getSynchronizationApprovalList();
-		
-		Map paramMap = new LinkedHashMap();
-		MisKey misKey;
-		MisKey[] misKeys = new MisKey[approvalList==null?0:approvalList.size()];
-		
-		if(approvalList!=null){
-			for(int i = 0;i<approvalList.size();i++){
-				Map approvalMap = (Map) approvalList.get(i);
-				misKey = new MisKey();
-				misKey.setMisDocId("HAEVHR_001_"+checkNull(approvalMap.get("MISDOCID")));
-				misKeys[i] = misKey;
-			}
-		
-			ApprovalDocumentStatus[] appDocStus = mailManger.getMailApprovalInfo(misKeys);
-			
-			for(int i=0;i<appDocStus.length;i++){
-				if(appDocStus[i] == null){
-					continue;
-				}
-				for(int j = 0;j<approvalList.size();j++){
-					Map approvalMap = (Map) approvalList.get(j);
-					if(("HAEVHR_001_"+checkNull(approvalMap.get("MISDOCID"))).equals(appDocStus[i].getMisDocId())){
-						if(!"4".equals(checkNull(appDocStus[i].getStatus()))){
-							SignerInfo[] signerInfos = appDocStus[i].getSignerInfos();
-							
-							paramMap.put("APPLY_NO", checkNull(approvalMap.get("APPLY_NO")));
-							List affirmList = this.sendEmailMapper.getAffirmListByApplyNo(paramMap);
-							if(affirmList != null){
-								for(int k=0;k<affirmList.size();k++){
-									Map affirmMap = (Map) affirmList.get(k);
-									for(int a=0;a<signerInfos.length;a++){
-										if ("0".equals(checkNull(affirmMap.get("AFFIRM_FLAG"))) && "2".equals(checkNull(affirmMap.get("AFFIRM_LEVEL")))
-												&& "1".equals(checkNull(approvalMap.get("TIME_FLAG")))) {
-											this.sendAttendanceEmail(approvalMap);
-											int updateAttendace = this.sendEmailMapper.updateAttendace(approvalMap);
-										}
-										if(signerInfos[a].getStatus() != 0 
-												&& "0".equals(checkNull(affirmMap.get("AFFIRM_FLAG")))
-												&& (checkNull(affirmMap.get("EMAIL")).equals(checkNull(signerInfos[a].getEmailAddr()))
-													|| checkNull(affirmMap.get("AFFIRM_LEVEL")).equals(checkNull(signerInfos[a].getSequence()))) //hms 2019/10ROW_LEVEL
-												&& "1".equals(checkNull(affirmMap.get("AFFIRM_TYPE")))){
-											
-											paramMap.put("applyType", checkNull(affirmMap.get("APPLY_TYPE")));
-											paramMap.put("applyFlag", checkNull(affirmMap.get("APPLY_FLAG")));
-											paramMap.put("flag", String.valueOf(signerInfos[a].getStatus()));
-											paramMap.put("affirmContent", signerInfos[a].getComment() == null ? "" : signerInfos[a].getComment());
-											paramMap.put("adminID", "");
-											paramMap.put("adminIP", "hanwha.eagleoffice");
-											paramMap.put("affirmLevel", checkNull(affirmMap.get("AFFIRM_LEVEL")));
-											try {
-												syAffirmEmailMapper.callAffirmExecute(paramMap);
-											} catch (Exception e) {
-												// TODO Auto-generated catch block
-												e.printStackTrace();
-											}
-										}
-									}
-								}
-							}
-							
-							
-						}
-					}
-				}
-			}
-		
+	public void synchronizationApprovalStatus() {
+		List<Map<String, Object>> approvalList = this.sendEmailMapper.getSynchronizationApprovalList();
+		if (approvalList == null || approvalList.isEmpty()) {
+			log.info("[SyncApprovalStatus] Không có đơn nào cần đồng bộ.");
+			return;
 		}
+
+		// Index đơn theo MISDOCID đầy đủ để tra cứu O(1) thay vì lồng vòng lặp
+		Map<String, Map<String, Object>> approvalByMisDocId = new LinkedHashMap<String, Map<String, Object>>();
+		for (Map<String, Object> approvalMap : approvalList) {
+			approvalByMisDocId.put(MIS_DOC_PREFIX + checkNull(approvalMap.get("MISDOCID")), approvalMap);
+		}
+
+		MisKey[] misKeys = new MisKey[approvalByMisDocId.size()];
+		int idx = 0;
+		for (String misDocId : approvalByMisDocId.keySet()) {
+			MisKey misKey = new MisKey();
+			misKey.setMisDocId(misDocId);
+			misKeys[idx++] = misKey;
+		}
+
+		ApprovalDocumentStatus[] appDocStus = mailManger.getMailApprovalInfo(misKeys);
+		if (appDocStus == null) {
+			log.warn("[SyncApprovalStatus] Không lấy được trạng thái phê duyệt từ Clever.");
+			return;
+		}
+
+		int success = 0;
+		int failed = 0;
+		for (ApprovalDocumentStatus docStatus : appDocStus) {
+			if (docStatus == null || docStatus.getMisDocId() == null) {
+				continue;
+			}
+			Map<String, Object> approvalMap = approvalByMisDocId.get(docStatus.getMisDocId());
+			if (approvalMap == null || DOC_STATUS_SKIP.equals(checkNull(docStatus.getStatus()))) {
+				continue;
+			}
+			// Xử lý độc lập từng đơn: lỗi ở đơn này không ảnh hưởng các đơn khác
+			try {
+				syncOneApproval(approvalMap, docStatus.getSignerInfos());
+				success++;
+			} catch (Exception e) {
+				failed++;
+				log.error("[SyncApprovalStatus] Lỗi đồng bộ đơn APPLY_NO={}, MISDOCID={}",
+						approvalMap.get("APPLY_NO"), docStatus.getMisDocId(), e);
+			}
+		}
+		log.info("[SyncApprovalStatus] Tổng {} đơn, thành công {}, lỗi {}.", approvalList.size(), success, failed);
+	}
+
+	/**
+	 * Đồng bộ một đơn: gửi email bảo vệ (nếu cần) và cập nhật các bước duyệt đã được ký trên Clever.
+	 */
+	private void syncOneApproval(Map<String, Object> approvalMap, SignerInfo[] signerInfos) {
+		String applyNo = checkNull(approvalMap.get("APPLY_NO"));
+
+		Map<String, Object> queryMap = new LinkedHashMap<String, Object>();
+		queryMap.put("APPLY_NO", applyNo);
+		// SQL đã lọc AFFIRM_FLAG = 0 và sắp xếp theo AFFIRM_LEVEL
+		List<Map<String, Object>> affirmList = this.sendEmailMapper.getAffirmListByApplyNo(queryMap);
+		if (affirmList == null || affirmList.isEmpty()) {
+			return;
+		}
+
+		// 1. Email thông báo cho bảo vệ: tối đa 1 lần / đơn, không phụ thuộc người ký
+		if ("1".equals(checkNull(approvalMap.get("TIME_FLAG")))) {
+			for (Map<String, Object> affirmMap : affirmList) {
+				if ("2".equals(checkNull(affirmMap.get("AFFIRM_LEVEL")))) {
+					this.sendAttendanceEmail(approvalMap);
+					this.sendEmailMapper.updateAttendace(approvalMap);
+					log.info("[SyncApprovalStatus] Đã gửi email bảo vệ cho APPLY_NO={}", applyNo);
+					break;
+				}
+			}
+		}
+
+		if (signerInfos == null || signerInfos.length == 0) {
+			return;
+		}
+
+		// 2. Khớp từng bước duyệt đang chờ với người ký trên Clever
+		for (Map<String, Object> affirmMap : affirmList) {
+			if (!"1".equals(checkNull(affirmMap.get("AFFIRM_TYPE")))) {
+				continue;
+			}
+			SignerInfo signer = findSigner(affirmMap, signerInfos);
+			if (signer == null) {
+				continue;
+			}
+
+			String affirmLevel = checkNull(affirmMap.get("AFFIRM_LEVEL"));
+			Map<String, Object> execMap = new LinkedHashMap<String, Object>();
+			execMap.put("applyNo", applyNo);
+			execMap.put("applyType", checkNull(affirmMap.get("APPLY_TYPE")));
+			execMap.put("applyFlag", checkNull(affirmMap.get("APPLY_FLAG")));
+			execMap.put("flag", Integer.valueOf(signer.getStatus()));
+			execMap.put("affirmContent", signer.getComment() == null ? "" : signer.getComment());
+			execMap.put("adminID", "");
+			execMap.put("adminIP", "hanwha.eagleoffice");
+			execMap.put("affirmLevel", affirmLevel);
+			execMap.put("message", "");
+
+			syAffirmEmailMapper.callAffirmExecute(execMap);
+
+			String message = checkNull(execMap.get("message"));
+			if (message.length() > 0 && !"OK".equalsIgnoreCase(message)) {
+				log.warn("[SyncApprovalStatus] PR_AFFIRM_EXECUTE trả về lỗi APPLY_NO={}, level={}: {}",
+						applyNo, affirmLevel, message);
+				break;
+			}
+			log.info("[SyncApprovalStatus] Cập nhật APPLY_NO={}, level={}, flag={}", applyNo, affirmLevel, signer.getStatus());
+
+			// Bị từ chối (hoặc trạng thái khác duyệt) thì đơn đã kết thúc, không xử lý các cấp sau
+			if (signer.getStatus() != AFFIRM_FLAG_APPROVE) {
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Tìm người ký trên Clever tương ứng với một bước duyệt (khớp theo email hoặc thứ tự cấp duyệt).
+	 * Chỉ trả về người ký đã xử lý (status != 0).
+	 */
+	private SignerInfo findSigner(Map<String, Object> affirmMap, SignerInfo[] signerInfos) {
+		String email = checkNull(affirmMap.get("EMAIL"));
+		String affirmLevel = checkNull(affirmMap.get("AFFIRM_LEVEL"));
+		for (SignerInfo signer : signerInfos) {
+			if (signer == null || signer.getStatus() == SIGNER_STATUS_PENDING) {
+				continue;
+			}
+			boolean emailMatch = email.length() > 0 && email.equalsIgnoreCase(checkNull(signer.getEmailAddr()));
+			boolean levelMatch = affirmLevel.equals(checkNull(signer.getSequence())); //hms 2019/10ROW_LEVEL
+			if (emailMatch || levelMatch) {
+				return signer;
+			}
+		}
+		return null;
 	}
 	
 	/**

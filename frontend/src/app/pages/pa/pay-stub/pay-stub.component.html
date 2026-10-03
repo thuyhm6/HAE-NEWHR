@@ -61,6 +61,7 @@
         <div class="vps-title">{{ i18n.t('pa.payStub.slipTitle', 'PHIẾU LƯƠNG THÁNG') }} {{ monthYear(stub.hrEndDate) }}</div>
       </div>
 
+      <div class="vps-block">
       <div class="vps-section-title">{{ i18n.t('pa.payStub.basicInfo', 'Thông tin Cơ bản') }}</div>
       <table class="vps-info-table">
         <tr>
@@ -84,7 +85,9 @@
           <td colspan="6">{{ stub.socialInsuranceNo }}</td>
         </tr>
       </table>
+      </div>
 
+      <div class="vps-block">
       <div class="vps-section-title">{{ i18n.t('pa.payStub.account', 'Tài khoản') }}</div>
       <table class="vps-detail-table">
         <thead>
@@ -100,8 +103,9 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
-      <ng-container *ngIf="stub.standardItems?.length">
+      <div class="vps-block" *ngIf="stub.standardItems?.length">
         <div class="vps-section-title">{{ i18n.t('pa.payStub.standardItems', 'Hạng mục tiêu chuẩn') }}</div>
         <table class="vps-detail-table">
           <thead>
@@ -117,9 +121,9 @@
             </tr>
           </tbody>
         </table>
-      </ng-container>
+      </div>
 
-      <table class="vps-triple-table">
+      <table class="vps-block vps-triple-table">
         <thead>
           <tr>
             <th colspan="2" class="text-center vps-att-header">■ {{ i18n.t('pa.payStub.attendanceItems', 'Chi tiết chấm công') }}</th>
@@ -154,14 +158,14 @@
         </tfoot>
       </table>
 
-      <table class="vps-net-table">
+      <table class="vps-block vps-net-table">
         <tr>
           <td class="fw-bold">{{ i18n.t('pa.payStub.netSalary', 'Lương thực lĩnh') }}</td>
           <td class="text-end fw-bold">{{ formatNumber(netSalary(stub)) }}</td>
         </tr>
       </table>
 
-      <ng-container *ngIf="visibleOtherItems(stub).length">
+      <div class="vps-block" *ngIf="visibleOtherItems(stub).length">
         <div class="vps-section-title">{{ i18n.t('pa.payStub.otherItems', 'Hạng mục khác') }}</div>
         <table class="vps-detail-table">
           <tbody>
@@ -171,7 +175,7 @@
             </tr>
           </tbody>
         </table>
-      </ng-container>
+      </div>
 
       <div class="vps-note">{{ i18n.t('pa.payStub.note', '※ Mọi thắc mắc về nội dung trên phiếu lương, vui lòng liên hệ phòng Nhân sự!') }}</div>
     </div>

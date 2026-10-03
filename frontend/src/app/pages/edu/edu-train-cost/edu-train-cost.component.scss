@@ -1,0 +1,75 @@
+.etcm-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.etcm-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.etcm-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.etcm-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.etcm-course {
+  font-weight: 600;
+}
+
+.etcm-spacer {
+  flex: 1;
+}
+
+.etcm-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+}
+
+.etcm-red {
+  color: #ff4d4f;
+}
+
+.etcm-col-center {
+  text-align: center;
+}
+
+.etcm-col-right {
+  text-align: right;
+}
+
+.etcm-full {
+  width: 100%;
+}
+
+.etcm-row {
+  cursor: pointer;
+}
+
+// Dòng đang chọn - tương đương background:#aaccf6 ở bản gốc
+.etcm-row-selected > td {
+  background: #e6f4ff !important;
+}

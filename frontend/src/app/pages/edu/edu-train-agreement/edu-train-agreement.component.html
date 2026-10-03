@@ -1,0 +1,295 @@
+<div class="eta-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="eta-search-dept"
+                name="etaSearchDept"
+                [nzNodes]="deptNodes()"
+                [ngModel]="searchDept()"
+                (ngModelChange)="searchDept.set($event)"
+                nzAllowClear
+                nzShowSearch
+                [nzDropdownStyle]="{ 'max-height': '320px' }"
+                [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.nameAndEmpid', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eta-search-keyword" nz-input name="etaSearchKeyword" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="7">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainAgreement.XIEYIQIANDINGSHIJIANDUAN.a', 'Thời gian') }}</nz-form-label>
+            <nz-form-control>
+              <div class="eta-inline">
+                <nz-date-picker id="eta-search-con-start" name="etaSearchConStart" [ngModel]="searchConStart()" (ngModelChange)="searchConStart.set($event)" nzFormat="dd/MM/yyyy" class="eta-grow"></nz-date-picker>
+                <span>~</span>
+                <nz-date-picker id="eta-search-con-end" name="etaSearchConEnd" [ngModel]="searchConEnd()" (ngModelChange)="searchConEnd.set($event)" nzFormat="dd/MM/yyyy" class="eta-grow"></nz-date-picker>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6" class="eta-toolbar-actions">
+          <button id="eta-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.SEARCH', 'Tìm kiếm') }}
+          </button>
+          <button id="eta-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="eta-toolbar">
+      <button id="eta-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+        <span nz-icon nzType="plus"></span>
+        {{ i18n.t('hrm.contract.add', 'Thêm mới') }}
+      </button>
+      <button id="eta-edit-btn" nz-button (click)="openEditModal()">
+        <span nz-icon nzType="edit"></span>
+        {{ i18n.t('zxc.hrm.affirmConfig.update', 'Sửa') }}
+      </button>
+      <button id="eta-delete-btn" nz-button nzDanger (click)="deleteSelected()">
+        <span nz-icon nzType="delete"></span>
+        {{ i18n.t('org.title.DELETE', 'Xóa') }}
+      </button>
+      <input #etaImportInput id="eta-import-file" type="file" accept=".xlsx,.xls" class="eta-hidden" (change)="onImportFileSelected($event)" />
+      <button id="eta-import-btn" nz-button [nzLoading]="importing()" (click)="etaImportInput.click()">
+        <span nz-icon nzType="upload"></span>
+        {{ i18n.t('ess.infoApply.EXCEL_IN', 'Chèn file') }}
+      </button>
+      <button id="eta-template-btn" nz-button (click)="downloadTemplate()">
+        <span nz-icon nzType="download"></span>
+        {{ i18n.t('pa.button.message.specialempimportmodeldown', 'Bản mẫu') }}
+      </button>
+      <button id="eta-export-btn" nz-button (click)="exportExcel()">
+        <span nz-icon nzType="file-excel"></span>
+        {{ i18n.t('inct.salesman.downloadToExcel', 'Xuất Excel') }}
+      </button>
+      <span class="eta-spacer"></span>
+      <input id="eta-quick-filter" nz-input class="eta-quick-filter" name="etaQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #etaTable
+      id="eta-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="eta-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.trainAgreement.XIEYIBIANHAO.a', 'Mã hợp đồng') }}</th>
+          <th>{{ i18n.t('edu.trainAgreement.XIEYIMINGCHENG.a', 'Tên hợp đồng') }}</th>
+          <th>{{ i18n.t('edu.trainAgreement.XIEYIRENSHEHAO.a', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('edu.trainAgreement.XIEYIRENXINGMING.a', 'Họ tên') }}</th>
+          <th>{{ i18n.t('edu.trainAgreement.XIEYIRENBUMEN.a', 'Phòng ban') }}</th>
+          <th class="eta-col-center">{{ i18n.t('hrm.empinfo.CONTRACT_START_STOP_DATE.Z', 'Thời gian bắt đầu-kết thúc hợp đồng') }}</th>
+          <th class="eta-col-center">{{ i18n.t('liang.hr.viewTraining.title.TRAINING_TIME', 'Thời gian đào tạo') }}</th>
+          <th class="eta-col-right">{{ i18n.t('edu.trainAgreement.SHIJIZHIFU.a', 'Tiền thanh toán') }}</th>
+          <th class="eta-col-center">{{ i18n.t('edu.trainAgreement.XIEYIQIANDINGRIQI.a', 'Ngày ký') }}</th>
+          <th class="eta-col-center">{{ i18n.t('edu.trainAgreement.excel.agreeEnd', 'Ngày chấm dứt hợp đồng') }}</th>
+          <th>{{ i18n.t('org.title.enclosure', 'File') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of etaTable.data; track row.agreeNo; let idx = $index) {
+          <tr class="eta-row" [class.eta-row-selected]="row.agreeNo === selectedNo()" (click)="selectRow(row)" (dblclick)="openEditModal(row.agreeNo)">
+            <td class="eta-col-center">{{ (etaTable.nzPageIndex - 1) * etaTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.agreeId }}</td>
+            <td>{{ row.agreeName }}</td>
+            <td>{{ row.empid }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.departName }}</td>
+            <td class="eta-col-center">{{ row.conStartDate }} ~ {{ row.conEndDate }}</td>
+            <td class="eta-col-center">{{ row.studyStartDate }} ~ {{ row.studyEndDate }}</td>
+            <td class="eta-col-right">{{ row.factPay }}</td>
+            <td class="eta-col-center">{{ row.agreeStartDate }}</td>
+            <td class="eta-col-center">{{ row.agreeEndDate }}</td>
+            <td>
+              @for (f of row.files; track f.fileNo; let fi = $index) {
+                <div>
+                  <a [href]="common.fileDownloadUrl(f.fileNo)" target="_blank" rel="noopener" (click)="$event.stopPropagation()">{{ fi + 1 }}. {{ f.fileName }}</a>
+                </div>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="12" class="eta-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa: nzMaskClosable=true -> bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('edu.trainAgreement.modal.editTitle', 'Cập nhật hợp đồng đào tạo') : i18n.t('edu.trainAgreement.modal.addTitle', 'Thêm mới hợp đồng đào tạo')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  nzWidth="900px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="modalIsEdit() ? 16 : 24">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.trainAgreement.XIEYIMINGCHENG.a', 'Tên hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eta-f-name" nz-input name="etaFName" [ngModel]="formAgreeName()" (ngModelChange)="formAgreeName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        @if (modalIsEdit()) {
+          <div nz-col [nzXs]="24" [nzMd]="8">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t('edu.trainAgreement.XIEYIBIANHAO.a', 'Mã hợp đồng') }}</nz-form-label>
+              <nz-form-control>
+                <input id="eta-f-agree-id" nz-input name="etaFAgreeId" [ngModel]="formAgreeId()" disabled />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainAgreement.QINGSHURUXINGMINGGONGHAO.a', 'Nhập tên/mã nhân viên:') }}</nz-form-label>
+            <nz-form-control>
+              <div class="eta-inline">
+                <input id="eta-f-search-name" nz-input name="etaFSearchName" [ngModel]="formSearchName()" (ngModelChange)="formSearchName.set($event)" (keydown.enter)="$event.preventDefault(); empPickerVisible.set(true)" class="eta-grow" />
+                <button id="eta-f-search-btn" nz-button type="button" (click)="empPickerVisible.set(true)">
+                  <span nz-icon nzType="search"></span>
+                  {{ i18n.t('edu.teacherManager.CHAZHAO.a', 'Tìm kiếm') }}
+                </button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.trainAgreement.XIEYIRENSHEHAO.a', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eta-f-empid" nz-input name="etaFEmpid" [ngModel]="formEmpid()" disabled />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainAgreement.XIEYIRENXINGMING.a', 'Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eta-f-local-name" nz-input name="etaFLocalName" [ngModel]="formLocalName()" disabled />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        @for (f of dateFields; track f.key) {
+          <div nz-col [nzXs]="24" [nzMd]="6">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t(f.label, f.fallback) }}</nz-form-label>
+              <nz-form-control>
+                <nz-date-picker [id]="'eta-f-' + f.key" [name]="'etaF' + f.key" [ngModel]="formDates()[f.key]" (ngModelChange)="setDate(f.key, $event)" nzFormat="dd/MM/yyyy" class="eta-full"></nz-date-picker>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainAgreement.YANXIUTIANSHU.a', 'Số ngày đào tạo') }} ({{ i18n.t('ar.viewitemparameter.title.dayofunit', 'Ngày') }})</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="eta-f-study-day" name="etaFStudyDay" [ngModel]="formStudyDay()" (ngModelChange)="formStudyDay.set($event)" [nzMin]="0" class="eta-full"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        @for (f of feeFields; track f.key) {
+          <div nz-col [nzXs]="24" [nzMd]="6">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t(f.label, f.fallback) }} ({{ i18n.t('edu.trainAgreement.YUAN.a', 'VNĐ') }})</nz-form-label>
+              <nz-form-control>
+                <nz-input-number [id]="'eta-f-' + f.key" [name]="'etaF' + f.key" [ngModel]="formFees()[f.key]" (ngModelChange)="setFee(f.key, $event)" [nzMin]="0" class="eta-full"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainAgreement.SHIJIZHIFU.a', 'Tiền thanh toán') }} ({{ i18n.t('edu.trainAgreement.YUAN.a', 'VNĐ') }})</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="eta-f-fact-pay" name="etaFFactPay" [ngModel]="formFactPay()" (ngModelChange)="formFactPay.set($event)" [nzMin]="0" class="eta-full"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainAgreement.XIEYIQIANDINGRIQI.a', 'Ngày ký') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="eta-f-agree-start" name="etaFAgreeStart" [ngModel]="formDates().agreeStartDate" (ngModelChange)="setDate('agreeStartDate', $event)" nzFormat="dd/MM/yyyy" class="eta-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainAgreement.excel.agreeEnd', 'Ngày chấm dứt hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="eta-f-agree-end" name="etaFAgreeEnd" [ngModel]="formDates().agreeEndDate" (ngModelChange)="setDate('agreeEndDate', $event)" nzFormat="dd/MM/yyyy" class="eta-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewarcardrecord.title.beizhu', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="eta-f-remark" nz-input name="etaFRemark" rows="3" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewBadArchives.title.FILE', 'File') }}</nz-form-label>
+            <nz-form-control>
+              <app-edu-attachment
+                [files]="formFiles()"
+                [pendingFiles]="formPendingFiles()"
+                (pendingFilesChange)="formPendingFiles.set($event)"
+                (fileDeleted)="reloadFiles()"
+              ></app-edu-attachment>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="eta-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="eta-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('common.save', 'Lưu') }}</button>
+  </div>
+</nz-modal>
+
+<!-- Popup chọn người ký hợp đồng (queryPeixun bản gốc: tìm theo tên/mã + phòng ban) -->
+<app-edu-emp-picker
+  [visible]="empPickerVisible()"
+  (visibleChange)="empPickerVisible.set($event)"
+  [multiple]="false"
+  [showDeptFilter]="true"
+  [initialKeyword]="formSearchName()"
+  (confirmed)="onEmployeePicked($event)"
+></app-edu-emp-picker>

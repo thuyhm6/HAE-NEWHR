@@ -1,11 +1,11 @@
 import { CommonModule, formatDate } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -16,13 +16,18 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 
 import { I18nService } from '../../../i18n/i18n.service';
 import {
+  APPROV_TYPE_APPROVAL,
+  APPROV_TYPE_NOTICE,
   ApproverInput,
   EmployeeSearchResult,
+  MyInfo,
   OtDateInfo,
   SstOtApplyService,
   SyCodeOption,
 } from './sst-ot-apply.service';
 
+const SAVE_URL = '/ar/attendanceMintenance/api/overtime/save';
+const OT_TYPE_NO = '31';
 const WEEKEND_HOLIDAY_OT_TYPE = '32';
 const MIN_1H_POST_FAMILIES = ['14015813', '14015814'];
 const MIN_HALF_H_POST_FAMILY = '14015815';
@@ -32,17 +37,19 @@ function todayApiDate(): string {
 }
 
 /**
- * Form tạo đơn xin tăng ca mới cho bản thân - port lại từ 2 trang gần như
- * trùng lặp: ess/infoApply/viewSSTOtApplyInfo.html (tăng ca thường) và
- * viewSSTOtApplyInfoTx.html (tăng ca vượt), cả 2 đã xoá, sang 1 component
- * Angular + NG-ZORRO dùng chung. Route data (`saveUrl`, `otTypeNo`,
- * `extraValidation`) chọn đúng hành vi - xem app.routes.ts. Thay
- * EmployeeSearchModal (jQuery) bằng nz-select tìm kiếm server-side chọn
- * người phê duyệt. Giữ nguyên toàn bộ rule nghiệp vụ validate của bản gốc
- * (chỉ áp dụng thêm rule min/max theo nhóm nhân viên + tự động thêm Trưởng
- * bộ phận nhân sự khi `extraValidation=true`, đúng như trang "thường" gốc).
- * Không kèm khối "Thông tin nhân viên" (essEmpInfoCard) vì chưa có component
- * Angular tương đương, theo tiền lệ đã áp dụng ở YearUseInfoComponent.
+ * Form tạo đơn xin tăng ca THƯỜNG (giới hạn 40h/tháng, 300h/năm, lưu vào
+ * ESS_APPLY_OT) - port lại từ ess/infoApply/viewSSTOtApplyInfo.html (đã xoá)
+ * sang Angular + NG-ZORRO. Tách riêng khỏi SstOtApplyOverComponent (tăng ca
+ * vượt - viewSSTOtApplyInfoTx) vì 2 trang áp dụng rule nghiệp vụ khác nhau
+ * (giới hạn giờ/tháng/năm, min duration theo nhóm nhân viên, tự động thêm
+ * Trưởng bộ phận nhân sự khi nộp sau giờ làm - chỉ áp dụng ở trang này) và
+ * lưu vào 2 bảng khác nhau (ESS_APPLY_OT vs ESS_APPLY_OT_OVER), gộp chung 1
+ * component (bản cũ) khiến logic rẽ nhánh theo cờ khó đọc/dễ nhầm. Vẫn dùng
+ * chung SstOtApplyService (chỉ là các API GET/POST thuần, không chứa rule
+ * nghiệp vụ khác biệt) để tránh viết lại code gọi API. Thay EmployeeSearchModal
+ * (jQuery) bằng nz-select tìm kiếm server-side chọn người phê duyệt. Khối
+ * "Thông tin nhân viên" tái dùng API myInfo() sẵn có, render bằng
+ * nz-descriptions theo đúng pattern đã dùng ở SstLeaveApplyComponent.
  */
 @Component({
   selector: 'app-sst-ot-apply',
@@ -54,6 +61,7 @@ function todayApiDate(): string {
     NzCardModule,
     NzCheckboxModule,
     NzDatePickerModule,
+    NzDescriptionsModule,
     NzFormModule,
     NzGridModule,
     NzIconModule,
@@ -67,12 +75,7 @@ function todayApiDate(): string {
 export class SstOtApplyComponent implements OnInit {
   private readonly service = inject(SstOtApplyService);
   private readonly message = inject(NzMessageService);
-  private readonly route = inject(ActivatedRoute);
   protected readonly i18n = inject(I18nService);
-
-  private saveUrl = '';
-  private otTypeNo = '';
-  private extraValidation = false;
 
   private personId = '';
   private localName = '';
@@ -80,6 +83,7 @@ export class SstOtApplyComponent implements OnInit {
   private postFamily = '';
   private shiftEndTime = '';
   private hrDeptManager: ApproverInput | null = null;
+  protected readonly myInfo = signal<MyInfo | null>(null);
 
   private otTotalMonth = 0;
   private otTotalYear = 0;
@@ -117,15 +121,15 @@ export class SstOtApplyComponent implements OnInit {
   protected readonly approverSearching = signal(false);
   protected readonly addingApprover = signal(false);
   protected readonly selectedApproverPersonId = signal<string | null>(null);
+  protected readonly newApproverApprovType = signal<string>(APPROV_TYPE_APPROVAL);
 
   protected readonly submitting = signal(false);
 
+  protected readonly APPROV_TYPE_APPROVAL = APPROV_TYPE_APPROVAL;
+  protected readonly APPROV_TYPE_NOTICE = APPROV_TYPE_NOTICE;
+
   async ngOnInit(): Promise<void> {
     await this.i18n.load();
-    const data = this.route.snapshot.data;
-    this.saveUrl = data['saveUrl'];
-    this.otTypeNo = data['otTypeNo'];
-    this.extraValidation = !!data['extraValidation'];
 
     try {
       this.carAddressOptions.set(await this.service.getCarAddressOptions());
@@ -139,23 +143,23 @@ export class SstOtApplyComponent implements OnInit {
       this.localName = info.localName ?? '';
       this.empId = info.empId ?? '';
       this.postFamily = info.postFamily ?? '';
+      this.myInfo.set(info);
     } catch {
       // im lặng bỏ qua - form vẫn dùng được, chỉ thiếu thông tin cá nhân mặc định
     }
 
-    if (this.extraValidation) {
-      try {
-        const mgr = await this.service.getHrDeptManager();
-        if (mgr.PERSON_ID) {
-          this.hrDeptManager = {
-            personId: mgr.PERSON_ID,
-            localName: mgr.LOCAL_NAME ?? '',
-            empId: mgr.EMP_ID ?? '',
-          };
-        }
-      } catch {
-        this.hrDeptManager = null;
+    try {
+      const mgr = await this.service.getHrDeptManager();
+      if (mgr.PERSON_ID) {
+        this.hrDeptManager = {
+          personId: mgr.PERSON_ID,
+          localName: mgr.LOCAL_NAME ?? '',
+          empId: mgr.EMP_ID ?? '',
+          approvType: APPROV_TYPE_APPROVAL,
+        };
       }
+    } catch {
+      this.hrDeptManager = null;
     }
 
     await this.loadDateInfo(todayApiDate());
@@ -360,6 +364,7 @@ export class SstOtApplyComponent implements OnInit {
   showAddApproverRow(): void {
     this.addingApprover.set(true);
     this.selectedApproverPersonId.set(null);
+    this.newApproverApprovType.set(APPROV_TYPE_APPROVAL);
     this.approverSearchResults.set([]);
   }
 
@@ -382,6 +387,7 @@ export class SstOtApplyComponent implements OnInit {
           personId: emp.personId ?? '',
           localName: emp.localName ?? '',
           empId: emp.empId ?? '',
+          approvType: this.newApproverApprovType(),
         },
       ]);
     }
@@ -392,6 +398,15 @@ export class SstOtApplyComponent implements OnInit {
   removeApprover(idx: number): void {
     const list = [...this.approverList()];
     list.splice(idx, 1);
+    this.approverList.set(list);
+  }
+
+  changeApproverType(idx: number, approvType: string): void {
+    const list = [...this.approverList()];
+    if (!list[idx]) {
+      return;
+    }
+    list[idx] = { ...list[idx], approvType };
     this.approverList.set(list);
   }
 
@@ -452,45 +467,43 @@ export class SstOtApplyComponent implements OnInit {
       return;
     }
 
-    if (this.extraValidation) {
-      if (MIN_1H_POST_FAMILIES.includes(this.postFamily) && this.otLength < 1) {
-        this.message.warning(
-          this.i18n.t('essOt.msg.minDurationGroup1', 'Nhóm nhân viên của bạn yêu cầu thời lượng tăng ca tối thiểu là 1 tiếng (60 phút).'),
-        );
-        return;
-      }
-      if (this.postFamily === MIN_HALF_H_POST_FAMILY && this.otLength < 0.5) {
-        this.message.warning(
-          this.i18n.t('essOt.msg.minDurationGroup2', 'Nhóm nhân viên của bạn yêu cầu thời lượng tăng ca tối thiểu là 30 phút.'),
-        );
-        return;
-      }
+    if (MIN_1H_POST_FAMILIES.includes(this.postFamily) && this.otLength < 1) {
+      this.message.warning(
+        this.i18n.t('essOt.msg.minDurationGroup1', 'Nhóm nhân viên của bạn yêu cầu thời lượng tăng ca tối thiểu là 1 tiếng (60 phút).'),
+      );
+      return;
+    }
+    if (this.postFamily === MIN_HALF_H_POST_FAMILY && this.otLength < 0.5) {
+      this.message.warning(
+        this.i18n.t('essOt.msg.minDurationGroup2', 'Nhóm nhân viên của bạn yêu cầu thời lượng tăng ca tối thiểu là 30 phút.'),
+      );
+      return;
+    }
 
-      if (otTypeCode === WEEKEND_HOLIDAY_OT_TYPE) {
-        if (this.otLength > 3) {
-          this.message.warning(this.i18n.t('essOt.msg.maxDurationWeekday', 'Ngày thường không được tăng ca quá 3 tiếng (180 phút).'));
-          return;
-        }
-      } else if (this.otLength > 12) {
-        this.message.warning(this.i18n.t('essOt.msg.maxDurationOther', 'Thời lượng tăng ca không được quá 12 tiếng (720 phút).'));
+    if (otTypeCode === WEEKEND_HOLIDAY_OT_TYPE) {
+      if (this.otLength > 3) {
+        this.message.warning(this.i18n.t('essOt.msg.maxDurationWeekday', 'Ngày thường không được tăng ca quá 3 tiếng (180 phút).'));
         return;
       }
+    } else if (this.otLength > 12) {
+      this.message.warning(this.i18n.t('essOt.msg.maxDurationOther', 'Thời lượng tăng ca không được quá 12 tiếng (720 phút).'));
+      return;
+    }
 
-      const todayStr = todayApiDate();
-      const isPastOrToday = dateApi <= todayStr;
-      if (isPastOrToday && this.shiftEndTime && this.hrDeptManager) {
-        const shiftEndDt = this.parseServerDateTime(this.shiftEndTime);
-        if (shiftEndDt && new Date() > shiftEndDt) {
-          const alreadyIn = this.approverList().some((a) => a.personId === this.hrDeptManager?.personId);
-          if (!alreadyIn) {
-            this.approverList.set([...this.approverList(), this.hrDeptManager]);
-            this.message.info(
-              this.i18n.t(
-                'essOt.msg.autoAddHrManager',
-                'Đã tự động thêm Trưởng bộ phận nhân sự vào danh sách phê duyệt do nộp đơn sau giờ làm.',
-              ),
-            );
-          }
+    const todayStr = todayApiDate();
+    const isPastOrToday = dateApi <= todayStr;
+    if (isPastOrToday && this.shiftEndTime && this.hrDeptManager) {
+      const shiftEndDt = this.parseServerDateTime(this.shiftEndTime);
+      if (shiftEndDt && new Date() > shiftEndDt) {
+        const alreadyIn = this.approverList().some((a) => a.personId === this.hrDeptManager?.personId);
+        if (!alreadyIn) {
+          this.approverList.set([...this.approverList(), this.hrDeptManager]);
+          this.message.info(
+            this.i18n.t(
+              'essOt.msg.autoAddHrManager',
+              'Đã tự động thêm Trưởng bộ phận nhân sự vào danh sách phê duyệt do nộp đơn sau giờ làm.',
+            ),
+          );
         }
       }
     }
@@ -501,35 +514,33 @@ export class SstOtApplyComponent implements OnInit {
     }
 
     const applyHourNum = parseFloat(otApplyHour) || 0;
-    if (this.extraValidation) {
-      if (this.otLimitEnabled && applyHourNum + this.otTotalMonth > this.otLimitMonth) {
-        this.message.warning(
-          this.i18n
-            .t('essOt.msg.exceedMonthLimit', 'Tổng tăng ca tháng này sẽ là {0}h, vượt quá giới hạn {1}h!')
-            .replace('{0}', (applyHourNum + this.otTotalMonth).toFixed(1))
-            .replace('{1}', String(this.otLimitMonth)),
-        );
-        return;
-      }
-      if (this.otLimit100Enabled && applyHourNum + this.otTotalYear > this.otLimitYear) {
-        this.message.warning(
-          this.i18n
-            .t('essOt.msg.exceedYearLimit', 'Tổng tăng ca năm nay sẽ là {0}h, vượt quá giới hạn {1}h!')
-            .replace('{0}', (applyHourNum + this.otTotalYear).toFixed(1))
-            .replace('{1}', String(this.otLimitYear)),
-        );
-        return;
-      }
+    if (this.otLimitEnabled && applyHourNum + this.otTotalMonth > this.otLimitMonth) {
+      this.message.warning(
+        this.i18n
+          .t('essOt.msg.exceedMonthLimit', 'Tổng tăng ca tháng này sẽ là {0}h, vượt quá giới hạn {1}h!')
+          .replace('{0}', (applyHourNum + this.otTotalMonth).toFixed(1))
+          .replace('{1}', String(this.otLimitMonth)),
+      );
+      return;
+    }
+    if (this.otLimit100Enabled && applyHourNum + this.otTotalYear > this.otLimitYear) {
+      this.message.warning(
+        this.i18n
+          .t('essOt.msg.exceedYearLimit', 'Tổng tăng ca năm nay sẽ là {0}h, vượt quá giới hạn {1}h!')
+          .replace('{0}', (applyHourNum + this.otTotalYear).toFixed(1))
+          .replace('{1}', String(this.otLimitYear)),
+      );
+      return;
     }
 
     this.submitting.set(true);
     try {
-      const res = await this.service.save(this.saveUrl, {
+      const res = await this.service.save(SAVE_URL, {
         applyNo: '',
         personId: this.personId,
         localName: this.localName,
         empId: this.empId,
-        otTypeNo: this.otTypeNo,
+        otTypeNo: OT_TYPE_NO,
         otTypeCode,
         applyOtDate: dateApi,
         otFromTime: fromVal,

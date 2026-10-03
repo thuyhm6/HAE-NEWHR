@@ -1,0 +1,176 @@
+<div class="eto-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainOrgan.PEIXUNJIGOUMINGCHENG.a', 'Tên đơn vị') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eto-search-name" nz-input name="etoSearchName" [ngModel]="searchName()" (ngModelChange)="searchName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewRelation.title.FAM_ADDRESS', 'Địa chỉ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eto-search-address" nz-input name="etoSearchAddress" [ngModel]="searchAddress()" (ngModelChange)="searchAddress.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12" class="eto-toolbar-actions">
+          <button id="eto-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.SEARCH', 'Tìm kiếm') }}
+          </button>
+          <button id="eto-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="eto-add-btn" nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('button.add', 'Thêm mới') }}
+          </button>
+          <button id="eto-edit-btn" nz-button type="button" (click)="openEditModal()">
+            <span nz-icon nzType="edit"></span>
+            {{ i18n.t('button.update', 'Sửa') }}
+          </button>
+          <button id="eto-delete-btn" nz-button nzDanger type="button" (click)="deleteSelected()">
+            <span nz-icon nzType="delete"></span>
+            {{ i18n.t('button.delete', 'Xóa') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="eto-quick-filter">
+      <input id="eto-quick-filter" nz-input name="etoQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #etoTable
+      id="eto-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="eto-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.trainOrgan.PEIXUNJIGOUMINGCHENG.a', 'Tên đơn vị') }}</th>
+          <th>{{ i18n.t('edu.trainOrgan.LIANXIREN.a', 'Người liên hệ') }}</th>
+          <th>{{ i18n.t('hr.viewRelation.title.FAM_ADDRESS', 'Địa chỉ') }}</th>
+          <th>{{ i18n.t('hr.viewHire.title.OFFICE_PHONE', 'Điện thoại văn phòng') }}</th>
+          <th>{{ i18n.t('hrm.empinfo.MOBILE_TELEPHONE', 'Điện thoại') }}</th>
+          <th>{{ i18n.t('pa.ins.alert.message.exportdata.netAddress', 'Website') }}</th>
+          <th>{{ i18n.t('edu.trainOrgan.ZHUYINGLINGYU.a', 'Lĩnh vực chính') }}</th>
+          <th>{{ i18n.t('edu.trainOrgan.HEZUOXIEYI.a', 'Hợp đồng') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of etoTable.data; track row.organNo; let idx = $index) {
+          <tr class="eto-row" [class.eto-row-selected]="row.organNo === selectedNo()" (click)="selectRow(row)" (dblclick)="openEditModal(row.organNo)">
+            <td class="eto-col-center">{{ (etoTable.nzPageIndex - 1) * etoTable.nzPageSize + idx + 1 }}</td>
+            <td><a (click)="$event.stopPropagation(); openDetail(row.organNo)">{{ row.organName }}</a></td>
+            <td>{{ row.linkman }}</td>
+            <td>{{ row.address }}</td>
+            <td>{{ row.officePhone }}</td>
+            <td>{{ row.cellphone }}</td>
+            <td>{{ row.urlNet }}</td>
+            <td>{{ row.mainField }}</td>
+            <td>
+              @for (f of row.files; track f.fileNo; let fi = $index) {
+                <div>
+                  <a [href]="common.fileDownloadUrl(f.fileNo)" target="_blank" rel="noopener" (click)="$event.stopPropagation()">{{ fi + 1 }}. {{ f.fileName }}</a>
+                </div>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="eto-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa: nzMaskClosable=true -> bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('edu.trainOrgan.modal.editTitle', 'Cập nhật đơn vị đào tạo') : i18n.t('edu.trainOrgan.modal.addTitle', 'Thêm mới đơn vị đào tạo')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  nzWidth="800px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        @for (f of fields; track f.key) {
+          <div nz-col [nzXs]="24" [nzMd]="f.wide ? 24 : 12">
+            <nz-form-item>
+              <nz-form-label [nzRequired]="!!f.required">{{ i18n.t(f.label, f.fallback) }}</nz-form-label>
+              <nz-form-control>
+                @if (f.wide) {
+                  <textarea nz-input rows="3" [id]="'eto-f-' + f.key" [name]="'etoF' + f.key" [ngModel]="form()[f.key]" (ngModelChange)="setField(f.key, $event)"></textarea>
+                } @else {
+                  <input nz-input [id]="'eto-f-' + f.key" [name]="'etoF' + f.key" [ngModel]="form()[f.key]" (ngModelChange)="setField(f.key, $event)" />
+                }
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainOrgan.HEZUOXIEYI.a', 'Hợp đồng') }}</nz-form-label>
+            <nz-form-control>
+              <app-edu-attachment
+                [files]="formFiles()"
+                [pendingFiles]="formPendingFiles()"
+                (pendingFilesChange)="formPendingFiles.set($event)"
+                (fileDeleted)="reloadFiles()"
+              ></app-edu-attachment>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="eto-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="eto-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('common.save', 'Lưu') }}</button>
+  </div>
+</nz-modal>
+
+<!-- Modal Xem chi tiết (singleTrainOrganInfo bản gốc) -->
+<nz-modal
+  [nzVisible]="detailVisible()"
+  [nzTitle]="i18n.t('pa.ins.alert.message.title.clickForDetail', 'Xem')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="detailVisible.set(false)"
+  nzWidth="760px"
+>
+  <ng-container *nzModalContent>
+    @if (detail(); as d) {
+      <nz-descriptions id="eto-detail" nzBordered nzSize="small" [nzColumn]="1">
+        @for (f of fields; track f.key) {
+          <nz-descriptions-item [nzTitle]="i18n.t(f.label, f.fallback)">
+            <span class="eto-pre">{{ d[f.key] }}</span>
+          </nz-descriptions-item>
+        }
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.trainOrgan.HEZUOXIEYI.a', 'Hợp đồng')">
+          <app-edu-attachment [files]="d.files ?? []" [readonly]="true"></app-edu-attachment>
+        </nz-descriptions-item>
+      </nz-descriptions>
+    }
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="eto-detail-close-btn" nz-button (click)="detailVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </div>
+</nz-modal>

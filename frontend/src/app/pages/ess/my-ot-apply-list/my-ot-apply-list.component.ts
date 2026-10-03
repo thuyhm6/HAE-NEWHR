@@ -27,6 +27,7 @@ import {
   SyCodeOption,
 } from './my-ot-apply-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 function firstDayOfMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -71,6 +72,9 @@ function lastDayOfMonth(): Date {
   styleUrl: './my-ot-apply-list.component.scss',
 })
 export class MyOtApplyListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   @ViewChild('detailModal') detailModal!: ApplyDetailModalComponent;
 
   private readonly service = inject(MyOtApplyListService);

@@ -21,6 +21,7 @@ import { ArPersonalListService, AuthorizedDeptNode } from '../../ess/ar-personal
 import { EmployeeSearchResult, SstOtApplyService } from '../../ess/sst-ot-apply/sst-ot-apply.service';
 import { CardRecordDayFilter, CardRecordDayRow, CardRecordDayService, ShiftOption } from './card-record-day.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 function todayStr(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -56,6 +57,9 @@ function todayStr(): Date {
   styleUrl: './card-record-day.component.scss',
 })
 export class CardRecordDayComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(CardRecordDayService);
   private readonly deptService = inject(ArPersonalListService);
   private readonly otService = inject(SstOtApplyService);

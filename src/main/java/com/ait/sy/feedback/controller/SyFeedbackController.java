@@ -1,5 +1,7 @@
 package com.ait.sy.feedback.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.sy.feedback.dto.SyFeedbackDto;
 import com.ait.sy.feedback.service.SyFeedbackService;
 import com.ait.sy.sys.dto.DataTablesResponse;
@@ -39,14 +41,14 @@ public class SyFeedbackController {
         try {
             if (dto.getFeedbackContent() == null || dto.getFeedbackContent().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("success", false, "message", "Vui lòng nhập nội dung góp ý!"));
+                        .body(CollectionUtil.mapOf("success", false, "message", "Vui lòng nhập nội dung góp ý!"));
             }
             syFeedbackService.submitFeedback(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Gửi góp ý thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Gửi góp ý thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi gửi góp ý: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
-                    .body(Map.of("success", false, "message", "Lỗi hệ thống khi gửi góp ý"));
+                    .body(CollectionUtil.mapOf("success", false, "message", "Lỗi hệ thống khi gửi góp ý"));
         }
     }
 

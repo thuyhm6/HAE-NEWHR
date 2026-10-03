@@ -31,6 +31,9 @@
         <result column="PERSONAL_SEND_DATA_UPDATE_DATE" property="personalSendDataUpdateDate"/>
         <result column="PERSONAL_SEND_DATA_UPDATED_IP" property="personalSendDataUpdatedIp"/>
         <result column="PERSONAL_SEND_DATA_UPDATED_BY" property="personalSendDataUpdatedBy"/>
+        <result column="PERSONAL_DATA_CONFIRM_BY" property="personalDataConfirmBy"/>
+        <result column="PERSONAL_DATA_CONFIRM_DATE" property="personalDataConfirmDate"/>
+        <result column="PERSONAL_DATA_CONFIRM_IP" property="personalDataConfirmIp"/>
         <result column="EMP_NAME" property="empName"/>
         <result column="DEPT_NAME" property="deptName"/>
     </resultMap>
@@ -62,8 +65,11 @@
             PERSONAL_SEND_DATA_FLAG,
             PERSONAL_SEND_DATA_UPDATE_DATE,
             PERSONAL_SEND_DATA_UPDATED_IP,
-            PERSONAL_SEND_DATA_UPDATED_BY
-        FROM sy_user 
+            PERSONAL_SEND_DATA_UPDATED_BY,
+            PERSONAL_DATA_CONFIRM_BY,
+            PERSONAL_DATA_CONFIRM_DATE,
+            PERSONAL_DATA_CONFIRM_IP
+        FROM sy_user
         WHERE USER_NAME = #{userName}
     </select>
 
@@ -94,8 +100,11 @@
             PERSONAL_SEND_DATA_FLAG,
             PERSONAL_SEND_DATA_UPDATE_DATE,
             PERSONAL_SEND_DATA_UPDATED_IP,
-            PERSONAL_SEND_DATA_UPDATED_BY
-        FROM sy_user 
+            PERSONAL_SEND_DATA_UPDATED_BY,
+            PERSONAL_DATA_CONFIRM_BY,
+            PERSONAL_DATA_CONFIRM_DATE,
+            PERSONAL_DATA_CONFIRM_IP
+        FROM sy_user
         WHERE USER_NO = #{userNo}
     </select>
 
@@ -126,8 +135,11 @@
             PERSONAL_SEND_DATA_FLAG,
             PERSONAL_SEND_DATA_UPDATE_DATE,
             PERSONAL_SEND_DATA_UPDATED_IP,
-            PERSONAL_SEND_DATA_UPDATED_BY
-        FROM sy_user 
+            PERSONAL_SEND_DATA_UPDATED_BY,
+            PERSONAL_DATA_CONFIRM_BY,
+            PERSONAL_DATA_CONFIRM_DATE,
+            PERSONAL_DATA_CONFIRM_IP
+        FROM sy_user
         WHERE PERSON_ID = #{personId}
     </select>
 
@@ -159,9 +171,12 @@
             PERSONAL_SEND_DATA_FLAG,
             PERSONAL_SEND_DATA_UPDATE_DATE,
             PERSONAL_SEND_DATA_UPDATED_IP,
-            PERSONAL_SEND_DATA_UPDATED_BY
-        FROM sy_user 
-        WHERE USER_NAME = #{userName} 
+            PERSONAL_SEND_DATA_UPDATED_BY,
+            PERSONAL_DATA_CONFIRM_BY,
+            PERSONAL_DATA_CONFIRM_DATE,
+            PERSONAL_DATA_CONFIRM_IP
+        FROM sy_user
+        WHERE USER_NAME = #{userName}
           AND PASSWORD = #{password}
           AND ACTIVITY = 1
         ]]>
@@ -195,7 +210,10 @@
             u.PERSONAL_SEND_DATA_FLAG,
             u.PERSONAL_SEND_DATA_UPDATE_DATE,
             u.PERSONAL_SEND_DATA_UPDATED_IP,
-            u.PERSONAL_SEND_DATA_UPDATED_BY
+            u.PERSONAL_SEND_DATA_UPDATED_BY,
+            u.PERSONAL_DATA_CONFIRM_BY,
+            u.PERSONAL_DATA_CONFIRM_DATE,
+            u.PERSONAL_DATA_CONFIRM_IP
         FROM sy_user u
         INNER JOIN hr_employee e ON u.PERSON_ID = e.PERSON_ID
         INNER JOIN hr_department d ON e.DEPTNO = d.DEPTNO
@@ -256,8 +274,11 @@
             PERSONAL_SEND_DATA_FLAG,
             PERSONAL_SEND_DATA_UPDATE_DATE,
             PERSONAL_SEND_DATA_UPDATED_IP,
-            PERSONAL_SEND_DATA_UPDATED_BY
-        FROM sy_user 
+            PERSONAL_SEND_DATA_UPDATED_BY,
+            PERSONAL_DATA_CONFIRM_BY,
+            PERSONAL_DATA_CONFIRM_DATE,
+            PERSONAL_DATA_CONFIRM_IP
+        FROM sy_user
         WHERE ACTIVITY = 1
         ORDER BY USER_NO
     </select>
@@ -309,6 +330,17 @@
             UPDATE_DATE = SYSDATE,
             UPDATED_BY = 'PASSWORD_MIGRATION'
         WHERE USER_NO = #{userNo}
+        ]]>
+    </update>
+
+    <!-- Xác nhận đồng ý xử lý dữ liệu cá nhân (popup bắt buộc sau đăng nhập) -->
+    <update id="confirmPersonalData">
+        <![CDATA[
+        UPDATE sy_user
+        SET PERSONAL_DATA_CONFIRM_BY = #{adminID, jdbcType=VARCHAR},
+            PERSONAL_DATA_CONFIRM_DATE = SYSDATE,
+            PERSONAL_DATA_CONFIRM_IP = #{adminIP, jdbcType=VARCHAR}
+        WHERE USER_NO = #{userNo, jdbcType=VARCHAR}
         ]]>
     </update>
 

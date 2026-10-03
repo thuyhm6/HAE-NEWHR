@@ -1,0 +1,27 @@
+@use '../shared/pa-salary-check';
+
+.pdpc-info {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    border: 1px solid #e8e8e8;
+    padding: 6px 8px;
+  }
+
+  th {
+    background: #fafafa;
+    font-weight: 500;
+    width: 10%;
+    white-space: nowrap;
+  }
+
+  td {
+    width: 15%;
+  }
+}
+
+.pdpc-group {
+  flex: 1 1 0;
+}

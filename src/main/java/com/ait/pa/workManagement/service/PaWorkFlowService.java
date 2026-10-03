@@ -9,7 +9,7 @@ public interface PaWorkFlowService {
 
     PaWorkFlowDto getWorkFlow(String payScheduleNo);
 
-    List<PaWorkFlowRecordsDto> getRecordList(String payScheduleNo, Integer flowStep);
+    List<PaWorkFlowRecordsDto> getRecordList(String payScheduleNo, List<Integer> flowSteps);
 
     String modifyWorkFlow(String payScheduleNo, String type);
 

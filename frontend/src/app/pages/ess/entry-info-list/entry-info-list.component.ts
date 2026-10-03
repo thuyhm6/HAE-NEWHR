@@ -24,6 +24,7 @@ import {
   ShiftOption,
 } from './entry-info-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 /**
  * Danh sách dữ liệu quẹt thẻ ca làm - port lại từ
  * ess/viewDept/viewEntryInfoList.html (Thymeleaf + DataTables server-side, đã
@@ -53,6 +54,9 @@ import {
   styleUrl: './entry-info-list.component.scss',
 })
 export class EntryInfoListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(EntryInfoListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

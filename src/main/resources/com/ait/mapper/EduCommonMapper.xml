@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduCommonMapper">
+
+    <resultMap id="EduDeptNodeResultMap" type="com.ait.edu.trainEducation.model.EduDeptNode">
+        <id column="DEPTNO" property="deptNo" jdbcType="VARCHAR"/>
+        <result column="PARENT_DEPT_NO" property="parentDeptNo" jdbcType="VARCHAR"/>
+        <result column="DEPTNAME" property="deptName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduEmployeeLookupResultMap" type="com.ait.edu.trainEducation.model.EduEmployeeLookup">
+        <id column="PERSON_ID" property="personId" jdbcType="VARCHAR"/>
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
+        <result column="DEPTNO" property="deptNo" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME" property="positionName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduFileResultMap" type="com.ait.edu.trainEducation.model.EduFile">
+        <id column="FILE_NO" property="fileNo" jdbcType="VARCHAR"/>
+        <result column="APPLY_NO" property="applyNo" jdbcType="VARCHAR"/>
+        <result column="APPLY_TYPE" property="applyType" jdbcType="VARCHAR"/>
+        <result column="FILE_NAME" property="fileName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- Tương đương edu.traineducation.getDeptTree bản gốc (bỏ cột CHECKED, việc tích chọn xử lý ở client) -->
+    <select id="findDeptTree" resultMap="EduDeptNodeResultMap">
+        SELECT A.DEPTNO, A.PARENT_DEPT_NO, A.DEPTNAME
+        FROM (
+            SELECT D.DEPTNO,
+                   D.PARENT_DEPT_NO,
+                   NVL(GET_DEPT_NAME(D.DEPTID, #{lang, jdbcType=VARCHAR}), D.DEPTNO) AS DEPTNAME,
+                   D.DEPT_LEVEL,
+                   D.ORDERNO
+            FROM HR_DEPARTMENT D
+            WHERE (D.DATE_ENDED IS NULL OR (D.DATE_CREATED &lt; SYSDATE AND D.DATE_ENDED &gt; SYSDATE))
+              AND D.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+              AND D.USE_YN = 'Y'
+            START WITH D.PARENT_DEPT_NO = '0' AND D.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+            CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO
+        ) A
+        ORDER BY A.DEPT_LEVEL, A.ORDERNO, A.DEPTNO
+    </select>
+
+    <sql id="employeeColumns">
+        H.PERSON_ID,
+        H.EMPID,
+        H.LOCAL_NAME,
+        H.DEPTNO,
+        GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+        GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+        GET_GLOBAL_NAME(H.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME
+    </sql>
+
+    <!-- Gộp desEmployee / queryTeacher / queryPeixun bản gốc: chỉ NV đang làm việc (EMP_OFFICE = '15119') -->
+    <select id="findEmployees" resultMap="EduEmployeeLookupResultMap">
+        SELECT <include refid="employeeColumns"/>
+        FROM HR_EMPLOYEE H
+        WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND H.EMP_OFFICE = '15119'
+        <if test="keyword != null and keyword != ''">
+            AND (UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                 OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="deptNos != null and deptNos.size() > 0">
+            AND H.DEPTNO IN
+            <foreach collection="deptNos" item="d" open="(" separator="," close=")">
+                #{d, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="deptRoot != null and deptRoot != ''">
+            AND H.DEPTNO IN (
+                SELECT B1.DEPTNO FROM HR_DEPARTMENT B1
+                START WITH B1.DEPTNO = #{deptRoot, jdbcType=VARCHAR}
+                CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+            )
+        </if>
+        <choose>
+            <when test="orderBy == 'E'">ORDER BY H.EMPID</when>
+            <otherwise>ORDER BY H.LOCAL_NAME, H.EMPID</otherwise>
+        </choose>
+    </select>
+
+    <select id="findEmployeeByEmpid" resultMap="EduEmployeeLookupResultMap">
+        SELECT <include refid="employeeColumns"/>
+        FROM HR_EMPLOYEE H
+        WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND H.EMPID = #{empid, jdbcType=VARCHAR}
+          AND ROWNUM = 1
+    </select>
+
+    <select id="findFiles" resultMap="EduFileResultMap">
+        SELECT F.FILE_NO, F.APPLY_NO, F.APPLY_TYPE, F.FILE_NAME
+        FROM ESS_FILE F
+        WHERE F.APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+          AND F.ACTIVITY = 1
+          AND F.APPLY_NO IN
+          <foreach collection="applyNos" item="no" open="(" separator="," close=")">
+              #{no, jdbcType=VARCHAR}
+          </foreach>
+        ORDER BY F.APPLY_NO, F.CREATE_DATE
+    </select>
+
+    <select id="findFileByNo" resultMap="EduFileResultMap">
+        SELECT F.FILE_NO, F.APPLY_NO, F.APPLY_TYPE, F.FILE_NAME
+        FROM ESS_FILE F
+        WHERE F.FILE_NO = #{fileNo, jdbcType=VARCHAR}
+          AND F.ACTIVITY = 1
+    </select>
+
+    <update id="softDeleteFile">
+        UPDATE ESS_FILE
+           SET ACTIVITY = 0,
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+         WHERE FILE_NO = #{fileNo, jdbcType=VARCHAR}
+    </update>
+
+    <update id="softDeleteFilesByApply">
+        UPDATE ESS_FILE
+           SET ACTIVITY = 0,
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR}
+         WHERE APPLY_TYPE = #{applyType, jdbcType=VARCHAR}
+           AND APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </update>
+
+</mapper>

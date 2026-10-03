@@ -13,6 +13,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { ImportExcelTempMacRecordsListService, MacRecordTempRow } from './import-excel-temp-mac-records-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Xem/xác nhận kết quả import Excel dữ liệu quẹt thẻ - port lại từ
  * ar/attendanceMintenance/viewImportExcelTempMacRecordsList.html (đã xoá).
@@ -28,6 +29,10 @@ import { ImportExcelTempMacRecordsListService, MacRecordTempRow } from './import
   styleUrl: './import-excel-temp-mac-records-list.component.scss',
 })
 export class ImportExcelTempMacRecordsListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ImportExcelTempMacRecordsListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

@@ -25,6 +25,6 @@ public class IpUtil {
             return "127.0.0.1";
         }
         String remoteAddr = request.getRemoteAddr();
-        return (remoteAddr == null || remoteAddr.isBlank()) ? "127.0.0.1" : remoteAddr;
+        return (remoteAddr == null || remoteAddr.trim().isEmpty()) ? "127.0.0.1" : remoteAddr;
     }
 }

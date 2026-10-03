@@ -59,7 +59,7 @@
   </div>
 
   <div class="veas-table-card">
-    <nz-table id="veas-table" [nzData]="rows()" [nzLoading]="listLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: '1600px', y: '100%' }">
+    <nz-table id="veas-table" [nzData]="rows()" [nzLoading]="listLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: '1600px', y: '100%' }">
       <thead>
         <tr>
           <th nzWidth="36px" class="veas-col-center"><input type="checkbox" [title]="i18n.t('evs.viewEvsAffirmorSetup.selectAll', 'Chọn tất cả')" (change)="toggleAll($any($event.target).checked)" /></th>

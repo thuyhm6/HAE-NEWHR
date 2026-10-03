@@ -1,5 +1,7 @@
 package com.ait.pa.salary.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.salary.dto.PaFormulaDto;
 import com.ait.pa.salary.service.PaFormulaService;
 import com.ait.sy.sys.dto.DataTablesResponse;
@@ -39,7 +41,7 @@ public class PaFormulaController {
             return ResponseEntity.ok(paFormulaService.getItemList());
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách hạng mục tính: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -50,7 +52,7 @@ public class PaFormulaController {
             return ResponseEntity.ok(paFormulaService.getToolItems());
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách công cụ công thức: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -61,7 +63,7 @@ public class PaFormulaController {
             return ResponseEntity.ok(paFormulaService.getAllItemNames());
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách ITEM_NAME: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -96,7 +98,7 @@ public class PaFormulaController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy công thức formularNo={}: {}", formularNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -105,16 +107,16 @@ public class PaFormulaController {
     public ResponseEntity<?> insert(@RequestBody PaFormulaDto dto) {
         try {
             if (dto.getItemNo() == null || dto.getItemNo().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Chưa chọn hạng mục!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Chưa chọn hạng mục!"));
             }
             if (dto.getFormular() == null || dto.getFormular().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập công thức!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập công thức!"));
             }
             paFormulaService.insertFormular(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Thêm mới thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Thêm mới thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi thêm mới công thức: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -123,16 +125,16 @@ public class PaFormulaController {
     public ResponseEntity<?> update(@RequestBody PaFormulaDto dto) {
         try {
             if (dto.getFormularNo() == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Thiếu thông tin FORMULAR_NO!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Thiếu thông tin FORMULAR_NO!"));
             }
             if (dto.getFormular() == null || dto.getFormular().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập công thức!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập công thức!"));
             }
             paFormulaService.updateFormular(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Cập nhật thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi cập nhật công thức formularNo={}: {}", dto.getFormularNo(), e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -141,10 +143,10 @@ public class PaFormulaController {
     public ResponseEntity<?> delete(@PathVariable Long formularNo) {
         try {
             paFormulaService.deleteFormular(formularNo);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa công thức formularNo={}: {}", formularNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -156,13 +158,13 @@ public class PaFormulaController {
             String itemNo        = body.get("itemNo");
             String direction     = body.get("direction");
             if (formularNoStr == null || itemNo == null || direction == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Thiếu thông tin!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Thiếu thông tin!"));
             }
             paFormulaService.swapConditionSeq(Long.parseLong(formularNoStr), itemNo, direction);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
             log.error("Lỗi khi hoán đổi trình tự tính: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 }

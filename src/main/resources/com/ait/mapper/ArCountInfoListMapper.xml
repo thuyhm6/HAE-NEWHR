@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.countAttendance.mapper.ArCountInfoListMapper">
+
+    <!--
+        Tổng hợp tăng ca theo tháng: mỗi row = 1 nhân viên. Mỗi tháng có 5 cột
+        (Tổng + Ngày thường/Thứ 7/Ngày nghỉ tuần/Ngày lễ), lấy từ hàm
+        GET_AR_OT_TOTAIL theo mã hạng mục tổng hợp: tháng M -> mã tổng "3"||M,
+        4 mã con = mã tổng||1..4 (1=ngày thường, 2=thứ 7, 3=nghỉ tuần, 4=lễ).
+        Giữ nguyên quy luật mã hạng mục do nghiệp vụ cung cấp (tháng 11/12 có
+        mã tổng "311"/"312" trùng với mã con của tháng 1, đây là mã hạng mục
+        đã được định nghĩa sẵn ở GET_AR_OT_TOTAIL, không phải lỗi).
+    -->
+    <resultMap id="ArCountInfoListOtResultMap" type="com.ait.ar.countAttendance.dto.ArCountInfoListOtDto">
+        <id     column="PERSON_ID_ID" property="personId" jdbcType="VARCHAR" />
+        <result column="EMPID_ID"     property="empId"    jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"   property="localName" jdbcType="VARCHAR" />
+        <result column="DEPT_NAME"    property="deptName" jdbcType="VARCHAR" />
+        <result column="TEAM_NAME"    property="teamName" jdbcType="VARCHAR" />
+        <result column="POST_GRADE_NO" property="postGradeNo" jdbcType="VARCHAR" />
+        <result column="EMP_TYPE_NAME" property="empTypeName" jdbcType="VARCHAR" />
+        <result column="SHIFT_NAME"   property="shiftName" jdbcType="VARCHAR" />
+        <result column="YEAR"         property="year"     jdbcType="VARCHAR" />
+        <result column="OT_TOTAIL"    property="otTotal"  jdbcType="VARCHAR" />
+        <result column="JANUARY" property="otM1Total" jdbcType="VARCHAR" />
+        <result column="JANUARY_NORMAL_WORK" property="otM1NormalWork" jdbcType="VARCHAR" />
+        <result column="JANUARY_SATURDAY" property="otM1Saturday" jdbcType="VARCHAR" />
+        <result column="JANUARY_WEEKLY_HOLIDAY" property="otM1WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="JANUARY_PUBLIC_HOLIDAY" property="otM1PublicHoliday" jdbcType="VARCHAR" />
+        <result column="FEBRUARY" property="otM2Total" jdbcType="VARCHAR" />
+        <result column="FEBRUARY_NORMAL_WORK" property="otM2NormalWork" jdbcType="VARCHAR" />
+        <result column="FEBRUARY_SATURDAY" property="otM2Saturday" jdbcType="VARCHAR" />
+        <result column="FEBRUARY_WEEKLY_HOLIDAY" property="otM2WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="FEBRUARY_PUBLIC_HOLIDAY" property="otM2PublicHoliday" jdbcType="VARCHAR" />
+        <result column="MARCH" property="otM3Total" jdbcType="VARCHAR" />
+        <result column="MARCH_NORMAL_WORK" property="otM3NormalWork" jdbcType="VARCHAR" />
+        <result column="MARCH_SATURDAY" property="otM3Saturday" jdbcType="VARCHAR" />
+        <result column="MARCH_WEEKLY_HOLIDAY" property="otM3WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="MARCH_PUBLIC_HOLIDAY" property="otM3PublicHoliday" jdbcType="VARCHAR" />
+        <result column="APRIL" property="otM4Total" jdbcType="VARCHAR" />
+        <result column="APRIL_NORMAL_WORK" property="otM4NormalWork" jdbcType="VARCHAR" />
+        <result column="APRIL_SATURDAY" property="otM4Saturday" jdbcType="VARCHAR" />
+        <result column="APRIL_WEEKLY_HOLIDAY" property="otM4WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="APRIL_PUBLIC_HOLIDAY" property="otM4PublicHoliday" jdbcType="VARCHAR" />
+        <result column="MAY" property="otM5Total" jdbcType="VARCHAR" />
+        <result column="MAY_NORMAL_WORK" property="otM5NormalWork" jdbcType="VARCHAR" />
+        <result column="MAY_SATURDAY" property="otM5Saturday" jdbcType="VARCHAR" />
+        <result column="MAY_WEEKLY_HOLIDAY" property="otM5WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="MAY_PUBLIC_HOLIDAY" property="otM5PublicHoliday" jdbcType="VARCHAR" />
+        <result column="JUNE" property="otM6Total" jdbcType="VARCHAR" />
+        <result column="JUNE_NORMAL_WORK" property="otM6NormalWork" jdbcType="VARCHAR" />
+        <result column="JUNE_SATURDAY" property="otM6Saturday" jdbcType="VARCHAR" />
+        <result column="JUNE_WEEKLY_HOLIDAY" property="otM6WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="JUNE_PUBLIC_HOLIDAY" property="otM6PublicHoliday" jdbcType="VARCHAR" />
+        <result column="JULY" property="otM7Total" jdbcType="VARCHAR" />
+        <result column="JULY_NORMAL_WORK" property="otM7NormalWork" jdbcType="VARCHAR" />
+        <result column="JULY_SATURDAY" property="otM7Saturday" jdbcType="VARCHAR" />
+        <result column="JULY_WEEKLY_HOLIDAY" property="otM7WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="JULY_PUBLIC_HOLIDAY" property="otM7PublicHoliday" jdbcType="VARCHAR" />
+        <result column="AUGUST" property="otM8Total" jdbcType="VARCHAR" />
+        <result column="AUGUST_NORMAL_WORK" property="otM8NormalWork" jdbcType="VARCHAR" />
+        <result column="AUGUST_SATURDAY" property="otM8Saturday" jdbcType="VARCHAR" />
+        <result column="AUGUST_WEEKLY_HOLIDAY" property="otM8WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="AUGUST_PUBLIC_HOLIDAY" property="otM8PublicHoliday" jdbcType="VARCHAR" />
+        <result column="SEPTEMBER" property="otM9Total" jdbcType="VARCHAR" />
+        <result column="SEPTEMBER_NORMAL_WORK" property="otM9NormalWork" jdbcType="VARCHAR" />
+        <result column="SEPTEMBER_SATURDAY" property="otM9Saturday" jdbcType="VARCHAR" />
+        <result column="SEPTEMBER_WEEKLY_HOLIDAY" property="otM9WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="SEPTEMBER_PUBLIC_HOLIDAY" property="otM9PublicHoliday" jdbcType="VARCHAR" />
+        <result column="OCTOBER" property="otM10Total" jdbcType="VARCHAR" />
+        <result column="OCTOBER_NORMAL_WORK" property="otM10NormalWork" jdbcType="VARCHAR" />
+        <result column="OCTOBER_SATURDAY" property="otM10Saturday" jdbcType="VARCHAR" />
+        <result column="OCTOBER_WEEKLY_HOLIDAY" property="otM10WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="OCTOBER_PUBLIC_HOLIDAY" property="otM10PublicHoliday" jdbcType="VARCHAR" />
+        <result column="NOVEMBER" property="otM11Total" jdbcType="VARCHAR" />
+        <result column="NOVEMBER_NORMAL_WORK" property="otM11NormalWork" jdbcType="VARCHAR" />
+        <result column="NOVEMBER_SATURDAY" property="otM11Saturday" jdbcType="VARCHAR" />
+        <result column="NOVEMBER_WEEKLY_HOLIDAY" property="otM11WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="NOVEMBER_PUBLIC_HOLIDAY" property="otM11PublicHoliday" jdbcType="VARCHAR" />
+        <result column="DECEMBER" property="otM12Total" jdbcType="VARCHAR" />
+        <result column="DECEMBER_NORMAL_WORK" property="otM12NormalWork" jdbcType="VARCHAR" />
+        <result column="DECEMBER_SATURDAY" property="otM12Saturday" jdbcType="VARCHAR" />
+        <result column="DECEMBER_WEEKLY_HOLIDAY" property="otM12WeeklyHoliday" jdbcType="VARCHAR" />
+        <result column="DECEMBER_PUBLIC_HOLIDAY" property="otM12PublicHoliday" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectOtSummaryList" parameterType="com.ait.ar.countAttendance.dto.ArCountInfoListOtDto"
+            resultMap="ArCountInfoListOtResultMap">
+        SELECT H.EMPID EMPID_ID,
+        H.LOCAL_NAME,
+        H.PERSON_ID PERSON_ID_ID,
+        GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPT_NAME,
+        GET_DEPT_NAME_BY_LEVEL(H.DEPTNO, H.CPNY_ID, '2', #{lang, jdbcType=VARCHAR}) TEAM_NAME,
+        GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE_NO,
+        GET_GLOBAL_NAME(H.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) EMP_TYPE_NAME,
+        GET_GLOBAL_NAME(H.SHIFT_NO, #{lang, jdbcType=VARCHAR}) SHIFT_NAME,
+        TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY') YEAR,
+        GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-01-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'201') OT_TOTAIL
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-01-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') JANUARY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-01-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') JANUARY_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-01-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') JANUARY_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-01-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') JANUARY_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-01-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') JANUARY_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-02-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') FEBRUARY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-02-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') FEBRUARY_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-02-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') FEBRUARY_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-02-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') FEBRUARY_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-02-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') FEBRUARY_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-03-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') MARCH
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-03-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') MARCH_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-03-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') MARCH_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-03-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') MARCH_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-03-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') MARCH_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-04-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') APRIL
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-04-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') APRIL_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-04-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') APRIL_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-04-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') APRIL_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-04-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') APRIL_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-05-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') MAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-05-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') MAY_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-05-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') MAY_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-05-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') MAY_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-05-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') MAY_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-06-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') JUNE
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-07-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') JULY_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-07-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') JULY_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-07-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') JULY_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-07-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') JULY_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-08-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') AUGUST
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-08-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') AUGUST_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-08-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') AUGUST_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-08-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') AUGUST_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-08-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') AUGUST_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-09-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') SEPTEMBER
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-09-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') SEPTEMBER_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-09-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') SEPTEMBER_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-09-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') SEPTEMBER_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-09-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') SEPTEMBER_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-10-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'31') OCTOBER
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-10-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') OCTOBER_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-10-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') OCTOBER_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-10-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') OCTOBER_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-10-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') OCTOBER_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-11-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') NOVEMBER
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-11-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') NOVEMBER_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-11-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') NOVEMBER_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-11-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') NOVEMBER_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-11-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') NOVEMBER_PUBLIC_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-12-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') DECEMBER
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-12-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'311') DECEMBER_NORMAL_WORK
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-12-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'312') DECEMBER_SATURDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-12-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'313') DECEMBER_WEEKLY_HOLIDAY
+             , GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY')||'-12-01',#{cpnyId, jdbcType=VARCHAR},H.PERSON_ID,'314') DECEMBER_PUBLIC_HOLIDAY
+        FROM HR_DEPARTMENT D, HR_EMPLOYEE H
+        WHERE H.DEPTNO = D.DEPTNO
+        AND H.EMP_TYPE_CODE &lt;&gt; '10418'
+        AND H.PERSON_ID NOT LIKE '111111%'
+        AND H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        AND (H.DATE_LEFT IS NULL OR TO_CHAR(H.DATE_LEFT, 'YYYY/MM/DD') &gt;= TO_CHAR(ADD_MONTHS(TO_DATE(TO_CHAR(TO_DATE(#{startTime, jdbcType=VARCHAR},'DD/MM/YYYY'),'YYYY/MM')||'/25','YYYY/MM/DD'),-1),'YYYY/MM/DD'))
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+        </if>
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || H.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="empTypeCode != null and empTypeCode != ''">
+            AND H.EMP_TYPE_CODE = #{empTypeCode, jdbcType=VARCHAR}
+        </if>
+        ORDER BY H.EMPID
+    </select>
+</mapper>

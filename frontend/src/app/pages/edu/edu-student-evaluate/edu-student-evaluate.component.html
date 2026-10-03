@@ -1,0 +1,156 @@
+<div class="ese-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.START_DATE1', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ese-search-start" name="eseSearchStart" [ngModel]="searchStart()" (ngModelChange)="searchStart.set($event)" nzFormat="dd/MM/yyyy" class="ese-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.END_DATE1', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ese-search-end" name="eseSearchEnd" [ngModel]="searchEnd()" (ngModelChange)="searchEnd.set($event)" nzFormat="dd/MM/yyyy" class="ese-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="14" class="ese-toolbar-actions">
+          <button id="ese-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ar.viewempcalender.title.search', 'Tìm kiếm') }}
+          </button>
+          <button id="ese-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="ese-evaluate-btn" nz-button nzType="primary" type="button" (click)="openEvaluate()">
+            <span nz-icon nzType="form"></span>
+            {{ i18n.t('edu.studentEvaluate.KAOPING.a', 'Đánh giá') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="ese-quick-filter">
+      <input id="ese-quick-filter" nz-input name="eseQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #eseTable
+      id="ese-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="ese-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('edu.trainArchives.KECHENGMINGCHENGQICI.a', 'Tên khóa đào tạo') }}</th>
+          <th class="ese-col-center">{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</th>
+          <th class="ese-col-center">{{ i18n.t('edu.trainBasicInformation.PEIXUNSHISHIQIJIAN.a', 'Thời gian') }}</th>
+          <th class="ese-col-center">{{ i18n.t('inct.salesman.eval.result', 'Kết quả') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of eseTable.data; track row.basicNo; let idx = $index) {
+          <tr class="ese-row" [class.ese-row-selected]="row.basicNo === selectedNo()" (click)="selectRow(row)" (dblclick)="openEvaluate(row.basicNo)">
+            <td class="ese-col-center">{{ (eseTable.nzPageIndex - 1) * eseTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td [class.ese-in-progress]="row.inProgress">{{ courseTitle(row.courseNameCode, row.periodTime) }}</td>
+            <td class="ese-col-center">{{ row.impleClassHour }} {{ unitLabel(row.impleClassUnit) }}</td>
+            <td class="ese-col-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="ese-col-center">
+              @if ((row.studentEvalCount ?? 0) > 0) {
+                <a (click)="$event.stopPropagation(); openEvaluate(row.basicNo, true)">{{ i18n.t('button.sys.view', 'Xem') }}</a>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="ese-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Popup đánh giá / xem (studentEvaluateInfo / studentEvaluateSingle bản gốc); nzMaskClosable=true -->
+<nz-modal
+  [nzVisible]="evalVisible()"
+  [nzTitle]="evalReadonly() ? i18n.t('pa.salary.title.fullInfo', 'Thông tin chi tiết') : i18n.t('edu.studentEvaluate.KAOPING.a', 'Đánh giá')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="evalVisible.set(false)"
+  nzWidth="900px"
+>
+  <ng-container *nzModalContent>
+    <app-edu-course-summary [course]="evalCourse()"></app-edu-course-summary>
+    @if (!evalReadonly()) {
+      <div class="ese-modal-toolbar">
+        <input #eseImportInput id="ese-import-file" type="file" accept=".xlsx,.xls" class="ese-hidden" (change)="onImportFileSelected($event)" />
+        <button id="ese-import-btn" nz-button nzSize="small" [nzLoading]="importing()" (click)="eseImportInput.click()">
+          <span nz-icon nzType="upload"></span>
+          {{ i18n.t('ar.addempshift.title.excelimport', 'Chèn file') }}
+        </button>
+        <button id="ese-template-btn" nz-button nzSize="small" (click)="downloadTemplate()">
+          <span nz-icon nzType="download"></span>
+          {{ i18n.t('pa.button.message.specialempimportmodeldown', 'Bản mẫu') }}
+        </button>
+        <button id="ese-export-btn" nz-button nzSize="small" (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>
+          {{ i18n.t('ess.infoApply.EXCEL_OUT', 'Xuất Excel') }}
+        </button>
+      </div>
+    }
+    <nz-table #eseStuTable id="ese-student-table" [nzData]="students()" [nzLoading]="evalLoading()" [nzPageSize]="defaultPageSize" [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="ese-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('alert.pa.pasalarycanshu.shehao', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('alert.pa.pasalarycanshu.xingming', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.deptName', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('ess.trans.title.postGradeName', 'Chức vụ') }}</th>
+          <th nzWidth="140px" class="ese-col-center">{{ i18n.t('edu.studentEvaluate.KAOSHICHENGJI.a', 'Điểm số') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of eseStuTable.data; track s.freeNo; let idx = $index) {
+          <tr>
+            <td class="ese-col-center">{{ (eseStuTable.nzPageIndex - 1) * eseStuTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ s.empid }}</td>
+            <td>{{ s.localName }}</td>
+            <td>{{ s.deptName }}</td>
+            <td>{{ s.postGradeName }}</td>
+            <td class="ese-col-center">
+              @if (evalReadonly()) {
+                {{ s.evaResult }}
+              } @else {
+                <nz-input-number [id]="'ese-score-' + s.freeNo" [ngModel]="scores()[s.freeNo]" (ngModelChange)="setScore(s.freeNo, $event)" [nzMin]="0" [nzMax]="100" nzSize="small"></nz-input-number>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="ese-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="ese-cancel-btn" nz-button (click)="evalVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+    @if (!evalReadonly()) {
+      <button id="ese-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('ess.message.save', 'Lưu') }}</button>
+    }
+  </div>
+</nz-modal>

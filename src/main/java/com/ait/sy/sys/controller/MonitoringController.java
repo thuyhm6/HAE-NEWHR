@@ -243,7 +243,7 @@ public class MonitoringController {
         try {
             String safeEventType = sanitizeLogInput(eventType, 50);
             String safeMessage = sanitizeLogInput(message, 500);
-            if (safeMessage == null || safeMessage.isBlank()) {
+            if (safeMessage == null || safeMessage.trim().isEmpty()) {
                 response.put("error", "Message must not be empty");
                 response.put("timestamp", System.currentTimeMillis());
                 return ResponseEntity.badRequest().body(response);

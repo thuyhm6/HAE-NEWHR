@@ -16,6 +16,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { EmpSearchService, EmployeeSearchResult } from '../shared/emp-search.service';
 import { EmergencyAddressRow, EmergencyAddressSavePayload, EmergencyAddressService } from './emergency-address.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../../core/config/table-pagination.config';
 /**
  * Địa chỉ khẩn cấp - port lại từ hrm/empinfo/emergencyAddressSearch.html
  * (đã xoá).
@@ -40,6 +41,10 @@ import { EmergencyAddressRow, EmergencyAddressSavePayload, EmergencyAddressServi
   styleUrl: './emergency-address.component.scss',
 })
 export class EmergencyAddressComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(EmergencyAddressService);
   private readonly employeeService = inject(EmpSearchService);
   private readonly message = inject(NzMessageService);

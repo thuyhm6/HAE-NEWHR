@@ -1,0 +1,151 @@
+<div class="etar-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etar-search-keyword" nz-input name="etarSearchKeyword" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="etar-search-dept"
+                name="etarSearchDept"
+                [nzNodes]="deptNodes()"
+                [ngModel]="searchDept()"
+                (ngModelChange)="searchDept.set($event)"
+                nzAllowClear
+                nzShowSearch
+                [nzDropdownStyle]="{ 'max-height': '320px' }"
+                [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etar-search-course" nz-input name="etarSearchCourse" [ngModel]="searchCourse()" (ngModelChange)="searchCourse.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainArchives.PEIXUNNEIRONG.a', 'Nội dung') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etar-search-content" nz-input name="etarSearchContent" [ngModel]="searchContent()" (ngModelChange)="searchContent.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainArchives.SHISHIKAISHIRIQI.a', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etar-search-start" name="etarSearchStart" [ngModel]="searchStart()" (ngModelChange)="searchStart.set($event)" nzFormat="dd/MM/yyyy" class="etar-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainArchives.SHISHIJIESHURIQI.a', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etar-search-end" name="etarSearchEnd" [ngModel]="searchEnd()" (ngModelChange)="searchEnd.set($event)" nzFormat="dd/MM/yyyy" class="etar-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="16" class="etar-toolbar-actions">
+          <button id="etar-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ar.viewempcalender.title.search', 'Tìm kiếm') }}
+          </button>
+          <button id="etar-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="etar-export-btn" nz-button type="button" (click)="exportExcel()">
+            <span nz-icon nzType="file-excel"></span>
+            {{ i18n.t('pa.insurance.title.excelExport', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="etar-quick-filter">
+      <input id="etar-quick-filter" nz-input name="etarQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #etarTable
+      id="etar-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="etar-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="etar-center">{{ i18n.t('inct.salesman.empNo', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('pa.title.message.empHrmName', 'Họ tên') }}</th>
+          <th class="etar-center">{{ i18n.t('empsubject.sexName', 'Giới tính') }}</th>
+          <th>{{ i18n.t('hrm.empinfo.ORG_NAME_LOCAL', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hrm.contract.Rank', 'Chức vụ') }}</th>
+          <th class="etar-center">{{ i18n.t('ess.empInfo.date_of_agency', 'Ngày vào làm') }}</th>
+          <th>{{ i18n.t('edu.trainArchives.KECHENGMINGCHENGQICI.a', 'Tên khóa đào tạo') }}</th>
+          <th>{{ i18n.t('edu.planManager.PEIXUNNEIRONG.a', 'Nội dung') }}</th>
+          <th class="etar-center">{{ i18n.t('edu.trainArchives.SHISHIQIJIAN.a', 'Thời gian') }}</th>
+          <th class="etar-center">{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</th>
+          <th>{{ i18n.t('edu.planManager.ZHUGUANBUMEN.a', 'Bộ phận chủ quản') }}</th>
+          <th>{{ i18n.t('empsubject.eduRm', 'Địa điểm đào tạo') }}</th>
+          <th class="etar-right">{{ i18n.t('edu.trainArchives.ZONGHECHENGJI.a', 'Thành tích') }}</th>
+          <th class="etar-right">{{ i18n.t('edu.trainArchives.PEIXUNFEI.a', 'Phí đào tạo') }}</th>
+          <th>{{ i18n.t('edu.trainArchives.BAOGAOSHU.a', 'Bản báo cáo') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of etarTable.data; track $index; let idx = $index) {
+          <tr>
+            <td class="etar-center">{{ (etarTable.nzPageIndex - 1) * etarTable.nzPageSize + idx + 1 }}</td>
+            <td class="etar-center">{{ row.empid }}</td>
+            <td>{{ row.localName }}</td>
+            <td class="etar-center">{{ row.sexName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td class="etar-center">{{ row.dateStarted }}</td>
+            <td>{{ courseTitle(row) }}</td>
+            <td>{{ row.trainContent }}</td>
+            <td class="etar-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="etar-center">{{ classHour(row) }}</td>
+            <td>{{ row.departManaName }}</td>
+            <td>{{ row.trainAddress }}</td>
+            <td class="etar-right">{{ row.evaResult }}</td>
+            <td class="etar-right">{{ row.allCost }}</td>
+            <td>
+              @for (f of row.files ?? []; track f.fileNo; let fi = $index) {
+                <div>
+                  {{ fi + 1 }}.
+                  <a [href]="fileUrl(f.fileNo)" target="_blank" rel="noopener">{{ f.fileName }}</a>
+                </div>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="16" class="etar-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>

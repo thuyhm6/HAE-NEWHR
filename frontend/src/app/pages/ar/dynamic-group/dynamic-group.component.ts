@@ -16,6 +16,7 @@ import { I18nService } from '../../../i18n/i18n.service';
 import { EmployeeSearchResult, SstOtApplyService } from '../../ess/sst-ot-apply/sst-ot-apply.service';
 import { DYNAMIC_GROUP_NO, DynamicGroupRow, DynamicGroupService } from './dynamic-group.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý danh sách "Nhân viên đặc biệt" - port lại từ
  * ar/attendanceSettings/viewDynamicGroup.html (đã xoá). Chỉ Thêm (qua picker
@@ -42,6 +43,10 @@ import { DYNAMIC_GROUP_NO, DynamicGroupRow, DynamicGroupService } from './dynami
   styleUrl: './dynamic-group.component.scss',
 })
 export class DynamicGroupComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(DynamicGroupService);
   private readonly empService = inject(SstOtApplyService);
   private readonly message = inject(NzMessageService);

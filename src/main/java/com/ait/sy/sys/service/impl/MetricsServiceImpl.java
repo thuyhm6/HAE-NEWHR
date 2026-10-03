@@ -1,5 +1,7 @@
 package com.ait.sy.sys.service.impl;
 
+import com.ait.util.CollectionUtil;
+
 import io.micrometer.core.instrument.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,7 +102,7 @@ public class MetricsServiceImpl implements MetricsService {
         recordGauge("business." + metricName, value, tags);
 
         // Log business metric
-        incrementCounter("business_metrics_total", Map.of("metric", metricName));
+        incrementCounter("business_metrics_total", CollectionUtil.mapOf("metric", metricName));
     }
 
     @Override

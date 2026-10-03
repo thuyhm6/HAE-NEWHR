@@ -13,6 +13,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { PaPayScheduleRow, PaPayScheduleService, SyCodeOption } from './pa-pay-schedule.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function parseYyyyMmDd(s?: string | null): Date | null {
   if (!s) return null;
   const [y, m, d] = s.split('-').map(Number);
@@ -42,6 +43,10 @@ function toYyyyMmDd(d: Date | null): string {
   styleUrl: './pa-pay-schedule.component.scss',
 })
 export class PaPayScheduleComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(PaPayScheduleService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

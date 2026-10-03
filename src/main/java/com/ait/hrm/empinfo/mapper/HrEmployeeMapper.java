@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto;
 import com.ait.hrm.empinfo.dto.EmployeeSearchResponse;
 import com.ait.hrm.empinfo.model.HrEmployee;
+import com.ait.sy.sys.dto.PersonalDataConfirmInfoDTO;
 
 import java.util.List;
 
@@ -98,4 +99,13 @@ public interface HrEmployeeMapper {
             @Param("empOffice") String empOffice);
 
     List<EmpMonthlyStatsDto> selectEmpMonthlyStats(@Param("year") int year);
+
+    /**
+     * Lấy thông tin nhân viên hiển thị trên popup xác nhận đồng ý xử lý dữ
+     * liệu cá nhân (Họ tên, ID, Chức vụ, Team/Part/Cell)
+     *
+     * @param personId ID cá nhân (liên kết sy_user.PERSON_ID)
+     * @return PersonalDataConfirmInfoDTO hoặc null
+     */
+    PersonalDataConfirmInfoDTO findPersonalDataConfirmInfo(@Param("personId") String personId);
 }

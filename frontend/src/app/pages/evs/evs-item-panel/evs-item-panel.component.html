@@ -36,7 +36,7 @@
           <span nz-icon nzType="plus"></span> {{ i18n.t('common.add', 'Thêm') }}
         </button>
       </div>
-      <nz-table [nzData]="itemRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+      <nz-table [nzData]="itemRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }">
         <thead>
           <tr>
             <th nzWidth="44px" class="veitp-col-center">{{ i18n.t('evs.manage.viewEvsItemPanel.col.no', 'No.') }}</th>
@@ -76,7 +76,7 @@
           <span nz-icon nzType="plus"></span> {{ i18n.t('common.add', 'Thêm') }}
         </button>
       </div>
-      <nz-table [nzData]="paramRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25,50,100]" [nzScroll]="{ x: 'max-content', y: '100%' }">
+      <nz-table [nzData]="paramRows()" [nzLoading]="tabLoading()" nzSize="small" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }">
         <thead>
           <tr>
             <th nzWidth="44px" class="veitp-col-center">{{ i18n.t('evs.manage.viewEvsItemPanel.col.no', 'No.') }}</th>

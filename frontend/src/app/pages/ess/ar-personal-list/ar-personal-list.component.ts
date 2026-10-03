@@ -27,6 +27,7 @@ import {
   SyCodeOption,
 } from './ar-personal-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const EMP_TYPE_PARENT_CODE = '13864';
 /** Số cột cố định trước các cột chấm công động: STT, Mã NV, Họ tên, Phòng ban. */
 const STICKY_COLUMN_COUNT = 4;
@@ -59,6 +60,10 @@ const STICKY_COLUMN_COUNT = 4;
   styleUrl: './ar-personal-list.component.scss',
 })
 export class ArPersonalListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ArPersonalListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

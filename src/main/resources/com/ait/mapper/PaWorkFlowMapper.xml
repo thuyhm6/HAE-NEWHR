@@ -21,10 +21,10 @@
     <select id="selectOne" resultMap="PaWorkFlowResultMap">
         SELECT PWF.PA_WORK_FLOW_NO,
                PPS.PAY_SCHEDULE_NO,
-               TO_CHAR(PPS.HR_START_DATE, 'DD-MM-YYYY') HR_START_DATE,
-               TO_CHAR(PPS.HR_END_DATE,   'DD-MM-YYYY') HR_END_DATE,
-               TO_CHAR(PPS.AR_START_DATE, 'DD-MM-YYYY') AR_START_DATE,
-               TO_CHAR(PPS.AR_END_DATE,   'DD-MM-YYYY') AR_END_DATE,
+               TO_CHAR(PPS.HR_START_DATE, 'DD/MM/YYYY') HR_START_DATE,
+               TO_CHAR(PPS.HR_END_DATE,   'DD/MM/YYYY') HR_END_DATE,
+               TO_CHAR(PPS.AR_START_DATE, 'DD/MM/YYYY') AR_START_DATE,
+               TO_CHAR(PPS.AR_END_DATE,   'DD/MM/YYYY') AR_END_DATE,
                OBJ_CREATE_FLAG,
                AR_MONTH_CAL_FLAG,
                PA_CAL_FLAG,
@@ -53,8 +53,9 @@
         <result column="ROW_NUM"                 property="rowNum"       jdbcType="NUMERIC" />
     </resultMap>
 
+    <!-- Lịch sử thao tác - flowSteps: danh sách bước (bản gốc truyền FLOW_STEP=1 | 2 | 3 | 4,6 | 5,7) -->
     <select id="selectRecordList" resultMap="PaWorkFlowRecordsResultMap">
-        SELECT ROWNUM AS ROW_NUM,
+        SELECT ROW_NUMBER() OVER (ORDER BY PWFR.CREATE_DATE DESC, PWFR.PA_WORK_FLOW_RECORDS_NO DESC) AS ROW_NUM,
                PWFR.PA_WORK_FLOW_RECORDS_NO,
                PWFR.PA_WORK_FLOW_NO,
                PWFR.FLOW_STEP,
@@ -66,10 +67,13 @@
           JOIN PA_PAY_SCHEDULE PPS ON PWF.PAY_SCHEDULE_NO = PPS.PAY_SCHEDULE_NO
          WHERE PPS.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
            AND PPS.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
-           <if test="flowStep != null">
-               AND PWFR.FLOW_STEP = #{flowStep, jdbcType=NUMERIC}
+           <if test="flowSteps != null and flowSteps.size() > 0">
+               AND PWFR.FLOW_STEP IN
+               <foreach collection="flowSteps" item="step" open="(" separator="," close=")">
+                   #{step, jdbcType=NUMERIC}
+               </foreach>
            </if>
-         ORDER BY PWFR.PA_WORK_FLOW_RECORDS_NO ASC
+         ORDER BY PWFR.CREATE_DATE DESC, PWFR.PA_WORK_FLOW_RECORDS_NO DESC
     </select>
 
     <!-- Gọi stored procedure xử lý quy trình lương -->

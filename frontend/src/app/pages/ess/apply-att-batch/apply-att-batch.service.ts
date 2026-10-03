@@ -26,8 +26,7 @@ export interface AttBatchRow {
 }
 
 export interface AttBatchFilter {
-  empId?: string;
-  localName?: string;
+  keyword?: string;
   fromDate?: string;
   toDate?: string;
   affirmFlag?: string;

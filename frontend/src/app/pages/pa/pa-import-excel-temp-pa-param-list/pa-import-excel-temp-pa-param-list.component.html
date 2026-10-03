@@ -32,7 +32,7 @@
 
     <div class="viept-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
 
-    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" nzBordered [nzScroll]="{ x: '1200px' }" #vieptTable>
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered [nzScroll]="{ x: '1200px' }" #vieptTable>
       <thead>
         <tr>
           <th nzWidth="60px" class="viept-col-center">{{ i18n.t('impParam.line', 'STT') }}</th>

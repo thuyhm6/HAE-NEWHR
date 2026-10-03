@@ -1,0 +1,160 @@
+<div class="ecm-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE', 'Chương trình đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ecm-search-diff" name="ecmSearchDiff" [ngModel]="searchDiffCode()" (ngModelChange)="onSearchDiffChange($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of diffOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ecm-search-type" name="ecmSearchType" [ngModel]="searchTypeCode()" (ngModelChange)="searchTypeCode.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of typeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ecm-search-name" nz-input name="ecmSearchName" [ngModel]="searchCourseName()" (ngModelChange)="searchCourseName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="9" class="ecm-toolbar-actions">
+          <button id="ecm-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="ecm-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="ecm-add-btn" nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('button.add', 'Thêm mới') }}
+          </button>
+          <button id="ecm-edit-btn" nz-button type="button" (click)="openEditModal()">
+            <span nz-icon nzType="edit"></span>
+            {{ i18n.t('button.update', 'Sửa') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="ecm-quick-filter">
+      <input id="ecm-quick-filter" nz-input name="ecmQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #ecmTable
+      id="ecm-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="ecm-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</th>
+          <th>{{ i18n.t('edu.courseManager.KECHENGBIANHAO.a', 'Mã khóa học') }}</th>
+          <th>{{ i18n.t('ar.viewarcardrecord.title.beizhu', 'Ghi chú') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ecmTable.data; track row.courseNo; let idx = $index) {
+          <tr class="ecm-row" [class.ecm-row-selected]="row.courseNo === selectedNo()" (click)="selectRow(row)" (dblclick)="openEditModal(row.courseNo)">
+            <td class="ecm-col-center">{{ (ecmTable.nzPageIndex - 1) * ecmTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ row.courseNameCode }}</td>
+            <td>{{ row.courseNumber }}</td>
+            <td>{{ row.remark }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="ecm-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa: nzMaskClosable=true -> bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('edu.courseManager.modal.editTitle', 'Cập nhật khóa học') : i18n.t('edu.courseManager.modal.addTitle', 'Thêm mới khóa học')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  nzWidth="720px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="!modalIsEdit()">{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+            <nz-form-control>
+              @if (modalIsEdit()) {
+                <input id="ecm-f-type-name" nz-input name="ecmFTypeName" [ngModel]="formTypeName()" disabled />
+              } @else {
+                <nz-select id="ecm-f-system" name="ecmFSystem" [ngModel]="formSysmanaNo()" (ngModelChange)="formSysmanaNo.set($event)" nzShowSearch [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                  @for (s of systemOptions(); track s.sysmanaNo) {
+                    <nz-option [nzValue]="s.sysmanaNo" [nzLabel]="systemLabel(s)"></nz-option>
+                  }
+                </nz-select>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ecm-f-name" nz-input name="ecmFName" [ngModel]="formCourseName()" (ngModelChange)="formCourseName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.courseManager.KECHENGBIANHAO.a', 'Mã khóa học') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ecm-f-number" nz-input name="ecmFNumber" [ngModel]="formCourseNumber()" disabled [placeholder]="i18n.t('edu.systemManager.autoNoHint', 'Tự động sinh khi lưu')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewarcardrecord.title.beizhu', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="ecm-f-remark" nz-input name="ecmFRemark" rows="3" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="ecm-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="ecm-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('common.save', 'Lưu') }}</button>
+  </div>
+</nz-modal>

@@ -22,6 +22,7 @@ import {
   MonthDetailRow,
 } from './month-detail-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const QUICK_FILTER_DEBOUNCE_MS = 400;
 
 const QUICK_EXPORT_BUTTONS = [
@@ -69,6 +70,9 @@ const REPORT_TYPE_OPTIONS = [
   styleUrl: './month-detail-list.component.scss',
 })
 export class MonthDetailListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(MonthDetailListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);
@@ -88,7 +92,7 @@ export class MonthDetailListComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly rows = signal<MonthDetailRow[]>([]);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly total = signal(0);
 
   private listBootstrapped = false;

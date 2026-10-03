@@ -1,0 +1,106 @@
+<div class="pdprl-page">
+  <div class="pdprl-search-card">
+    <div class="pdprl-search-row">
+      <div class="pdprl-field">
+        <label class="pdprl-label">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</label>
+        <nz-tree-select
+          id="pdprlDept"
+          class="pdprl-select-wide"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="searchDeptNos()"
+          (ngModelChange)="searchDeptNos.set($event)"
+          nzMultiple
+          nzCheckable
+          nzShowSearch
+          nzAllowClear
+          [nzMaxTagCount]="2"
+          [nzDropdownStyle]="{ 'max-height': '320px' }"
+          [nzPlaceHolder]="i18n.t('pa.payStub.deptPlaceholder', 'Mã / Tên phòng ban')"
+        ></nz-tree-select>
+      </div>
+      <div class="pdprl-field">
+        <label class="pdprl-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <nz-select id="pdprlPaySchedule" class="pdprl-select" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch>
+          @for (sch of scheduleOptions(); track sch.payScheduleNo) {
+            <nz-option [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="pdprl-actions">
+        <button id="pdprlBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+        <button id="pdprlBtnExport" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>{{ i18n.t('hrm.empinfo.EXPORT', 'Xuất Excel') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pdprl-table-card">
+    <div class="pdprl-toolbar">
+      <span class="pdprl-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</span>
+      <input
+        id="pdprlQuickFilter"
+        nz-input
+        class="pdprl-quick-filter"
+        [ngModel]="quickFilter()"
+        (ngModelChange)="quickFilter.set($event); pageIndex.set(1)"
+        [placeholder]="i18n.t('ess.message.rapid_screening', 'Lọc nhanh')"
+      />
+    </div>
+    <nz-table
+      #pdprlTable
+      id="pdprlTable"
+      [nzData]="displayRows()"
+      [nzLoading]="loading()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="pageSizeOptions"
+      nzShowSizeChanger
+      (nzPageIndexChange)="pageIndex.set($event)"
+      (nzPageSizeChange)="pageSize.set($event)"
+      [nzScroll]="{ x: '13800px', y: 'calc(100vh - 360px)' }"
+      [nzShowTotal]="pdprlTotalTpl"
+      [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" nzLeft class="pdprl-center">No</th>
+          <th nzWidth="200px" nzLeft [nzSortFn]="sortFn('DEPT_NAME')">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th nzWidth="80px" nzLeft class="pdprl-center" [nzSortFn]="sortFn('EMPNUMS')">{{ i18n.t('hrm.empinfo.PERSON_NUMBER', 'Số lượng') }}</th>
+          @for (col of amountColumns; track col.field) {
+            <th nzWidth="120px" class="pdprl-right" [nzSortFn]="sortFn(col.field)">{{ i18n.t(col.key, col.fallback) }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of pdprlTable.data; track $index) {
+          <tr class="pdprl-row" [class.pdprl-row-selected]="selectedRows().has(row)" (click)="toggleRow(row)">
+            <td nzLeft class="pdprl-center">{{ (pageIndex() - 1) * pageSize() + $index + 1 }}</td>
+            <td nzLeft>{{ row['DEPT_NAME'] }}</td>
+            <td nzLeft class="pdprl-center">{{ row['EMPNUMS'] }}</td>
+            @for (col of amountColumns; track col.field) {
+              <td [class.pdprl-right]="col.money" [class.pdprl-center]="!col.money">{{ formatCell(row[col.field], col.money) }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if (sum(); as total) {
+        <tfoot nzSummary [nzFixed]="true">
+          <tr class="pdprl-sum-row">
+            <td nzLeft class="pdprl-center">{{ i18n.t('ess.viewpersonalpainfo.heji', 'Tổng') }}</td>
+            <td nzLeft></td>
+            <td nzLeft class="pdprl-center">{{ total['EMPNUMS'] }}</td>
+            @for (col of amountColumns; track col.field) {
+              <td [class.pdprl-right]="col.money" [class.pdprl-center]="!col.money">{{ formatCell(total[col.field], col.money) }}</td>
+            }
+          </tr>
+        </tfoot>
+      }
+    </nz-table>
+    <ng-template #pdprlTotalTpl let-total let-range="range">{{ range[0] }}-{{ range[1] }} / {{ total }}</ng-template>
+  </div>
+</div>

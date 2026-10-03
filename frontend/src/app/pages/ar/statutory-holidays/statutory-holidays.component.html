@@ -27,7 +27,7 @@
       </div>
     </form>
 
-    <nz-table #shlTable id="shl-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content' }" nzSize="small">
+    <nz-table #shlTable id="shl-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="defaultPageSize" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content' }" nzSize="small">
       <thead>
         <tr>
           <th nzWidth="60px" class="shl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>

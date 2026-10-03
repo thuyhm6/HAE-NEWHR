@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainCalendarMapper">
+
+    <resultMap id="EduCalendarItemResultMap" type="com.ait.edu.trainEducation.model.EduCalendarItem">
+        <result column="COURSE_DATE" property="courseDate" jdbcType="VARCHAR"/>
+        <result column="PLAN_NO" property="planNo" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduCalendarDetailResultMap" type="com.ait.edu.trainEducation.model.EduCalendarDetail">
+        <result column="ISNOT_TEST" property="isnotTest" jdbcType="VARCHAR"/>
+        <result column="ISNOT_REPORT" property="isnotReport" jdbcType="VARCHAR"/>
+        <result column="TRAIN_CONTENT" property="trainContent" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--
+        Bản gốc outer-join AR_CALENDER để dựng lưới ngày; ở đây frontend tự dựng lưới
+        nên chỉ lấy các ngày có lịch học. DISTINCT: một kế hoạch có nhiều buổi trong
+        cùng ngày chỉ hiện 1 lần (bản gốc bị lặp).
+        empid != null: lịch cá nhân (personalTrainCalendar - getPersonalCalendarList bản gốc),
+        chỉ lấy kế hoạch mà nhân viên là học viên (EDU_FREE_EMPLOYEE của khóa triển khai).
+    -->
+    <select id="findMonthItems" resultMap="EduCalendarItemResultMap">
+        SELECT DISTINCT
+               TO_CHAR(S.COURSE_DATE, 'DD/MM/YYYY') AS COURSE_DATE,
+               TO_CHAR(P.PLAN_NO) AS PLAN_NO,
+               P.COURSE_NAME_CODE,
+               P.PERIOD_TIME,
+               TRUNC(S.COURSE_DATE) AS SORT_DATE
+        FROM EDU_TRAIN_SYLLABUS S
+        JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = S.PLAN_NO
+        WHERE S.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND S.ACTIVITY = 1
+          AND P.ACTIVITY &lt;&gt; 0
+          AND S.COURSE_DATE &gt;= TO_DATE(#{yearMonth, jdbcType=VARCHAR} || '01', 'YYYYMMDD')
+          AND S.COURSE_DATE &lt; ADD_MONTHS(TO_DATE(#{yearMonth, jdbcType=VARCHAR} || '01', 'YYYYMMDD'), 1)
+        <if test="empid != null and empid != ''">
+          AND EXISTS (SELECT 1
+                        FROM EDU_BASIC_INFORMATION B
+                        JOIN EDU_FREE_EMPLOYEE F ON F.BASIC_NO = B.BASIC_NO
+                       WHERE B.PLAN_NO = S.PLAN_NO
+                         AND F.EMPID = #{empid, jdbcType=VARCHAR})
+        </if>
+        ORDER BY SORT_DATE, PLAN_NO
+    </select>
+
+    <!--
+        TRAIN_CONTENT nằm ở EDU_BASIC_INFORMATION (bản gốc đọc từ EDU_PLAN_MANAGER nên
+        luôn rỗng) - lấy nội dung của khóa triển khai từ kế hoạch này.
+    -->
+    <select id="findPlanFlags" resultMap="EduCalendarDetailResultMap">
+        SELECT P.ISNOT_TEST,
+               P.ISNOT_REPORT,
+               (SELECT MAX(B.TRAIN_CONTENT) FROM EDU_BASIC_INFORMATION B
+                 WHERE B.PLAN_NO = P.PLAN_NO) AS TRAIN_CONTENT
+        FROM EDU_PLAN_MANAGER P
+        WHERE P.PLAN_NO = #{planNo, jdbcType=NUMERIC}
+          AND P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+</mapper>

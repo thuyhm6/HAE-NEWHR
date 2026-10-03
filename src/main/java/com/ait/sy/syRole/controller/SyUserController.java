@@ -1,5 +1,7 @@
 package com.ait.sy.syRole.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.sy.syRole.dto.SyUserDto;
 import com.ait.sy.syRole.service.SyUserService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
@@ -36,7 +38,7 @@ public class SyUserController {
     @Autowired
     private com.ait.util.AngularIndexService angularIndexService;
 
-    @GetMapping("/sys/syRole/viewLoginUser")
+    @GetMapping("/sys/rightsManagement/viewLoginUser")
     public String viewLoginUser(javax.servlet.http.HttpServletResponse response) throws java.io.IOException {
         angularIndexService.writeIndexHtml(response);
         return null;
@@ -46,7 +48,7 @@ public class SyUserController {
     @ResponseBody
     public List<SyUserDto> list(@RequestParam(required = false) String keyword, HttpSession session) {
         if (!isAdmin(session)) {
-            return List.of();
+            return CollectionUtil.listOf();
         }
         return syUserService.searchUsers(keyword);
     }
@@ -115,7 +117,7 @@ public class SyUserController {
 
         try {
             byte[] fileBytes = syUserService.exportExcel();
-            String fileName = URLEncoder.encode("DanhSach_NguoiDung.xlsx", StandardCharsets.UTF_8);
+            String fileName = URLEncoder.encode("DanhSach_NguoiDung.xlsx", StandardCharsets.UTF_8.name());
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));

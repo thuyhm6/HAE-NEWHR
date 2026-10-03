@@ -16,6 +16,7 @@ import { NzTabsModule } from 'ng-zorro-antd/tabs';
 import { I18nService } from '../../../i18n/i18n.service';
 import { EvsItem, EvsItemPanelService, EvsItemParam, EvsResumeOption, SyCodeOption } from './evs-item-panel.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 const GROUP_NO_PARENT = '14015376';
 
 /**
@@ -43,6 +44,9 @@ const GROUP_NO_PARENT = '14015376';
   styleUrl: './evs-item-panel.component.scss',
 })
 export class EvsItemPanelComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(EvsItemPanelService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

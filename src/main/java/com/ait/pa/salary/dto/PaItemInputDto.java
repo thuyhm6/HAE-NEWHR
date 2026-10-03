@@ -19,4 +19,8 @@ public class PaItemInputDto {
     private Integer itemType;
     private Integer activity;
     private String  cpnyId;
+
+    // Mặc định tích chọn / số thứ tự (GET_ITEM_GLAG, GET_ITEM_NUMBER) - chỉ dùng khi hiển thị
+    private String  itemFlag;
+    private Integer itemNumber;
 }

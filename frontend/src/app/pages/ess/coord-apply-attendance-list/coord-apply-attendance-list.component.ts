@@ -27,6 +27,7 @@ import {
   SyCodeOption,
 } from './coord-apply-attendance-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Coordinator tra cứu chấm công nhân viên theo phòng ban - port lại từ
  * ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList.html (Thymeleaf +
@@ -57,6 +58,9 @@ import {
   styleUrl: './coord-apply-attendance-list.component.scss',
 })
 export class CoordApplyAttendanceListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(CoordApplyAttendanceListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);
@@ -77,7 +81,7 @@ export class CoordApplyAttendanceListComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly rows = signal<CoordApplyAttendanceRow[]>([]);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly total = signal(0);
 
   private listBootstrapped = false;

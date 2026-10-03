@@ -1,0 +1,33 @@
+<!-- nzMaskClosable=true: bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal [nzVisible]="visible" [nzTitle]="title" [nzMaskClosable]="true" (nzOnCancel)="close()" nzWidth="640px">
+  <ng-container *nzModalContent>
+    <div class="eps-toolbar">
+      <span>Total: {{ filteredRows().length }}</span>
+      <input id="eps-keyword" nz-input class="eps-filter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+    <nz-table #epsTable id="eps-table" [nzData]="filteredRows()" [nzLoading]="loading" [nzPageSize]="defaultPageSize" [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="40px" [nzChecked]="allChecked()" (nzCheckedChange)="toggleAll($event)"></th>
+          <th>{{ i18n.t('alert.pa.pasalarycanshu.shehao', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('alert.pa.pasalarycanshu.xingming', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.deptName', 'Phòng ban') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of epsTable.data; track r.empid) {
+          <tr class="eps-row" (click)="toggle(r.empid, !checked().has(r.empid))">
+            <td [nzChecked]="checked().has(r.empid)" (nzCheckedChange)="toggle(r.empid, $event)" (click)="$event.stopPropagation()"></td>
+            <td>{{ r.empid }}</td>
+            <td>{{ r.name }}</td>
+            <td>{{ r.deptName }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="eps-cancel-btn" nz-button (click)="close()">{{ i18n.t('hrm.empinfo.CANCLE', 'Hủy bỏ') }}</button>
+    <button id="eps-confirm-btn" nz-button nzType="primary" (click)="confirm()">{{ i18n.t('hrm.empinfo.CONFIRM', 'Xác nhận') }}</button>
+  </div>
+</nz-modal>

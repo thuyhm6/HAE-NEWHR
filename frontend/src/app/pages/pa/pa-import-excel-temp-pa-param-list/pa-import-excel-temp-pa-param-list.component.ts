@@ -12,6 +12,7 @@ import { I18nService } from '../../../i18n/i18n.service';
 import { TabService } from '../../../shell/tab.service';
 import { PaImportExcelTempPaParamListService, PaParamDataTempRow } from './pa-import-excel-temp-pa-param-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Kết quả nhập Excel dữ liệu tiêu chuẩn (viewImportExcelTempPaParamList) -
  * xem ghi chú trong pa-import-excel-temp-pa-param-list.service.ts.
@@ -24,6 +25,10 @@ import { PaImportExcelTempPaParamListService, PaParamDataTempRow } from './pa-im
   styleUrl: './pa-import-excel-temp-pa-param-list.component.scss',
 })
 export class PaImportExcelTempPaParamListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(PaImportExcelTempPaParamListService);
   private readonly route = inject(ActivatedRoute);
   private readonly tabs = inject(TabService);

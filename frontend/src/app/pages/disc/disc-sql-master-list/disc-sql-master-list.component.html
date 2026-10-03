@@ -1,0 +1,220 @@
+<div class="dsml-page">
+  <div class="dsml-search-card">
+    <div class="dsml-search-row">
+      <div class="dsml-field">
+        <label class="dsml-inline-label">{{ i18n.t('disc.sqlMaster.list.search.keyword', 'Từ khóa (Tên, Mô tả)') }}</label>
+        <input
+          nz-input
+          [ngModel]="searchKeyword()"
+          (ngModelChange)="searchKeyword.set($event)"
+          (keydown.enter)="search()"
+          [placeholder]="i18n.t('disc.sqlMaster.list.search.keyword.placeholder', 'Nhập tên hoặc mô tả truy vấn')"
+        />
+      </div>
+      <div class="dsml-field">
+        <label class="dsml-inline-label">{{ i18n.t('disc.sqlMaster.list.search.pgmNm', 'Chương trình') }}</label>
+        <nz-select
+          style="width: 100%"
+          [ngModel]="searchPgmNm()"
+          (ngModelChange)="searchPgmNm.set($event)"
+          nzAllowClear
+          [nzPlaceHolder]="i18n.t('disc.sqlMaster.list.search.pgmNm.placeholder', 'Tất cả')"
+        >
+          <nz-option *ngFor="let o of pgmOptions" [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
+        </nz-select>
+      </div>
+      <div class="dsml-search-actions">
+        <button nz-button nzType="primary" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close-circle"></span>{{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button nz-button nzType="primary" (click)="openAddModal()">
+          <span nz-icon nzType="plus"></span>{{ i18n.t('common.addNew', 'Thêm mới') }}
+        </button>
+        <button nz-button (click)="openExportModal()">
+          <span nz-icon nzType="download"></span>{{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dsml-table-card">
+    <nz-table
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      nzShowSizeChanger
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzSize="small"
+      nzBordered
+      #dsmlTable
+    >
+      <thead>
+        <tr>
+          <th nzWidth="40px" class="dsml-col-center"></th>
+          <th nzWidth="48px" class="dsml-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('disc.sqlMaster.list.col.sqlNm', 'Tên truy vấn') }}</th>
+          <th>{{ i18n.t('disc.sqlMaster.list.col.sqlDesc', 'Mô tả') }}</th>
+          <th class="dsml-col-center" nzWidth="150px">{{ i18n.t('disc.sqlMaster.list.col.rgstDtime', 'Ngày tạo') }}</th>
+          <th class="dsml-col-center" nzWidth="120px">{{ i18n.t('disc.sqlMaster.list.col.updtUser', 'Người tạo') }}</th>
+          <th class="dsml-col-center" nzWidth="90px">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of dsmlTable.data; let idx = index">
+          <td class="dsml-col-center">
+            <input
+              type="radio"
+              name="dsml-export-select"
+              [checked]="selectedSqlSeq() === row.sqlSeq"
+              (change)="selectedSqlSeq.set(row.sqlSeq || null)"
+            />
+          </td>
+          <td class="dsml-col-center">{{ idx + 1 }}</td>
+          <td><a (click)="openEditModal(row)">{{ row.sqlNm }}</a></td>
+          <td>{{ row.sqlDesc }}</td>
+          <td class="dsml-col-center">{{ row.rgstDtime | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td class="dsml-col-center">{{ row.updtUser }}</td>
+          <td class="dsml-col-center">
+            <button nz-button nzSize="small" (click)="openEditModal(row)" [title]="i18n.t('common.edit', 'Sửa')">
+              <span nz-icon nzType="edit"></span>
+            </button>
+            <button nz-button nzSize="small" nzDanger (click)="deleteRow(row)" [title]="i18n.t('common.delete', 'Xóa')">
+              <span nz-icon nzType="delete"></span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Modal Thêm/Sửa truy vấn SQL -->
+<nz-modal
+  [(nzVisible)]="formVisible"
+  [nzTitle]="formIsAdd() ? i18n.t('disc.sqlMaster.list.msg.addTitle', 'Thêm mới truy vấn SQL') : i18n.t('disc.sqlMaster.list.msg.editTitle', 'Cập nhật truy vấn SQL')"
+  [nzOkLoading]="formSaving()"
+  nzWidth="900px"
+  (nzOnOk)="saveForm()"
+  (nzOnCancel)="formVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div class="dsml-form-grid">
+      <div class="dsml-form-row">
+        <label class="dsml-form-label">{{ i18n.t('disc.sqlMaster.detail.label.pgmNm', 'Tên chương trình') }}</label>
+        <nz-select style="width: 100%" [ngModel]="formPgmNm()" (ngModelChange)="formPgmNm.set($event)" nzAllowClear>
+          <nz-option *ngFor="let o of pgmOptions" [nzValue]="o.value" [nzLabel]="o.label"></nz-option>
+        </nz-select>
+      </div>
+      <div class="dsml-form-row">
+        <label class="dsml-form-label dsml-required">{{ i18n.t('disc.sqlMaster.detail.label.sqlNm', 'Tên truy vấn') }}</label>
+        <input nz-input [ngModel]="formSqlNm()" (ngModelChange)="formSqlNm.set($event)" />
+      </div>
+      <div class="dsml-form-row dsml-form-row-full">
+        <label class="dsml-form-label">{{ i18n.t('disc.sqlMaster.detail.label.sqlDesc', 'Mô tả') }}</label>
+        <input nz-input [ngModel]="formSqlDesc()" (ngModelChange)="formSqlDesc.set($event)" />
+      </div>
+      <div class="dsml-form-row">
+        <label class="dsml-form-label">{{ i18n.t('disc.sqlMaster.detail.label.sqlFromStmt', 'Mệnh đề FROM bổ sung') }}</label>
+        <input nz-input [ngModel]="formSqlFromStmt()" (ngModelChange)="formSqlFromStmt.set($event)" />
+      </div>
+      <div class="dsml-form-row">
+        <label class="dsml-form-label">{{ i18n.t('disc.sqlMaster.detail.label.sqlOrderById', 'Mã sắp xếp') }}</label>
+        <input nz-input [ngModel]="formSqlOrderById()" (ngModelChange)="formSqlOrderById.set($event)" />
+      </div>
+      <div class="dsml-form-row">
+        <label class="dsml-form-label">{{ i18n.t('disc.sqlMaster.detail.label.sqlStat', 'Trạng thái SQL') }}</label>
+        <input nz-input [ngModel]="formSqlStat()" (ngModelChange)="formSqlStat.set($event)" />
+      </div>
+      <div class="dsml-form-row">
+        <label class="dsml-form-label">{{ i18n.t('disc.sqlMaster.detail.label.isSpecial', 'Cờ đặc biệt') }}</label>
+        <input nz-input [ngModel]="formIsSpecial()" (ngModelChange)="formIsSpecial.set($event)" />
+      </div>
+      <div class="dsml-form-row dsml-switch-row">
+        <nz-switch [ngModel]="formUseYn()" (ngModelChange)="formUseYn.set($event)"></nz-switch>
+        <span class="dsml-switch-label">{{ i18n.t('disc.sqlMaster.detail.label.useYn', 'Đang sử dụng') }}</span>
+      </div>
+      <div class="dsml-form-row dsml-form-row-full">
+        <label class="dsml-form-label dsml-required">{{ i18n.t('disc.sqlMaster.detail.label.sqlStmt', 'Câu lệnh SQL') }}</label>
+        <textarea
+          nz-input
+          rows="6"
+          [ngModel]="formSqlStmt()"
+          (ngModelChange)="formSqlStmt.set($event)"
+          [placeholder]="i18n.t('disc.sqlMaster.detail.label.sqlStmt.placeholder', 'SELECT ... FROM ... WHERE cot = :tenThamSo')"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="dsml-param-card">
+      <div class="dsml-param-header">
+        <span class="dsml-param-title">{{ i18n.t('disc.sqlMaster.detail.param.title', 'Tham số truy vấn') }}</span>
+        <button nz-button nzSize="small" nzType="primary" (click)="addFormParamRow()">
+          <span nz-icon nzType="plus"></span>{{ i18n.t('disc.sqlMaster.detail.param.btn.add', 'Thêm tham số') }}
+        </button>
+      </div>
+      <nz-table [nzData]="formParams()" [nzShowPagination]="false" nzSize="small" nzBordered #dsmlParamTable>
+        <thead>
+          <tr>
+            <th nzWidth="140px">{{ i18n.t('disc.sqlMaster.detail.param.col.param', 'Tên tham số') }}</th>
+            <th nzWidth="120px">{{ i18n.t('disc.sqlMaster.detail.param.col.type', 'Loại dữ liệu') }}</th>
+            <th>{{ i18n.t('disc.sqlMaster.detail.param.col.typeDesc', 'Mô tả') }}</th>
+            <th nzWidth="140px">{{ i18n.t('disc.sqlMaster.detail.param.col.defaultVal', 'Giá trị mặc định') }}</th>
+            <th nzWidth="70px" class="dsml-col-center">{{ i18n.t('disc.sqlMaster.detail.param.col.useYn', 'Sử dụng') }}</th>
+            <th nzWidth="60px" class="dsml-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of dsmlParamTable.data; let idx = index">
+            <td><input nz-input nzSize="small" [(ngModel)]="p.param" /></td>
+            <td>
+              <nz-select nzSize="small" style="width: 100%" [(ngModel)]="p.sqlParamTp">
+                <nz-option nzValue="VARCHAR2" nzLabel="VARCHAR2"></nz-option>
+                <nz-option nzValue="NUMBER" nzLabel="NUMBER"></nz-option>
+                <nz-option nzValue="DATE" nzLabel="DATE"></nz-option>
+              </nz-select>
+            </td>
+            <td><input nz-input nzSize="small" [(ngModel)]="p.sqlParamTpDesc" /></td>
+            <td><input nz-input nzSize="small" [(ngModel)]="p.defaultVal" /></td>
+            <td class="dsml-col-center">
+              <nz-switch nzSize="small" [ngModel]="p.useYn !== 'N'" (ngModelChange)="p.useYn = $event ? 'Y' : 'N'"></nz-switch>
+            </td>
+            <td class="dsml-col-center">
+              <button nz-button nzSize="small" nzDanger (click)="removeFormParamRow(idx)">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Modal nhập tham số trước khi xuất Excel -->
+<nz-modal
+  [(nzVisible)]="exportVisible"
+  [nzTitle]="i18n.t('disc.sqlMaster.export.modal.title', 'Nhập tham số xuất Excel')"
+  [nzOkLoading]="exportSaving()"
+  nzWidth="600px"
+  (nzOnOk)="confirmExport()"
+  (nzOnCancel)="exportVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <div *ngIf="exportParams().length === 0" class="dsml-export-empty">
+      {{ i18n.t('disc.sqlMaster.export.modal.noParams', 'Truy vấn này không có tham số. Bấm OK để xuất Excel.') }}
+    </div>
+    <div class="dsml-form-row" *ngFor="let p of exportParams()">
+      <label class="dsml-form-label">{{ p.param }}<span *ngIf="p.sqlParamTpDesc">- {{ p.sqlParamTpDesc }}</span></label>
+      <input
+        nz-input
+        [ngModel]="exportValues[p.param]"
+        (ngModelChange)="exportValues[p.param] = $event"
+        [placeholder]="p.defaultVal || ''"
+      />
+    </div>
+  </ng-container>
+</nz-modal>

@@ -1,5 +1,7 @@
 package com.ait.pa.workManagement.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.workManagement.dto.PaEmpAccountDto;
 import com.ait.pa.workManagement.dto.PaPayObjDto;
 import com.ait.pa.workManagement.dto.PaPayScheduleDto;
@@ -85,24 +87,24 @@ public class PaWorkManagementController {
     public ResponseEntity<?> recalcSalary(@RequestBody PaPayStubDto params) {
         try {
             if (params.getPayScheduleNo() == null || params.getPayScheduleNo().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn kế hoạch trả lương!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn kế hoạch trả lương!"));
             }
             Integer confirmFlag = paWorkFlowService.getConfirmFlag(params.getPayScheduleNo());
             if (Integer.valueOf(1).equals(confirmFlag)) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Lương tháng này đã chốt, không thể tính lại!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Lương tháng này đã chốt, không thể tính lại!"));
             }
             List<PaPayStubDto> employees = paPayStubService.getEmployeeList(params);
             if (employees == null || employees.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Không tìm thấy nhân viên nào để tính lại!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Không tìm thấy nhân viên nào để tính lại!"));
             }
             for (PaPayStubDto emp : employees) {
                 paWorkFlowService.recalcSalaryForEmp(params.getPayScheduleNo(), emp.getPersonId());
             }
-            return ResponseEntity.ok(Map.of("success", true, "message",
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message",
                     "Tính lại lương thành công cho " + employees.size() + " nhân viên"));
         } catch (Exception e) {
             log.error("Lỗi khi tính lại lương payScheduleNo={}: {}", params.getPayScheduleNo(), e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -116,7 +118,7 @@ public class PaWorkManagementController {
             @RequestParam(required = false) String lang) {
         try {
             if (payScheduleNo == null || payScheduleNo.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn kế hoạch trả lương!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn kế hoạch trả lương!"));
             }
             PaPayStubDto params = new PaPayStubDto();
             params.setPayScheduleNo(payScheduleNo);
@@ -127,7 +129,7 @@ public class PaWorkManagementController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Lỗi khi tải phiếu lương payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -174,7 +176,7 @@ public class PaWorkManagementController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy chi tiết PA_EMP_ACCOUNT no={}: {}", paEmpAccountNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -183,14 +185,14 @@ public class PaWorkManagementController {
     public ResponseEntity<?> saveEmpAccount(@RequestBody PaEmpAccountDto dto) {
         try {
             if (dto.getPersonId() == null || dto.getPersonId().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn nhân viên!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn nhân viên!"));
             }
             paEmpAccountService.save(dto);
             String msg = dto.getPaEmpAccountNo() == null ? "Thêm mới thành công" : "Cập nhật thành công";
-            return ResponseEntity.ok(Map.of("success", true, "message", msg));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", msg));
         } catch (Exception e) {
             log.error("Lỗi khi lưu PA_EMP_ACCOUNT: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -199,13 +201,13 @@ public class PaWorkManagementController {
     public ResponseEntity<?> deleteEmpAccountList(@RequestBody List<Long> ids) {
         try {
             if (ids == null || ids.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn ít nhất một bản ghi!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn ít nhất một bản ghi!"));
             }
             paEmpAccountService.deleteList(ids);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công " + ids.size() + " bản ghi"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công " + ids.size() + " bản ghi"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa danh sách PA_EMP_ACCOUNT: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -222,7 +224,7 @@ public class PaWorkManagementController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy quy trình tính lương payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -230,16 +232,23 @@ public class PaWorkManagementController {
     @ResponseBody
     public ResponseEntity<?> getWorkFlowRecords(
             @RequestParam(required = false) String payScheduleNo,
-            @RequestParam(required = false) Integer flowStep) {
+            @RequestParam(required = false) String flowSteps) {
         try {
             if (payScheduleNo == null || payScheduleNo.isEmpty()) {
-                return ResponseEntity.ok(List.of());
+                return ResponseEntity.ok(CollectionUtil.listOf());
             }
-            List<PaWorkFlowRecordsDto> list = paWorkFlowService.getRecordList(payScheduleNo, flowStep);
+            // flowSteps dạng "1" hoặc "4,6" (Chốt + Hủy chốt) / "5,7" (Mở + Hủy mở) giống FLOW_STEP bản gốc
+            List<Integer> steps = new java.util.ArrayList<>();
+            if (flowSteps != null) {
+                for (String part : flowSteps.split(",")) {
+                    if (!part.trim().isEmpty()) steps.add(Integer.valueOf(part.trim()));
+                }
+            }
+            List<PaWorkFlowRecordsDto> list = paWorkFlowService.getRecordList(payScheduleNo, steps);
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             log.error("Lỗi khi lấy lịch sử thao tác payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -248,16 +257,20 @@ public class PaWorkManagementController {
     public ResponseEntity<?> executeWorkFlow(@RequestBody PaWorkFlowDto dto) {
         try {
             if (dto.getPayScheduleNo() == null || dto.getPayScheduleNo().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn kế hoạch trả lương!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn kế hoạch trả lương!"));
             }
             if (dto.getType() == null || dto.getType().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Thiếu tham số type!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Thiếu tham số type!"));
             }
             String message = paWorkFlowService.modifyWorkFlow(dto.getPayScheduleNo(), dto.getType());
-            return ResponseEntity.ok(Map.of("success", true, "message", message != null ? message : "Thực hiện thành công"));
+            // Procedure trả message chứa "ERROR" khi thất bại (bản gốc trả statusCode=300)
+            if (message != null && message.contains("ERROR")) {
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", message));
+            }
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", message != null ? message : "Thực hiện thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi thực hiện quy trình lương payScheduleNo={}, type={}: {}", dto.getPayScheduleNo(), dto.getType(), e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -278,7 +291,7 @@ public class PaWorkManagementController {
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách kế hoạch trả lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -293,7 +306,7 @@ public class PaWorkManagementController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy chi tiết kế hoạch trả lương {}: {}", payScheduleNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -305,10 +318,10 @@ public class PaWorkManagementController {
             String msg = (dto.getPayScheduleNo() == null || dto.getPayScheduleNo().isEmpty())
                     ? "Thêm mới thành công"
                     : "Cập nhật thành công";
-            return ResponseEntity.ok(Map.of("success", true, "message", msg));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", msg));
         } catch (Exception e) {
             log.error("Lỗi khi lưu kế hoạch trả lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -317,10 +330,10 @@ public class PaWorkManagementController {
     public ResponseEntity<?> deletePaySchedule(@PathVariable String payScheduleNo) {
         try {
             paPayScheduleService.delete(payScheduleNo);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa kế hoạch trả lương {}: {}", payScheduleNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -371,7 +384,7 @@ public class PaWorkManagementController {
             }
             params.setEmpOfficeCond(empOffice);
             byte[] data = paPayObjService.exportExcel(params);
-            String filename = java.net.URLEncoder.encode("PaPayObj.xlsx", java.nio.charset.StandardCharsets.UTF_8);
+            String filename = java.net.URLEncoder.encode("PaPayObj.xlsx", java.nio.charset.StandardCharsets.UTF_8.name());
             return ResponseEntity.ok()
                     .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
                     .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
@@ -393,7 +406,7 @@ public class PaWorkManagementController {
             return ResponseEntity.ok(emp);
         } catch (Exception e) {
             log.error("Lỗi khi tìm nhân viên empId={}: {}", empId, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -402,12 +415,12 @@ public class PaWorkManagementController {
     public ResponseEntity<?> savePayObj(@RequestBody PaPayObjDto dto) {
         try {
             paPayObjService.save(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Thêm mới thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Thêm mới thành công"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi khi thêm mới đối tượng nhận lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -416,10 +429,10 @@ public class PaWorkManagementController {
     public ResponseEntity<?> savePayObjList(@RequestBody List<PaPayObjDto> items) {
         try {
             paPayObjService.saveList(items);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Lưu thành công " + items.size() + " bản ghi"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Lưu thành công " + items.size() + " bản ghi"));
         } catch (Exception e) {
             log.error("Lỗi khi lưu danh sách đối tượng nhận lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -428,10 +441,10 @@ public class PaWorkManagementController {
     public ResponseEntity<?> deletePayObjList(@RequestBody List<PaPayObjDto> keys) {
         try {
             paPayObjService.deleteList(keys);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công " + keys.size() + " bản ghi"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công " + keys.size() + " bản ghi"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa danh sách đối tượng nhận lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 }

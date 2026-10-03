@@ -264,7 +264,7 @@ public class SqlOnlyInterceptor implements Interceptor {
             }
 
             String propertyName = sqlParameter.propertyName();
-            if (propertyName == null || propertyName.isBlank()) {
+            if (propertyName == null || propertyName.trim().isEmpty()) {
                 propertyName = "arg" + (i + 1);
             }
 

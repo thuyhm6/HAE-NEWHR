@@ -15,6 +15,7 @@ import { NzTreeNodeKey, NzTreeNodeOptions } from 'ng-zorro-antd/core/tree';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyCodeManageService, SyCodeRow } from './sy-code-manage.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý danh mục Code (viewCodeManage) - xem ghi chú trong
  * sy-code-manage.service.ts. Dùng nz-tree (thay cho jstree bản gốc) cho cây
@@ -40,6 +41,10 @@ import { SyCodeManageService, SyCodeRow } from './sy-code-manage.service';
   styleUrl: './sy-code-manage.component.scss',
 })
 export class SyCodeManageComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SyCodeManageService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

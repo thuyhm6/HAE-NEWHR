@@ -3,117 +3,87 @@
     <div class="vpr-search-row">
       <div class="vpr-field">
         <label class="vpr-inline-label">{{ i18n.t('pa.result.paySchedule', 'Kế hoạch trả lương') }}</label>
-        <nz-select style="width: 100%" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch>
+        <nz-select class="vpr-full" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch>
           <nz-option *ngFor="let sch of payScheduleOptions()" [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
         </nz-select>
       </div>
       <div class="vpr-field">
         <label class="vpr-inline-label">{{ i18n.t('pa.result.dept', 'Phòng ban') }}</label>
         <nz-tree-select
-          style="width: 100%"
+          class="vpr-full"
           [nzNodes]="deptTreeNodes()"
-          [ngModel]="searchDeptNos()"
-          (ngModelChange)="searchDeptNos.set($event)"
-          nzMultiple
-          nzCheckable
+          [ngModel]="searchDeptNo()"
+          (ngModelChange)="searchDeptNo.set($event)"
           nzShowSearch
+          nzAllowClear
           [nzPlaceHolder]="i18n.t('pa.result.deptPlaceholder', 'Chọn phòng ban')"
         ></nz-tree-select>
       </div>
+    </div>
+    <div class="vpr-search-row">
       <div class="vpr-field">
         <label class="vpr-inline-label">{{ i18n.t('pa.result.isUse', 'Hạng mục tích chọn') }}</label>
-        <nz-select style="width: 100%" [ngModel]="isUse()" (ngModelChange)="isUse.set($event)" [nzPlaceHolder]="i18n.t('common.select', '-- Chọn --')" nzAllowClear>
+        <nz-select class="vpr-full" [ngModel]="isUse()" (ngModelChange)="isUse.set($event)">
           <nz-option *ngFor="let v of isUseOptions" [nzValue]="v" [nzLabel]="i18n.t('pa.result.isUse.' + v, '')"></nz-option>
         </nz-select>
       </div>
       <div class="vpr-field">
         <label class="vpr-inline-label">{{ i18n.t('pa.result.itemType', 'Phân biệt hạng mục') }}</label>
-        <nz-select style="width: 100%" [ngModel]="itemType()" (ngModelChange)="itemType.set($event)" [nzPlaceHolder]="i18n.t('common.select', '-- Chọn --')" nzAllowClear>
+        <nz-select class="vpr-full" [ngModel]="itemType()" (ngModelChange)="itemType.set($event)">
           <nz-option *ngFor="let v of itemTypeOptions" [nzValue]="v" [nzLabel]="i18n.t('pa.result.itemType.' + v, '')"></nz-option>
         </nz-select>
       </div>
       <div class="vpr-search-actions">
-        <button nz-button (click)="search()">
-          <span nz-icon nzType="search"></span>{{ i18n.t('pa.result.search', 'Tra cứu') }}
-        </button>
-        <button nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">
-          <span nz-icon nzType="save"></span>{{ i18n.t('pa.result.save', 'Lưu') }}
-        </button>
-        <button nz-button nzType="primary" nzDanger (click)="exportExcel()">
-          <span nz-icon nzType="export"></span>{{ i18n.t('pa.result.exportExcel', 'Xuất Excel') }}
+        <ng-container *ngIf="canEdit()">
+          <button nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+            <span nz-icon nzType="search"></span>{{ i18n.t('pa.result.search', 'Tra cứu') }}
+          </button>
+          <button nz-button [nzLoading]="saving()" (click)="save()">
+            <span nz-icon nzType="save"></span>{{ i18n.t('pa.result.save', 'Lưu') }}
+          </button>
+        </ng-container>
+        <button nz-button [nzLoading]="exporting()" (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>{{ i18n.t('pa.result.exportExcel', 'Xuất Excel') }}
         </button>
       </div>
     </div>
   </div>
 
   <div class="vpr-quick-row">
-    <label>
-      <input type="checkbox" (change)="toggleAll($any($event.target).checked)" />
-      {{ i18n.t('pa.result.selectAll', 'Chọn tất cả') }}
+    <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAll($event)">
+      {{ i18n.t('pa.salary.title.allChecked', 'Chọn tất cả') }}
     </label>
-    <label>
-      <input type="checkbox" [checked]="false" (change)="toggleInverse()" />
-      {{ i18n.t('pa.result.selectInverse', 'Chọn ngược') }}
+    <label nz-checkbox [ngModel]="inverseChecked()" (ngModelChange)="toggleInverse($event)">
+      {{ i18n.t('pa.salary.title.opsiteChecked', 'Chọn ngược') }}
     </label>
   </div>
 
-  <div class="vpr-section">
+  <div class="vpr-section" *ngFor="let section of sections()">
     <div class="vpr-section-header">
-      <input type="checkbox" (change)="toggleSection(hrItems(), $any($event.target).checked)" />
-      <span>{{ i18n.t('pa.result.hrItems', 'Hạng mục nhân sự') }}</span>
+      <span>{{ i18n.t(section.titleKey, section.fallback) }}</span>
+      <label
+        nz-checkbox
+        [ngModel]="sectionChecked(section)"
+        [nzIndeterminate]="sectionIndeterminate(section)"
+        (ngModelChange)="toggleSection(section, $event)"
+      ></label>
     </div>
     <div class="vpr-section-body">
-      <div class="vpr-item" *ngFor="let item of hrItems()">
-        <input type="checkbox" [checked]="isChecked(item.itemNo)" (change)="toggleChecked(item.itemNo, $any($event.target).checked)" />
-        <nz-input-number class="vpr-order-input" [ngModel]="orderNoOf(item.itemNo)" (ngModelChange)="setOrderNo(item.itemNo, $event)" [nzMin]="0"></nz-input-number>
-        <span class="vpr-item-name" [title]="item.itemName">{{ item.itemName || item.itemId || item.itemNo }}</span>
+      <div class="vpr-item" *ngFor="let item of section.items">
+        <label nz-checkbox [ngModel]="isChecked(item.itemId)" (ngModelChange)="toggleChecked(item.itemId, $event)"></label>
+        <nz-input-number
+          class="vpr-order-input"
+          nzSize="small"
+          [class.vpr-order-required]="isOrderMissing(item.itemId)"
+          [ngModel]="orderNoOf(item.itemId)"
+          (ngModelChange)="setOrderNo(item.itemId, $event)"
+          [nzMin]="0"
+          [nzMax]="99"
+          [nzPrecision]="0"
+        ></nz-input-number>
+        <span class="vpr-item-name" [title]="itemLabel(item)">{{ itemLabel(item) }}</span>
       </div>
-      <div *ngIf="!hrItems().length" class="vpr-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
-    </div>
-  </div>
-
-  <div class="vpr-section">
-    <div class="vpr-section-header">
-      <input type="checkbox" (change)="toggleSection(attendanceItems(), $any($event.target).checked)" />
-      <span>{{ i18n.t('pa.result.attendanceItems', 'Hạng mục chấm công') }}</span>
-    </div>
-    <div class="vpr-section-body">
-      <div class="vpr-item" *ngFor="let item of attendanceItems()">
-        <input type="checkbox" [checked]="isChecked(item.itemNo)" (change)="toggleChecked(item.itemNo, $any($event.target).checked)" />
-        <nz-input-number class="vpr-order-input" [ngModel]="orderNoOf(item.itemNo)" (ngModelChange)="setOrderNo(item.itemNo, $event)" [nzMin]="0"></nz-input-number>
-        <span class="vpr-item-name" [title]="item.itemName">{{ item.itemName || item.itemId || item.itemNo }}</span>
-      </div>
-      <div *ngIf="!attendanceItems().length" class="vpr-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
-    </div>
-  </div>
-
-  <div class="vpr-section">
-    <div class="vpr-section-header">
-      <input type="checkbox" (change)="toggleSection(inputItems(), $any($event.target).checked)" />
-      <span>{{ i18n.t('pa.result.inputItems', 'Hạng mục nhập') }}</span>
-    </div>
-    <div class="vpr-section-body">
-      <div class="vpr-item" *ngFor="let item of inputItems()">
-        <input type="checkbox" [checked]="isChecked(item.itemNo)" (change)="toggleChecked(item.itemNo, $any($event.target).checked)" />
-        <nz-input-number class="vpr-order-input" [ngModel]="orderNoOf(item.itemNo)" (ngModelChange)="setOrderNo(item.itemNo, $event)" [nzMin]="0"></nz-input-number>
-        <span class="vpr-item-name" [title]="item.itemName">{{ item.itemName || item.itemId || item.itemNo }}</span>
-      </div>
-      <div *ngIf="!inputItems().length" class="vpr-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
-    </div>
-  </div>
-
-  <div class="vpr-section">
-    <div class="vpr-section-header">
-      <input type="checkbox" (change)="toggleSection(computeItems(), $any($event.target).checked)" />
-      <span>{{ i18n.t('pa.result.computeItems', 'Hạng mục tính') }}</span>
-    </div>
-    <div class="vpr-section-body">
-      <div class="vpr-item" *ngFor="let item of computeItems()">
-        <input type="checkbox" [checked]="isChecked(item.itemNo)" (change)="toggleChecked(item.itemNo, $any($event.target).checked)" />
-        <nz-input-number class="vpr-order-input" [ngModel]="orderNoOf(item.itemNo)" (ngModelChange)="setOrderNo(item.itemNo, $event)" [nzMin]="0"></nz-input-number>
-        <span class="vpr-item-name" [title]="item.itemName">{{ item.itemName || item.itemId || item.itemNo }}</span>
-      </div>
-      <div *ngIf="!computeItems().length" class="vpr-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
+      <div *ngIf="!section.items.length" class="vpr-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
     </div>
   </div>
 </div>

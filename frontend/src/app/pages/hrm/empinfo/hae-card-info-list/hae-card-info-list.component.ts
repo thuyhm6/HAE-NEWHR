@@ -26,6 +26,7 @@ import {
 } from '../../../ess/manage-emp-position-info-list/manage-emp-position-info-list.service';
 import { HaeCardInfoListService, HrCardDetail, HrCardFamilyRow } from './hae-card-info-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../../core/config/table-pagination.config';
 const POST_FAMILY_PARENT_CODE = '14015812';
 const EMP_TYPE_PARENT_CODE = '13864';
 const EMP_OFFICE_PARENT_CODE = '15118';
@@ -122,6 +123,9 @@ function familyRowsHtml(list: HrCardFamilyRow[] | undefined, emptyRows = 2): str
   styleUrl: './hae-card-info-list.component.scss',
 })
 export class HaeCardInfoListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly deptService = inject(ManageEmpPositionInfoService);
   private readonly service = inject(HaeCardInfoListService);
   private readonly message = inject(NzMessageService);

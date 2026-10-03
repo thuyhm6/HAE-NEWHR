@@ -96,7 +96,7 @@
         ) VALUES (
             ESS_AFFIRM_SEQ.NEXTVAL, NVL(#{affirmType, jdbcType=VARCHAR}, 1), #{applyNo, jdbcType=VARCHAR}, #{applyType, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR},
             #{affirmPersonId, jdbcType=VARCHAR}, GET_CODE_NAME(#{applyType, jdbcType=VARCHAR}, #{lang, jdbcType=VARCHAR}) || ' ' || #{lastName, jdbcType=VARCHAR}, #{affirmLevel, jdbcType=VARCHAR}, 0,
-            DECODE(#{applyTypeCode, jdbcType=VARCHAR},'31','/ess/infoApply/viewApprovaledOt','21','/ess/infoApply/viewApprovaledLeave','218197','/ess/infoApply/viewAttendanceEx'),
+            DECODE(#{applyTypeCode, jdbcType=VARCHAR},'31','/ess/infoApply/viewApprovaledOt','21','/ess/infoApply/viewApprovaledLeave','218197','/ess/infoApply/viewAttendanceEx','81006456','/edu/traineducation/viewTrainingApply'),
             DECODE(#{affirmLevel, jdbcType=VARCHAR},1,0,3),
             #{applyTypeCode, jdbcType=VARCHAR}, #{applyPersonInfo, jdbcType=VARCHAR}, #{applyAffirmFlag, jdbcType=VARCHAR}, #{applyFlag, jdbcType=VARCHAR},
             0,  '【approval to remind】【CHR】' || GET_CODE_NAME(#{applyTypeCode, jdbcType=VARCHAR},#{lang, jdbcType=VARCHAR}) || #{lastName, jdbcType=VARCHAR}, 

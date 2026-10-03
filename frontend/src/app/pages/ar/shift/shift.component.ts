@@ -28,6 +28,7 @@ import {
   ShiftService,
 } from './shift.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function parseHHmm(value: string | undefined | null): Date | null {
   if (!value) return null;
   const parts = value.split(':');
@@ -77,6 +78,10 @@ function formatHHmm(value: Date | null): string | null {
   styleUrl: './shift.component.scss',
 })
 export class ShiftComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ShiftService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

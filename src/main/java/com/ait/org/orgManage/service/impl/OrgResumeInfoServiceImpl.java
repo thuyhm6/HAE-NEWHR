@@ -1,5 +1,7 @@
 package com.ait.org.orgManage.service.impl;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.org.orgManage.mapper.OrgResumeInfoMapper;
 import com.ait.org.orgManage.model.OrgResumeInfo;
 import com.ait.org.orgManage.service.OrgResumeInfoService;
@@ -24,7 +26,7 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
 
     @Autowired
     private OrgResumeInfoMapper orgResumeInfoMapper;
-    private static final Map<String, String> ORDERABLE_COLUMNS = Map.of(
+    private static final Map<String, String> ORDERABLE_COLUMNS = CollectionUtil.mapOf(
             "no", "NO",
             "changeDate", "CHANGE_DATE",
             "resumeName", "RESUME_NAME",
@@ -53,7 +55,7 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
             List<OrgResumeInfo> data = orgResumeInfoMapper.getResumeListForDataTables(request);
             response.setData(data);
         } else {
-            response.setData(List.of());
+            response.setData(CollectionUtil.listOf());
         }
 
         return response;
@@ -191,7 +193,7 @@ public class OrgResumeInfoServiceImpl implements OrgResumeInfoService {
         // Tự động tạo ra quyết định - scfl
         // Tạo ra nội dung thay đổi - sczz
         // Hình thành tổ chức mới - qdzz
-        List<String> orderedTypes = List.of("copyOrg", "scfl", "sczz", "qdzz");
+        List<String> orderedTypes = CollectionUtil.listOf("copyOrg", "scfl", "sczz", "qdzz");
 
         // Sort input types based on predefined order
         List<String> sortedTypes = new ArrayList<>();

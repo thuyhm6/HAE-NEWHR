@@ -224,7 +224,7 @@ public class ArAttendanceSearchController {
             @RequestParam String toDate,
             HttpSession session) {
         if (isEssMode(session)) return essAccessDenied();
-        if (fromDate == null || fromDate.isBlank() || toDate == null || toDate.isBlank()) {
+        if (fromDate == null || fromDate.trim().isEmpty() || toDate == null || toDate.trim().isEmpty()) {
             Map<String, Object> err = new java.util.HashMap<>();
             err.put("success", false);
             err.put("message", "Vui lòng nhập khoảng thời gian cần đọc dữ liệu.");
@@ -333,7 +333,7 @@ public class ArAttendanceSearchController {
                 sheet.autoSizeColumn(i);
             }
 
-            String fileName = URLEncoder.encode("lich_su_ra_vao_sst.xlsx", StandardCharsets.UTF_8);
+            String fileName = URLEncoder.encode("lich_su_ra_vao_sst.xlsx", StandardCharsets.UTF_8.name());
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
             wb.write(response.getOutputStream());
@@ -348,7 +348,7 @@ public class ArAttendanceSearchController {
     public ResponseEntity<Map<String, Object>> importCardRecordForSelfFromDevice(
             @RequestParam String fromDate,
             @RequestParam String toDate) {
-        if (fromDate == null || fromDate.isBlank() || toDate == null || toDate.isBlank()) {
+        if (fromDate == null || fromDate.trim().isEmpty() || toDate == null || toDate.trim().isEmpty()) {
             Map<String, Object> err = new java.util.HashMap<>();
             err.put("success", false);
             err.put("message", "Vui lòng nhập khoảng thời gian cần đọc dữ liệu.");
@@ -407,7 +407,7 @@ public class ArAttendanceSearchController {
     public ResponseEntity<Map<String, Object>> importMealFromDevice(
             @RequestParam String fromDate,
             @RequestParam String toDate) {
-        if (fromDate == null || fromDate.isBlank() || toDate == null || toDate.isBlank()) {
+        if (fromDate == null || fromDate.trim().isEmpty() || toDate == null || toDate.trim().isEmpty()) {
             Map<String, Object> err = new java.util.HashMap<>();
             err.put("success", false);
             err.put("message", "Vui lòng nhập khoảng thời gian cần đọc dữ liệu.");
@@ -542,7 +542,7 @@ public class ArAttendanceSearchController {
                 sheet.autoSizeColumn(i);
             }
 
-            String fileName = URLEncoder.encode("tra_cuu_suat_an.xlsx", StandardCharsets.UTF_8);
+            String fileName = URLEncoder.encode("tra_cuu_suat_an.xlsx", StandardCharsets.UTF_8.name());
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
             wb.write(response.getOutputStream());

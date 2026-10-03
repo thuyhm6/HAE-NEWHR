@@ -1,0 +1,81 @@
+.pdprl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.pdprl-search-card,
+.pdprl-table-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.pdprl-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.pdprl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+}
+
+.pdprl-label {
+  font-weight: 500;
+}
+
+.pdprl-select {
+  width: 260px;
+}
+
+.pdprl-select-wide {
+  width: 320px;
+}
+
+.pdprl-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pdprl-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.pdprl-total {
+  font-weight: bold;
+}
+
+.pdprl-quick-filter {
+  width: 240px;
+}
+
+.pdprl-row {
+  cursor: pointer;
+}
+
+.pdprl-row-selected > td {
+  background: #e6f7ff !important;
+}
+
+.pdprl-sum-row > td {
+  background: #d9d9d9 !important;
+  font-weight: bold;
+}
+
+.pdprl-center {
+  text-align: center;
+}
+
+.pdprl-right {
+  text-align: right;
+}

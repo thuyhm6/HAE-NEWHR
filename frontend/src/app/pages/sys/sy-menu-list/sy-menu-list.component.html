@@ -29,7 +29,7 @@
   </div>
 
   <div class="vml-table-card">
-    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small" nzBordered #vmlTable>
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="50" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small" nzBordered #vmlTable>
       <thead>
         <tr>
           <th nzWidth="48px" class="vml-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
@@ -87,12 +87,20 @@
       </div>
       <div class="vml-form-row">
         <label class="vml-form-label">{{ i18n.t('sys.basic.viewMenuList.label.parentMenuCode', 'Mã Parent Menu') }}</label>
-        <input
-          nz-input
+        <nz-select
+          style="width: 100%"
           [ngModel]="formMenuParentNo()"
           (ngModelChange)="formMenuParentNo.set($event)"
-          [placeholder]="i18n.t('sys.basic.viewMenuList.label.parentMenuCode.placeholder', 'Để trống nếu là gốc')"
-        />
+          nzShowSearch
+          nzAllowClear
+          [nzPlaceHolder]="i18n.t('sys.basic.viewMenuList.label.parentMenuCode.placeholder', 'Để trống nếu là gốc')"
+        >
+          <nz-option
+            *ngFor="let m of parentMenuOptions()"
+            [nzValue]="m.menuNo"
+            [nzLabel]="m.menuCode + ' - ' + m.nameVi"
+          ></nz-option>
+        </nz-select>
       </div>
       <div class="vml-form-row">
         <label class="vml-form-label vml-required">{{ i18n.t('sys.basic.viewMenuList.label.nameVi', 'Tên Tiếng Việt') }}</label>

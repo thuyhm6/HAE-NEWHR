@@ -173,8 +173,10 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
             for (Map<String, Object> approver : manualApprovers) {
                 String approverPersonId = toTrimmedString(approver.get("personId"));
                 if (approverPersonId.isEmpty()) continue;
+                // approvType từ FE: '1' = Phê duyệt, '3' = Thông báo (mặc định '1' nếu không gửi lên)
+                String approvType = toTrimmedString(approver.get("approvType"));
                 SyAffirmEmailDto affirmor = new SyAffirmEmailDto();
-                affirmor.setAffirmType("1");
+                affirmor.setAffirmType(approvType.isEmpty() ? "1" : approvType);
                 affirmor.setApplyNo(applyNo);
                 affirmor.setApplyType(params.get("leaveTypeCode").toString());
                 affirmor.setApplyTypeCode("21");
@@ -390,7 +392,7 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
     }
 
     private boolean isProcedureErrorMessage(String message) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return false;
         }
         String normalized = message.toLowerCase(Locale.ROOT);

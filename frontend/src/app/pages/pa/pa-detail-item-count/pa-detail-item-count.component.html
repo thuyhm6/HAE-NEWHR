@@ -1,0 +1,81 @@
+<div class="psc-page">
+  <div class="psc-search-card">
+    <div class="psc-search-row">
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <nz-select id="pdicPaySchedule" class="psc-select-wide" [ngModel]="payScheduleNo()" (ngModelChange)="payScheduleNo.set($event)" nzShowSearch>
+          @for (sch of scheduleOptions(); track sch.payScheduleNo) {
+            <nz-option [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('liang.public.title.ItemDistinguish', 'Phân biệt hạng mục') }}</label>
+        <nz-select id="pdicItemType" class="psc-select" [ngModel]="itemType()" (ngModelChange)="changeItemType($event)">
+          @for (opt of itemTypeOptions; track opt.value) {
+            <nz-option [nzValue]="opt.value" [nzLabel]="i18n.t(opt.labelKey, opt.fallback)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('pa.detailItemCountInfo.XIANGXIQUFEN.b', 'Phân loại') }}</label>
+        <nz-select id="pdicItemId" class="psc-select-wide" [ngModel]="itemId()" (ngModelChange)="itemId.set($event)" nzShowSearch>
+          @for (opt of filteredItems(); track opt.itemId) {
+            <nz-option [nzValue]="opt.itemId" [nzLabel]="opt.itemName ?? opt.itemId ?? ''"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-actions">
+        <button id="pdicBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="psc-card">
+    <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</div>
+    <nz-table
+      #pdicTable
+      id="pdicTable"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      [nzScroll]="{ x: '1300px', y: 'calc(100vh - 360px)' }"
+      [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" nzLeft class="psc-center">No.</th>
+          <th nzWidth="150px" nzLeft>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th nzWidth="100px">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+          <th nzWidth="170px">{{ i18n.t('ess.infoApply.DEPT_NAME', 'Phòng ban') }}</th>
+          <th nzWidth="120px">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+          <th nzWidth="100px">{{ i18n.t('hrm.contract.Rank', 'Chức vụ') }}</th>
+          <th nzWidth="120px">{{ i18n.t('ess.infoApply.title.dutyName', 'Chức danh') }}</th>
+          <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.detailItemCountInfo.SHIJIQUFEN.b', 'Số tiền') }}</th>
+          <th nzWidth="260px">{{ i18n.t('pa.detailPersonCountInfoRight.SHIYONGSHI.b', 'Hình thức chuẩn') }}</th>
+          <th nzWidth="160px">{{ i18n.t('ess.empInfo.remarks', 'Ghi chú') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of pdicTable.data; track $index) {
+          <tr>
+            <td nzLeft class="psc-center">{{ (pdicTable.nzPageIndex - 1) * pdicTable.nzPageSize + $index + 1 }}</td>
+            <td nzLeft>{{ row.localName }}</td>
+            <td class="psc-center">{{ row.empId }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postFamilyName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.positionName }}</td>
+            <td class="psc-right">{{ fmt(row.payNumber) }}</td>
+            <td [title]="row.formularValue ?? ''"><span class="psc-ellipsis">{{ row.formularValue }}</span></td>
+            <td>{{ row.remark }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </div>
+</div>

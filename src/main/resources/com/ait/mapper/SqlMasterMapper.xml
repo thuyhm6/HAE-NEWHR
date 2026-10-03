@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.disc.autoExcel.mapper.SqlMasterMapper">
+
+    <resultMap id="SqlMasterResultMap" type="com.ait.disc.autoExcel.model.SqlMaster">
+        <id column="SQL_SEQ" property="sqlSeq" jdbcType="VARCHAR"/>
+        <result column="PGM_NM" property="pgmNm" jdbcType="VARCHAR"/>
+        <result column="SQL_NM" property="sqlNm" jdbcType="VARCHAR"/>
+        <result column="SQL_STMT" property="sqlStmt" jdbcType="CLOB"/>
+        <result column="SQL_FROM_STMT" property="sqlFromStmt" jdbcType="VARCHAR"/>
+        <result column="SQL_ORDER_BY_ID" property="sqlOrderById" jdbcType="VARCHAR"/>
+        <result column="SQL_DESC" property="sqlDesc" jdbcType="VARCHAR"/>
+        <result column="SQL_STAT" property="sqlStat" jdbcType="VARCHAR"/>
+        <result column="RGST_DTIME" property="rgstDtime" jdbcType="TIMESTAMP"/>
+        <result column="UPDT_DTIME" property="updtDtime" jdbcType="TIMESTAMP"/>
+        <result column="UPDT_USER" property="updtUser" jdbcType="VARCHAR"/>
+        <result column="USE_YN" property="useYn" jdbcType="VARCHAR"/>
+        <result column="IS_SPECIAL" property="isSpecial" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- Danh sách cho màn hình list: không lấy SQL_STMT (CLOB) để tránh tải nặng -->
+    <select id="findAll" resultMap="SqlMasterResultMap">
+        SELECT SQL_SEQ, PGM_NM, SQL_NM, SQL_FROM_STMT, SQL_ORDER_BY_ID, SQL_DESC, SQL_STAT,
+               RGST_DTIME, UPDT_DTIME, UPDT_USER, USE_YN, IS_SPECIAL
+        FROM SYS_SQL_MASTER
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                SQL_NM LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%' OR
+                SQL_DESC LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%' OR
+                PGM_NM LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            )
+        </if>
+        <if test="pgmNm != null and pgmNm != ''">
+            AND PGM_NM = #{pgmNm, jdbcType=VARCHAR}
+        </if>
+        ORDER BY TO_NUMBER(SQL_SEQ) DESC
+    </select>
+
+    <!-- Chi tiết đầy đủ, bao gồm SQL_STMT -->
+    <select id="findBySqlSeq" resultMap="SqlMasterResultMap">
+        SELECT SQL_SEQ, PGM_NM, SQL_NM, SQL_STMT, SQL_FROM_STMT, SQL_ORDER_BY_ID, SQL_DESC, SQL_STAT,
+               RGST_DTIME, UPDT_DTIME, UPDT_USER, USE_YN, IS_SPECIAL
+        FROM SYS_SQL_MASTER
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="getNextSqlSeq" resultType="java.lang.String">
+        SELECT CASE WHEN MAX(TO_NUMBER(SQL_SEQ)) IS NULL OR MAX(TO_NUMBER(SQL_SEQ)) = '' THEN 1
+                    ELSE MAX(TO_NUMBER(SQL_SEQ)) + 1 END
+        FROM SYS_SQL_MASTER
+    </select>
+
+    <insert id="insert">
+        INSERT INTO SYS_SQL_MASTER (
+            SQL_SEQ, CPNY_ID, PGM_NM, SQL_NM, SQL_STMT, SQL_FROM_STMT, SQL_ORDER_BY_ID, SQL_DESC, SQL_STAT,
+            RGST_DTIME, UPDT_DTIME, UPDT_USER, USE_YN, IS_SPECIAL
+        ) VALUES (
+            #{sqlSeq, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{pgmNm, jdbcType=VARCHAR}, #{sqlNm, jdbcType=VARCHAR},
+            #{sqlStmt, jdbcType=CLOB}, #{sqlFromStmt, jdbcType=VARCHAR}, #{sqlOrderById, jdbcType=VARCHAR},
+            #{sqlDesc, jdbcType=VARCHAR}, #{sqlStat, jdbcType=VARCHAR},
+            SYSDATE, SYSDATE, #{adminID, jdbcType=VARCHAR}, #{useYn, jdbcType=VARCHAR}, #{isSpecial, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE SYS_SQL_MASTER SET
+            PGM_NM = #{pgmNm, jdbcType=VARCHAR},
+            SQL_NM = #{sqlNm, jdbcType=VARCHAR},
+            SQL_STMT = #{sqlStmt, jdbcType=CLOB},
+            SQL_FROM_STMT = #{sqlFromStmt, jdbcType=VARCHAR},
+            SQL_ORDER_BY_ID = #{sqlOrderById, jdbcType=VARCHAR},
+            SQL_DESC = #{sqlDesc, jdbcType=VARCHAR},
+            SQL_STAT = #{sqlStat, jdbcType=VARCHAR},
+            USE_YN = #{useYn, jdbcType=VARCHAR},
+            IS_SPECIAL = #{isSpecial, jdbcType=VARCHAR},
+            UPDT_DTIME = SYSDATE,
+            UPDT_USER = #{adminID, jdbcType=VARCHAR}
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteBySqlSeq">
+        DELETE FROM SYS_SQL_MASTER
+        WHERE SQL_SEQ = #{sqlSeq, jdbcType=VARCHAR} AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

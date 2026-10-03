@@ -25,6 +25,7 @@ import {
   SyCodeOption,
 } from './ot-confirm.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface EditableRow extends OtConfirmRow {
   checked: boolean;
   editHrComment: string;
@@ -59,6 +60,9 @@ interface EditableRow extends OtConfirmRow {
   styleUrl: './ot-confirm.component.scss',
 })
 export class OtConfirmComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(OtConfirmService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -78,7 +82,7 @@ export class OtConfirmComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly rows = signal<EditableRow[]>([]);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly total = signal(0);
 
   protected readonly showDetailModal = signal(false);

@@ -1,5 +1,7 @@
 package com.ait.org.orgManage.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.org.orgManage.model.OrgBusinessRelation;
 import com.ait.org.orgManage.service.OrgBusinessService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
@@ -43,7 +45,7 @@ public class OrgBusinessController {
         } catch (Exception e) {
             log.error("Failed to load business list resumeNo={} deptNo={}", resumeNo, deptNo, e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(Map.of("error", "Loi he thong khi tai danh sach nghiep vu."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi tai danh sach nghiep vu."));
         }
     }
 
@@ -61,11 +63,11 @@ public class OrgBusinessController {
                 obj.setUpdatedBy(user.getUsername());
             }
             orgBusinessService.save(obj);
-            return org.springframework.http.ResponseEntity.ok(Map.of("message", "Lưu thành công"));
+            return org.springframework.http.ResponseEntity.ok(CollectionUtil.mapOf("message", "Lưu thành công"));
         } catch (Exception e) {
             log.error("Failed to save business relation seq={}", obj.getSeq(), e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(Map.of("error", "Loi he thong khi luu nghiep vu phong ban."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi luu nghiep vu phong ban."));
         }
     }
 
@@ -74,11 +76,11 @@ public class OrgBusinessController {
     public org.springframework.http.ResponseEntity<?> delete(@RequestParam String seq) {
         try {
             orgBusinessService.delete(seq);
-            return org.springframework.http.ResponseEntity.ok(Map.of("message", "Xóa thành công"));
+            return org.springframework.http.ResponseEntity.ok(CollectionUtil.mapOf("message", "Xóa thành công"));
         } catch (Exception e) {
             log.error("Failed to delete business relation seq={}", seq, e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(Map.of("error", "Loi he thong khi xoa nghiep vu phong ban."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi xoa nghiep vu phong ban."));
         }
     }
 }

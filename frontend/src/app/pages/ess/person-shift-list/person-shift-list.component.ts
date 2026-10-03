@@ -12,6 +12,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { PersonShiftListService, PersonShiftRow } from './person-shift-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 /**
  * Lịch sử ca làm của bản thân trong tháng - port lại từ
  * ess/workgroup/viewPersonShiftList.html (Thymeleaf, đã xoá) sang Angular +
@@ -28,6 +29,9 @@ import { PersonShiftListService, PersonShiftRow } from './person-shift-list.serv
   styleUrl: './person-shift-list.component.scss',
 })
 export class PersonShiftListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(PersonShiftListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

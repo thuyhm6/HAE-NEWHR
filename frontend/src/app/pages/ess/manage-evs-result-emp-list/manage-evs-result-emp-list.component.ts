@@ -26,6 +26,7 @@ import {
   SyCodeOption,
 } from './manage-evs-result-emp-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const POST_FAMILY_PARENT_CODE = '14015812';
 const EMP_TYPE_PARENT_CODE = '13864';
 const EMP_OFFICE_PARENT_CODE = '15118';
@@ -74,6 +75,10 @@ const MONTH_FIELDS = [
   styleUrl: './manage-evs-result-emp-list.component.scss',
 })
 export class ManageEvsResultEmpListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ManageEvsResultEmpListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

@@ -1,0 +1,44 @@
+.eca-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eca-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.eca-list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.eca-full {
+  width: 100%;
+}
+
+.eca-center {
+  text-align: center;
+}
+
+.eca-row {
+  cursor: pointer;
+}
+
+// Dòng đang chọn - tương đương background:#aaccf6 ở bản gốc
+.eca-row-selected > td {
+  background: #e6f4ff !important;
+}

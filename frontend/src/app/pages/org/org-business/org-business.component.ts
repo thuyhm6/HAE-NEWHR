@@ -18,6 +18,7 @@ import { buildOrgTree, collectAllTreeKeys } from '../org-tree.util';
 import { OrgComposeService, OrgInfoRow, OrgResumeOption } from '../org-compose/org-compose.service';
 import { OrgBusinessRow, OrgBusinessService } from './org-business.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 type BusinessMode = 'NEW' | 'EDIT';
 
 interface BusinessForm {
@@ -57,6 +58,10 @@ const EMPTY_FORM: BusinessForm = { seq: null, codeNo: '', orderNo: 0, isDefault:
   styleUrl: './org-business.component.scss',
 })
 export class OrgBusinessComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly composeService = inject(OrgComposeService);
   private readonly service = inject(OrgBusinessService);
   private readonly message = inject(NzMessageService);

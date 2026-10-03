@@ -1,0 +1,210 @@
+<div class="parsm-page">
+  <nz-spin [nzSpinning]="calculating()" [nzTip]="i18n.t('common.processing', 'Đang thực hiện...')">
+    <div class="parsm-search-card">
+      <div class="parsm-search-grid">
+        <!-- Mã nhân viên / Họ tên -->
+        <label class="parsm-label" for="parsmSearchKey">{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</label>
+        <div class="parsm-field parsm-field-wide">
+          <input
+            id="parsmSearchKey"
+            nz-input
+            class="parsm-key-input"
+            [ngModel]="searchKey()"
+            (ngModelChange)="searchKey.set($event); searchEmpInfo.set('')"
+            (keydown.enter)="lookupEmployee()"
+          />
+          <button nz-button nzSize="small" (click)="lookupEmployee()">
+            <span nz-icon nzType="search"></span>
+          </button>
+          <input nz-input class="parsm-emp-info" [ngModel]="searchEmpInfo()" readonly />
+        </div>
+
+        <!-- Kế hoạch trả lương -->
+        <label class="parsm-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <div class="parsm-field">
+          <nz-select class="parsm-select" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)">
+            <nz-option *ngFor="let s of scheduleOptions()" [nzValue]="s.payScheduleNo" [nzLabel]="scheduleLabel(s)"></nz-option>
+          </nz-select>
+        </div>
+
+        <!-- Hạng mục tổng hợp chấm công -->
+        <label class="parsm-label">{{ i18n.t('ar.viewPaArSummaryForManageList.KAOQINHUIZONGXIANGMU.b', 'Tổng hợp chấm công') }}</label>
+        <div class="parsm-field">
+          <nz-select
+            class="parsm-select"
+            nzMode="multiple"
+            nzAllowClear
+            nzShowSearch
+            [nzMaxTagCount]="2"
+            [ngModel]="searchItemNos()"
+            (ngModelChange)="searchItemNos.set($event)"
+          >
+            <nz-option *ngFor="let it of itemOptions()" [nzValue]="it.itemNo" [nzLabel]="it.itemName ?? it.itemNo ?? ''"></nz-option>
+          </nz-select>
+          <button nz-button nzSize="small" nzType="text" (click)="clearItems()">
+            <span nz-icon nzType="clear"></span>
+          </button>
+        </div>
+
+        <!-- Phòng ban -->
+        <label class="parsm-label">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</label>
+        <div class="parsm-field">
+          <nz-tree-select
+            class="parsm-select"
+            [nzNodes]="deptTreeNodes()"
+            [ngModel]="searchDeptNo()"
+            (ngModelChange)="searchDeptNo.set($event)"
+            nzAllowClear
+            nzShowSearch
+            [nzPlaceHolder]="i18n.t('pa.inputItemData.deptPlaceholder', 'Mã / Tên phòng ban')"
+          ></nz-tree-select>
+        </div>
+
+        <!-- Ngoại lệ -->
+        <label class="parsm-label">{{ i18n.t('ar.viewPaArSummaryForManageList.SHIFOULIWAI.b', 'Ngoại lệ') }}</label>
+        <div class="parsm-field">
+          <nz-select class="parsm-select-sm" [ngModel]="searchIsSpecialFlag()" (ngModelChange)="searchIsSpecialFlag.set($event)">
+            <nz-option nzValue="" [nzLabel]="i18n.t('org.title.ALL', 'Tất cả')"></nz-option>
+            <nz-option nzValue="Y" [nzLabel]="i18n.t('ar.viewPaArSummaryForManageList.LIWAI.b', 'Ngoại lệ')"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+
+      <div class="parsm-actions">
+        <button nz-button nzType="primary" nzSize="small" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('ar.viewPaArSummaryForManageList.JIANSUO.b', 'Tìm kiếm') }}
+        </button>
+        <button nz-button nzSize="small" [nzLoading]="saving()" (click)="save()">
+          <span nz-icon nzType="save"></span>{{ i18n.t('ess.message.save', 'Lưu') }}
+        </button>
+        <button nz-button nzSize="small" (click)="arMonthCal()">
+          <span nz-icon nzType="calculator"></span>{{ i18n.t('ar.viewPaArSummaryForManageList.KAOQINHUIZONGJISUAN.b', 'Tổng hợp chấm công') }}
+        </button>
+        <button nz-button nzSize="small" (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>{{ i18n.t('ess.infoApply.export_to_Excel', 'Xuất Excel') }}
+        </button>
+        <button nz-button nzSize="small" (click)="exportException()">
+          <span nz-icon nzType="export"></span>{{ i18n.t('ar.viewPaArSummaryForManageList.DAOCHULIWAISHUJU.b', 'Xuất dữ liệu ngoại lệ') }}
+        </button>
+      </div>
+    </div>
+
+    <div class="parsm-toolbar">
+      <button nz-button nzSize="small" [nzType]="onlyChecked() ? 'primary' : 'default'" (click)="viewChecked()">
+        <span nz-icon nzType="check-square"></span>{{ i18n.t('ar.viewPaArSummaryForManageList.CHAKANXUANZHONG.b', 'Xem đã chọn') }}
+      </button>
+      <button nz-button nzSize="small" [nzType]="!onlyChecked() ? 'primary' : 'default'" (click)="viewAll()">
+        <span nz-icon nzType="unordered-list"></span>{{ i18n.t('hr.viewPersonalInfo.title.chakanquanbu', 'Xem tất cả') }}
+      </button>
+      <span class="parsm-count">{{ checkedIds().size }} / {{ rows().length }}</span>
+    </div>
+
+    <div class="parsm-table-card">
+      <nz-table
+        #parsmTable
+        [nzData]="displayRows()"
+        [nzLoading]="loading()"
+        [nzPageIndex]="pageIndex()"
+        [nzPageSize]="pageSize()"
+        [nzPageSizeOptions]="pageSizeOptions"
+        nzShowSizeChanger
+        (nzPageIndexChange)="pageIndex.set($event)"
+        (nzPageSizeChange)="pageSize.set($event)"
+        nzSize="small"
+        nzBordered
+        [nzScroll]="{ x: '1600px', y: 'calc(100vh - 380px)' }"
+        [nzShowTotal]="parsmTotalTpl"
+      >
+        <thead>
+          <tr>
+            <th nzWidth="40px" nzLeft class="parsm-center">
+              <input type="checkbox" [checked]="allChecked()" (change)="toggleAll($any($event.target).checked)" />
+            </th>
+            <th nzWidth="50px" nzLeft class="parsm-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th nzWidth="100px" nzLeft [nzSortFn]="textSort('empId')">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th nzWidth="150px" nzLeft [nzSortFn]="textSort('localName')">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="180px" [nzSortFn]="textSort('deptName')" [nzFilters]="deptFilters()" [nzFilterFn]="deptFilterFn" [nzFilterMultiple]="true">
+              {{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}
+            </th>
+            <th nzWidth="130px" [nzSortFn]="textSort('postGrade')" [nzFilters]="postGradeFilters()" [nzFilterFn]="postGradeFilterFn" [nzFilterMultiple]="true">
+              {{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}
+            </th>
+            <th nzWidth="100px" class="parsm-center" [nzSortFn]="sortDateStarted">{{ i18n.t('ess.empInfo.date_of_agency', 'Ngày vào làm') }}</th>
+            <th nzWidth="180px" [nzSortFn]="textSort('itemName')" [nzFilters]="itemFilters()" [nzFilterFn]="itemFilterFn" [nzFilterMultiple]="true">
+              {{ i18n.t('ar.viewPaArSummaryForManageList.KAOQINHUIZONGXIANGMU.b', 'Tổng hợp chấm công') }}
+            </th>
+            <th nzWidth="100px" class="parsm-center" [nzSortFn]="sortArStartDate">{{ i18n.t('ar.viewcycleparameter.title.kaishiriqi', 'Ngày bắt đầu') }}</th>
+            <th nzWidth="90px" class="parsm-right" [nzSortFn]="sortCalValue">{{ i18n.t('ar.viewPaArSummaryForManageList.XITONGZHI.b', 'Hệ thống') }}</th>
+            <th nzWidth="100px" [nzSortFn]="sortFinalValue">{{ i18n.t('ar.viewPaArSummaryForManageList.LIWAIZHI.b', 'Ngoại lệ') }}</th>
+            <th nzWidth="180px" [nzSortFn]="textSort('remark')">{{ i18n.t('ess.empInfo.remarks', 'Ghi chú') }}</th>
+            <th nzWidth="170px" [nzSortFn]="textSort('updatedBy')">{{ i18n.t('org.title.UPDATED_IP', 'Người thay đổi') }}</th>
+            <th nzWidth="130px" class="parsm-center" [nzSortFn]="sortUpdateDate">{{ i18n.t('org.title.UPDATE_DATE', 'Thời gian thay đổi') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let row of parsmTable.data; let idx = index"
+            [class.parsm-row-checked]="isChecked(row)"
+            [class.parsm-row-special]="row.finalValue != null && row.finalValue !== ''"
+          >
+            <td nzLeft class="parsm-center">
+              <input type="checkbox" [checked]="isChecked(row)" (change)="toggleChecked(row, $any($event.target).checked)" />
+            </td>
+            <td nzLeft class="parsm-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            <td nzLeft class="parsm-center">{{ row.empId }}</td>
+            <td nzLeft>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGrade }}</td>
+            <td class="parsm-center">{{ row.dateStarted }}</td>
+            <td>{{ row.itemName }}</td>
+            <td class="parsm-center">{{ row.arStartDate }}</td>
+            <td class="parsm-right">{{ row.calValue }}</td>
+            <td>
+              <input
+                nz-input
+                nzSize="small"
+                class="parsm-cell-input parsm-right"
+                [(ngModel)]="row.finalValue"
+                (ngModelChange)="onRowEdited(row)"
+              />
+            </td>
+            <td>
+              <input nz-input nzSize="small" class="parsm-cell-input" [(ngModel)]="row.remark" (ngModelChange)="onRowEdited(row)" />
+            </td>
+            <td>{{ row.updatedBy }}</td>
+            <td class="parsm-center">{{ row.updateDate }}</td>
+          </tr>
+        </tbody>
+      </nz-table>
+      <ng-template #parsmTotalTpl let-total let-range="range">{{ range[0] }}-{{ range[1] }} / {{ total }}</ng-template>
+    </div>
+  </nz-spin>
+</div>
+
+<!-- Popup chọn nhân viên khi tra cứu tìm được nhiều kết quả (thay cho viewEmpForPopList) -->
+<nz-modal
+  [nzVisible]="empPickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm kiếm nhân viên')"
+  [nzFooter]="null"
+  nzWidth="600px"
+  (nzOnCancel)="empPickerVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <nz-table [nzData]="empOptions()" nzSize="small" [nzShowPagination]="false" [nzScroll]="{ y: '320px' }">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of empOptions()" class="parsm-clickable" (click)="selectEmployee(emp)">
+          <td>{{ emp.empId }}</td>
+          <td>{{ emp.localName }}</td>
+          <td>{{ emp.deptName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

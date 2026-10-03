@@ -16,6 +16,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { EmpSearchService, EmployeeSearchResult } from '../shared/emp-search.service';
 import { EducationRow, EducationSavePayload, EducationService } from './education.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../../core/config/table-pagination.config';
 /**
  * Quá trình học tập - port lại từ hrm/empinfo/educationSearch.html (đã xoá).
  * Backend GET /hrm/empinfo/api/education trả về mảng phẳng (không phân
@@ -42,6 +43,10 @@ import { EducationRow, EducationSavePayload, EducationService } from './educatio
   styleUrl: './education.component.scss',
 })
 export class EducationComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(EducationService);
   private readonly employeeService = inject(EmpSearchService);
   private readonly message = inject(NzMessageService);

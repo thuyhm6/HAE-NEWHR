@@ -53,10 +53,10 @@ public class EssCoordApplyOtInfoServiceImpl implements EssCoordApplyOtInfoServic
 
     private void applyDefaultDateRange(EssCoordApplyOtInfoDto dto) {
         LocalDate today = LocalDate.now();
-        if (dto.getStartDate() == null || dto.getStartDate().isBlank()) {
+        if (dto.getStartDate() == null || dto.getStartDate().trim().isEmpty()) {
             dto.setStartDate(today.minusDays(1).format(DATE_FORMAT));
         }
-        if (dto.getEndDate() == null || dto.getEndDate().isBlank()) {
+        if (dto.getEndDate() == null || dto.getEndDate().trim().isEmpty()) {
             dto.setEndDate(today.format(DATE_FORMAT));
         }
     }

@@ -18,6 +18,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { ArCalenderRow, STATUTORY_DEFAULT_SHIFT_NO, StatutoryHolidaysService } from './statutory-holidays.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function todayDate(): Date {
   return new Date();
 }
@@ -56,6 +57,10 @@ function todayDate(): Date {
   styleUrl: './statutory-holidays.component.scss',
 })
 export class StatutoryHolidaysComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   protected readonly service = inject(StatutoryHolidaysService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

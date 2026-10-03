@@ -1,5 +1,7 @@
 package com.ait.pa.salary.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.salary.dto.PaInputItemDataDto;
 import com.ait.pa.salary.dto.PaParamDataTempDto;
 import com.ait.pa.salary.service.PaInputItemDataService;
@@ -46,7 +48,7 @@ public class PaInputItemDataController {
             return ResponseEntity.ok(paInputItemDataService.getParamItemList(dto));
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách hạng mục tiêu chuẩn: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -89,7 +91,7 @@ public class PaInputItemDataController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy dữ liệu tiêu chuẩn paramDataNo={}: {}", paramDataNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -98,22 +100,22 @@ public class PaInputItemDataController {
     public ResponseEntity<?> insert(@RequestBody PaInputItemDataDto dto) {
         try {
             if (dto.getParamNo() == null || dto.getParamNo().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Chưa chọn hạng mục tiêu chuẩn!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Chưa chọn hạng mục tiêu chuẩn!"));
             }
             if (dto.getPersonId() == null || dto.getPersonId().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập mã nhân viên!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập mã nhân viên!"));
             }
             if (dto.getReturnValue() == null || dto.getReturnValue().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập giá trị!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập giá trị!"));
             }
             if (dto.getStartMonth() == null || dto.getStartMonth().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập tháng bắt đầu!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập tháng bắt đầu!"));
             }
             paInputItemDataService.insertParamData(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Thêm mới thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Thêm mới thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi thêm mới dữ liệu tiêu chuẩn: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -122,19 +124,19 @@ public class PaInputItemDataController {
     public ResponseEntity<?> update(@RequestBody PaInputItemDataDto dto) {
         try {
             if (dto.getParamDataNo() == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Thiếu thông tin PARAM_DATA_NO!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Thiếu thông tin PARAM_DATA_NO!"));
             }
             if (dto.getReturnValue() == null || dto.getReturnValue().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập giá trị!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập giá trị!"));
             }
             if (dto.getStartMonth() == null || dto.getStartMonth().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập tháng bắt đầu!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập tháng bắt đầu!"));
             }
             paInputItemDataService.updateParamData(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Cập nhật thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi cập nhật dữ liệu tiêu chuẩn paramDataNo={}: {}", dto.getParamDataNo(), e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -143,10 +145,10 @@ public class PaInputItemDataController {
     public ResponseEntity<?> delete(@PathVariable Long paramDataNo) {
         try {
             paInputItemDataService.deleteParamData(paramDataNo);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa dữ liệu tiêu chuẩn paramDataNo={}: {}", paramDataNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -174,7 +176,7 @@ public class PaInputItemDataController {
                 result.put("message", "Chỉ hỗ trợ file Excel .xlsx hoặc .xls.");
                 return ResponseEntity.badRequest().body(result);
             }
-            if (paramNo == null || paramNo.isBlank()) {
+            if (paramNo == null || paramNo.trim().isEmpty()) {
                 result.put("success", false);
                 result.put("message", "Vui lòng chọn hạng mục tiêu chuẩn trước khi import.");
                 return ResponseEntity.badRequest().body(result);
@@ -218,7 +220,7 @@ public class PaInputItemDataController {
         Map<String, Object> response = new HashMap<>();
         try {
             String message = paInputItemDataService.saveParamDataTemp(paramNo);
-            if (message != null && !message.isBlank()) {
+            if (message != null && !message.trim().isEmpty()) {
                 response.put("success", false);
                 response.put("error", message);
             } else {

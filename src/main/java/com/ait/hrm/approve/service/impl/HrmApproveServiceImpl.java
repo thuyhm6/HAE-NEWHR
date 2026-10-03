@@ -1,5 +1,7 @@
 package com.ait.hrm.approve.service.impl;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.ess.empinfo.service.EssPersonalInfoService;
 import com.ait.hrm.approve.dto.HrmApproveApplyDto;
 import com.ait.hrm.approve.mapper.HrmApproveMapper;
@@ -38,7 +40,7 @@ public class HrmApproveServiceImpl implements HrmApproveService {
             return hrmApproveMapper.selectApplyListPage(dto);
         } catch (Exception e) {
             log.error("Lỗi lấy danh sách apply phân trang cho manager", e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 

@@ -1,0 +1,170 @@
+<div class="psc-page">
+  <div class="psc-search-card">
+    <div class="psc-search-row">
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('pa.monthPersonCountInfoList.GONGZIQUFEN.b', 'Phân loại lương') }}</label>
+        <nz-select id="pmpcSalaryDistin" class="psc-select" [ngModel]="salaryDistinNo()" (ngModelChange)="changeSalaryDistin($event)">
+          @for (opt of salaryDistinOptions(); track opt.codeNo) {
+            <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('display.pa.ecc.paydate', 'Ngày phát') }}</label>
+        <div class="psc-inline">
+          <nz-select id="pmpcPayDatePro" class="psc-select" [ngModel]="payDatePro()" (ngModelChange)="payDatePro.set($event)">
+            @for (opt of payDateOptions(); track opt.payDate) {
+              <nz-option [nzValue]="opt.payDate" [nzLabel]="displayDate(opt.payDate)"></nz-option>
+            }
+          </nz-select>
+          <span>~</span>
+          <nz-select id="pmpcPayDate" class="psc-select" [ngModel]="payDate()" (ngModelChange)="payDate.set($event)">
+            @for (opt of payDateOptions(); track opt.payDate) {
+              <nz-option [nzValue]="opt.payDate" [nzLabel]="displayDate(opt.payDate)"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </div>
+      <div class="psc-actions">
+        <button id="pmpcBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="psc-body">
+    <!-- Số NV theo phân loại lương (bảng trái bản gốc) -->
+    <div class="psc-card pmpc-count">
+      <nz-table
+        id="pmpcCountTable"
+        [nzData]="countList()"
+        [nzLoading]="loading()"
+        [nzShowPagination]="false"
+        [nzFrontPagination]="false"
+        [nzNoResult]="i18n.t('pa.monthPersonCountInfoList.MEIYOUCHAZHAODESHUJU.b', 'Không tìm thấy dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.GONGZIQUFEN.b', 'Phân loại lương') }}</th>
+            <th class="psc-center">{{ i18n.t('display.emp.ben.or.benhs68', 'Tháng trước') }}</th>
+            <th class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.DANGYUE.b', 'Tháng này') }}</th>
+            <th class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.ZENGJIANRENYUAN.b', 'Tăng giảm NV') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of countList(); track $index) {
+            <tr>
+              <td class="psc-center">{{ row.salaryDistinName }}</td>
+              <td class="psc-center">{{ row.preCount }}</td>
+              <td class="psc-center">{{ row.nowCount }}</td>
+              <td class="psc-center">{{ diff(row) }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </div>
+
+    <!-- NV tăng (bảng giữa bản gốc) -->
+    <div class="psc-card pmpc-change">
+      <nz-table id="pmpcIncreaseTable" [nzData]="increaseList()" [nzLoading]="loading()" [nzShowPagination]="false" [nzFrontPagination]="false" nzSize="small" nzBordered>
+        <thead>
+          <tr>
+            <th class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.ZENGJIANRENYUANQUFEN.b', 'Thêm loại nhân viên') }}</th>
+            <th class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.ZENGJIARENYUAN.b', 'Thêm nhân viên') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of increaseList(); track $index) {
+            <tr [class.psc-row-selected]="changeFlag() === 'add' && changeType() === row.changeType">
+              <td class="psc-center">{{ changeTypeLabel(row.changeType) }}</td>
+              <td class="psc-center"><a class="psc-link" (click)="showChangeEmp('add', row)">{{ row.numb }}</a></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </div>
+
+    <!-- NV giảm (bảng phải bản gốc) -->
+    <div class="psc-card pmpc-change">
+      <nz-table id="pmpcDecreaseTable" [nzData]="decreaseList()" [nzLoading]="loading()" [nzShowPagination]="false" [nzFrontPagination]="false" nzSize="small" nzBordered>
+        <thead>
+          <tr>
+            <th class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.JIANSHAORENYUANQUFEN.b', 'Giảm loại nhân viên') }}</th>
+            <th class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.JIANSHAORENYUAN.b', 'Giảm') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of decreaseList(); track $index) {
+            <tr [class.psc-row-selected]="changeFlag() === 'delete' && changeType() === row.changeType">
+              <td class="psc-center">{{ changeTypeLabel(row.changeType) }}</td>
+              <td class="psc-center"><a class="psc-link" (click)="showChangeEmp('delete', row)">{{ row.numb }}</a></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </div>
+  </div>
+
+  <!-- Danh sách nhân viên (tab monthPersonCountInfoSonList bản gốc) -->
+  <div class="psc-card">
+    <div class="pmpc-emp-header">
+      <span class="psc-card-title">
+        {{ i18n.t('pa.monthPersonCountInfoList.XIANGXIRENYUANLIEBIAO.b', 'Danh sách nhân viên') }}
+        @if (changeType()) {
+          ({{ changeTypeLabel(changeType()) }}) - {{ i18n.t('common.total', 'Tổng') }}: {{ empRows().length }}
+        }
+      </span>
+      <button id="pmpcBtnExport" nz-button [disabled]="!empRows().length" (click)="exportExcel()">
+        <span nz-icon nzType="file-excel"></span>{{ i18n.t('ess.infoApply.export_to_Excel', 'Xuất Excel') }}
+      </button>
+    </div>
+    @if (changeFlag()) {
+      <nz-table
+        #pmpcEmpTable
+        id="pmpcEmpTable"
+        [nzData]="empRows()"
+        [nzLoading]="empLoading()"
+        [nzFrontPagination]="false"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '1100px', y: 'calc(100vh - 480px)' }"
+        [nzNoResult]="i18n.t('pa.monthPersonCountInfoList.MEIYOUCHAZHAODESHUJU.b', 'Không tìm thấy dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="60px" class="psc-center">No.</th>
+            <th nzWidth="110px">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th nzWidth="160px">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="180px">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+            <th nzWidth="120px">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+            <th nzWidth="110px">{{ i18n.t('hrm.contract.Rank', 'Chức vụ') }}</th>
+            <th nzWidth="120px">{{ i18n.t('ess.trans.title.dutyName', 'Chức danh') }}</th>
+            <th nzWidth="120px">{{ i18n.t('org.title.MAIN_BUSINESS', 'Công việc') }}</th>
+            <th nzWidth="110px" class="psc-center">{{ dateHeader() }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of pmpcEmpTable.data; track $index) {
+            <tr>
+              <td class="psc-center">{{ $index + 1 }}</td>
+              <td class="psc-center">{{ row.empId }}</td>
+              <td>{{ row.localName }}</td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ row.postFamilyName }}</td>
+              <td>{{ row.postGradeName }}</td>
+              <td>{{ row.positionName }}</td>
+              <td>{{ row.mainBusiness }}</td>
+              <td class="psc-center">{{ changeFlag() === 'delete' ? row.dateLeft : row.dateStarted }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    } @else {
+      <div class="psc-hint">{{ i18n.t('pa.salaryCheck.changeHint', 'Chọn số nhân viên tăng / giảm để xem danh sách nhân viên.') }}</div>
+    }
+  </div>
+</div>

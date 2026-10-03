@@ -30,7 +30,7 @@
   </nz-card>
 
   <nz-card class="vne-table-card">
-    <nz-table id="vne-data-table" #vneTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" [nzScroll]="{ x: 'max-content', y: '100%' }">
+    <nz-table id="vne-data-table" #vneTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" nzSize="small" [nzScroll]="{ x: 'max-content', y: '100%' }">
       <thead>
         <tr>
           <th nzWidth="50px" class="vne-col-center">{{ i18n.t('vne.col.no', 'NO') }}</th>

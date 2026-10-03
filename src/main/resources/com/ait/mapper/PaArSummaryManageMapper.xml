@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--
+    Quản lý tổng hợp chấm công (viewPaArSummaryForManageList) - port từ sqlWorkManagement.xml
+    (getPaArSummaryForManageList / updatePaArSummaryForManageInfo / getSelectCodeMultiArSummaryList /
+    getPayScheduleAllWithPaConfirmList) của dự án cũ Hanwha_HAE.
+    Bảng AR_SUMMARY_MANAGE_$interCpnyID$ ở bản gốc được viết cố định thành AR_SUMMARY_MANAGE_HAE
+    theo cùng quy ước với AR_DETAIL_HAE / AR_SCHEDULE_HAE đang dùng trong dự án này.
+-->
+<mapper namespace="com.ait.pa.workManagement.mapper.PaArSummaryManageMapper">
+
+    <resultMap id="PaArSummaryScheduleResultMap" type="com.ait.pa.workManagement.dto.PaArSummaryScheduleDto">
+        <id     column="PAY_SCHEDULE_NO"  property="payScheduleNo"    jdbcType="VARCHAR" />
+        <result column="PAY_DATE"         property="payDate"          jdbcType="VARCHAR" />
+        <result column="SALARY_DISTIN"    property="salaryDistinName" jdbcType="VARCHAR" />
+        <result column="PA_CONFIRM_FLAG"  property="paConfirmFlag"    jdbcType="NUMERIC" />
+    </resultMap>
+
+    <resultMap id="PaArSummaryItemResultMap" type="com.ait.pa.workManagement.dto.PaArSummaryItemDto">
+        <id     column="ITEM_NO"   property="itemNo"   jdbcType="VARCHAR" />
+        <result column="ITEM_NAME" property="itemName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="PaArSummaryManageResultMap" type="com.ait.pa.workManagement.dto.PaArSummaryManageDto">
+        <id     column="AR_SUMMARY_MANAGE_NO" property="arSummaryManageNo" jdbcType="NUMERIC" />
+        <result column="EMPID"                property="empId"             jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"           property="localName"         jdbcType="VARCHAR" />
+        <result column="DEPTNAME"             property="deptName"          jdbcType="VARCHAR" />
+        <result column="POST_GRADE"           property="postGrade"         jdbcType="VARCHAR" />
+        <result column="DATE_STARTED"         property="dateStarted"       jdbcType="VARCHAR" />
+        <result column="ITEM_NO"              property="itemNo"            jdbcType="VARCHAR" />
+        <result column="ITEM_NAME"            property="itemName"          jdbcType="VARCHAR" />
+        <result column="AR_START_DATE"        property="arStartDate"       jdbcType="VARCHAR" />
+        <result column="CAL_VALUE"            property="calValue"          jdbcType="NUMERIC" />
+        <result column="FINAL_VALUE"          property="finalValue"        jdbcType="NUMERIC" />
+        <result column="REMARK"               property="remark"            jdbcType="VARCHAR" />
+        <result column="UPDATED_BY"           property="updatedBy"         jdbcType="VARCHAR" />
+        <result column="UPDATE_DATE"          property="updateDate"        jdbcType="VARCHAR" />
+    </resultMap>
+
+    <resultMap id="PaArSummaryExcelResultMap" type="com.ait.pa.workManagement.dto.PaArSummaryManageDto">
+        <result column="EMPID"       property="empId"      jdbcType="VARCHAR" />
+        <result column="LOCAL_NAME"  property="localName"  jdbcType="VARCHAR" />
+        <result column="DEPTNAME"    property="deptName"   jdbcType="VARCHAR" />
+        <result column="ITEM_NO"     property="itemNo"     jdbcType="VARCHAR" />
+        <result column="CAL_VALUE"   property="calValue"   jdbcType="NUMERIC" />
+        <result column="FINAL_VALUE" property="finalValue" jdbcType="NUMERIC" />
+    </resultMap>
+
+    <!-- Kế hoạch trả lương kèm cờ chốt lương (getPayScheduleAllWithPaConfirmList) -->
+    <select id="selectScheduleList" resultMap="PaArSummaryScheduleResultMap">
+        SELECT PPS.PAY_SCHEDULE_NO,
+               TO_CHAR(PPS.PAY_DATE, 'DD/MM/YYYY') PAY_DATE,
+               GET_GLOBAL_NAME(PPS.SALARY_DISTIN_NO, #{lang, jdbcType=VARCHAR}) SALARY_DISTIN,
+               PWF.PA_CONFIRM_FLAG
+          FROM PA_PAY_SCHEDULE PPS, PA_WORK_FLOW PWF
+         WHERE PPS.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
+           AND PPS.PAY_SCHEDULE_NO = PWF.PAY_SCHEDULE_NO
+           AND PPS.ACTIVITY        = 1
+         ORDER BY PPS.PAY_DATE DESC
+    </select>
+
+    <!-- Hạng mục tổng hợp chấm công được quản lý (getSelectCodeMultiArSummaryList) -->
+    <select id="selectItemList" resultMap="PaArSummaryItemResultMap">
+        SELECT A.ITEM_NO,
+               GET_GLOBAL_NAME(A.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NAME
+          FROM AR_STA_ITEM A, AR_STA_ITEM_PARAM B
+         WHERE A.ITEM_NO     = B.ITEM_NO
+           AND B.CPNY_ID     = #{cpnyId, jdbcType=VARCHAR}
+           AND B.MANAGE_FLAG = 1
+         ORDER BY B.CAL_ORDER
+    </select>
+
+    <!-- Điều kiện tìm kiếm nhân viên theo mã/tên (tên bỏ dấu, không phân biệt hoa thường) -->
+    <sql id="empKeyCondition">
+        <if test="key != null and key != ''">
+            AND ( HRE.EMPID LIKE '%' || #{key, jdbcType=VARCHAR} || '%'
+               OR CONVERTTOUNSIGN(UPPER(HRE.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{key, jdbcType=VARCHAR})) || '%' )
+        </if>
+    </sql>
+
+    <!-- Điều kiện phòng ban (bao gồm phòng ban con) -->
+    <sql id="deptCondition">
+        <if test="deptNo != null and deptNo != ''">
+            AND EXISTS (SELECT 1
+                          FROM HR_DEPARTMENT
+                         WHERE HR_DEPARTMENT.DEPTNO   = HRE.DEPTNO
+                           AND HR_DEPARTMENT.ACTIVITY = 1
+                         START WITH HR_DEPARTMENT.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                       CONNECT BY PRIOR HR_DEPARTMENT.DEPTNO = HR_DEPARTMENT.PARENT_DEPT_NO)
+        </if>
+    </sql>
+
+    <!-- Danh sách tổng hợp chấm công (getPaArSummaryForManageList) -->
+    <select id="selectList" resultMap="PaArSummaryManageResultMap">
+        SELECT ASM.AR_SUMMARY_MANAGE_NO,
+               HRE.EMPID,
+               HRE.LOCAL_NAME,
+               GET_DEPT_NAME(HRE.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+               GET_GLOBAL_NAME(HRE.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) POST_GRADE,
+               TO_CHAR(HRE.DATE_STARTED, 'DD/MM/YYYY') DATE_STARTED,
+               ASM.ITEM_NO,
+               GET_GLOBAL_NAME(ASM.ITEM_NO, #{lang, jdbcType=VARCHAR}) ITEM_NAME,
+               TO_CHAR(PPS.AR_START_DATE, 'DD/MM/YYYY') AR_START_DATE,
+               ASM.CAL_VALUE,
+               ASM.FINAL_VALUE,
+               ASM.REMARK,
+               GET_EMP_LOCAL_NAME(ASM.UPDATED_BY, #{cpnyId, jdbcType=VARCHAR}) || ' ' || ASM.UPDATED_IP UPDATED_BY,
+               TO_CHAR(ASM.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') UPDATE_DATE
+          FROM AR_SUMMARY_MANAGE_HAE ASM, HR_EMPLOYEE HRE, PA_PAY_SCHEDULE PPS
+         WHERE ASM.PERSON_ID       = HRE.PERSON_ID
+           AND ASM.PAY_SCHEDULE_NO = PPS.PAY_SCHEDULE_NO
+           AND ASM.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+        <include refid="empKeyCondition" />
+        <if test="itemNos != null and itemNos.size() > 0">
+            AND ASM.ITEM_NO IN
+            <foreach collection="itemNos" item="itemNo" open="(" separator="," close=")">
+                #{itemNo, jdbcType=VARCHAR}
+            </foreach>
+        </if>
+        <if test="isSpecialFlag != null and isSpecialFlag != ''">
+            AND ASM.FINAL_VALUE IS NOT NULL
+        </if>
+        <include refid="deptCondition" />
+         ORDER BY HRE.EMPID, ASM.AR_SUMMARY_MANAGE_NO
+    </select>
+
+    <!-- Dữ liệu xuất Excel (pivot trong Java - xem PaArSummaryManageServiceImpl#exportExcel) -->
+    <select id="selectExcelList" resultMap="PaArSummaryExcelResultMap">
+        SELECT HRE.EMPID,
+               HRE.LOCAL_NAME,
+               GET_DEPT_NAME(HRE.DEPTNO, #{lang, jdbcType=VARCHAR}) DEPTNAME,
+               ASM.ITEM_NO,
+               ASM.CAL_VALUE,
+               ASM.FINAL_VALUE
+          FROM AR_SUMMARY_MANAGE_HAE ASM, HR_EMPLOYEE HRE
+         WHERE ASM.PERSON_ID       = HRE.PERSON_ID
+           AND ASM.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
+        <include refid="empKeyCondition" />
+        <include refid="deptCondition" />
+         ORDER BY HRE.DEPTNO, HRE.EMPID
+    </select>
+
+    <!-- Cập nhật giá trị ngoại lệ / ghi chú (updatePaArSummaryForManageInfo) -->
+    <update id="update">
+        UPDATE AR_SUMMARY_MANAGE_HAE
+           SET FINAL_VALUE = #{finalValue, jdbcType=NUMERIC},
+               REMARK      = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY  = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP  = #{adminIP, jdbcType=VARCHAR}
+         WHERE AR_SUMMARY_MANAGE_NO = #{arSummaryManageNo, jdbcType=NUMERIC}
+    </update>
+
+</mapper>

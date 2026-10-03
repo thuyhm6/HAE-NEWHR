@@ -56,7 +56,7 @@
     [nzPageIndex]="pageIndex()"
     [nzPageSize]="pageSize()"
     [nzShowSizeChanger]="true"
-    [nzPageSizeOptions]="[20, 50, 100]"
+    [nzPageSizeOptions]="pageSizeOptions"
     (nzQueryParams)="onQueryParamsChange($event)"
     [nzScroll]="{ x: '3200px', y: 'calc(100vh - 320px)' }"
     nzSize="small"

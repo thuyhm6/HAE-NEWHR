@@ -43,7 +43,7 @@ const BASE_URL = '/sys/api/menu_param';
 
 /**
  * Quản lý tham số Menu theo công ty (viewMenuParamList) - port lại từ
- * sys/basicMaintenance/viewMenuParamList.html (đã xoá). PARAM_ACTIVITY ở
+ * sys/menu/viewMenuParamList.html (đã xoá). PARAM_ACTIVITY ở
  * đây là số nguyên 1/0 (khác quy ước chuỗi của SY_CODE_PARAM). Endpoint
  * "save" đóng vai trò upsert (thêm mới khi gán menu, cập nhật khi sửa
  * thứ tự/trạng thái) - không có endpoint "update" riêng như code_param.

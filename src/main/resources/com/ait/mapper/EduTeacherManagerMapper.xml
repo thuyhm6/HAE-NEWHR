@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTeacherManagerMapper">
+
+    <resultMap id="EduTeacherManagerResultMap" type="com.ait.edu.trainEducation.model.EduTeacherManager">
+        <id column="TEACHER_NO" property="teacherNo" jdbcType="VARCHAR"/>
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="PERSON_ID" property="personId" jdbcType="VARCHAR"/>
+        <result column="TEACHER_NAME" property="teacherName" jdbcType="VARCHAR"/>
+        <result column="ORG_NAME_LOCAL" property="orgNameLocal" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NO_NAME" property="postGradeNoName" jdbcType="VARCHAR"/>
+        <result column="POSITION_NO_NAME" property="positionNoName" jdbcType="VARCHAR"/>
+        <result column="TEACH_FIELD_CODE" property="teachFieldCode" jdbcType="VARCHAR"/>
+        <result column="TEACH_FIELD_CODE_NAME" property="teachFieldCodeName" jdbcType="VARCHAR"/>
+        <result column="TEACH_LEVEL_CODE" property="teachLevelCode" jdbcType="VARCHAR"/>
+        <result column="TEACH_LEVEL_CODE_NAME" property="teachLevelCodeName" jdbcType="VARCHAR"/>
+        <result column="TEACH_STATUS_CODE" property="teachStatusCode" jdbcType="VARCHAR"/>
+        <result column="TEACH_STATUS_CODE_NAME" property="teachStatusCodeName" jdbcType="VARCHAR"/>
+        <result column="HIRE_TIME" property="hireTime" jdbcType="VARCHAR"/>
+        <result column="FIRING_TIME" property="firingTime" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_ACT_TIME" property="businessActTime" jdbcType="VARCHAR"/>
+        <result column="ALLTIME" property="allTime" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="selectColumns">
+        T.TEACHER_NO,
+        T.EMPID,
+        T.PERSON_ID,
+        T.TEACHER_NAME,
+        (SELECT GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+          WHERE H.PERSON_ID = T.PERSON_ID AND ROWNUM = 1) AS ORG_NAME_LOCAL,
+        (SELECT GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+          WHERE H.PERSON_ID = T.PERSON_ID AND ROWNUM = 1) AS POST_GRADE_NO_NAME,
+        (SELECT GET_GLOBAL_NAME(H.POSITION_NO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+          WHERE H.PERSON_ID = T.PERSON_ID AND ROWNUM = 1) AS POSITION_NO_NAME,
+        T.TEACH_FIELD_CODE,
+        GET_GLOBAL_NAME(T.TEACH_FIELD_CODE, #{lang, jdbcType=VARCHAR}) AS TEACH_FIELD_CODE_NAME,
+        T.TEACH_LEVEL_CODE,
+        GET_GLOBAL_NAME(T.TEACH_LEVEL_CODE, #{lang, jdbcType=VARCHAR}) AS TEACH_LEVEL_CODE_NAME,
+        T.TEACH_STATUS_CODE,
+        GET_GLOBAL_NAME(T.TEACH_STATUS_CODE, #{lang, jdbcType=VARCHAR}) AS TEACH_STATUS_CODE_NAME,
+        TO_CHAR(T.HIRE_TIME, 'DD/MM/YYYY') AS HIRE_TIME,
+        TO_CHAR(T.FIRING_TIME, 'DD/MM/YYYY') AS FIRING_TIME,
+        T.BUSINESS_ACT_TIME,
+        TO_CHAR(ROUND(NVL((SYSDATE - T.HIRE_TIME) / 30, 0) + NVL(TO_NUMBER(T.BUSINESS_ACT_TIME), 0))) AS ALLTIME,
+        T.REMARK
+    </sql>
+
+    <select id="findList" resultMap="EduTeacherManagerResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_TEACHER_MANAGER T
+        WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND T.ACTIVITY = '1'
+        <if test="keyword != null and keyword != ''">
+            AND (UPPER(T.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                 OR CONVERTTOUNSIGN(UPPER(T.TEACHER_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="teachFieldCode != null and teachFieldCode != ''">
+            AND T.TEACH_FIELD_CODE = #{teachFieldCode, jdbcType=VARCHAR}
+        </if>
+        <if test="teachLevelCode != null and teachLevelCode != ''">
+            AND T.TEACH_LEVEL_CODE = #{teachLevelCode, jdbcType=VARCHAR}
+        </if>
+        <if test="teachStatusCode != null and teachStatusCode != ''">
+            AND T.TEACH_STATUS_CODE = #{teachStatusCode, jdbcType=VARCHAR}
+        </if>
+        ORDER BY T.CREATE_DATE DESC
+    </select>
+
+    <select id="findByTeacherNo" resultMap="EduTeacherManagerResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_TEACHER_MANAGER T
+        WHERE T.TEACHER_NO = #{teacherNo, jdbcType=VARCHAR}
+          AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="nextTeacherNo" resultType="java.lang.String">
+        SELECT TO_CHAR(EDU_TEACHER_MANA_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <select id="nextExternalEmpid" resultType="java.lang.String">
+        SELECT TO_CHAR(EDU_TEACHER_EMPID_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert">
+        INSERT INTO EDU_TEACHER_MANAGER (
+            TEACHER_NO, TEACH_FIELD_CODE, TEACH_LEVEL_CODE, HIRE_TIME, FIRING_TIME,
+            TEACH_STATUS_CODE, BUSINESS_ACT_TIME, REMARK, EMPID,
+            CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID, PERSON_ID, TEACHER_NAME
+        ) VALUES (
+            #{teacherNo, jdbcType=VARCHAR},
+            #{teachFieldCode, jdbcType=VARCHAR},
+            #{teachLevelCode, jdbcType=VARCHAR},
+            TO_DATE(#{hireTime, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            TO_DATE(#{firingTime, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            #{teachStatusCode, jdbcType=VARCHAR},
+            #{businessActTime, jdbcType=VARCHAR},
+            #{remark, jdbcType=VARCHAR},
+            #{empid, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            #{personId, jdbcType=VARCHAR},
+            #{teacherName, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- Không cập nhật BUSINESS_ACT_TIME: form sửa bản gốc chỉ hiển thị (không nhập) kinh nghiệm -->
+    <update id="update">
+        UPDATE EDU_TEACHER_MANAGER
+           SET TEACH_FIELD_CODE = #{teachFieldCode, jdbcType=VARCHAR},
+               TEACH_LEVEL_CODE = #{teachLevelCode, jdbcType=VARCHAR},
+               HIRE_TIME = TO_DATE(#{hireTime, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               FIRING_TIME = TO_DATE(#{firingTime, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               TEACH_STATUS_CODE = #{teachStatusCode, jdbcType=VARCHAR},
+               REMARK = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE TEACHER_NO = #{teacherNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <update id="softDelete">
+        UPDATE EDU_TEACHER_MANAGER
+           SET ACTIVITY = '0'
+         WHERE TEACHER_NO = #{teacherNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

@@ -13,6 +13,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { ConfirmTargetDetail, ConfirmTargetItem, ConfirmTargetRow, ConfirmTargetService } from './confirm-target.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 export interface ConfirmTargetConfig {
   apiBase: 'confirmTarget1' | 'confirmTarget2';
   i18nPrefix: string;
@@ -35,6 +36,9 @@ export interface ConfirmTargetConfig {
   styleUrl: './confirm-target.component.scss',
 })
 export class ConfirmTargetComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(ConfirmTargetService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

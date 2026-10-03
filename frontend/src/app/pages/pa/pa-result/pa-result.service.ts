@@ -11,6 +11,10 @@ export interface PaItemInputItem {
   isUse?: number;
   itemType?: number;
   activity?: number;
+  /** GET_ITEM_GLAG - '1' = mặc định tích chọn */
+  itemFlag?: string;
+  /** GET_ITEM_NUMBER - số thứ tự mặc định (0 = không có) */
+  itemNumber?: number;
 }
 
 export interface PaResultSections {
@@ -27,6 +31,13 @@ export interface PaResultSaveItem {
   orderNo: number | null;
 }
 
+export interface PaResultExportColumn {
+  itemId: string;
+  itemName: string;
+  orderNo: number | null;
+  decimal: boolean;
+}
+
 interface ActionResponse {
   success?: boolean;
   message?: string;
@@ -36,11 +47,8 @@ interface ActionResponse {
 const BASE_URL = '/pa/salary/result/api';
 
 /**
- * Cấu hình hạng mục kết quả tính lương (viewPaResult) - port lại từ
- * pa/salary/viewPaResult.html (đã xoá). Danh sách kế hoạch trả lương dùng lại
- * PaPayScheduleService.getList() (endpoint /pa/workManagement/api/paySchedule
- * đã có sẵn cho trang pa-pay-schedule, gọi không truyền filter để lấy tất cả
- * - đúng như bản gốc) thay vì viết lại 1 service riêng.
+ * Kết quả tính lương (viewPaResult) - port từ pa/salary/viewPaResult.jsp.
+ * Danh sách kế hoạch trả lương dùng lại PaPayScheduleService.getList().
  */
 @Injectable({ providedIn: 'root' })
 export class PaResultService {
@@ -58,8 +66,19 @@ export class PaResultService {
     return firstValueFrom(this.http.post<ActionResponse>(`${BASE_URL}/save`, { isUse, itemType, items }));
   }
 
-  buildExportExcelUrl(payScheduleNo: string, deptNos: string, itemIds: string): string {
-    const params = new URLSearchParams({ payScheduleNo, deptNos, itemIds });
-    return `${BASE_URL}/exportExcel?${params.toString()}`;
+  /** POST vì danh sách cột có thể dài (vượt giới hạn URL của GET). */
+  async exportExcel(payScheduleNo: string, deptNo: string | null, columns: PaResultExportColumn[]): Promise<void> {
+    const res = await firstValueFrom(
+      this.http.post(`${BASE_URL}/exportExcel`, { payScheduleNo, deptNo, columns }, { responseType: 'blob', observe: 'response' }),
+    );
+    const disposition = res.headers.get('Content-Disposition') ?? '';
+    const match = /filename\*=UTF-8''([^;]+)/.exec(disposition);
+    const filename = match ? decodeURIComponent(match[1]) : `PaResult_${payScheduleNo}.xlsx`;
+    const url = URL.createObjectURL(res.body!);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }

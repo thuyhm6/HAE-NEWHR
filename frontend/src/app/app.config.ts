@@ -9,6 +9,7 @@ import { registerLocaleData } from '@angular/common';
 import vi from '@angular/common/locales/vi';
 import { provideNzDateFnsAdapter } from 'ng-zorro-antd/core/time';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
+import { provideNzConfig } from 'ng-zorro-antd/core/config';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { csrfInterceptor } from './core/interceptors/csrf.interceptor';
 import { TabRouteReuseStrategy } from './shell/tab-route-reuse.strategy';
@@ -24,6 +25,8 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideNzI18n(vi_VN),
     provideNzDateFnsAdapter(),
+    // Bật chọn số dòng/trang cho mọi nz-table; danh sách giá trị xem core/config/table-pagination.config.ts
+    provideNzConfig({ table: { nzShowSizeChanger: true } }),
     // Đăng ký icon tĩnh (offline) để tránh IconService gọi HTTP ra ngoài lấy SVG -> 404
     // trong môi trường intranet không có internet. Xem core/config/nz-icons.config.ts.
     provideNzIcons(NZ_ICON_LIST),

@@ -12,6 +12,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { ImportOtTempListService, ImportOtTempRow } from './import-ot-temp-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Kết quả import Excel đơn tăng ca hàng loạt - port lại từ
  * ar/attendanceMintenance/viewImportOtTempList.html (đã xoá). Mở trong tab
@@ -27,6 +28,10 @@ import { ImportOtTempListService, ImportOtTempRow } from './import-ot-temp-list.
   styleUrl: './import-ot-temp-list.component.scss',
 })
 export class ImportOtTempListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ImportOtTempListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

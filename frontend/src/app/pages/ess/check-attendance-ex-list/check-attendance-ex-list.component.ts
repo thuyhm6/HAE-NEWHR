@@ -26,6 +26,7 @@ import {
   SyCodeOption,
 } from './check-attendance-ex-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface ItemNoOption {
   value: string;
   labelKey: string;
@@ -81,6 +82,10 @@ function lastDayOfBillingCycle(): Date {
   styleUrl: './check-attendance-ex-list.component.scss',
 })
 export class CheckAttendanceExListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   @ViewChild('detailModal') detailModal!: ApplyDetailModalComponent;
 
   private readonly service = inject(CheckAttendanceExListService);

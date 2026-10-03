@@ -140,6 +140,22 @@ public class SyUser {
     private String personalSendDataUpdatedBy;
 
     /**
+     * Người xác nhận đồng ý xử lý dữ liệu cá nhân (PERSON_ID) - null nghĩa là
+     * user chưa xác nhận, cần hiện popup bắt buộc xác nhận khi đăng nhập
+     */
+    private String personalDataConfirmBy;
+
+    /**
+     * Ngày giờ xác nhận đồng ý xử lý dữ liệu cá nhân
+     */
+    private LocalDateTime personalDataConfirmDate;
+
+    /**
+     * IP tại thời điểm xác nhận đồng ý xử lý dữ liệu cá nhân
+     */
+    private String personalDataConfirmIp;
+
+    /**
      * Tên nhân viên (Virtual)
      */
     private String empName;

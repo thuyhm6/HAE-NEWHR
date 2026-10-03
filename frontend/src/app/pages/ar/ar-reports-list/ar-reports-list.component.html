@@ -1,0 +1,32 @@
+<div class="arrl-page">
+  <!-- Cây loại báo cáo (viewArReportsList.jsp bản gốc) -->
+  <nz-card class="arrl-side" [nzTitle]="i18n.t('rp.report.title.reporttype', 'Loại bảng biểu')" [nzLoading]="menuLoading()" nzSize="small">
+    <ul id="arrl-menu" nz-menu nzMode="inline" class="arrl-menu">
+      @for (item of menu(); track item.key) {
+        <li nz-menu-item [nzSelected]="active()?.key === item.key" (click)="selectReport(item)">
+          <span nz-icon nzType="file-text"></span>
+          <span>{{ item.label }}</span>
+        </li>
+      }
+    </ul>
+    @if (!menuLoading() && !menu().length) {
+      <div class="arrl-hint">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
+    }
+  </nz-card>
+
+  <!-- Khung báo cáo bên phải (div jbsxBoxAr_{menuNo} bản gốc) -->
+  <div class="arrl-main">
+    @if (!active()) {
+      <div class="arrl-hint">{{ i18n.t('edu.trainReport.selectReport', 'Chọn một báo cáo ở danh sách bên trái.') }}</div>
+    } @else if (contentLoading()) {
+      <div class="arrl-hint"><nz-spin nzSimple></nz-spin></div>
+    } @else if (embeddedComponent(); as comp) {
+      <ng-container *ngComponentOutlet="comp"></ng-container>
+    } @else if (externalUrl()) {
+      <!-- @for theo url để tạo lại ExternalTabComponent mỗi khi đổi báo cáo (component chỉ nạp lại theo reloadToken) -->
+      @for (url of [externalUrl()!]; track url) {
+        <app-external-tab [url]="url"></app-external-tab>
+      }
+    }
+  </div>
+</div>

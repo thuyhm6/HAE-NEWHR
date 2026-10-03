@@ -24,6 +24,7 @@ import {
   CompanyOption,
 } from './ar-item-param-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * CRUD phẳng "Thông số Hạng mục chấm công" - port lại từ
  * ar/attendanceSettings/viewArItemParamList.html (đã xoá). Danh sách nhỏ
@@ -54,6 +55,10 @@ import {
   styleUrl: './ar-item-param-list.component.scss',
 })
 export class ArItemParamListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   protected readonly service = inject(ArItemParamListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

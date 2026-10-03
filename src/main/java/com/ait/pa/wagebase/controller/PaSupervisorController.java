@@ -1,5 +1,7 @@
 package com.ait.pa.wagebase.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.wagebase.dto.PaSupervisorDto;
 import com.ait.pa.wagebase.service.PaSupervisorService;
 import com.ait.sy.sys.dto.DataTablesResponse;
@@ -68,7 +70,7 @@ public class PaSupervisorController {
             return ResponseEntity.ok(paSupervisorService.getAllSupervisorList());
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách người phụ trách lương (all): {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -80,7 +82,7 @@ public class PaSupervisorController {
             return ResponseEntity.ok(paSupervisorService.getAuthorizedDepartments());
         } catch (Exception e) {
             log.error("Lỗi khi lấy phòng ban được phân quyền PA: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -92,7 +94,7 @@ public class PaSupervisorController {
             return ResponseEntity.ok(paSupervisorService.getDepartmentTree());
         } catch (Exception e) {
             log.error("Lỗi khi lấy cây phòng ban: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -104,7 +106,7 @@ public class PaSupervisorController {
             return ResponseEntity.ok(paSupervisorService.getDeptNoListByPersonId(personId));
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách phòng ban personId={}: {}", personId, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -116,10 +118,10 @@ public class PaSupervisorController {
             @RequestBody List<String> deptNoList) {
         try {
             paSupervisorService.saveSupervisorDepts(personId, deptNoList);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật phân quyền phòng ban thành công!"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Cập nhật phân quyền phòng ban thành công!"));
         } catch (Exception e) {
             log.error("Lỗi khi lưu phân quyền phòng ban personId={}: {}", personId, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -133,7 +135,7 @@ public class PaSupervisorController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy chi tiết personId={}: {}", personId, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -143,13 +145,13 @@ public class PaSupervisorController {
     public ResponseEntity<?> save(@RequestBody PaSupervisorDto dto) {
         try {
             if (dto.getPersonId() == null || dto.getPersonId().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn người phụ trách!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn người phụ trách!"));
             }
             paSupervisorService.save(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Lưu thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Lưu thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi lưu người phụ trách lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -159,10 +161,10 @@ public class PaSupervisorController {
     public ResponseEntity<?> deleteSupervisor(@PathVariable String personId) {
         try {
             paSupervisorService.deleteSupervisorWithInfo(personId);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa người phụ trách thành công!"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa người phụ trách thành công!"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa người phụ trách lương personId={}: {}", personId, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -172,13 +174,13 @@ public class PaSupervisorController {
     public ResponseEntity<?> deleteList(@RequestBody List<String> personIds) {
         try {
             if (personIds == null || personIds.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn ít nhất một bản ghi!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn ít nhất một bản ghi!"));
             }
             paSupervisorService.deleteList(personIds);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công " + personIds.size() + " bản ghi"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công " + personIds.size() + " bản ghi"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa danh sách người phụ trách lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 }

@@ -1,0 +1,110 @@
+<div class="psc-body">
+  <!-- Cây tổng hợp theo loại thay đổi (demoTree1 / demoTree2 bản gốc) -->
+  <div class="psc-card prcd-left">
+    <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ totalRows() }}</div>
+    <nz-table
+      [id]="idPrefix() + 'SummaryTable'"
+      [nzData]="groups()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false"
+      [nzScroll]="{ y: 'calc(100vh - 400px)' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th>{{ i18n.t('pa.viewResultConfirmSonList.GONGZIXIANGMUBIEANLI.b', 'Hạng mục') }}</th>
+          <th nzWidth="80px" class="psc-center">{{ i18n.t('empsubject.totalCnt', 'Tổng số người') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SHANGYUEJINE.b', 'Tháng trước') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.BENYUEJINE.b', 'Tháng này') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('ess.infoApply.difference', 'Chênh lệch') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of groups(); track g.monthDif) {
+          <tr class="psc-row prcd-group" (click)="toggle(g.monthDif)">
+            <td>
+              <span nz-icon [nzType]="expanded().has(g.monthDif) ? 'minus-square' : 'plus-square'"></span>
+              {{ i18n.t(g.labelKey, g.fallback) }}
+            </td>
+            <td class="psc-center prcd-count">{{ g.total }}</td>
+            <td class="psc-right">--</td>
+            <td class="psc-right">--</td>
+            <td class="psc-right">--</td>
+          </tr>
+          @if (expanded().has(g.monthDif)) {
+            @for (item of g.items; track $index) {
+              <tr [class.psc-row-selected]="selected() === item">
+                <td class="prcd-child">{{ item.itemName }}</td>
+                <td class="psc-center"><a class="psc-link" (click)="selectItem(item)">{{ item.personNum }}</a></td>
+                <td class="psc-right">{{ fmt(item.monthPro) }}</td>
+                <td class="psc-right">{{ fmt(item.monthNow) }}</td>
+                <td class="psc-right">{{ fmt(dif(item)) }}</td>
+              </tr>
+            }
+          }
+        }
+      </tbody>
+    </nz-table>
+  </div>
+
+  <!-- Danh sách NV (viewResultConfirmList3Right bản gốc) -->
+  <div class="psc-card prcd-right">
+    @if (selected(); as sel) {
+      <div class="psc-card-title">{{ sel.itemName }} - {{ i18n.t('common.total', 'Tổng') }}: {{ empRows().length }}</div>
+      <nz-table
+        [id]="idPrefix() + 'EmpTable'"
+        [nzData]="empRows()"
+        [nzLoading]="empLoading()"
+        [nzFrontPagination]="false"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '1400px', y: 'calc(100vh - 400px)' }"
+        [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="50px" nzLeft class="psc-center">No.</th>
+            <th nzWidth="100px" nzLeft>{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th nzWidth="140px" nzLeft>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="160px">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+            <th nzWidth="100px">{{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}</th>
+            <th nzWidth="110px">{{ i18n.t('pa.salary.canShu.zhiZe', 'Chức danh') }}</th>
+            <th nzWidth="150px">{{ i18n.t('ess.empInfo.project', 'Hạng mục') }}</th>
+            <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.detailItemDifCountInfo.YIQIANJINE.b', 'Tháng trước') }}</th>
+            <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.detailItemDifCountInfo.DANGYUJINE.b', 'Tháng này') }}</th>
+            <th nzWidth="110px" class="psc-right">{{ i18n.t('ess.infoApply.difference', 'Chênh lệch') }}</th>
+            <th nzWidth="180px">{{ i18n.t('pa.detailPersonCountInfoRight.SHIYONGSHI.b', 'Hình thức chuẩn') }}</th>
+            <th nzWidth="100px" class="psc-center">{{ i18n.t('ess.empInfo.entry_date', 'Ngày vào làm') }}</th>
+            <th nzWidth="110px" class="psc-center">{{ i18n.t('hrm.empinfo.START_PROBATION_DATE', 'Ngày kết thúc thử việc') }}</th>
+            <th nzWidth="100px" class="psc-center">{{ i18n.t('ess.empInfo.leaveDate', 'Ngày thôi việc') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of empRows(); track $index) {
+            <tr>
+              <td nzLeft class="psc-center">{{ $index + 1 }}</td>
+              <td nzLeft class="psc-center">{{ row.empId }}</td>
+              <td nzLeft>{{ row.localName }}</td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ row.postGradeName }}</td>
+              <td>{{ row.positionName }}</td>
+              <td>{{ row.itemName }}</td>
+              <td class="psc-right">{{ fmt(row.monthPro) }}</td>
+              <td class="psc-right">{{ fmt(row.monthNow) }}</td>
+              <td class="psc-right">{{ fmt(dif(row)) }}</td>
+              <td [title]="row.formularValue ?? ''">{{ shortFormula(row.formularValue) }}</td>
+              <td class="psc-center">{{ row.dateStarted }}</td>
+              <td class="psc-center">{{ row.endProbationDate }}</td>
+              <td class="psc-center">{{ row.dateLeft }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    } @else {
+      <div class="psc-hint">{{ i18n.t('pa.salaryCheck.itemDifHint', 'Chọn số người ở bảng bên trái để xem danh sách nhân viên.') }}</div>
+    }
+  </div>
+</div>

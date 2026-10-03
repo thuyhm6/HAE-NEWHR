@@ -1,0 +1,35 @@
+<div class="psdp-panel">
+  @for (group of groups(); track group.type) {
+    <nz-table
+      [id]="'psdp-table-' + group.type"
+      class="psdp-table"
+      [nzData]="group.items"
+      [nzLoading]="loading()"
+      [nzShowPagination]="false"
+      [nzFrontPagination]="false"
+      [nzScroll]="{ y: '22vh' }"
+      [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="psdp-center">No.</th>
+          <th>{{ i18n.t('ess.empInfo.project', 'Hạng mục') }}</th>
+          <th nzWidth="25%" class="psdp-right">{{ i18n.t('ess.empInfo.amount_of_money', 'Số tiền') }}</th>
+          <th nzWidth="25%" class="psdp-right">{{ i18n.t('pa.detailmonthCountInfoRight.NIANJIALEIJIAE.b', 'Tổng khoản tiền trong năm') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of group.items; track $index) {
+          <tr>
+            <td class="psdp-center">{{ $index + 1 }}</td>
+            <td>{{ item.itemName }}</td>
+            <td class="psdp-right">{{ formatNumber(item.itemValue) }}</td>
+            <td class="psdp-right">{{ formatNumber(item.itemYearValue) }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  }
+</div>

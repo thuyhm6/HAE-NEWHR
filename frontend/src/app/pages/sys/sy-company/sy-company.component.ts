@@ -13,6 +13,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyCompanyRow, SyCompanyService } from './sy-company.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý Công ty (viewCompany) - xem ghi chú trong sy-company.service.ts.
  */
@@ -34,6 +35,10 @@ import { SyCompanyRow, SyCompanyService } from './sy-company.service';
   styleUrl: './sy-company.component.scss',
 })
 export class SyCompanyComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SyCompanyService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduCourseManagerMapper">
+
+    <resultMap id="EduCourseManagerResultMap" type="com.ait.edu.trainEducation.model.EduCourseManager">
+        <id column="COURSE_NO" property="courseNo" jdbcType="VARCHAR"/>
+        <result column="SYSMANA_NO" property="sysmanaNo" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE" property="trainTypeCode" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_NO" property="trainTypeNo" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="COURSE_NUMBER" property="courseNumber" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="selectColumns">
+        C.COURSE_NO,
+        C.SYSMANA_NO,
+        C.TRAIN_TYPE_CODE,
+        GET_GLOBAL_NAME(C.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+        C.TRAIN_TYPE_NO,
+        C.COURSE_NAME_CODE,
+        C.COURSE_NUMBER,
+        C.REMARK
+    </sql>
+
+    <select id="findList" resultMap="EduCourseManagerResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_COURSE_MANAGER C
+        WHERE C.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND C.ACTIVITY = '1'
+        <if test="trainDiffCode != null and trainDiffCode != ''">
+            AND C.TRAIN_TYPE_CODE IN (
+                SELECT S.TRAIN_TYPE_CODE FROM EDU_SYSTEM_MANAGER S
+                WHERE S.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND S.TRAIN_DIFF_CODE = #{trainDiffCode, jdbcType=VARCHAR}
+            )
+        </if>
+        <if test="trainTypeCode != null and trainTypeCode != ''">
+            AND C.TRAIN_TYPE_CODE = #{trainTypeCode, jdbcType=VARCHAR}
+        </if>
+        <if test="courseName != null and courseName != ''">
+            AND UPPER(C.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        ORDER BY C.CREATE_DATE DESC
+    </select>
+
+    <select id="findByCourseNo" resultMap="EduCourseManagerResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_COURSE_MANAGER C
+        WHERE C.COURSE_NO = #{courseNo, jdbcType=VARCHAR}
+          AND C.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="findMaxCourseNumber" resultType="java.lang.String">
+        SELECT MAX(COURSE_NUMBER)
+        FROM EDU_COURSE_MANAGER
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND ACTIVITY = '1'
+          AND TRAIN_TYPE_CODE = #{trainTypeCode, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO EDU_COURSE_MANAGER (
+            COURSE_NO, TRAIN_TYPE_CODE, COURSE_NAME_CODE, COURSE_NUMBER, REMARK,
+            CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID, TRAIN_TYPE_NO, SYSMANA_NO
+        ) VALUES (
+            EDU_COUR_MANA_SEQ.NEXTVAL,
+            #{trainTypeCode, jdbcType=VARCHAR},
+            #{courseNameCode, jdbcType=VARCHAR},
+            #{courseNumber, jdbcType=VARCHAR},
+            #{remark, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            #{trainTypeNo, jdbcType=VARCHAR},
+            #{sysmanaNo, jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE EDU_COURSE_MANAGER
+           SET COURSE_NAME_CODE = #{courseNameCode, jdbcType=VARCHAR},
+               REMARK = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE COURSE_NO = #{courseNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <update id="updatePlanCourseName">
+        UPDATE EDU_PLAN_MANAGER
+           SET COURSE_NAME_CODE = #{courseNameCode, jdbcType=VARCHAR}
+         WHERE COURSE_NO = #{courseNo, jdbcType=NUMERIC}
+    </update>
+
+    <update id="updateBasicInfoCourseName">
+        UPDATE EDU_BASIC_INFORMATION B
+           SET B.COURSE_NAME_CODE = #{courseNameCode, jdbcType=VARCHAR}
+         WHERE B.PLAN_NO IN (SELECT P.PLAN_NO FROM EDU_PLAN_MANAGER P WHERE P.COURSE_NO = #{courseNo, jdbcType=NUMERIC})
+    </update>
+
+</mapper>

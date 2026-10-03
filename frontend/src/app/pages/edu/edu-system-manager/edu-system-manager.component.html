@@ -1,0 +1,174 @@
+<div class="esm-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE', 'Chương trình đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="esm-search-diff" name="esmSearchDiff" [ngModel]="searchDiffCode()" (ngModelChange)="onSearchDiffChange($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of diffOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="esm-search-type" name="esmSearchType" [ngModel]="searchTypeCode()" (ngModelChange)="searchTypeCode.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of searchTypeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12" class="esm-toolbar-actions">
+          <button id="esm-search-btn" nz-button nzType="primary" (click)="search()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="esm-clear-btn" nz-button (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="esm-add-btn" nz-button nzType="primary" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('button.add', 'Thêm mới') }}
+          </button>
+          <button id="esm-edit-btn" nz-button (click)="openEditModal()">
+            <span nz-icon nzType="edit"></span>
+            {{ i18n.t('button.update', 'Sửa') }}
+          </button>
+          @if (canDelete()) {
+            <button id="esm-delete-btn" nz-button nzDanger (click)="deleteSelected()">
+              <span nz-icon nzType="delete"></span>
+              {{ i18n.t('button.delete', 'Xóa') }}
+            </button>
+          }
+        </div>
+      </div>
+    </form>
+
+    <div class="esm-quick-filter">
+      <input id="esm-quick-filter" nz-input name="esmQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #esmTable
+      id="esm-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="defaultPageSize"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="esm-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE', 'Chương trình đào tạo') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('edu.systemManager.LEIXINGBIANHAO.a', 'Mã loại hình') }}</th>
+          <th>{{ i18n.t('org.title.REMARK', 'Ghi chú') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of esmTable.data; track row.sysmanaNo; let idx = $index) {
+          <tr
+            class="esm-row"
+            [class.esm-row-selected]="row.sysmanaNo === selectedNo()"
+            (click)="selectRow(row)"
+            (dblclick)="openEditModal(row.sysmanaNo)"
+          >
+            <td class="esm-col-center">{{ (esmTable.nzPageIndex - 1) * esmTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.trainDiffCodeName }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ row.trainTypeNo }}</td>
+            <td>{{ row.remark }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="esm-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa: nzMaskClosable=true -> bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('edu.systemManager.modal.editTitle', 'Cập nhật hệ thống đào tạo') : i18n.t('edu.systemManager.modal.addTitle', 'Thêm mới hệ thống đào tạo')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  (nzVisibleChange)="modalVisible.set($event)"
+  nzWidth="720px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="!modalIsEdit()">{{ i18n.t('liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE', 'Chương trình đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              @if (modalIsEdit()) {
+                <input id="esm-f-diff-name" nz-input name="esmFDiffName" [ngModel]="formDiffName()" disabled />
+              } @else {
+                <nz-select id="esm-f-diff" name="esmFDiff" [ngModel]="formDiffCode()" (ngModelChange)="onFormDiffChange($event)" [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                  @for (opt of diffOptions(); track opt.codeNo) {
+                    <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                  }
+                </nz-select>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="!modalIsEdit()">{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+            <nz-form-control>
+              @if (modalIsEdit()) {
+                <input id="esm-f-type-name" nz-input name="esmFTypeName" [ngModel]="formTypeName()" disabled />
+              } @else {
+                <nz-select id="esm-f-type" name="esmFType" [ngModel]="formTypeCode()" (ngModelChange)="formTypeCode.set($event)" [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')" [nzDisabled]="!formDiffCode()">
+                  @for (opt of formTypeOptions(); track opt.codeNo) {
+                    <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                  }
+                </nz-select>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.systemManager.LEIXINGBIANHAO.a', 'Mã loại hình') }}</nz-form-label>
+            <nz-form-control>
+              <input id="esm-f-type-no" nz-input name="esmFTypeNo" [ngModel]="formTrainTypeNo()" disabled [placeholder]="i18n.t('edu.systemManager.autoNoHint', 'Tự động sinh khi lưu')" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('org.title.REMARK', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="esm-f-remark" nz-input name="esmFRemark" rows="3" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="esm-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="esm-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>

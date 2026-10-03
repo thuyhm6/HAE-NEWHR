@@ -29,6 +29,7 @@ import {
   SyCodeOption,
 } from './attendance-ex-for-batch.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface ExRowVm {
   raw: AttendanceExRow;
   rowKey: string;
@@ -91,6 +92,10 @@ function parseApiDateTime(value: string | undefined): Date | null {
   styleUrl: './attendance-ex-for-batch.component.scss',
 })
 export class AttendanceExForBatchComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(AttendanceExForBatchService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

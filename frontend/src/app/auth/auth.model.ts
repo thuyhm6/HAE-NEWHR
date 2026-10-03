@@ -9,13 +9,25 @@ export interface CurrentUser {
   admin: boolean;
   requirePasswordChange: boolean;
   hasSysTypeZeroMenus: boolean;
+  requirePersonalDataConfirm: boolean;
 }
 
 export interface LoginResult {
   success: boolean;
   redirectUrl?: string;
   requirePasswordChange?: boolean;
+  requirePersonalDataConfirm?: boolean;
   message?: string;
   remainingAttempts?: number;
   timeUntilReset?: number;
+}
+
+/** Tương ứng với PersonalDataConfirmInfoDTO (backend) - GET /api/personal-data-confirm/info. */
+export interface PersonalDataConfirmInfo {
+  localName: string;
+  empId: string;
+  positionName: string;
+  teamName: string;
+  partName: string;
+  cellName: string;
 }

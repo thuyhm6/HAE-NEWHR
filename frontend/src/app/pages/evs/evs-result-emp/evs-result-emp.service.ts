@@ -4,6 +4,8 @@ import { firstValueFrom } from 'rxjs';
 
 export interface EvsResultEmpRow {
   evsYear?: string;
+  firstHalfYear?: string;
+  secondHalfYear?: string;
   evsPerformance?: string;
   evsAbility?: string;
 }

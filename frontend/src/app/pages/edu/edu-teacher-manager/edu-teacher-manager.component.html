@@ -1,0 +1,297 @@
+<div class="etm-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.NAME_EMPID', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etm-search-keyword" nz-input name="etmSearchKeyword" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.teacherManager.JIANGKELINGYU.a', 'Lĩnh vực') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="etm-search-field" name="etmSearchField" [ngModel]="searchField()" (ngModelChange)="searchField.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of fieldOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.teacherManager.JIANGSHIJIBIE.a', 'Cấp độ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="etm-search-level" name="etmSearchLevel" [ngModel]="searchLevel()" (ngModelChange)="searchLevel.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of levelOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="etm-search-status" name="etmSearchStatus" [ngModel]="searchStatus()" (ngModelChange)="searchStatus.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of statusOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" class="etm-toolbar-actions">
+          <button id="etm-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="etm-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="etm-add-btn" nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('button.add', 'Thêm mới') }}
+          </button>
+          <button id="etm-edit-btn" nz-button type="button" (click)="openEditModal()">
+            <span nz-icon nzType="edit"></span>
+            {{ i18n.t('button.update', 'Sửa') }}
+          </button>
+          <button id="etm-delete-btn" nz-button nzDanger type="button" (click)="deleteSelected()">
+            <span nz-icon nzType="delete"></span>
+            {{ i18n.t('button.delete', 'Xóa') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="etm-quick-filter">
+      <input id="etm-quick-filter" nz-input name="etmQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #etmTable
+      id="etm-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="etm-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.teacherManager.JIANGSHISHEHAO.a', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('empsubject.tcrNm', 'Họ tên giảng viên') }}</th>
+          <th>{{ i18n.t('hrm.empinfo.ORG_NAME_LOCAL', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('edu.teacherManager.JIANGKELINGYU.a', 'Lĩnh vực') }}</th>
+          <th>{{ i18n.t('edu.teacherManager.JIANGSHIJIBIE.a', 'Cấp độ') }}</th>
+          <th class="etm-col-center">{{ i18n.t('edu.teacherManager.PINYONGSHIJIAN.a', 'Ngày làm việc') }}</th>
+          <th class="etm-col-center">{{ i18n.t('edu.teacherManager.JIEPINSHIJIAN.a', 'Ngày kết thúc') }}</th>
+          <th>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.status', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of etmTable.data; track row.teacherNo; let idx = $index) {
+          <tr class="etm-row" [class.etm-row-selected]="row.teacherNo === selectedNo()" (click)="selectRow(row)" (dblclick)="openEditModal(row.teacherNo)">
+            <td class="etm-col-center">{{ (etmTable.nzPageIndex - 1) * etmTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.empid }}</td>
+            <td>{{ row.teacherName }}</td>
+            <td>{{ row.orgNameLocal }}</td>
+            <td>{{ row.teachFieldCodeName }}</td>
+            <td>{{ row.teachLevelCodeName }}</td>
+            <td class="etm-col-center">{{ row.hireTime }}</td>
+            <td class="etm-col-center">{{ row.firingTime }}</td>
+            <td>{{ row.teachStatusCodeName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="etm-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa: nzMaskClosable=true -> bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('edu.teacherManager.modal.editTitle', 'Cập nhật giảng viên') : i18n.t('edu.teacherManager.modal.addTitle', 'Thêm mới giảng viên')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  nzWidth="800px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        @if (!modalIsEdit()) {
+          <div nz-col [nzSpan]="24">
+            <nz-form-item>
+              <nz-form-label nzRequired>{{ i18n.t('edu.teacherManager.QINGSHURUXINGMING.a', 'Xin nhập họ tên:') }}</nz-form-label>
+              <nz-form-control>
+                <nz-radio-group id="etm-f-type" name="etmFType" [ngModel]="formExternal()" (ngModelChange)="onTypeChange($event)">
+                  <label nz-radio [nzValue]="false">{{ i18n.t('edu.teacherManager.SHENEIRENYUAN.a', 'Nội bộ') }}</label>
+                  <label nz-radio [nzValue]="true">{{ i18n.t('edu.teacherManager.SHEWAIRENYUAN.a', 'Bên ngoài') }}</label>
+                </nz-radio-group>
+                <div class="etm-inline etm-mt">
+                  @if (formExternal()) {
+                    <input id="etm-f-external-name" nz-input name="etmFExternalName" [ngModel]="formExternalName()" (ngModelChange)="formExternalName.set($event)" class="etm-grow" />
+                  } @else {
+                    <input id="etm-f-search-name" nz-input name="etmFSearchName" [ngModel]="formSearchName()" (ngModelChange)="formSearchName.set($event)" (keydown.enter)="$event.preventDefault(); empPickerVisible.set(true)" class="etm-grow" />
+                    <button id="etm-f-search-btn" nz-button type="button" (click)="empPickerVisible.set(true)">
+                      <span nz-icon nzType="search"></span>
+                      {{ i18n.t('edu.teacherManager.CHAZHAO.a', 'Tìm kiếm') }}
+                    </button>
+                  }
+                </div>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.tcrNm', 'Họ tên giảng viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etm-f-name" nz-input name="etmFName" disabled
+                [ngModel]="modalIsEdit() ? formInfo()?.teacherName : formExternal() ? formExternalName() : formPicked()?.localName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('alert.pa.pasalarycanshu.shehao', 'Mã nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etm-f-empid" nz-input name="etmFEmpid" disabled
+                [ngModel]="modalIsEdit() ? formInfo()?.empid : formPicked()?.empid"
+                [placeholder]="formExternal() && !modalIsEdit() ? i18n.t('edu.systemManager.autoNoHint', 'Tự động sinh khi lưu') : ''" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etm-f-dept" nz-input name="etmFDept" disabled [ngModel]="modalIsEdit() ? formInfo()?.orgNameLocal : formPicked()?.deptName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.trans.title.postGradeName', 'Chức vụ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etm-f-grade" nz-input name="etmFGrade" disabled [ngModel]="modalIsEdit() ? formInfo()?.postGradeNoName : formPicked()?.postGradeName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('inct.salesman.position', 'Chức vụ') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etm-f-position" nz-input name="etmFPosition" disabled [ngModel]="modalIsEdit() ? formInfo()?.positionNoName : formPicked()?.positionName" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.teacherManager.YEWUDANDANGSHIJIAN.a', 'Kinh nghiệm') }}</nz-form-label>
+            <nz-form-control>
+              @if (modalIsEdit()) {
+                <input id="etm-f-alltime" nz-input name="etmFAlltime" disabled [ngModel]="experienceLabel(formInfo()?.allTime)" />
+              } @else {
+                <div class="etm-inline">
+                  <nz-input-number id="etm-f-year" name="etmFYear" [ngModel]="formYear()" (ngModelChange)="formYear.set($event)" [nzMin]="0" class="etm-grow"></nz-input-number>
+                  <span>{{ i18n.t('inct.salesman.year', 'Năm') }}</span>
+                  <nz-input-number id="etm-f-month" name="etmFMonth" [ngModel]="formMonth()" (ngModelChange)="formMonth.set($event)" [nzMin]="0" [nzMax]="11" class="etm-grow"></nz-input-number>
+                  <span>{{ i18n.t('liang.hr.viewWorkInfo.title.MONTH', 'Tháng') }}</span>
+                </div>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.teacherManager.JIANGSHIJIBIE.a', 'Cấp độ') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="etm-f-level" name="etmFLevel" [ngModel]="formLevel()" (ngModelChange)="formLevel.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                @for (opt of levelOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.teacherManager.JIANGKELINGYU.a', 'Lĩnh vực') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="etm-f-field" name="etmFField" [ngModel]="formField()" (ngModelChange)="formField.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                @for (opt of fieldOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="etm-f-status" name="etmFStatus" [ngModel]="formStatus()" (ngModelChange)="formStatus.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                @for (opt of statusOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.teacherManager.PINYONGSHIJIAN.a', 'Ngày làm việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etm-f-hire" name="etmFHire" [ngModel]="formHire()" (ngModelChange)="formHire.set($event)" nzFormat="dd/MM/yyyy" class="etm-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.teacherManager.JIEPINSHIJIAN.a', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etm-f-firing" name="etmFFiring" [ngModel]="formFiring()" (ngModelChange)="formFiring.set($event)" nzFormat="dd/MM/yyyy" class="etm-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('pa.salary.canShu.beiZhu', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="etm-f-remark" nz-input name="etmFRemark" rows="3" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="etm-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="etm-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('common.save', 'Lưu') }}</button>
+  </div>
+</nz-modal>
+
+<!-- Popup chọn giảng viên nội bộ (queryTeacher bản gốc) -->
+<app-edu-emp-picker
+  [visible]="empPickerVisible()"
+  (visibleChange)="empPickerVisible.set($event)"
+  [multiple]="false"
+  [initialKeyword]="formSearchName()"
+  (confirmed)="onEmployeePicked($event)"
+></app-edu-emp-picker>

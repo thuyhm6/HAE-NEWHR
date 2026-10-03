@@ -44,8 +44,8 @@
       @if (errorMessage()) {
         <nz-alert nzType="error" [nzMessage]="errorMessage()!" nzShowIcon class="hae-login-alert"></nz-alert>
       }
-      @if (remainingAttempts(); as attempts) {
-        <p class="hae-login-attempts">{{ attempts }}</p>
+      @if (remainingAttempts() !== null) {
+        <p class="hae-login-attempts">{{ getRemainingAttemptsText() }}</p>
       }
 
       <!-- Login Form -->

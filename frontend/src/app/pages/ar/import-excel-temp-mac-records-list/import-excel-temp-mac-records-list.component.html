@@ -42,7 +42,7 @@
   </nz-card>
 
   <nz-card class="impmac-table-card">
-    <nz-table #impmacTable id="impmac-data-table" [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+    <nz-table #impmacTable id="impmac-data-table" [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
       <thead>
         <tr>
           <th nzWidth="60px" class="impmac-col-center">{{ i18n.t('common.stt', 'STT') }}</th>

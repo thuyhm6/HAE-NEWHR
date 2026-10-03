@@ -1,0 +1,53 @@
+.erv-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.erv-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.erv-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.erv-full {
+  width: 100%;
+}
+
+.erv-center {
+  text-align: center;
+}
+
+.erv-nowrap {
+  white-space: nowrap;
+}
+
+.erv-row {
+  cursor: pointer;
+}
+
+.erv-row-selected > td {
+  background: #e6f4ff !important;
+}
+
+// Màu trạng thái giống bản gốc: đã duyệt xanh, từ chối đỏ
+.erv-pass {
+  color: #1677ff;
+}
+
+.erv-reject {
+  color: #ff4d4f;
+}

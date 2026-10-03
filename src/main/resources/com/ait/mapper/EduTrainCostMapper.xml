@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainCostMapper">
+
+    <resultMap id="EduTrainCostResultMap" type="com.ait.edu.trainEducation.model.EduTrainCost">
+        <id column="COST_NO" property="costNo" jdbcType="VARCHAR"/>
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+        <result column="IMPLE_START_DATE" property="impleStartDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_END_DATE" property="impleEndDate" jdbcType="VARCHAR"/>
+        <result column="BUDGET" property="budget" jdbcType="VARCHAR"/>
+        <result column="ALL_COST" property="allCost" jdbcType="NUMERIC"/>
+        <result column="AVG_COST" property="avgCost" jdbcType="NUMERIC"/>
+        <result column="TOTAL_COUNT" property="totalCount" jdbcType="INTEGER"/>
+        <result column="TEACHER_COST" property="teacherCost" jdbcType="NUMERIC"/>
+        <result column="MATERIAL_COST" property="materialCost" jdbcType="NUMERIC"/>
+        <result column="FIELD_COST" property="fieldCost" jdbcType="NUMERIC"/>
+        <result column="FOOD_COST" property="foodCost" jdbcType="NUMERIC"/>
+        <result column="STAY_COST" property="stayCost" jdbcType="NUMERIC"/>
+        <result column="TRAFFIC_COST" property="trafficCost" jdbcType="NUMERIC"/>
+        <result column="VISA_COST" property="visaCost" jdbcType="NUMERIC"/>
+        <result column="OTHER_COST" property="otherCost" jdbcType="NUMERIC"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- Tổng chi phí: bản gốc cộng thẳng các cột (NULL làm cả tổng NULL) - ở đây dùng NVL -->
+    <sql id="totalCost">
+        (NVL(M.TEACHER_COST, 0) + NVL(M.MATERIAL_COST, 0) + NVL(M.FIELD_COST, 0) + NVL(M.FOOD_COST, 0)
+         + NVL(M.STAY_COST, 0) + NVL(M.TRAFFIC_COST, 0) + NVL(M.VISA_COST, 0) + NVL(M.OTHER_COST, 0))
+    </sql>
+
+    <sql id="studentCount">
+        (SELECT CASE WHEN COUNT(1) = 0 THEN 1 ELSE COUNT(1) END
+           FROM EDU_FREE_EMPLOYEE F WHERE F.BASIC_NO = E.BASIC_NO)
+    </sql>
+
+    <sql id="selectColumns">
+        TO_CHAR(M.COST_NO) AS COST_NO,
+        TO_CHAR(E.BASIC_NO) AS BASIC_NO,
+        GET_GLOBAL_NAME(E.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+        E.COURSE_NAME_CODE,
+        E.PERIOD_TIME,
+        TO_CHAR(E.IMPLE_START_DATE, 'DD/MM/YYYY') AS IMPLE_START_DATE,
+        TO_CHAR(E.IMPLE_END_DATE, 'DD/MM/YYYY') AS IMPLE_END_DATE,
+        P.BUDGET,
+        CASE WHEN M.COST_NO IS NULL THEN NULL ELSE <include refid="totalCost"/> END AS ALL_COST,
+        CASE WHEN M.COST_NO IS NULL THEN NULL ELSE ROUND(<include refid="totalCost"/> / <include refid="studentCount"/>) END AS AVG_COST,
+        <include refid="studentCount"/> AS TOTAL_COUNT,
+        M.TEACHER_COST,
+        M.MATERIAL_COST,
+        M.FIELD_COST,
+        M.FOOD_COST,
+        M.STAY_COST,
+        M.TRAFFIC_COST,
+        M.VISA_COST,
+        M.OTHER_COST,
+        M.REMARK
+    </sql>
+
+    <select id="findList" resultMap="EduTrainCostResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_BASIC_INFORMATION E
+        LEFT JOIN EDU_COST_MANAGER M ON M.BASIC_NO = E.BASIC_NO AND M.ACTIVITY = 1
+        LEFT JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = E.PLAN_NO
+        WHERE E.ACTIVITY = '1'
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="courseName != null and courseName != ''">
+            AND UPPER(E.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND E.IMPLE_START_DATE &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND E.IMPLE_END_DATE &lt;= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        ORDER BY E.CREATE_DATE DESC
+    </select>
+
+    <select id="findByCostNo" resultMap="EduTrainCostResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_COST_MANAGER M
+        JOIN EDU_BASIC_INFORMATION E ON E.BASIC_NO = M.BASIC_NO
+        LEFT JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = E.PLAN_NO
+        WHERE M.COST_NO = #{costNo, jdbcType=NUMERIC}
+          AND M.ACTIVITY = 1
+          AND M.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <update id="update">
+        UPDATE EDU_COST_MANAGER
+           SET TEACHER_COST = #{teacherCost, jdbcType=NUMERIC},
+               MATERIAL_COST = #{materialCost, jdbcType=NUMERIC},
+               FIELD_COST = #{fieldCost, jdbcType=NUMERIC},
+               FOOD_COST = #{foodCost, jdbcType=NUMERIC},
+               STAY_COST = #{stayCost, jdbcType=NUMERIC},
+               TRAFFIC_COST = #{trafficCost, jdbcType=NUMERIC},
+               VISA_COST = #{visaCost, jdbcType=NUMERIC},
+               OTHER_COST = #{otherCost, jdbcType=NUMERIC},
+               REMARK = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE COST_NO = #{costNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Giữ nguyên deleteTrainCostManager bản gốc (xóa hẳn dòng chi phí) -->
+    <delete id="delete">
+        DELETE FROM EDU_COST_MANAGER
+         WHERE COST_NO = #{costNo, jdbcType=NUMERIC}
+           AND ACTIVITY = '1'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+</mapper>

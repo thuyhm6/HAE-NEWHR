@@ -1,0 +1,56 @@
+.etm-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.etm-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.etm-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.etm-col-center {
+  text-align: center;
+}
+
+.etm-row {
+  cursor: pointer;
+}
+
+// Dòng đang chọn - tương đương background:#aaccf6 ở bản gốc
+.etm-row-selected > td {
+  background: #e6f4ff !important;
+}
+
+.etm-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.etm-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.etm-full {
+  width: 100%;
+}
+
+.etm-mt {
+  margin-top: 8px;
+}

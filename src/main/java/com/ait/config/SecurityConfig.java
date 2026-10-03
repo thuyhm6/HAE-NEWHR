@@ -57,7 +57,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .authenticated()
                         .antMatchers("/sy/excel/api/**")
                         .authenticated()
-                        .antMatchers("/sys/syRole/viewLoginUser", "/sys/api/user/**")
+                        .antMatchers("/sys/rightsManagement/viewLoginUser", "/sys/api/user/**")
                         .hasAnyRole("ADMIN", "SYS", "HRM")
                         .antMatchers(
                                 "/api/admin/**",
@@ -117,12 +117,21 @@ public class SecurityConfig implements WebMvcConfigurer {
                 return false;
             }
 
-            // Bắt buộc đổi mật khẩu nếu password chưa mã hóa
-            if (Boolean.TRUE.equals(session.getAttribute("requirePasswordChange"))) {
-                if (!requestUri.equals("/dashboard") && !requestUri.equals("/api/change-first-password")) {
-                    response.sendRedirect("/dashboard");
-                    return false;
-                }
+            // Bắt buộc đổi mật khẩu nếu password chưa mã hoá: không còn redirect sang
+            // "/dashboard" (route Thymeleaf cũ) vì sẽ làm hỏng mọi request API (XHR nhận
+            // về HTML thay vì JSON, kể cả GET /api/auth/me khiến authGuard bounce về
+            // /login). Việc chặn tương tác nay do modal "Bắt buộc đổi mật khẩu" ở
+            // app-shell.component.ts đảm nhiệm (không thể đóng/click ra ngoài); ở đây chỉ
+            // chặn cứng các API làm thay đổi dữ liệu để tránh bypass modal, trả JSON 423
+            // thay vì redirect để phía Angular parse được.
+            if (Boolean.TRUE.equals(session.getAttribute("requirePasswordChange"))
+                    && !"GET".equalsIgnoreCase(request.getMethod())
+                    && !requestUri.equals("/api/change-first-password")) {
+                response.setStatus(423); // 423 Locked - javax.servlet không có hằng số SC_LOCKED
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write(
+                        "{\"success\":false,\"message\":\"Vui lòng đổi mật khẩu trước khi tiếp tục.\"}");
+                return false;
             }
 
             long lastAccessedTime = session.getLastAccessedTime();
@@ -174,7 +183,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         List<GrantedAuthority> authorities = new ArrayList<>();
 
                         String userType = currentHrUser.getSyUser().getUserType();
-                        if (userType != null && !userType.isBlank()) {
+                        if (userType != null && !userType.trim().isEmpty()) {
                             authorities.add(new SimpleGrantedAuthority("ROLE_" + userType.toUpperCase()));
                         }
 

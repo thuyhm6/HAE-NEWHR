@@ -1,0 +1,37 @@
+<div class="eat-box">
+  @if (!readonly) {
+    <div class="eat-upload">
+      <input #eatFileInput id="eat-file-input" type="file" multiple (change)="onFilesSelected($event)" />
+      <button id="eat-upload-btn" nz-button nzSize="small" type="button" (click)="eatFileInput.click()">
+        <span nz-icon nzType="upload"></span> {{ i18n.t('hrm.empinfo.upload', 'Chèn file') }}
+      </button>
+    </div>
+  }
+  <ul class="eat-list">
+    @for (f of files; track f.fileNo; let idx = $index) {
+      <li>
+        <span class="eat-index">{{ idx + 1 }}.</span>
+        <a [href]="downloadUrl(f.fileNo)" target="_blank" rel="noopener">{{ f.fileName }}</a>
+        @if (!readonly) {
+          <button nz-button nzType="link" nzSize="small" nzDanger (click)="deleteSaved(f)" [title]="i18n.t('button.delete', 'Xóa')">
+            <span nz-icon nzType="delete"></span>
+          </button>
+        }
+      </li>
+    }
+    @for (p of pendingFiles; track $index; let idx = $index) {
+      <li class="eat-pending">
+        <span class="eat-index">{{ files.length + idx + 1 }}.</span>
+        <span nz-icon nzType="paper-clip"></span>
+        <span>{{ p.name }}</span>
+        <span class="eat-tag">{{ i18n.t('edu.common.fileNotSaved', '(chưa lưu)') }}</span>
+        <button nz-button nzType="link" nzSize="small" nzDanger (click)="removePending(idx)" [title]="i18n.t('button.delete', 'Xóa')">
+          <span nz-icon nzType="close"></span>
+        </button>
+      </li>
+    }
+    @if (!files.length && !pendingFiles.length) {
+      <li class="eat-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</li>
+    }
+  </ul>
+</div>

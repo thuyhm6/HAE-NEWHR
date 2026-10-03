@@ -1,5 +1,7 @@
 package com.ait.pa.salarycode.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.salarycode.dto.PaSalaryCodeDto;
 import com.ait.pa.salarycode.service.PaSalaryCodeService;
 import com.ait.sy.sys.dto.DataTablesResponse;
@@ -70,7 +72,7 @@ public class PaSalaryCodeController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy chi tiết hạng mục lương itemType={}, itemNo={}: {}", itemType, itemNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -79,16 +81,16 @@ public class PaSalaryCodeController {
     public ResponseEntity<?> save(@RequestBody PaSalaryCodeDto dto) {
         try {
             if (dto.getItemType() == null || dto.getItemId() == null || dto.getItemId().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng nhập đầy đủ thông tin bắt buộc!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng nhập đầy đủ thông tin bắt buộc!"));
             }
             paSalaryCodeService.save(dto);
             String msg = (dto.getItemNo() == null || dto.getItemNo().isEmpty())
                     ? "Thêm mới thành công"
                     : "Cập nhật thành công";
-            return ResponseEntity.ok(Map.of("success", true, "message", msg));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", msg));
         } catch (Exception e) {
             log.error("Lỗi khi lưu hạng mục lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -97,10 +99,10 @@ public class PaSalaryCodeController {
     public ResponseEntity<?> deleteList(@RequestBody List<PaSalaryCodeDto> keys) {
         try {
             paSalaryCodeService.deleteList(keys);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công " + keys.size() + " bản ghi"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công " + keys.size() + " bản ghi"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa danh sách hạng mục lương: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 }

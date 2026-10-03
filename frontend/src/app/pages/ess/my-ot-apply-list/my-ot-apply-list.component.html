@@ -60,7 +60,7 @@
       </div>
     </div>
 
-    <nz-table id="poi-data-table" #poiTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+    <nz-table id="poi-data-table" #poiTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="50" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
       <thead>
         <tr>
           <th nzWidth="40px" class="poi-col-center">NO</th>

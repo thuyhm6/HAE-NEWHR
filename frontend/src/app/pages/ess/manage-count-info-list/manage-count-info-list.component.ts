@@ -39,6 +39,7 @@ import {
   SyCodeOption,
 } from './manage-count-info-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const POST_FAMILY_PARENT_CODE = '14015812';
 const EMP_TYPE_PARENT_CODE = '13864';
 const EMP_OFFICE_PARENT_CODE = '15118';
@@ -96,6 +97,9 @@ export interface BarChartOptions {
   styleUrl: './manage-count-info-list.component.scss',
 })
 export class ManageCountInfoListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(ManageCountInfoListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);
@@ -124,7 +128,7 @@ export class ManageCountInfoListComponent implements OnInit {
   protected readonly listLoading = signal(false);
   protected readonly empRows = signal<ManageCountInfoEmpRow[]>([]);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly total = signal(0);
 
   private listBootstrapped = false;

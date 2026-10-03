@@ -22,6 +22,7 @@ import { CardRecordDayService, ShiftOption } from '../card-record-day/card-recor
 import { AttendanceSearchFilter, AttendanceSearchRow, AttendanceSearchService, ItemOption } from '../attendance-search/attendance-search.service';
 import { AttendanceOtSearchService } from './attendance-ot-search.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function yesterday(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
@@ -60,6 +61,10 @@ function todayStr(): Date {
   styleUrl: './attendance-ot-search.component.scss',
 })
 export class AttendanceOtSearchComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(AttendanceOtSearchService);
   private readonly itemOptionsService = inject(AttendanceSearchService);
   private readonly deptService = inject(ArPersonalListService);

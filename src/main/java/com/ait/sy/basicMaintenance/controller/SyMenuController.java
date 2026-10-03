@@ -29,7 +29,7 @@ public class SyMenuController {
     @Autowired
     private com.ait.util.AngularIndexService angularIndexService;
 
-    @GetMapping("/basicMaintenance/viewMenuList")
+    @GetMapping("/menu/viewMenuList")
     public String viewMenuList(HttpServletResponse response) throws IOException {
         angularIndexService.writeIndexHtml(response);
         return null;

@@ -496,7 +496,7 @@ public class EssEmpInfoController {
             }
             String contentType = Files.probeContentType(filePath);
             if (contentType == null) contentType = "application/octet-stream";
-            String encodedName = URLEncoder.encode(fileRecord.getFileName(), StandardCharsets.UTF_8).replace("+", "%20");
+            String encodedName = URLEncoder.encode(fileRecord.getFileName(), StandardCharsets.UTF_8.name()).replace("+", "%20");
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=UTF-8''" + encodedName)

@@ -1,0 +1,78 @@
+.etb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.etb-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.etb-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.etb-col-center {
+  text-align: center;
+}
+
+.etb-row {
+  cursor: pointer;
+}
+
+// Dòng đang chọn - tương đương background:#aaccf6 ở bản gốc
+.etb-row-selected > td {
+  background: #e6f4ff !important;
+}
+
+.etb-full {
+  width: 100%;
+}
+
+.etb-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.etb-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.etb-unit {
+  width: 110px;
+}
+
+.etb-info {
+  margin-bottom: 16px;
+}
+
+.etb-readonly {
+  min-height: 32px;
+  padding: 4px 11px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background: #fafafa;
+  word-break: break-word;
+}
+
+.etb-people {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}

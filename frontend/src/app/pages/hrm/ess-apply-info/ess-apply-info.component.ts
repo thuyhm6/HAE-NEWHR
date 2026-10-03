@@ -21,6 +21,7 @@ import {
   EssApplyInfoService,
 } from './ess-apply-info.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 interface CompareRow {
   label: string;
   newVal: string;
@@ -176,6 +177,9 @@ function readField(data: Record<string, unknown> | null | undefined, field: stri
   styleUrl: './ess-apply-info.component.scss',
 })
 export class EssApplyInfoComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(EssApplyInfoService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

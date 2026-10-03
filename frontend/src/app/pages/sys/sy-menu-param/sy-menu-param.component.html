@@ -51,7 +51,7 @@
         </div>
       </div>
 
-      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" nzShowSizeChanger [nzPageSizeOptions]="[25, 50, 100]" nzSize="small" nzBordered #vmpTable>
+      <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered #vmpTable>
         <thead>
           <tr>
             <th nzWidth="48px" class="vmp-col-center">{{ i18n.t('sys.codeManage.no', 'STT') }}</th>

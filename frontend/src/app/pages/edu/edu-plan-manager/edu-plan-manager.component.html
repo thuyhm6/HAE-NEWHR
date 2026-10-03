@@ -1,0 +1,524 @@
+<div class="epm-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.training_distinction', 'Loại đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epm-search-diff" name="epmSearchDiff" [ngModel]="searchDiffCode()" (ngModelChange)="onSearchDiffChange($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of diffOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epm-search-type" name="epmSearchType" [ngModel]="searchTypeCode()" (ngModelChange)="searchTypeCode.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of typeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="epm-search-name" nz-input name="epmSearchName" [ngModel]="searchCourseName()" (ngModelChange)="searchCourseName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="9" class="epm-toolbar-actions">
+          <button id="epm-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+          <button id="epm-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="epm-add-btn" nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('button.add', 'Thêm mới') }}
+          </button>
+          <button id="epm-edit-btn" nz-button type="button" (click)="openEditModal()">
+            <span nz-icon nzType="edit"></span>
+            {{ i18n.t('button.update', 'Sửa') }}
+          </button>
+          <button id="epm-delete-btn" nz-button nzDanger type="button" (click)="deleteSelected()">
+            <span nz-icon nzType="delete"></span>
+            {{ i18n.t('button.delete', 'Xóa') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="epm-quick-filter">
+      <input id="epm-quick-filter" nz-input name="epmQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #epmTable
+      id="epm-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="epm-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="epm-col-center">{{ i18n.t('hrm.empinfo.training_distinction', 'Loại đào tạo') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.courseManager.KECHENGBIANHAO.a', 'Mã khóa học') }}</th>
+          <th class="epm-col-center">{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.planManager.ZHUGUANBUMEN.a', 'Bộ phận chủ quản') }}</th>
+          <th class="epm-col-center">{{ i18n.t('ess.trans.title.typeName', 'Hình thức') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.planManager.SHISHIRIQI.a', 'Ngày thực hiện') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.planManager.KECHENGBIAO.a', 'Lịch đào tạo') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.planManager.PEIXUNNEIRONG.a', 'Nội dung') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of epmTable.data; track row.planNo; let idx = $index) {
+          <tr class="epm-row" [class.epm-row-selected]="row.planNo === selectedNo()" (click)="selectRow(row)" (dblclick)="openEditModal(row.planNo)">
+            <td class="epm-col-center">{{ (epmTable.nzPageIndex - 1) * epmTable.nzPageSize + idx + 1 }}</td>
+            <td class="epm-col-center">{{ row.trainDiffCode }}</td>
+            <td class="epm-col-center">{{ row.courseNumber }}</td>
+            <td>{{ row.courseNameCode }}&nbsp;&nbsp;({{ periodLabel(row.periodTime) }})</td>
+            <td class="epm-col-center">{{ row.trainTypeCodeName }}</td>
+            <td class="epm-col-center">{{ row.departManaCodeName || row.departManaCode }}</td>
+            <td class="epm-col-center">{{ row.trainFormCodeName }}</td>
+            <td class="epm-col-center">{{ row.planStartdate }} ~ {{ row.planEnddate }}</td>
+            <td class="epm-col-center">{{ row.classHour }} {{ classUnitLabel(row.classUnit) }}</td>
+            <td class="epm-col-center">
+              <a (click)="$event.stopPropagation(); openSyllabus(row.planNo, false)">{{ i18n.t('edu.planManager.CHAKANKECHENGBIAO.a', 'Xem') }}</a>
+            </td>
+            <td class="epm-col-center">
+              <a (click)="$event.stopPropagation(); openDetail(row.planNo)">{{ i18n.t('pa.ins.alert.message.title.clickForDetail', 'Xem') }}</a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="11" class="epm-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa: nzMaskClosable=true -> bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('edu.planManager.modal.editTitle', 'Cập nhật kế hoạch đào tạo') : i18n.t('edu.planManager.modal.addTitle', 'Thêm mới kế hoạch đào tạo')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  nzWidth="900px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="!modalIsEdit()">{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              @if (modalIsEdit()) {
+                <input id="epm-f-course-label" nz-input name="epmFCourseLabel" [ngModel]="formCourseLabel()" disabled />
+              } @else {
+                <nz-select id="epm-f-course" name="epmFCourse" [ngModel]="formCourseNo()" (ngModelChange)="formCourseNo.set($event)" nzShowSearch [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                  @for (c of courseOptions(); track c.courseNo) {
+                    <nz-option [nzValue]="c.courseNo" [nzLabel]="courseLabel(c)"></nz-option>
+                  }
+                </nz-select>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.planManager.JIHUAKAISHISHIJIAN.a', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="epm-f-start" name="epmFStart" [ngModel]="formStartDate()" (ngModelChange)="formStartDate.set($event)" nzFormat="dd/MM/yyyy" class="epm-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.planManager.JIHUAJIESHUSHIJIAN.a', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="epm-f-end" name="epmFEnd" [ngModel]="formEndDate()" (ngModelChange)="formEndDate.set($event)" nzFormat="dd/MM/yyyy" class="epm-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</nz-form-label>
+            <nz-form-control>
+              <div class="epm-inline">
+                <nz-input-number id="epm-f-hour" name="epmFHour" [ngModel]="formClassHour()" (ngModelChange)="formClassHour.set($event)" [nzMin]="0" class="epm-grow"></nz-input-number>
+                <nz-select id="epm-f-unit" name="epmFUnit" [ngModel]="formClassUnit()" (ngModelChange)="formClassUnit.set($event)" class="epm-unit">
+                  <nz-option nzValue="2" [nzLabel]="classUnitLabel('2')"></nz-option>
+                  <nz-option nzValue="0" [nzLabel]="classUnitLabel('0')"></nz-option>
+                  <nz-option nzValue="1" [nzLabel]="classUnitLabel('1')"></nz-option>
+                </nz-select>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.Training_form', 'Hình thức đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epm-f-form" name="epmFForm" [ngModel]="formTrainForm()" (ngModelChange)="formTrainForm.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                @for (opt of formOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.SHIFOUKESHENQING.a', 'Xin phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="epm-f-apply" name="epmFApply" [ngModel]="formIsApply()" (ngModelChange)="formIsApply.set($event)">
+                <nz-option nzValue="Y" [nzLabel]="yesNo('Y')"></nz-option>
+                <nz-option nzValue="N" [nzLabel]="yesNo('N')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.ZHUGUANBUMEN.a', 'Bộ phận chủ quản') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="epm-f-depart-mana"
+                name="epmFDepartMana"
+                [nzNodes]="deptNodes()"
+                [ngModel]="formDepartMana()"
+                (ngModelChange)="formDepartMana.set($event)"
+                nzAllowClear
+                nzShowSearch
+                [nzDropdownStyle]="{ 'max-height': '320px' }"
+                [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.ZHIDINGBUMEN.a', 'Phòng ban chỉ định') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="epm-f-des-dept"
+                name="epmFDesDept"
+                [nzNodes]="deptCheckNodes()"
+                [ngModel]="formDesDepts()"
+                (ngModelChange)="onDesDeptsChange($event)"
+                nzCheckable
+                nzCheckStrictly
+                nzAllowClear
+                nzShowSearch
+                [nzMaxTagCount]="8"
+                [nzDropdownStyle]="{ 'max-height': '320px' }"
+                [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.ZHIDINGRENYUAN.a', 'NV chỉ định') }}</nz-form-label>
+            <nz-form-control>
+              <div class="epm-emp-box">
+                <button id="epm-f-add-emp-btn" nz-button nzSize="small" type="button" (click)="empPickerVisible.set(true)">
+                  <span nz-icon nzType="user-add"></span>
+                  {{ i18n.t('edu.planManager.TIANJIAZHIDINGRENYUAN.a', 'Thêm') }}
+                </button>
+                @for (p of formDesEmployees(); track p.empid) {
+                  <nz-tag nzMode="closeable" (nzOnClose)="removeEmployee(p.empid)">{{ p.name }} ({{ p.empid }})</nz-tag>
+                }
+                @if (formDesEmployees().length) {
+                  <button nz-button nzType="link" nzSize="small" type="button" (click)="formDesEmployees.set([])">{{ i18n.t('edu.planManager.QINGCHU.a', 'Xóa') }}</button>
+                }
+              </div>
+              <div class="epm-hint">{{ i18n.t('edu.planManager.msg.desEmpHint', 'Không chọn NV chỉ định: khi thêm mới hệ thống lấy toàn bộ NV của phòng ban chỉ định.') }}</div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.YUSUANFEIYONG.a', 'Dự kiến chi phí') }}</nz-form-label>
+            <nz-form-control>
+              <div class="epm-inline">
+                <input id="epm-f-budget" nz-input name="epmFBudget" [ngModel]="formBudget()" (ngModelChange)="formBudget.set($event)" class="epm-grow" />
+                <label id="epm-f-budget-show" nz-checkbox name="epmFBudgetShow" [ngModel]="formBudgetShow()" (ngModelChange)="formBudgetShow.set($event)">
+                  {{ i18n.t('edu.planManager.SHIFOUKEJIAN.a', 'Xem được hay không') }}
+                </label>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="16">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.JIANGSHI.a', 'Giảng viên') }}</nz-form-label>
+            <nz-form-control>
+              <div class="epm-inline">
+                <input id="epm-f-teacher" nz-input name="epmFTeacher" [ngModel]="formTeacherDisplay()" (ngModelChange)="onTeacherTextChange($event)" class="epm-grow" />
+                <button id="epm-f-teacher-btn" nz-button type="button" (click)="openTeacherPicker()">
+                  <span nz-icon nzType="search"></span>
+                  {{ i18n.t('ar.viewempcalender.title.search', 'Tìm kiếm') }}
+                </button>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.eduRm', 'Địa điểm đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="epm-f-address" nz-input name="epmFAddress" [ngModel]="formTrainAddress()" (ngModelChange)="formTrainAddress.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.planManager.PEIXUNRENSHU.a', 'Số lượng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="epm-f-count" name="epmFCount" [ngModel]="formPersonCount()" (ngModelChange)="formPersonCount.set($event)" [nzMin]="0" class="epm-full"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewarcardrecord.title.beizhu', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <input id="epm-f-remark" nz-input name="epmFRemark" [ngModel]="formPersonRemark()" (ngModelChange)="formPersonRemark.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.SHIFOUXUYAOPINGJIA.a', 'Yêu cầu đánh giá') }}</nz-form-label>
+            <nz-form-control>
+              @for (opt of evaluateOptions; track opt.value) {
+                <label nz-checkbox [id]="'epm-f-eval-' + opt.value" [name]="'epmFEval' + opt.value" [ngModel]="formEvaluate().includes(opt.value)" (ngModelChange)="toggleEvaluate(opt.value, $event)">
+                  {{ i18n.t(opt.key, opt.fallback) }}
+                </label>
+              }
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.ATTACHED_FILE', 'Chèn file') }}</nz-form-label>
+            <nz-form-control>
+              <app-edu-attachment
+                [files]="formFiles()"
+                [pendingFiles]="formPendingFiles()"
+                (pendingFilesChange)="formPendingFiles.set($event)"
+                (fileDeleted)="reloadFiles()"
+              ></app-edu-attachment>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.DAORUKECHENGBIAO.a', 'Chương trình học') }}</nz-form-label>
+            <nz-form-control>
+              <div class="epm-inline epm-wrap">
+                <input #epmSyllabusInput id="epm-f-syllabus-file" type="file" accept=".xlsx,.xls" class="epm-hidden" (change)="onSyllabusFileSelected($event)" />
+                <button id="epm-f-syllabus-import-btn" nz-button nzSize="small" type="button" [nzLoading]="importingSyllabus()" (click)="epmSyllabusInput.click()">
+                  <span nz-icon nzType="file-excel"></span>
+                  {{ i18n.t('ar.addempshift.title.excelimport', 'Chèn file') }}
+                </button>
+                <button id="epm-f-syllabus-template-btn" nz-button nzSize="small" type="button" (click)="downloadTemplate()">
+                  <span nz-icon nzType="download"></span>
+                  {{ i18n.t('pa.button.message.specialempimportmodeldown', 'Bản mẫu') }}
+                </button>
+                <a id="epm-f-syllabus-view" (click)="openSyllabus(formPlanNo(), true)">
+                  {{ i18n.t('edu.planManager.KECHENGBIAODAORUQINGKUANG.a', 'Xem') }} ({{ formSyllabusCount() }})
+                </a>
+              </div>
+              <div class="epm-hint">{{ i18n.t('edu.planManager.msg.syllabusHint', 'Import lại sẽ thay thế toàn bộ lịch học hiện có.') }}</div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="epm-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="epm-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('common.save', 'Lưu') }}</button>
+  </div>
+</nz-modal>
+
+<!-- Popup chọn NV chỉ định (desEmployee bản gốc) -->
+<app-edu-emp-picker
+  [visible]="empPickerVisible()"
+  (visibleChange)="empPickerVisible.set($event)"
+  [multiple]="true"
+  [showSort]="true"
+  [deptNos]="desDeptCsv()"
+  [selectedEmpids]="desEmpids()"
+  (confirmed)="onEmployeesPicked($event)"
+></app-edu-emp-picker>
+
+<!-- Popup chọn giảng viên (teacherSearch bản gốc) -->
+<nz-modal
+  [nzVisible]="teacherPickerVisible()"
+  [nzTitle]="i18n.t('edu.planManager.modal.teacherTitle', 'Chọn giảng viên')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="teacherPickerVisible.set(false)"
+  nzWidth="680px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'inline'" (ngSubmit)="searchTeachers()" class="epm-teacher-search">
+      <nz-form-item>
+        <nz-form-control>
+          <input id="epm-teacher-keyword" nz-input name="epmTeacherKeyword" [ngModel]="teacherKeyword()" (ngModelChange)="teacherKeyword.set($event)" [placeholder]="i18n.t('edu.planManager.GONGHAOXINGMING.a', 'Mã nhân viên/Họ tên')" />
+        </nz-form-control>
+      </nz-form-item>
+      <button id="epm-teacher-search-btn" nz-button nzType="primary" type="submit">
+        <span nz-icon nzType="search"></span>
+        {{ i18n.t('common.search', 'Tìm kiếm') }}
+      </button>
+    </form>
+    <nz-table #epmTeacherTable id="epm-teacher-table" [nzData]="teacherRows()" [nzLoading]="teacherLoading()" [nzPageSize]="defaultPageSize" [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="40px"></th>
+          <th>{{ i18n.t('edu.planManager.GONGHAO.a', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('alert.pa.pasalarycanshu.xingming', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.deptName', 'Phòng ban') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of epmTeacherTable.data; track t.teacherNo) {
+          <tr class="epm-row" (click)="toggleTeacher(t.empid, !teacherChecked().has(t.empid ?? ''))">
+            <td [nzChecked]="teacherChecked().has(t.empid ?? '')" (nzCheckedChange)="toggleTeacher(t.empid, $event)" (click)="$event.stopPropagation()"></td>
+            <td>{{ t.empid }}</td>
+            <td>{{ t.teacherName }}</td>
+            <td>{{ t.orgNameLocal }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="epm-teacher-cancel-btn" nz-button (click)="teacherPickerVisible.set(false)">{{ i18n.t('hrm.empinfo.CANCLE', 'Hủy bỏ') }}</button>
+    <button id="epm-teacher-confirm-btn" nz-button nzType="primary" (click)="confirmTeachers()">{{ i18n.t('hrm.empinfo.CONFIRM', 'Xác nhận') }}</button>
+  </div>
+</nz-modal>
+
+<!-- Modal Xem chi tiết (singlePlanManagerInfo bản gốc) -->
+<nz-modal
+  [nzVisible]="detailVisible()"
+  [nzTitle]="i18n.t('pa.ins.alert.message.title.clickForDetail', 'Xem')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="detailVisible.set(false)"
+  nzWidth="820px"
+>
+  <ng-container *nzModalContent>
+    @if (detail(); as d) {
+      <nz-descriptions id="epm-detail" nzBordered nzSize="small" [nzColumn]="1">
+        <nz-descriptions-item [nzTitle]="i18n.t('empsubject.subjectNm', 'Tên đào tạo')">
+          {{ d.trainTypeCodeName }}&nbsp;&nbsp;{{ d.courseNumber }}&nbsp;&nbsp;{{ d.courseNameCode }}
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.JIHUAKAISHISHIJIAN.a', 'Ngày bắt đầu')">{{ d.planStartdate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.JIHUAJIESHUSHIJIAN.a', 'Ngày kết thúc')">{{ d.planEnddate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng')">{{ d.classHour }} {{ classUnitLabel(d.classUnit) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('hrm.empinfo.Training_form', 'Hình thức đào tạo')">{{ d.trainFormCodeName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.SHIFOUKESHENQING.a', 'Xin phép')">{{ yesNo(d.isnotApply) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.ZHIDINGBUMEN.a', 'Phòng ban chỉ định')">{{ deptNames(d.desDepartment) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.ZHIDINGRENYUAN.a', 'NV chỉ định')">{{ d.desEmployeeName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.YUSUANFEIYONG.a', 'Dự kiến chi phí')">
+          {{ d.budget }}
+          ({{ d.budgetShow === 'Y' ? i18n.t('edu.planManager.KEJIAN.a', 'Có thể xem') : i18n.t('edu.planManager.BUKEJIAN.a', 'Không thể xem') }})
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.ZHUGUANBUMEN.a', 'Bộ phận chủ quản')">{{ d.departManaCodeName || d.departManaCode }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.JIANGSHI.a', 'Giảng viên')">{{ d.teacherDisplay }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('empsubject.eduRm', 'Địa điểm đào tạo')">{{ d.trainAddress }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.PEIXUNRENSHU.a', 'Số lượng')">{{ d.trainPersonCount }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('ar.viewarcardrecord.title.beizhu', 'Ghi chú')">{{ d.trainPersonRemark }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.SHIFOUXUYAOPINGJIA.a', 'Yêu cầu đánh giá')">{{ evaluateLabel(d.isnotEvaluate) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('hrm.recruitManage.ATTACHED_FILE', 'Chèn file')">
+          <app-edu-attachment [files]="detailFiles()" [readonly]="true"></app-edu-attachment>
+        </nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.DAORUKECHENGBIAO.a', 'Chương trình học')">
+          <a id="epm-detail-syllabus" (click)="openSyllabus(d.planNo, false)">{{ i18n.t('edu.planManager.KECHENGBIAODAORUQINGKUANG.a', 'Xem') }} ({{ d.syllabusCount ?? 0 }})</a>
+        </nz-descriptions-item>
+      </nz-descriptions>
+    }
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="epm-detail-close-btn" nz-button (click)="detailVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </div>
+</nz-modal>
+
+<!-- Modal Lịch học (queryCourseSyllabus / queryCourseSyllabus2 bản gốc) -->
+<nz-modal
+  [nzVisible]="syllabusVisible()"
+  [nzTitle]="i18n.t('edu.planManager.KECHENGBIAO.a', 'Lịch đào tạo')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="syllabusVisible.set(false)"
+  nzWidth="820px"
+>
+  <ng-container *nzModalContent>
+    <div class="epm-total">Total: {{ syllabusRows().length }}</div>
+    <nz-table #epmSyllTable id="epm-syllabus-table" [nzData]="syllabusRows()" [nzLoading]="syllabusLoading()" [nzPageSize]="defaultPageSize" [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="epm-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</th>
+          <th class="epm-col-center">{{ i18n.t('edu.planManager.KECHENGRIQI.a', 'Ngày học') }}</th>
+          <th class="epm-col-center">{{ i18n.t('ess.infoApply.title.startTime', 'Thời gian bắt đầu') }}</th>
+          <th class="epm-col-center">{{ i18n.t('ess.infoApply.title.endTime', 'Thời gian kết thúc') }}</th>
+          <th>{{ i18n.t('edu.planManager.XIANGXIDIDIAN.a', 'Địa điểm') }}</th>
+          @if (syllabusEditable()) {
+            <th nzWidth="70px" class="epm-col-center">{{ i18n.t('button.delete', 'Xóa') }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of epmSyllTable.data; track s.syllNo; let idx = $index) {
+          <tr>
+            <td class="epm-col-center">{{ (epmSyllTable.nzPageIndex - 1) * epmSyllTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ s.courseNameCode }}</td>
+            <td class="epm-col-center">{{ s.courseDate }}</td>
+            <td class="epm-col-center">{{ s.courseStartDate }}</td>
+            <td class="epm-col-center">{{ s.courseEndDate }}</td>
+            <td>{{ s.detailAddress }}</td>
+            @if (syllabusEditable()) {
+              <td class="epm-col-center">
+                <button nz-button nzType="link" nzDanger nzSize="small" (click)="deleteSyllabusRow(s)" [title]="i18n.t('button.delete', 'Xóa')">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="syllabusEditable() ? 7 : 6" class="epm-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="epm-syllabus-close-btn" nz-button (click)="syllabusVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </div>
+</nz-modal>

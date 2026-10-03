@@ -1,0 +1,41 @@
+.eto-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eto-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.eto-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.eto-col-center {
+  text-align: center;
+}
+
+.eto-row {
+  cursor: pointer;
+}
+
+// Dòng đang chọn - tương đương background:#aaccf6 ở bản gốc
+.eto-row-selected > td {
+  background: #e6f4ff !important;
+}
+
+.eto-pre {
+  white-space: pre-wrap;
+}

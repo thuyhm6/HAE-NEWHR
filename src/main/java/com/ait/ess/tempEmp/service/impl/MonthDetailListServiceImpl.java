@@ -148,7 +148,7 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
      */
     private void exportBonus13thReport(MonthDetailListDto params, HttpServletResponse response) throws IOException {
         try {
-            if (params.getReportYear() != null && !params.getReportYear().isBlank()) {
+            if (params.getReportYear() != null && !params.getReportYear().trim().isEmpty()) {
                 params.setYear(params.getReportYear());
             }
             List<Map<String, Object>> rows = mapper.selectBonus13thReport(params);
@@ -367,7 +367,7 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
     private void writeWorkbook(Workbook workbook, HttpServletResponse response, String fileName, String contentType) throws IOException {
         response.setContentType(contentType);
         response.setHeader("Content-Disposition", "attachment; filename=\"" +
-                URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "\"");
+                URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()) + "\"");
         workbook.write(response.getOutputStream());
     }
 
@@ -756,7 +756,7 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
      * để biểu thức tính toán trong template không lỗi; trường chuỗi/ngày vẫn giữ nguyên null để hiển thị trống.
      */
     private Map<String, Object> safeRow(Map<String, Object> row) {
-        return new HashMap<>(row) {
+        return new HashMap<String, Object>(row) {
             @Override
             public boolean containsKey(Object key) {
                 // Luôn báo "có" để MapAccessor (SpEL) cho phép đọc property, kể cả trường chưa có

@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="10" nzShowSizeChanger [nzPageSizeOptions]="[10, 25, 50]" nzSize="small" nzBordered #vcmTable>
+    <nz-table [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered #vcmTable>
       <thead>
         <tr>
           <th nzWidth="48px" class="vcm-col-center">{{ i18n.t('sys.codeManage.no', 'STT') }}</th>

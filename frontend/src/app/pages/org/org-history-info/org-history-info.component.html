@@ -114,7 +114,7 @@
         <span class="vohi-badge">{{ i18n.t('common.total', 'Tổng') }}: {{ employees().length }}</span>
       </div>
 
-      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="10" nzShowSizeChanger [nzPageSizeOptions]="[10, 25, 50, 100]" nzSize="small" nzBordered #vohiEmpTable>
+      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="defaultPageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered #vohiEmpTable>
         <thead>
           <tr>
             <th nzWidth="50px" class="vohi-col-center">{{ i18n.t('common.stt', 'STT') }}</th>

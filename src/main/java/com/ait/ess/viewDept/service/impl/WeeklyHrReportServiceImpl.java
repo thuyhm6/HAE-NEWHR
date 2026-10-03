@@ -55,7 +55,7 @@ public class WeeklyHrReportServiceImpl implements WeeklyHrReportService {
     @Override
     public void exportWeeklyReport(String asOfDate, HttpServletResponse response) throws IOException {
         try {
-            LocalDate refDate = (asOfDate == null || asOfDate.isBlank())
+            LocalDate refDate = (asOfDate == null || asOfDate.trim().isEmpty())
                     ? LocalDate.now()
                     : LocalDate.parse(asOfDate, DATE_FMT);
             LocalDate thisWeekMonday = refDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -111,7 +111,7 @@ public class WeeklyHrReportServiceImpl implements WeeklyHrReportService {
         String filename = "BaoCaoNhanSuTheoTuan_" + weekStart.format(FILE_DATE_FMT) + "_" + weekEnd.format(FILE_DATE_FMT) + ".xlsx";
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"" +
-                URLEncoder.encode(filename, StandardCharsets.UTF_8) + "\"");
+                URLEncoder.encode(filename, StandardCharsets.UTF_8.name()) + "\"");
         wb.write(response.getOutputStream());
         wb.close();
     }

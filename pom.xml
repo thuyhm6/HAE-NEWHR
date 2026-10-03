@@ -28,15 +28,15 @@
         <url/>
     </scm>
     <properties>
-        <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <java.version>8</java.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         
         <!-- JEUS exploded WAR properties -->
-        <jeus.deploy.dir>C:\tmaxsoft\jeus7\resource</jeus.deploy.dir>
-        <jeus.app.name>HR-11</jeus.app.name>
+        <jeus.deploy.dir>D:\JEUS7.0\resource</jeus.deploy.dir>
+        <jeus.app.name>HAE_VHR</jeus.app.name>
 
         <!-- Pin toàn bộ họ Spring Security về cùng 1 version để tránh lệch version giữa các module (CVE fix) -->
         <spring-security.version>5.8.15</spring-security.version>
@@ -177,7 +177,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>12.4.2.jre11</version>
+            <version>12.4.2.jre8</version>
         </dependency>
 
         <!-- javax.activation (JAF) - bị loại khỏi JDK từ Java 9+, cần thiết cho Apache Axis -->
@@ -220,8 +220,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                     <!-- Cáº¥u hÃ¬nh output directory cho compiled classes -->
                     <outputDirectory>src/main/webapp/WEB-INF/classes</outputDirectory>
                     <annotationProcessorPaths>

@@ -20,6 +20,7 @@ import { ApplyDetailModalComponent } from '../../../shared/apply-detail-modal/ap
 import { AffirmContext, AffirmExecuteItem, ApplyDetailModalService } from '../../../shared/apply-detail-modal/apply-detail-modal.service';
 import { ApprovalEmailListService, ApprovalEmailRow } from './approval-email-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const STATUS_COLOR: Record<string, string> = {
   '14014309': 'success',
   '14014310': 'error',
@@ -59,6 +60,10 @@ const STATUS_COLOR: Record<string, string> = {
   styleUrl: './approval-email-list.component.scss',
 })
 export class ApprovalEmailListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   @ViewChild('otModal') otModal!: ApplyDetailModalComponent;
   @ViewChild('leaveModal') leaveModal!: ApplyDetailModalComponent;
   @ViewChild('attendanceExModal') attendanceExModal!: ApplyDetailModalComponent;

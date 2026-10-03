@@ -17,6 +17,7 @@ import { NzTreeNodeKey, NzTreeNodeOptions } from 'ng-zorro-antd/core/tree';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyMenuTreeSource, SyRoleRow, SyRolesGroupService } from './sy-roles-group.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý Role + Phân quyền Menu (viewRolesGroup) - xem ghi chú trong
  * sy-roles-group.service.ts.
@@ -42,6 +43,10 @@ import { SyMenuTreeSource, SyRoleRow, SyRolesGroupService } from './sy-roles-gro
   styleUrl: './sy-roles-group.component.scss',
 })
 export class SyRolesGroupComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SyRolesGroupService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

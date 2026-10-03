@@ -42,7 +42,7 @@
   </nz-card>
 
   <nz-card class="imp-table-card">
-    <nz-table #impTable id="imp-result-table" [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: '1800px', y: '100%' }" nzSize="small">
+    <nz-table #impTable id="imp-result-table" [nzData]="rows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: '1800px', y: '100%' }" nzSize="small">
       <thead>
         <tr>
           <th nzWidth="60px" class="imp-col-center">{{ i18n.t('impAtt.line', 'Line') }}</th>

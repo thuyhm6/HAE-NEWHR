@@ -35,7 +35,7 @@
       [nzTotal]="recordsTotal()"
       [nzPageIndex]="pageIndex()"
       [nzPageSize]="pageSize()"
-      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      [nzPageSizeOptions]="pageSizeOptions"
       nzShowSizeChanger
       (nzPageIndexChange)="onPageIndexChange($event)"
       (nzPageSizeChange)="onPageSizeChange($event)"
@@ -51,7 +51,6 @@
           <th nzWidth="130px" class="vpf-col-center">{{ i18n.t('pa.formula.conditionSeq', 'Trình tự tính') }}</th>
           <th>{{ i18n.t('pa.formula.condition', 'Điều kiện') }}</th>
           <th>{{ i18n.t('pa.formula.formular', 'Công thức') }}</th>
-          <th nzWidth="180px">{{ i18n.t('pa.formula.description', 'Mô tả') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -69,9 +68,8 @@
               <span nz-icon nzType="arrow-down" class="vpf-seq-down"></span>
             </button>
           </td>
-          <td [innerHTML]="highlightExpr(row.condition)"></td>
-          <td [innerHTML]="highlightExpr(row.formular)"></td>
-          <td>{{ row.description }}</td>
+          <td class="vpf-wrap-cell" [innerHTML]="highlightExpr(row.condition)"></td>
+          <td class="vpf-wrap-cell" [innerHTML]="highlightExpr(row.formular)"></td>
         </tr>
       </tbody>
     </nz-table>

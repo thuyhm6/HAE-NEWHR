@@ -23,6 +23,7 @@ import {
   ImportFromDeviceResponse,
 } from './card-record-for-self.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function todayStr(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -57,6 +58,9 @@ function todayStr(): Date {
   styleUrl: './card-record-for-self.component.scss',
 })
 export class CardRecordForSelfComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(CardRecordForSelfService);
   private readonly deptService = inject(ArPersonalListService);
   private readonly message = inject(NzMessageService);
@@ -73,7 +77,7 @@ export class CardRecordForSelfComponent implements OnInit {
   protected readonly rows = signal<CardRecordForSelfRow[]>([]);
   protected readonly total = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   private listBootstrapped = false;
   private drawCounter = 0;
 

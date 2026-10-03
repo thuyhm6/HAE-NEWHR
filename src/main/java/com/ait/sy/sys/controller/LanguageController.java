@@ -116,7 +116,7 @@ public class LanguageController {
 
     private String resolveSafeRedirectTarget(HttpServletRequest request) {
         String referer = request.getHeader("Referer");
-        if (referer == null || referer.isBlank()) {
+        if (referer == null || referer.trim().isEmpty()) {
             return "/";
         }
 
@@ -130,12 +130,12 @@ public class LanguageController {
             }
 
             String path = refererUri.getRawPath();
-            if (path == null || path.isBlank() || !path.startsWith("/")) {
+            if (path == null || path.trim().isEmpty() || !path.startsWith("/")) {
                 return "/";
             }
 
             String query = refererUri.getRawQuery();
-            return (query == null || query.isBlank()) ? path : path + "?" + query;
+            return (query == null || query.trim().isEmpty()) ? path : path + "?" + query;
         } catch (IllegalArgumentException ex) {
             return "/";
         }

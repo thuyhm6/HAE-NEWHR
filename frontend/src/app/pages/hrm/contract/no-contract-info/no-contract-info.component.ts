@@ -18,6 +18,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { ContractFormModalComponent } from '../contract-form-modal.component';
 import { ContractRow, ContractSearchFilter, ContractService } from '../contract.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../../core/config/table-pagination.config';
 /**
  * Danh sách + CRUD Hợp đồng lao động (đầy đủ Thêm/Sửa/Xóa/Xem) - port lại
  * từ hrm/contract/viewNOContractInfo.html (đã xoá). Dùng chung
@@ -48,6 +49,9 @@ import { ContractRow, ContractSearchFilter, ContractService } from '../contract.
   styleUrl: './no-contract-info.component.scss',
 })
 export class NoContractInfoComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(ContractService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -72,7 +76,7 @@ export class NoContractInfoComponent implements OnInit {
   protected readonly rows = signal<ContractRow[]>([]);
   protected readonly total = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(10);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   private listBootstrapped = false;
   private drawCounter = 0;
 

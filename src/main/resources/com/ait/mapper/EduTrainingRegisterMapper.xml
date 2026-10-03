@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainingRegisterMapper">
+
+    <resultMap id="EduTrainingRegisterResultMap" type="com.ait.edu.trainEducation.model.EduTrainingRegister">
+        <id column="APPLY_NO" property="applyNo" jdbcType="VARCHAR"/>
+        <result column="PERSON_ID" property="personId" jdbcType="VARCHAR"/>
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
+        <result column="DEPTNAME" property="deptName" jdbcType="VARCHAR"/>
+        <result column="TRAINING_CONTENT" property="trainingContent" jdbcType="VARCHAR"/>
+        <result column="TRAINING_PURPOSE" property="trainingPurpose" jdbcType="VARCHAR"/>
+        <result column="TRAINING_TYPE" property="trainingType" jdbcType="VARCHAR"/>
+        <result column="TRAINING_TYPE_NAME" property="trainingTypeName" jdbcType="VARCHAR"/>
+        <result column="TRAINING_UNIT" property="trainingUnit" jdbcType="VARCHAR"/>
+        <result column="TRAINING_LOCATION" property="trainingLocation" jdbcType="VARCHAR"/>
+        <result column="START_DATE" property="startDate" jdbcType="VARCHAR"/>
+        <result column="END_DATE" property="endDate" jdbcType="VARCHAR"/>
+        <result column="AFFIRM_FLAG" property="affirmFlag" jdbcType="VARCHAR"/>
+        <result column="AFFIRM_FLAG_NAME" property="affirmFlagName" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+        <result column="TRAIN_UNIT" property="trainUnit" jdbcType="VARCHAR"/>
+        <result column="TRAIN_FEE" property="trainFee" jdbcType="VARCHAR"/>
+        <result column="TRAIN_PRICE" property="trainPrice" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TRAINEE" property="trainTrainee" jdbcType="VARCHAR"/>
+        <result column="TRAIN_AMOUNT" property="trainAmount" jdbcType="VARCHAR"/>
+        <result column="TRAIN_FEES_OTHER" property="trainFeesOther" jdbcType="VARCHAR"/>
+        <result column="TRAIN_FEES_TOTAL" property="trainFeesTotal" jdbcType="VARCHAR"/>
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--
+        getRegisterForTrainingList bản gốc: đơn của chính người đăng nhập (PERSON_ID = adminID).
+        Bản gốc truyền #interLanguage# (không được set) cho GET_GLOBAL_NAME nên tên loại/trạng thái
+        không theo ngôn ngữ - ở đây dùng #{lang}.
+    -->
+    <select id="findMyList" resultMap="EduTrainingRegisterResultMap">
+        SELECT TO_CHAR(A.APPLY_NO) AS APPLY_NO,
+               A.PERSON_ID,
+               B.EMPID,
+               B.LOCAL_NAME,
+               GET_DEPT_NAME(B.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPTNAME,
+               A.TRAINING_CONTENT,
+               A.TRAINING_PURPOSE,
+               TO_CHAR(A.TRAINING_TYPE) AS TRAINING_TYPE,
+               GET_GLOBAL_NAME(A.TRAINING_TYPE, #{lang, jdbcType=VARCHAR}) AS TRAINING_TYPE_NAME,
+               A.TRAINING_UNIT,
+               A.TRAINING_LOCATION,
+               TO_CHAR(A.START_DATE, 'DD/MM/YYYY') AS START_DATE,
+               TO_CHAR(A.END_DATE, 'DD/MM/YYYY') AS END_DATE,
+               TO_CHAR(A.AFFIRM_FLAG) AS AFFIRM_FLAG,
+               GET_GLOBAL_NAME(A.AFFIRM_FLAG, #{lang, jdbcType=VARCHAR}) AS AFFIRM_FLAG_NAME,
+               A.REMARK,
+               A.TRAIN_UNIT,
+               TO_CHAR(A.TRAIN_FEE) AS TRAIN_FEE,
+               TO_CHAR(A.TRAIN_PRICE) AS TRAIN_PRICE,
+               TO_CHAR(A.TRAIN_TRAINEE) AS TRAIN_TRAINEE,
+               TO_CHAR(A.TRAIN_AMOUNT) AS TRAIN_AMOUNT,
+               TO_CHAR(A.TRAIN_FEES_OTHER) AS TRAIN_FEES_OTHER,
+               TO_CHAR(A.TRAIN_FEES_TOTAL) AS TRAIN_FEES_TOTAL,
+               TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY') AS CREATE_DATE
+          FROM EDU_TRAINING_REGISTER A
+          JOIN HR_EMPLOYEE B ON B.PERSON_ID = A.PERSON_ID
+         WHERE A.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+        <if test="trainingType != null and trainingType != ''">
+           AND A.TRAINING_TYPE = #{trainingType, jdbcType=VARCHAR}
+        </if>
+         ORDER BY A.CREATE_DATE DESC
+    </select>
+
+    <select id="nextApplyNo" resultType="java.lang.Long">
+        SELECT ESS_APPLY_SEQ.NEXTVAL FROM DUAL
+    </select>
+
+    <!-- addRegisterForTraining bản gốc - PERSON_ID là người đăng nhập (adminID). -->
+    <insert id="insert">
+        INSERT INTO EDU_TRAINING_REGISTER
+              (APPLY_NO,
+               PERSON_ID,
+               START_DATE,
+               END_DATE,
+               TRAINING_CONTENT,
+               TRAINING_PURPOSE,
+               TRAINING_TYPE,
+               TRAINING_UNIT,
+               TRAINING_LOCATION,
+               TRAIN_UNIT,
+               TRAIN_FEE,
+               REMARK,
+               AFFIRM_FLAG,
+               TRAIN_PRICE,
+               ACTIVITY,
+               TRAIN_AMOUNT,
+               TRAIN_TRAINEE,
+               TRAIN_FEES_TOTAL,
+               TRAIN_FEES_OTHER,
+               CREATED_BY,
+               CREATE_DATE,
+               CREATED_IP,
+               UPDATE_DATE,
+               UPDATED_BY,
+               UPDATED_IP,
+               SEND_EMAIL_FLAG,
+               MISDOCID)
+        VALUES
+              (#{applyNo, jdbcType=VARCHAR},
+               #{adminID, jdbcType=VARCHAR},
+               TO_DATE(#{r.startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               TO_DATE(#{r.endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               #{r.trainingContent, jdbcType=VARCHAR},
+               #{r.trainingPurpose, jdbcType=VARCHAR},
+               #{r.trainingType, jdbcType=VARCHAR},
+               #{r.trainingUnit, jdbcType=VARCHAR},
+               #{r.trainingLocation, jdbcType=VARCHAR},
+               #{r.trainUnit, jdbcType=VARCHAR},
+               #{r.trainFee, jdbcType=VARCHAR},
+               #{r.remark, jdbcType=VARCHAR},
+               #{affirmFlag, jdbcType=VARCHAR},
+               #{r.trainPrice, jdbcType=VARCHAR},
+               1,
+               #{r.trainAmount, jdbcType=VARCHAR},
+               #{r.trainTrainee, jdbcType=VARCHAR},
+               #{r.trainFeesTotal, jdbcType=VARCHAR},
+               #{r.trainFeesOther, jdbcType=VARCHAR},
+               #{adminID, jdbcType=VARCHAR},
+               SYSDATE,
+               #{adminIP, jdbcType=VARCHAR},
+               SYSDATE,
+               #{adminID, jdbcType=VARCHAR},
+               #{adminIP, jdbcType=VARCHAR},
+               0,
+               TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS') || LPAD(MISDOCID.NEXTVAL, 7, 0))
+    </insert>
+</mapper>

@@ -1,0 +1,36 @@
+.etar-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.etar-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.etar-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.etar-full {
+  width: 100%;
+}
+
+.etar-center {
+  text-align: center;
+}
+
+.etar-right {
+  text-align: right;
+}

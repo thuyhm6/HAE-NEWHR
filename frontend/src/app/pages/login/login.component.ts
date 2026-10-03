@@ -79,6 +79,19 @@ export class LoginComponent implements OnInit {
     return this.languages.find((lang) => lang.code === this.i18n.lang()) ?? this.languages[0];
   }
 
+  protected getRemainingAttemptsText(): string {
+    const attempts = this.remainingAttempts();
+    if (attempts === null) {
+      return '';
+    }
+    if (attempts === 0) {
+      return this.i18n.t('login.attempts.locked', 'Tài khoản đã bị khóa. Vui lòng thử lại sau.');
+    }
+
+    const template = this.i18n.t('login.attempts.remaining', 'Còn {0} lần đăng nhập');
+    return template.replace('{0}', String(attempts));
+  }
+
   async changeLanguage(lang: string): Promise<void> {
     await this.i18n.load(lang);
   }

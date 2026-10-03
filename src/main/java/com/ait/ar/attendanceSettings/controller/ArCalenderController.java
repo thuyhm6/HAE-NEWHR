@@ -252,7 +252,7 @@ public class ArCalenderController {
     private String resolvePersonIdForRequest(String requestedPersonId, HttpSession session) {
         HrUserInfo currentUser = requireAuthenticatedUser(session);
         if (isPrivilegedUser(currentUser)) {
-            return (requestedPersonId == null || requestedPersonId.isBlank())
+            return (requestedPersonId == null || requestedPersonId.trim().isEmpty())
                     ? currentUser.getPersonId()
                     : requestedPersonId;
         }
@@ -262,11 +262,11 @@ public class ArCalenderController {
     private String resolvePersonIdForWrite(String requestedPersonId, HttpSession session) {
         HrUserInfo currentUser = requireAuthenticatedUser(session);
         if (isPrivilegedUser(currentUser)) {
-            return (requestedPersonId == null || requestedPersonId.isBlank())
+            return (requestedPersonId == null || requestedPersonId.trim().isEmpty())
                     ? currentUser.getPersonId()
                     : requestedPersonId;
         }
-        if (requestedPersonId != null && !requestedPersonId.isBlank()
+        if (requestedPersonId != null && !requestedPersonId.trim().isEmpty()
                 && !requestedPersonId.equals(currentUser.getPersonId())) {
             throw new SecurityException("Cross-user calendar update is not allowed");
         }

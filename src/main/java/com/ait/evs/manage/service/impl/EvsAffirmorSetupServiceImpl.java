@@ -198,9 +198,9 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
                 String affirmId2 = getCellText(row.getCell(4), formatter);
                 String affirmName2 = getCellText(row.getCell(5), formatter);
 
-                if (empId.isBlank() && affirmId1.isBlank() && affirmId2.isBlank()) continue;
+                if (empId.trim().isEmpty() && affirmId1.trim().isEmpty() && affirmId2.trim().isEmpty()) continue;
 
-                if (empId.isBlank()) {
+                if (empId.trim().isEmpty()) {
                     errors.add("Dòng " + (i + 1) + ": Thiếu Mã nhân viên");
                     continue;
                 }
@@ -212,7 +212,7 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
                 }
 
                 String personId1 = null;
-                if (!affirmId1.isBlank()) {
+                if (!affirmId1.trim().isEmpty()) {
                     EvsAffirmorSetupDto a1 = mapper.selectEmployeeByEmpId(affirmId1);
                     if (a1 == null) {
                         errors.add("Dòng " + (i + 1) + ": Không tìm thấy người đánh giá lần 1 với Mã NV=" + affirmId1);
@@ -222,7 +222,7 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
                 }
 
                 String personId2 = null;
-                if (!affirmId2.isBlank()) {
+                if (!affirmId2.trim().isEmpty()) {
                     EvsAffirmorSetupDto a2 = mapper.selectEmployeeByEmpId(affirmId2);
                     if (a2 == null) {
                         errors.add("Dòng " + (i + 1) + ": Không tìm thấy người đánh giá lần 2 với Mã NV=" + affirmId2);
@@ -249,11 +249,11 @@ public class EvsAffirmorSetupServiceImpl implements EvsAffirmorSetupService {
                 Map<String, Object> tempRow = new HashMap<>();
                 tempRow.put("resumeSeq", resumeSeq);
                 tempRow.put("empid", empId);
-                tempRow.put("localName", localName.isBlank() ? empDto.getLocalName() : localName);
-                tempRow.put("affirmId1", affirmId1.isBlank() ? null : affirmId1);
-                tempRow.put("affirmName1", affirmName1.isBlank() ? null : affirmName1);
-                tempRow.put("affirmId2", affirmId2.isBlank() ? null : affirmId2);
-                tempRow.put("affirmName2", affirmName2.isBlank() ? null : affirmName2);
+                tempRow.put("localName", localName.trim().isEmpty() ? empDto.getLocalName() : localName);
+                tempRow.put("affirmId1", affirmId1.trim().isEmpty() ? null : affirmId1);
+                tempRow.put("affirmName1", affirmName1.trim().isEmpty() ? null : affirmName1);
+                tempRow.put("affirmId2", affirmId2.trim().isEmpty() ? null : affirmId2);
+                tempRow.put("affirmName2", affirmName2.trim().isEmpty() ? null : affirmName2);
                 tempRow.put("evsObjectSeq", objSeq);
 
                 try {

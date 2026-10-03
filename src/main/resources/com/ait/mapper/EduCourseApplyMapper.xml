@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduCourseApplyMapper">
+
+    <resultMap id="EduApplyCourseResultMap" type="com.ait.edu.trainEducation.model.EduApplyCourse">
+        <id column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="PLAN_NO" property="planNo" jdbcType="VARCHAR"/>
+        <result column="SYLLABUS_COUNT" property="syllabusCount" jdbcType="INTEGER"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+        <result column="TRAIN_FORM_CODE_NAME" property="trainFormCodeName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_ADDRESS" property="trainAddress" jdbcType="VARCHAR"/>
+        <result column="IMPLE_START_DATE" property="impleStartDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_END_DATE" property="impleEndDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_HOUR" property="impleClassHour" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_UNIT" property="impleClassUnit" jdbcType="VARCHAR"/>
+        <result column="TRAIN_CONTENT" property="trainContent" jdbcType="VARCHAR"/>
+        <result column="APPLY_COUNT" property="applyCount" jdbcType="INTEGER"/>
+        <result column="DESIGNATED_COUNT" property="designatedCount" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="EduApplyMakerResultMap" type="com.ait.edu.trainEducation.model.EduApplyMaker">
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="PERSON_ID" property="personId" jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="POSITION_NAME" property="positionName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduApplyRecordResultMap" type="com.ait.edu.trainEducation.model.EduApplyRecord">
+        <result column="MAKER_NO" property="makerNo" jdbcType="VARCHAR"/>
+        <result column="APPLY_NO" property="applyNo" jdbcType="VARCHAR"/>
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="PLAN_NO" property="planNo" jdbcType="VARCHAR"/>
+        <result column="SYLLABUS_COUNT" property="syllabusCount" jdbcType="INTEGER"/>
+        <result column="MAKER_PERSON_ID" property="makerPersonId" jdbcType="VARCHAR"/>
+        <result column="MAKER_LOCAL_NAME" property="makerLocalName" jdbcType="VARCHAR"/>
+        <result column="APPLY_FLAG" property="applyFlag" jdbcType="VARCHAR"/>
+        <result column="CONFIRM_FLAG" property="confirmFlag" jdbcType="VARCHAR"/>
+        <result column="MAKER_LEVEL" property="makerLevel" jdbcType="VARCHAR"/>
+        <result column="CREATE_DATE" property="createDate" jdbcType="VARCHAR"/>
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="STU_PERSON_ID" property="stuPersonId" jdbcType="VARCHAR"/>
+        <result column="STU_LOCAL_NAME" property="stuLocalName" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+        <result column="IMPLE_START_DATE" property="impleStartDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_END_DATE" property="impleEndDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_HOUR" property="impleClassHour" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_UNIT" property="impleClassUnit" jdbcType="VARCHAR"/>
+        <result column="APPLY_TASK" property="applyTask" jdbcType="VARCHAR"/>
+        <result column="APPLY_COUNT" property="applyCount" jdbcType="INTEGER"/>
+        <result column="PLANNED_COUNT" property="plannedCount" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- ================= Đăng ký khóa (courseApply) ================= -->
+
+    <!--
+        Điều kiện khóa được đăng ký: kế hoạch cho phép đăng ký, còn hạn đăng ký, nhân viên có
+        trong DES_EMPLOYEE (bản gốc indexOf chuỗi - ở đây so khớp đúng từng mã) và chưa đăng ký.
+    -->
+    <sql id="applicableWhere">
+        E.ACTIVITY = '1'
+        AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        AND M.ISNOT_APPLY = 'Y'
+        AND M.ACTIVITY &lt;&gt; 0
+        AND E.APPLY_END_DATE &gt;= TRUNC(SYSDATE)
+        AND DBMS_LOB.INSTR(',' || REPLACE(M.DES_EMPLOYEE, ' ', '') || ',', ',' || #{empid, jdbcType=VARCHAR} || ',') &gt; 0
+        AND NOT EXISTS (SELECT 1 FROM EDU_STUDENT_APPLY A
+                         WHERE A.BASIC_NO = E.BASIC_NO
+                           AND A.STU_PERSON_ID = #{personId, jdbcType=VARCHAR}
+                           AND A.ACTIVITY = 1
+                           AND A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR})
+    </sql>
+
+    <select id="findApplyCourses" resultMap="EduApplyCourseResultMap">
+        SELECT TO_CHAR(E.BASIC_NO) AS BASIC_NO,
+               TO_CHAR(E.PLAN_NO) AS PLAN_NO,
+               (SELECT COUNT(1) FROM EDU_TRAIN_SYLLABUS SY WHERE SY.PLAN_NO = E.PLAN_NO AND SY.ACTIVITY = 1) AS SYLLABUS_COUNT,
+               GET_GLOBAL_NAME(E.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+               E.COURSE_NAME_CODE,
+               TO_CHAR(E.PERIOD_TIME) AS PERIOD_TIME,
+               GET_GLOBAL_NAME(E.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_CODE_NAME,
+               E.TRAIN_ADDRESS,
+               TO_CHAR(E.IMPLE_START_DATE, 'DD/MM/YYYY') AS IMPLE_START_DATE,
+               TO_CHAR(E.IMPLE_END_DATE, 'DD/MM/YYYY') AS IMPLE_END_DATE,
+               TO_CHAR(E.IMPLE_CLASS_HOUR) AS IMPLE_CLASS_HOUR,
+               TO_CHAR(E.IMPLE_CLASS_UNIT) AS IMPLE_CLASS_UNIT,
+               E.TRAIN_CONTENT,
+               (SELECT COUNT(1) FROM EDU_STUDENT_APPLY X
+                 WHERE X.BASIC_NO = E.BASIC_NO AND X.ACTIVITY = 1 AND X.CPNY_ID = E.CPNY_ID) AS APPLY_COUNT,
+               NVL(REGEXP_COUNT(M.DES_EMPLOYEE, '[^,]+'), 0) AS DESIGNATED_COUNT
+        FROM EDU_BASIC_INFORMATION E
+        JOIN EDU_PLAN_MANAGER M ON M.PLAN_NO = E.PLAN_NO
+        WHERE <include refid="applicableWhere"/>
+        <if test="courseName != null and courseName != ''">
+            AND UPPER(E.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND E.IMPLE_START_DATE &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND E.IMPLE_END_DATE &lt; TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY') + 1
+        </if>
+        ORDER BY E.CREATE_DATE DESC
+    </select>
+
+    <select id="countApplicable" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM EDU_BASIC_INFORMATION E
+        JOIN EDU_PLAN_MANAGER M ON M.PLAN_NO = E.PLAN_NO
+        WHERE E.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+          AND <include refid="applicableWhere"/>
+    </select>
+
+    <!-- Người phê duyệt mặc định = trưởng phòng ban của người đăng ký (queryDefaultMaker) -->
+    <select id="findDefaultMakers" resultMap="EduApplyMakerResultMap">
+        SELECT HH.EMPID,
+               HH.PERSON_ID,
+               HH.LOCAL_NAME,
+               GET_DEPT_NAME(HH.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               GET_GLOBAL_NAME(HH.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(HH.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME
+        FROM HR_EMPLOYEE HH
+        WHERE HH.PERSON_ID IN (SELECT DD.MANAGER_EMP_ID FROM HR_DEPARTMENT DD
+                                WHERE DD.DEPTNO IN (SELECT H.DEPTNO FROM HR_EMPLOYEE H
+                                                     WHERE H.PERSON_ID = #{personId, jdbcType=VARCHAR}))
+          AND ROWNUM = 1
+    </select>
+
+    <!-- Tìm người phê duyệt (queryPeixun) - giữ điều kiện EMP_OFFICE = '15119' của bản gốc -->
+    <select id="findMakerCandidates" resultMap="EduApplyMakerResultMap">
+        SELECT H.EMPID,
+               H.PERSON_ID,
+               H.LOCAL_NAME,
+               GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               GET_GLOBAL_NAME(H.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME
+        FROM HR_EMPLOYEE H
+        WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND H.EMP_OFFICE = '15119'
+        <if test="keyword != null and keyword != ''">
+            AND (CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                 OR H.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                 OR UPPER(H.ENGLISH_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%')
+        </if>
+        <if test="deptNo != null and deptNo != ''">
+            AND EXISTS (SELECT 1 FROM HR_DEPARTMENT D
+                         WHERE D.DEPTNO = H.DEPTNO
+                         START WITH D.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                         CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)
+        </if>
+        ORDER BY H.EMPID
+    </select>
+
+    <select id="nextApplyNo" resultType="java.lang.String">
+        SELECT TO_CHAR(EDU_STUDENT_APPLY_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insertApply">
+        INSERT INTO EDU_STUDENT_APPLY (
+            APPLY_NO, BASIC_NO, STU_PERSON_ID, STU_LOCAL_NAME, CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID, APPLY_TASK
+        ) VALUES (
+            #{applyNo, jdbcType=NUMERIC},
+            #{basicNo, jdbcType=NUMERIC},
+            #{stuPersonId, jdbcType=VARCHAR},
+            #{stuLocalName, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            #{applyTask, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <insert id="insertMaker">
+        INSERT INTO EDU_TRAIN_MAKER (
+            MAKER_NO, APPLY_NO, MAKER_PERSON_ID, MAKER_LOCAL_NAME, MAKER_LEVEL, CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID
+        ) VALUES (
+            EDU_TRAIN_MAKER_SEQ.NEXTVAL,
+            #{applyNo, jdbcType=NUMERIC},
+            #{makerPersonId, jdbcType=VARCHAR},
+            #{makerLocalName, jdbcType=VARCHAR},
+            #{makerLevel, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- ================= Danh sách đơn dùng chung ================= -->
+
+    <sql id="recordColumns">
+        TO_CHAR(M.MAKER_NO) AS MAKER_NO,
+        TO_CHAR(M.APPLY_NO) AS APPLY_NO,
+        TO_CHAR(A.BASIC_NO) AS BASIC_NO,
+        TO_CHAR(B.PLAN_NO) AS PLAN_NO,
+        (SELECT COUNT(1) FROM EDU_TRAIN_SYLLABUS SY WHERE SY.PLAN_NO = B.PLAN_NO AND SY.ACTIVITY = 1) AS SYLLABUS_COUNT,
+        M.MAKER_PERSON_ID,
+        M.MAKER_LOCAL_NAME,
+        TO_CHAR(M.APPLY_FLAG) AS APPLY_FLAG,
+        TO_CHAR(M.CONFIRM_FLAG) AS CONFIRM_FLAG,
+        TO_CHAR(M.MAKER_LEVEL) AS MAKER_LEVEL,
+        TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY') AS CREATE_DATE,
+        H.EMPID,
+        A.STU_PERSON_ID,
+        A.STU_LOCAL_NAME,
+        GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+        GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+        GET_GLOBAL_NAME(B.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+        B.COURSE_NAME_CODE,
+        TO_CHAR(B.PERIOD_TIME) AS PERIOD_TIME,
+        TO_CHAR(B.IMPLE_START_DATE, 'DD/MM/YYYY') AS IMPLE_START_DATE,
+        TO_CHAR(B.IMPLE_END_DATE, 'DD/MM/YYYY') AS IMPLE_END_DATE,
+        TO_CHAR(B.IMPLE_CLASS_HOUR) AS IMPLE_CLASS_HOUR,
+        TO_CHAR(B.IMPLE_CLASS_UNIT) AS IMPLE_CLASS_UNIT,
+        A.APPLY_TASK
+    </sql>
+
+    <sql id="recordFrom">
+        FROM EDU_TRAIN_MAKER M
+        JOIN EDU_STUDENT_APPLY A ON A.APPLY_NO = M.APPLY_NO AND A.ACTIVITY = 1
+        JOIN HR_EMPLOYEE H ON H.PERSON_ID = A.STU_PERSON_ID
+        JOIN EDU_BASIC_INFORMATION B ON B.BASIC_NO = A.BASIC_NO
+        WHERE M.ACTIVITY = 1
+          AND M.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </sql>
+
+    <sql id="recordFilters">
+        <if test="deptNo != null and deptNo != ''">
+            AND H.DEPTNO IN (SELECT D.DEPTNO FROM HR_DEPARTMENT D
+                              START WITH D.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                              CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (H.EMPID = #{keyword, jdbcType=VARCHAR}
+                 OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="courseName != null and courseName != ''">
+            AND UPPER(B.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND B.IMPLE_START_DATE &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND B.IMPLE_END_DATE &lt; TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY') + 1
+        </if>
+    </sql>
+
+    <!-- ================= Phê duyệt (courseMaker) ================= -->
+
+    <select id="findMakerRecords" resultMap="EduApplyRecordResultMap">
+        SELECT <include refid="recordColumns"/>
+        <include refid="recordFrom"/>
+          AND M.MAKER_PERSON_ID = #{makerPersonId, jdbcType=VARCHAR}
+        <include refid="recordFilters"/>
+        <if test="flag != null and flag != ''">
+            AND TO_CHAR(M.APPLY_FLAG) = #{flag, jdbcType=VARCHAR}
+        </if>
+        ORDER BY M.APPLY_FLAG DESC, M.CREATE_DATE
+    </select>
+
+    <!--
+        Bản gốc cập nhật APPLY_FLAG cho mọi dòng phê duyệt của đơn (theo APPLY_NO) - giữ nguyên,
+        nhưng chỉ khi người đang đăng nhập là người phê duyệt của đơn và đơn chưa được xác nhận.
+    -->
+    <update id="updateMakerFlag">
+        UPDATE EDU_TRAIN_MAKER
+           SET APPLY_FLAG = #{flag, jdbcType=NUMERIC},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE APPLY_NO = #{applyNo, jdbcType=NUMERIC}
+           AND ACTIVITY = 1
+           AND EXISTS (SELECT 1 FROM EDU_TRAIN_MAKER X
+                        WHERE X.APPLY_NO = #{applyNo, jdbcType=NUMERIC}
+                          AND X.ACTIVITY = 1
+                          AND X.MAKER_PERSON_ID = #{makerPersonId, jdbcType=VARCHAR}
+                          AND NVL(TO_CHAR(X.CONFIRM_FLAG), '1') = '1')
+    </update>
+
+    <!-- ================= Xác nhận (courseConfirm) ================= -->
+
+    <select id="findConfirmRecords" resultMap="EduApplyRecordResultMap">
+        SELECT <include refid="recordColumns"/>
+        <include refid="recordFrom"/>
+          AND M.MAKER_LEVEL &gt; 0
+        <include refid="recordFilters"/>
+        <if test="flag != null and flag != ''">
+            AND TO_CHAR(M.CONFIRM_FLAG) = #{flag, jdbcType=VARCHAR}
+        </if>
+        ORDER BY M.APPLY_FLAG DESC, M.CONFIRM_FLAG, M.CREATE_DATE
+    </select>
+
+    <select id="findFinalMaker" resultMap="EduApplyRecordResultMap">
+        SELECT <include refid="recordColumns"/>
+        <include refid="recordFrom"/>
+          AND M.MAKER_LEVEL &gt; 0
+          AND M.APPLY_NO = #{applyNo, jdbcType=NUMERIC}
+          AND ROWNUM = 1
+    </select>
+
+    <update id="updateConfirmFlag">
+        UPDATE EDU_TRAIN_MAKER
+           SET CONFIRM_FLAG = #{flag, jdbcType=NUMERIC},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE APPLY_NO = #{applyNo, jdbcType=NUMERIC}
+           AND ACTIVITY = 1
+    </update>
+
+    <select id="countFreeEmployee" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM EDU_FREE_EMPLOYEE
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND EMPID = #{empid, jdbcType=VARCHAR}
+           AND FLAG = #{flag, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteFreeEmployeeByFlag">
+        DELETE FROM EDU_FREE_EMPLOYEE
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND EMPID = #{empid, jdbcType=VARCHAR}
+           AND FLAG = #{flag, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <select id="countTeacherCheck" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM EDU_TEACHER_CHECK
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND TEA_EMPID = #{teaEmpid, jdbcType=VARCHAR}
+           AND STU_EMPID = #{stuEmpid, jdbcType=VARCHAR}
+           AND ACTIVITY = '1'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteTeacherCheckByStudent">
+        DELETE FROM EDU_TEACHER_CHECK
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND STU_EMPID = #{empid, jdbcType=VARCHAR}
+           AND ACTIVITY = '1'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ================= Tình hình đăng ký (makerSituation / HUB) ================= -->
+
+    <select id="findSituationRecords" resultMap="EduApplyRecordResultMap">
+        SELECT <include refid="recordColumns"/>,
+               (SELECT COUNT(1) FROM EDU_STUDENT_APPLY X
+                 WHERE X.BASIC_NO = A.BASIC_NO AND X.ACTIVITY = 1 AND X.CPNY_ID = A.CPNY_ID) AS APPLY_COUNT,
+               NVL(REGEXP_COUNT(B.PLAN_EMPLOYEE_EMPID, '[^,]+'), 0) AS PLANNED_COUNT
+        <include refid="recordFrom"/>
+          AND M.MAKER_LEVEL &gt; 0
+          AND B.ACTIVITY = '1'
+          AND B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND EXISTS (SELECT 1 FROM EDU_PLAN_MANAGER P WHERE P.PLAN_NO = B.PLAN_NO AND P.ISNOT_APPLY = 'Y')
+        <if test="stuPersonId != null and stuPersonId != ''">
+            AND A.STU_PERSON_ID = #{stuPersonId, jdbcType=VARCHAR}
+        </if>
+        <if test="plannedOnly">
+            AND DBMS_LOB.INSTR(',' || REPLACE(B.PLAN_EMPLOYEE_EMPID, ' ', '') || ',', ',' || H.EMPID || ',') &gt; 0
+        </if>
+        <include refid="recordFilters"/>
+        <if test="flag != null and flag != ''">
+            AND TO_CHAR(M.APPLY_FLAG) = #{flag, jdbcType=VARCHAR}
+        </if>
+        ORDER BY CASE TO_CHAR(M.APPLY_FLAG) WHEN '1' THEN 1 WHEN '2' THEN 2 ELSE 3 END,
+                 A.STU_LOCAL_NAME, M.CONFIRM_FLAG DESC, B.COURSE_NAME_CODE
+    </select>
+
+    <delete id="deleteMakers">
+        DELETE FROM EDU_TRAIN_MAKER WHERE APPLY_NO = #{applyNo, jdbcType=NUMERIC}
+    </delete>
+
+    <delete id="deleteApply">
+        DELETE FROM EDU_STUDENT_APPLY WHERE APPLY_NO = #{applyNo, jdbcType=NUMERIC}
+    </delete>
+</mapper>

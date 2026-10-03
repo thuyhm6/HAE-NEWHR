@@ -1,0 +1,55 @@
+.ert-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ert-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.ert-total {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.ert-full {
+  width: 100%;
+}
+
+.ert-center {
+  text-align: center;
+}
+
+.ert-right {
+  text-align: right;
+}
+
+// Trạng thái duyệt - bản gốc hiển thị chữ màu xanh
+.ert-status {
+  color: #1677ff;
+}
+
+.ert-approver-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+
+.ert-approver-title {
+  font-weight: 600;
+}
+
+.ert-actions {
+  white-space: nowrap;
+
+  button + button {
+    margin-left: 4px;
+  }
+}

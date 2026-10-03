@@ -17,6 +17,7 @@ import { EmployeeSearchResult, EmpSearchService } from '../../hrm/empinfo/shared
 import { EvsAffirmorSetupService } from '../../evs/evs-affirmor-setup/evs-affirmor-setup.service';
 import { PaEmpAccountRow, PaEmpAccountService, SyCodeOption } from './pa-emp-account.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function toYyyyMmDd(d: Date | null): string {
   if (!d) return '';
   const y = d.getFullYear();
@@ -50,6 +51,9 @@ function toYyyyMmDd(d: Date | null): string {
   styleUrl: './pa-emp-account.component.scss',
 })
 export class PaEmpAccountComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(PaEmpAccountService);
   private readonly deptService = inject(EvsAffirmorSetupService);
   private readonly empService = inject(EmpSearchService);
@@ -72,7 +76,7 @@ export class PaEmpAccountComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsTotal = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly checkedSeqs = signal<Set<number>>(new Set());
 
   protected readonly formVisible = signal(false);

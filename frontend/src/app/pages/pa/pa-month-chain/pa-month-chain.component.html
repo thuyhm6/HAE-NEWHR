@@ -1,0 +1,152 @@
+<div class="psc-page">
+  <div class="psc-search-card">
+    <div class="psc-search-row">
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('pa.monthPersonCountInfoList.GONGZIQUFEN.b', 'Phân loại lương') }}</label>
+        <nz-select id="pmchSalaryDistin" class="psc-select" [ngModel]="salaryDistinNo()" (ngModelChange)="changeSalaryDistin($event)">
+          @for (opt of salaryDistinOptions(); track opt.codeNo) {
+            <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('display.pa.ecc.paydate', 'Ngày phát') }}</label>
+        <div class="psc-inline">
+          <nz-select id="pmchPayDatePro" class="psc-select" [ngModel]="payDatePro()" (ngModelChange)="payDatePro.set($event)">
+            @for (opt of payDateOptions(); track opt.payDate) {
+              <nz-option [nzValue]="opt.payDate" [nzLabel]="displayDate(opt.payDate)"></nz-option>
+            }
+          </nz-select>
+          <span>~</span>
+          <nz-select id="pmchPayDate" class="psc-select" [ngModel]="payDate()" (ngModelChange)="payDate.set($event)">
+            @for (opt of payDateOptions(); track opt.payDate) {
+              <nz-option [nzValue]="opt.payDate" [nzLabel]="displayDate(opt.payDate)"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </div>
+      <div class="psc-actions">
+        <button id="pmchBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="psc-card">
+    <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</div>
+    <nz-table
+      id="pmchTable"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false"
+      [nzScroll]="{ x: '1400px', y: 'calc(100vh - 330px)' }"
+      [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th rowspan="2" nzWidth="50px" nzLeft class="psc-center">No.</th>
+          <th rowspan="2" nzWidth="180px" nzLeft>{{ i18n.t('ess.empInfo.project', 'Hạng mục') }}</th>
+          <th colspan="3" class="psc-center">{{ i18n.t('pa.viewPaMonthChain.YUANGONGRENSHU.b', 'Tổng nhân viên') }}</th>
+          <th colspan="3" class="psc-center">{{ i18n.t('ess.empInfo.amount_of_money', 'Số tiền') }}</th>
+          <th colspan="3" class="psc-center">{{ i18n.t('pa.viewPaMonthChain.PINGJUN.b', 'Bình quân') }}</th>
+          <th rowspan="2" nzWidth="90px" class="psc-center">{{ i18n.t('pa.viewPaMonthChain.JINEZENGJIA.b', 'Số tiền tăng') }}</th>
+          <th rowspan="2" nzWidth="90px" class="psc-center">{{ i18n.t('pa.viewPaMonthChain.JINEJIANSHAO.b', 'Số tiền giảm') }}</th>
+          <th rowspan="2" nzWidth="90px" class="psc-center">{{ i18n.t('pa.viewPaMonthChain.RENYUANZENGJIA.b', 'Tăng NV') }}</th>
+          <th rowspan="2" nzWidth="90px" class="psc-center">{{ i18n.t('pa.viewPaMonthChain.RENYUANJIANSHAO.b', 'Giảm NV') }}</th>
+        </tr>
+        <tr>
+          <th nzWidth="80px" class="psc-center">{{ i18n.t('display.emp.ben.or.benhs68', 'Tháng trước') }}</th>
+          <th nzWidth="80px" class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.DANGYUE.b', 'Tháng này') }}</th>
+          <th nzWidth="80px" class="psc-center">{{ i18n.t('org.title.ADDORDELETTE', 'Tăng giảm') }}</th>
+          <th nzWidth="120px" class="psc-right">{{ i18n.t('display.emp.ben.or.benhs68', 'Tháng trước') }}</th>
+          <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.monthPersonCountInfoList.DANGYUE.b', 'Tháng này') }}</th>
+          <th nzWidth="120px" class="psc-right">{{ i18n.t('org.title.ADDORDELETTE', 'Tăng giảm') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('display.emp.ben.or.benhs68', 'Tháng trước') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.monthPersonCountInfoList.DANGYUE.b', 'Tháng này') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('org.title.ADDORDELETTE', 'Tăng giảm') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track $index) {
+          <tr>
+            <td nzLeft class="psc-center">{{ $index + 1 }}</td>
+            <td nzLeft>{{ row.itemName }}</td>
+            <td class="psc-center"><a class="psc-link" (click)="openEmpList(row, 'PERSON_NUM_PRO')">{{ row.personNumPro }}</a></td>
+            <td class="psc-center"><a class="psc-link" (click)="openEmpList(row, 'PERSON_NUM')">{{ row.personNum }}</a></td>
+            <td class="psc-center">{{ row.personNumDif }}</td>
+            <td class="psc-right">{{ fmt(row.countNumPro) }}</td>
+            <td class="psc-right">{{ fmt(row.countNum) }}</td>
+            <td class="psc-right">{{ fmt(row.countNumDif) }}</td>
+            <td class="psc-right">{{ fmt(row.personNumAvgPro) }}</td>
+            <td class="psc-right">{{ fmt(row.personNumAvg) }}</td>
+            <td class="psc-right">{{ fmt(row.personNumAvgDif) }}</td>
+            <td class="psc-center"><a class="psc-link" (click)="openEmpList(row, 'COUNT_UP')">{{ row.countUp }}</a></td>
+            <td class="psc-center"><a class="psc-link" (click)="openEmpList(row, 'COUNT_LOW')">{{ row.countLow }}</a></td>
+            <td class="psc-center"><a class="psc-link" (click)="openEmpList(row, 'PERSON_UP')">{{ row.personUp }}</a></td>
+            <td class="psc-center"><a class="psc-link" (click)="openEmpList(row, 'PERSON_LOW')">{{ row.personLow }}</a></td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+<!-- Danh sách NV của 1 ô số (viewResultConfirmList3Right currentIndex=2 bản gốc) -->
+<nz-modal [nzVisible]="empVisible()" [nzTitle]="empTitle()" [nzFooter]="null" nzWidth="1100px" (nzOnCancel)="empVisible.set(false)">
+  <ng-container *nzModalContent>
+    <div class="pmch-modal-bar">
+      <span class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ empRows().length }}</span>
+      <button id="pmchBtnExport" nz-button [disabled]="!empRows().length" (click)="exportEmp()">
+        <span nz-icon nzType="file-excel"></span>{{ i18n.t('ess.infoApply.export_to_Excel', 'Xuất Excel') }}
+      </button>
+    </div>
+    <nz-table
+      id="pmchEmpTable"
+      [nzData]="empRows()"
+      [nzLoading]="empLoading()"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false"
+      [nzScroll]="{ x: '1050px', y: '400px' }"
+      [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="psc-center">No.</th>
+          <th nzWidth="100px">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+          <th nzWidth="150px">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th nzWidth="160px">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th nzWidth="110px">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+          <th nzWidth="100px">{{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}</th>
+          <th nzWidth="110px">{{ i18n.t('sys.affirm.title.duty', 'Chức danh') }}</th>
+          <th nzWidth="110px">{{ i18n.t('org.title.EMP_TYPE', 'Loại nhân viên') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.detailItemDifCountInfo.YIQIANJINE.b', 'Tháng trước') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.detailItemDifCountInfo.DANGYUJINE.b', 'Tháng này') }}</th>
+          <th nzWidth="110px" class="psc-right">{{ i18n.t('ess.infoApply.difference', 'Chênh lệch') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of empRows(); track $index) {
+          <tr>
+            <td class="psc-center">{{ $index + 1 }}</td>
+            <td class="psc-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postFamilyName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.positionName }}</td>
+            <td>{{ row.empTypeName }}</td>
+            <td class="psc-right">{{ fmt(row.monthPro) }}</td>
+            <td class="psc-right">{{ fmt(row.monthNow) }}</td>
+            <td class="psc-right">{{ fmt(dif(row)) }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

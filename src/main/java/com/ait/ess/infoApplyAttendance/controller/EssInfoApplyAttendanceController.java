@@ -79,12 +79,6 @@ public class EssInfoApplyAttendanceController {
         return null;
     }
 
-    @GetMapping("/viewCheckAttencetanceExForBatchList")
-    public String viewCheckAttencetanceExForBatchList(HttpServletResponse response) throws IOException {
-        angularIndexService.writeIndexHtml(response);
-        return null;
-    }
-
     @GetMapping("/api/attendanceEx/list")
     @ResponseBody
     public ResponseEntity<List<EssAttendanceExForBatchDto>> getAttendanceExForBatchList(
@@ -177,7 +171,7 @@ public class EssInfoApplyAttendanceController {
         } catch (Exception e) {
             log.error("Failed to cancel leave applications", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Hủy bỏ thất bại."
                     : e.getMessage());
         }
@@ -267,7 +261,7 @@ public class EssInfoApplyAttendanceController {
         } catch (Exception e) {
             log.error("Failed to save leave application data", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Xin phép thất bại."
                     : e.getMessage());
         }

@@ -4,10 +4,12 @@ import com.ait.sy.basicMaintenance.model.SyMenu;
 import com.ait.sy.sys.service.MenuService;
 import com.ait.sy.sys.service.PasswordUpdateService;
 import com.ait.sy.sys.service.PermissionService;
+import com.ait.sy.sys.service.PersonalDataConfirmService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
 import com.ait.sy.sys.service.PermissionService.UserPermissionInfo;
 import com.ait.sy.sys.service.impl.HrAuthenticationServiceImpl;
 import com.ait.sy.sys.dto.CurrentUserDTO;
+import com.ait.sy.sys.dto.PersonalDataConfirmInfoDTO;
 import com.ait.util.AngularIndexService;
 import com.ait.util.CsrfUtil;
 import com.ait.util.I18nUtil;
@@ -53,6 +55,9 @@ public class AuthController {
 
     @Autowired
     private PasswordUpdateService passwordUpdateService;
+
+    @Autowired
+    private PersonalDataConfirmService personalDataConfirmService;
 
     @Autowired
     private AngularIndexService angularIndexService;
@@ -167,6 +172,11 @@ public class AuthController {
         session.setAttribute("currentPermissionInfo", permissionInfo);
         session.setAttribute("hasSysTypeZeroMenus",
                 menuService.hasMenusByUserPermissionBySysType(hrUserInfo.getSyUser().getUserNo(), "0"));
+
+        // Chưa xác nhận đồng ý xử lý dữ liệu cá nhân -> bắt buộc hiện popup xác nhận
+        String personalDataConfirmBy = hrUserInfo.getSyUser().getPersonalDataConfirmBy();
+        session.setAttribute("requirePersonalDataConfirm",
+                personalDataConfirmBy == null || personalDataConfirmBy.trim().isEmpty());
     }
 
     /**
@@ -221,6 +231,8 @@ public class AuthController {
                 resp.put("success", true);
                 resp.put("redirectUrl", "/dashboard");
                 resp.put("requirePasswordChange", Boolean.TRUE.equals(session.getAttribute("requirePasswordChange")));
+                resp.put("requirePersonalDataConfirm",
+                        Boolean.TRUE.equals(session.getAttribute("requirePersonalDataConfirm")));
                 return ResponseEntity.ok(resp);
             }
 
@@ -270,7 +282,8 @@ public class AuthController {
                 currentHrUser.getSyUser().getUserType(),
                 permissionInfo != null && permissionInfo.isAdmin(),
                 Boolean.TRUE.equals(session.getAttribute("requirePasswordChange")),
-                Boolean.TRUE.equals(session.getAttribute("hasSysTypeZeroMenus")));
+                Boolean.TRUE.equals(session.getAttribute("hasSysTypeZeroMenus")),
+                Boolean.TRUE.equals(session.getAttribute("requirePersonalDataConfirm")));
         return ResponseEntity.ok(dto);
     }
 
@@ -369,6 +382,60 @@ public class AuthController {
             }
         } catch (Exception e) {
             log.error("Error changing first password", e);
+            resp.put("success", false);
+            resp.put("message", "Lỗi hệ thống.");
+            return ResponseEntity.internalServerError().body(resp);
+        }
+    }
+
+    /**
+     * API lấy thông tin nhân viên hiển thị trên popup xác nhận đồng ý xử lý
+     * dữ liệu cá nhân (Họ tên, ID, Chức vụ, Team/Part/Cell)
+     */
+    @GetMapping("/api/personal-data-confirm/info")
+    @ResponseBody
+    public ResponseEntity<PersonalDataConfirmInfoDTO> getPersonalDataConfirmInfo(HttpSession session) {
+        HrUserInfo currentHrUser = (HrUserInfo) session.getAttribute("currentHrUser");
+        if (currentHrUser == null) {
+            return ResponseEntity.status(401).build();
+        }
+        PersonalDataConfirmInfoDTO info = personalDataConfirmService.getConfirmInfo(currentHrUser.getPersonId());
+        if (info == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(info);
+    }
+
+    /**
+     * API ghi nhận người dùng đã đồng ý xử lý dữ liệu cá nhân (bấm nút Đồng ý
+     * trên popup bắt buộc sau đăng nhập)
+     */
+    @PostMapping("/api/personal-data-confirm/confirm")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> confirmPersonalData(HttpSession session) {
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            HrUserInfo currentUser = (HrUserInfo) session.getAttribute("currentHrUser");
+            if (currentUser == null) {
+                resp.put("success", false);
+                resp.put("message", "Hết phiên làm việc, vui lòng đăng nhập lại.");
+                return ResponseEntity.status(401).body(resp);
+            }
+
+            String userNo = currentUser.getSyUser().getUserNo();
+            boolean updated = personalDataConfirmService.confirmPersonalData(userNo);
+            if (updated) {
+                session.setAttribute("requirePersonalDataConfirm", false);
+                log.info("Personal data processing confirmed for userNo={}", userNo);
+                resp.put("success", true);
+                return ResponseEntity.ok(resp);
+            } else {
+                resp.put("success", false);
+                resp.put("message", "Không thể lưu xác nhận. Vui lòng thử lại.");
+                return ResponseEntity.internalServerError().body(resp);
+            }
+        } catch (Exception e) {
+            log.error("Error confirming personal data processing", e);
             resp.put("success", false);
             resp.put("message", "Lỗi hệ thống.");
             return ResponseEntity.internalServerError().body(resp);

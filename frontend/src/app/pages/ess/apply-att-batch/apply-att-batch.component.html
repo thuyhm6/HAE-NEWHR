@@ -2,20 +2,12 @@
   <nz-card class="ab-search-card">
     <form nz-form [nzLayout]="'vertical'">
       <div nz-row [nzGutter]="12">
-        <div nz-col [nzSpan]="3">
+        <div nz-col [nzSpan]="6">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('common.empId', 'Mã nhân viên') }}</nz-form-label>
-            <nz-form-control>
-              <input id="ab-search-emp-id" nz-input [ngModel]="searchEmpId()" (ngModelChange)="searchEmpId.set($event)" name="abSearchEmpId" [placeholder]="i18n.t('common.placeholder.enterEmpId', 'Nhập mã nhân viên')" />
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="3">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('common.empName', 'Tên nhân viên') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
             <nz-form-control>
               <div class="ab-search-emp-field">
-                <input id="ab-search-emp-name" nz-input [ngModel]="searchEmpName()" (ngModelChange)="searchEmpName.set($event)" name="abSearchEmpName" [placeholder]="i18n.t('common.placeholder.enterEmpName', 'Nhập tên nhân viên')" />
+                <input id="ab-search-emp-keyword" nz-input [ngModel]="searchEmpKeyword()" (ngModelChange)="searchEmpKeyword.set($event)" name="abSearchEmpKeyword" [placeholder]="i18n.t('vdp.search.empKeyword.placeholder', 'Nhập mã hoặc họ tên')" />
                 <button nz-button (click)="openSearchEmployeePicker()"><span nz-icon nzType="search"></span></button>
               </div>
             </nz-form-control>
@@ -113,9 +105,9 @@
       #abTable
       [nzData]="rows()"
       [nzLoading]="loading()"
-      [nzPageSize]="25"
+      [nzPageSize]="defaultPageSize"
       [nzShowSizeChanger]="true"
-      [nzPageSizeOptions]="[25, 50, 100]"
+      [nzPageSizeOptions]="pageSizeOptions"
       [nzScroll]="{ x: '2000px', y: '100%' }"
       nzSize="small"
     >
@@ -153,7 +145,7 @@
             <td>
               @if (row.isNew) {
                 <nz-input-group nzCompact>
-                  <input nz-input style="width: calc(100% - 32px)" [ngModel]="row.empId ? row.empId + ' - ' + row.localName : ''" readonly [placeholder]="i18n.t('arOtf.selectEmp', 'Chọn NV...')" />
+                  <input nz-input style="width: calc(100% - 32px)" [ngModel]="row.empId ? row.empId + ' - ' + row.localName : ''" (keydown.enter)="onRowEmpKeywordEnter(row.rowKey, $event)" [placeholder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã NV hoặc họ tên...')" />
                   <button nz-button (click)="openRowEmployeePicker(row.rowKey)"><span nz-icon nzType="search"></span></button>
                 </nz-input-group>
               } @else {

@@ -6,7 +6,11 @@ import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterOutlet } from '@an
 import { filter } from 'rxjs';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
-import { NzContextMenuService, NzDropdownMenuComponent, NzDropdownModule } from 'ng-zorro-antd/dropdown';
+import {
+  NzContextMenuService,
+  NzDropdownMenuComponent,
+  NzDropdownModule,
+} from 'ng-zorro-antd/dropdown';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -18,10 +22,14 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthService } from '../auth/auth.service';
-import { CurrentUser } from '../auth/auth.model';
+import { CurrentUser, PersonalDataConfirmInfo } from '../auth/auth.model';
 import { I18nService } from '../i18n/i18n.service';
 import { MenuNode, MenuService } from '../core/services/menu.service';
-import { HrmPendingCounts, NotificationService, PendingCounts } from '../core/services/notification.service';
+import {
+  HrmPendingCounts,
+  NotificationService,
+  PendingCounts,
+} from '../core/services/notification.service';
 import { MenuNodeComponent } from './menu-node.component';
 import { MenuAccordionService } from './menu-accordion.service';
 import { ExternalTabComponent } from './external-tab.component';
@@ -69,6 +77,9 @@ type SysType = '0' | '1';
   styleUrl: './app-shell.component.scss',
 })
 export class AppShellComponent implements OnInit, OnDestroy {
+  /** Route Angular dùng chung cho nhiều menu, phân biệt nội dung theo menuNo (xem openInternalTab). */
+  private static readonly MENU_NO_QUERY_ROUTES = new Set<string>(['/report/ar/viewArReportsList']);
+
   /** Map URL menu cũ (SyMenu.menuUrl) -> route Angular đã migrate. HAE-VHR đang giữ nguyên URL cũ
    *  làm route path (khác HVV-VHR đổi sang route kebab-case mới + map riêng) nên hiện là identity
    *  map - các đợt migrate sau có thể thêm entry route kebab-case mới vào đây. */
@@ -78,15 +89,6 @@ export class AppShellComponent implements OnInit, OnDestroy {
     // URL menu cũ này chỉ còn là redirect (HomeController#redirectLegacySysTypeZeroPage ->
     // /sys/hrm -> /hrm-dashboard), map thẳng để mở tab Angular ngay, tránh vòng lặp redirect qua iframe.
     '/sys/viewSysTypeZeroMenuList': '/hrm-dashboard',
-    '/org/orgManage/viewComposeOrg': '/org/orgManage/viewComposeOrg',
-    '/org/orgManage/viewCurrentOrgInfo': '/org/orgManage/viewCurrentOrgInfo',
-    '/org/orgManage/viewDeptManagerCheck': '/org/orgManage/viewDeptManagerCheck',
-    '/org/orgManage/viewHistoryOrgInfo': '/org/orgManage/viewHistoryOrgInfo',
-    '/org/orgManage/viewOrgBusiness': '/org/orgManage/viewOrgBusiness',
-    '/org/orgManage/viewOrgCostCenter': '/org/orgManage/viewOrgCostCenter',
-    '/org/orgManage/viewOrgInfo': '/org/orgManage/viewOrgInfo',
-    '/org/orgManage/viewResumeList': '/org/orgManage/viewResumeList',
-    '/org/orgManage/viewResumeProcess': '/org/orgManage/viewResumeProcess',
     '/ess/viewDept/ManageEmpPositionInfoList': '/ess/viewDept/ManageEmpPositionInfoList',
     '/ess/viewDept/viewPersonalInfoEss': '/ess/viewDept/viewPersonalInfoEss',
     '/ess/viewDept/viewArPersonalList': '/ess/viewDept/viewArPersonalList',
@@ -112,39 +114,56 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ess/empinfo/viewPersonalInfoForEss': '/ess/empinfo/viewPersonalInfoForEss',
     '/ess/empinfo/viewEssPersonalInfo': '/ess/empinfo/viewEssPersonalInfo',
     '/ess/empinfo/viewQualificationInfo': '/ess/empinfo/viewQualificationInfo',
-    '/ess/infoApplyAttendance/viewAttendancePersonalInfoList': '/ess/infoApplyAttendance/viewAttendancePersonalInfoList',
-    '/ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList': '/ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList',
-    '/ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList':
-      '/ess/infoApplyAttendance/viewCheckAttencetanceExForBatchList',
+    '/ess/infoApplyAttendance/viewAttendancePersonalInfoList':
+      '/ess/infoApplyAttendance/viewAttendancePersonalInfoList',
+    '/ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList':
+      '/ess/infoApplyAttendance/viewCoordApplyAttendanceInfoList',
+    '/ess/infoApplyLeave/viewCheckAttencetanceExForBatchList':
+      '/ess/infoApplyLeave/viewCheckAttencetanceExForBatchList',
     '/ess/infoApply/viewApplyOTBatchInfoHAEList': '/ess/infoApply/viewApplyOTBatchInfoHAEList',
     '/ess/infoApply/viewCoordApplyOtInfoList': '/ess/infoApply/viewCoordApplyOtInfoList',
     '/ess/infoApply/viewPersonOtApplyInfoList': '/ess/infoApply/viewPersonOtApplyInfoList',
     '/ess/infoApply/viewNoticeedEmail': '/ess/infoApply/viewNoticeedEmail',
     '/ess/infoApply/viewApprovaledEmail': '/ess/infoApply/viewApprovaledEmail',
     '/ess/infoApply/viewApprovalEmail': '/ess/infoApply/viewApprovalEmail',
+    '/ess/infoApplyAttendance/viewApplyAttendanceInfoList':
+      '/ess/infoApplyAttendance/viewApplyAttendanceInfoList',
+    '/ess/infoApplyAttendance/viewSSTApplyAttendance':
+      '/ess/infoApplyAttendance/viewSSTApplyAttendance',
+    '/ess/infoApply/viewPOtApplyInfoList': '/ess/infoApply/viewPOtApplyInfoList',
+    '/ess/infoApply/viewPiciOtAffirmPBatchList': '/ess/infoApply/viewPiciOtAffirmPBatchList',
+    '/ess/infoApply/viewSSTOtApplyInfo': '/ess/infoApply/viewSSTOtApplyInfo',
+    '/ess/infoApply/viewSSTOtApplyInfoTx': '/ess/infoApply/viewSSTOtApplyInfoTx',
     '/ess/infoApply/viewShowCwaAbnormalApply': '/ess/infoApply/viewShowCwaAbnormalApply',
     '/ess/infoApplyAttendance/viewAttendanceExForBatchInfoList':
       '/ess/infoApplyAttendance/viewAttendanceExForBatchInfoList',
-    '/ess/infoApply/viewApplyOtLBatchByAnyApproverList': '/ess/infoApply/viewApplyOtLBatchByAnyApproverList',
+    '/ess/infoApply/viewApplyOtLBatchByAnyApproverList':
+      '/ess/infoApply/viewApplyOtLBatchByAnyApproverList',
     '/ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList':
       '/ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList',
     '/ar/attendanceMintenance/viewApplyAttManagentByAnyApproverList':
       '/ar/attendanceMintenance/viewApplyAttManagentByAnyApproverList',
     '/ar/attendanceMintenance/viewApplyOtManagentByAnyApproverList':
       '/ar/attendanceMintenance/viewApplyOtManagentByAnyApproverList',
-    '/ar/attendanceMintenance/viewImportAttendanceTempList': '/ar/attendanceMintenance/viewImportAttendanceTempList',
-    '/ar/attendanceMintenance/viewImportOtTempList': '/ar/attendanceMintenance/viewImportOtTempList',
-    '/ar/attendanceMintenance/viewArCardRecordForSelf': '/ar/attendanceMintenance/viewArCardRecordForSelf',
-    '/ar/attendanceMintenance/viewArCardRecordMeal': '/ar/attendanceMintenance/viewArCardRecordMeal',
+    '/ar/attendanceMintenance/viewImportAttendanceTempList':
+      '/ar/attendanceMintenance/viewImportAttendanceTempList',
+    '/ar/attendanceMintenance/viewImportOtTempList':
+      '/ar/attendanceMintenance/viewImportOtTempList',
+    '/ar/attendanceMintenance/viewArCardRecordForSelf':
+      '/ar/attendanceMintenance/viewArCardRecordForSelf',
+    '/ar/attendanceMintenance/viewArCardRecordMeal':
+      '/ar/attendanceMintenance/viewArCardRecordMeal',
     '/ar/attendanceMintenance/viewArCardRecordDay': '/ar/attendanceMintenance/viewArCardRecordDay',
     '/ar/attendanceMintenance/viewArCardRecord': '/ar/attendanceMintenance/viewArCardRecord',
     '/ar/attendanceMintenance/viewImportExcelTempMacRecordsList':
       '/ar/attendanceMintenance/viewImportExcelTempMacRecordsList',
-    '/ar/attendanceMintenance/viewArDetailCalculate': '/ar/attendanceMintenance/viewArDetailCalculate',
+    '/ar/attendanceMintenance/viewArDetailCalculate':
+      '/ar/attendanceMintenance/viewArDetailCalculate',
     '/ar/attendanceMintenance/addEmpShiftView': '/ar/attendanceMintenance/addEmpShiftView',
     '/ar/attendanceMintenance/viewAttendanceManagentForSerchInfoList':
       '/ar/attendanceMintenance/viewAttendanceManagentForSerchInfoList',
-    '/ar/attendanceMintenance/viewSearchApplyOtInfoList': '/ar/attendanceMintenance/viewSearchApplyOtInfoList',
+    '/ar/attendanceMintenance/viewSearchApplyOtInfoList':
+      '/ar/attendanceMintenance/viewSearchApplyOtInfoList',
     '/ar/attendanceSettings/viewArItem': '/ar/attendanceSettings/viewArItem',
     '/ar/attendanceSettings/viewCycle': '/ar/attendanceSettings/viewCycle',
     '/ar/attendanceSettings/viewCycleParameter': '/ar/attendanceSettings/viewCycleParameter',
@@ -162,6 +181,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ar/attendanceSettings/viewShift': '/ar/attendanceSettings/viewShift',
     '/ar/attendanceSettings/viewSummaryParamItem': '/ar/attendanceSettings/viewSummaryParamItem',
     '/ar/attendanceSettings/viewSummaryFormula': '/ar/attendanceSettings/viewSummaryFormula',
+    '/ar/countAttendance/arCountInfoList': '/ar/countAttendance/arCountInfoList',
     '/hrm/approve/viewEssApplyInfo': '/hrm/approve/viewEssApplyInfo',
     '/hrm/contractInfo/viewNOContractInfo': '/hrm/contractInfo/viewNOContractInfo',
     '/hrm/contractInfo/viewExpiredContract': '/hrm/contractInfo/viewExpiredContract',
@@ -208,34 +228,57 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/pa/workManagement/viewPaPaySchedule': '/pa/workManagement/viewPaPaySchedule',
     '/pa/workManagement/viewPaEmpAccount': '/pa/workManagement/viewPaEmpAccount',
     '/pa/wagebase/viewPaSupervisor': '/pa/wagebase/viewPaSupervisor',
-    '/pa/salary/viewPaInputItemData?itemType=1': '/pa/salary/viewPaInputItemData?itemType=1',
-    '/pa/salary/viewPaInputItemData?itemType=2': '/pa/salary/viewPaInputItemData?itemType=2',
-    '/pa/salary/viewPaInputItemData?itemType=3': '/pa/salary/viewPaInputItemData?itemType=3',
-    '/pa/salary/viewPaInputItemData?itemType=4': '/pa/salary/viewPaInputItemData?itemType=4',
-    '/pa/salary/viewPaInputItemData?itemType=5': '/pa/salary/viewPaInputItemData?itemType=5',
-    '/pa/salary/viewPaInputItemData?itemType=6': '/pa/salary/viewPaInputItemData?itemType=6',
-    '/pa/salary/viewPaInputItemData?itemType=7': '/pa/salary/viewPaInputItemData?itemType=7',
-    '/pa/salary/viewPaInputItemData?itemType=8': '/pa/salary/viewPaInputItemData?itemType=8',
-    '/pa/salary/viewPaInputItemData?itemType=9': '/pa/salary/viewPaInputItemData?itemType=9',
+    '/pa/salary/viewPaInputItemData': '/pa/salary/viewPaInputItemData',
+    '/pa/salary/viewImportExcelTempPaParamList': '/pa/salary/viewImportExcelTempPaParamList',
     '/pa/salary/viewPaResult': '/pa/salary/viewPaResult',
     '/pa/workManagement/payStub': '/pa/workManagement/payStub',
     '/pa/workManagement/viewPaWorkFlow': '/pa/workManagement/viewPaWorkFlow',
     '/pa/workManagement/viewPaPayObj': '/pa/workManagement/viewPaPayObj',
+    '/pa/workManagement/detailmonthCountInfoLeft': '/pa/workManagement/detailmonthCountInfoLeft',
+    '/pa/workManagement/detailYearCountInfoLeft': '/pa/workManagement/detailYearCountInfoLeft',
+    '/pa/workManagement/viewPaResultList': '/pa/workManagement/viewPaResultList',
+    '/pa/workManagement/viewDeptPaResultList': '/pa/workManagement/viewDeptPaResultList',
+    '/report/ar/viewArReportsList': '/report/ar/viewArReportsList',
     '/sys/basicMaintenance/viewCodeManage': '/sys/basicMaintenance/viewCodeManage',
     '/sys/basicMaintenance/viewCodePamers': '/sys/basicMaintenance/viewCodePamers',
     '/sys/basicMaintenance/viewCompany': '/sys/basicMaintenance/viewCompany',
-    '/sys/basicMaintenance/viewMenuList': '/sys/basicMaintenance/viewMenuList',
-    '/sys/basicMaintenance/viewMenuParamList': '/sys/basicMaintenance/viewMenuParamList',
-    '/sys/syRole/viewLoginUser': '/sys/syRole/viewLoginUser',
-    '/sys/syRole/viewSyRolesGroupList': '/sys/syRole/viewSyRolesGroupList',
-    '/sys/syRole/viewRolesGroup': '/sys/syRole/viewRolesGroup',
+    '/sys/menu/viewMenuList': '/sys/menu/viewMenuList',
+    '/sys/menu/viewMenuParamList': '/sys/menu/viewMenuParamList',
+    '/sys/rightsManagement/viewLoginUser': '/sys/rightsManagement/viewLoginUser',
+    '/sys/rightsManagement/syRoleGroup/viewSyRolesGroupList': '/sys/rightsManagement/syRoleGroup/viewSyRolesGroupList',
+    '/sys/rightsManagement/viewRolesGroup': '/sys/rightsManagement/viewRolesGroup',
     '/sys/viewFeedback': '/sys/viewFeedback',
-    '/ess/infoApplyAttendance/viewApplyAttendanceInfoList': '/ess/infoApplyAttendance/viewApplyAttendanceInfoList',
-    '/ess/infoApplyAttendance/viewSSTApplyAttendance': '/ess/infoApplyAttendance/viewSSTApplyAttendance',
-    '/ess/infoApply/viewPOtApplyInfoList': '/ess/infoApply/viewPOtApplyInfoList',
-    '/ess/infoApply/viewPiciOtAffirmPBatchList': '/ess/infoApply/viewPiciOtAffirmPBatchList',
-    '/ess/infoApply/viewSSTOtApplyInfo': '/ess/infoApply/viewSSTOtApplyInfo',
-    '/ess/infoApply/viewSSTOtApplyInfoTx': '/ess/infoApply/viewSSTOtApplyInfoTx',
+    '/org/orgManage/viewComposeOrg': '/org/orgManage/viewComposeOrg',
+    '/org/orgManage/viewCurrentOrgInfo': '/org/orgManage/viewCurrentOrgInfo',
+    '/org/orgManage/viewDeptManagerCheck': '/org/orgManage/viewDeptManagerCheck',
+    '/org/orgManage/viewHistoryOrgInfo': '/org/orgManage/viewHistoryOrgInfo',
+    '/org/orgManage/viewOrgBusiness': '/org/orgManage/viewOrgBusiness',
+    '/org/orgManage/viewOrgCostCenter': '/org/orgManage/viewOrgCostCenter',
+    '/org/orgManage/viewOrgInfo': '/org/orgManage/viewOrgInfo',
+    '/org/orgManage/viewResumeList': '/org/orgManage/viewResumeList',
+    '/org/orgManage/viewResumeProcess': '/org/orgManage/viewResumeProcess',
+    '/disc/autoExcel/viewRetrieveSqlMasterList': '/disc/autoExcel/viewRetrieveSqlMasterList',
+    // ===== Module `edu` (đào tạo) =====
+    '/edu/traineducation/systemManager': '/edu/traineducation/systemManager',
+    '/edu/traineducation/courseManager': '/edu/traineducation/courseManager',
+    '/edu/traineducation/planManager': '/edu/traineducation/planManager',
+    '/edu/traineducation/teacherManager': '/edu/traineducation/teacherManager',
+    '/edu/traineducation/trainOrgan': '/edu/traineducation/trainOrgan',
+    '/edu/traineducation/trainAgreement': '/edu/traineducation/trainAgreement',
+    '/edu/traineducation/courseSubjects': '/edu/traineducation/courseSubjects',
+    '/edu/traineducation/trainBasicInformation': '/edu/traineducation/trainBasicInformation',
+    '/edu/traineducation/studentEvaluate': '/edu/traineducation/studentEvaluate',
+    '/edu/traineducation/teacherEvaluate': '/edu/traineducation/teacherEvaluate',
+    '/edu/traineducation/trainResult': '/edu/traineducation/trainResult',
+    '/edu/traineducation/trainCostManager': '/edu/traineducation/trainCostManager',
+    '/edu/trainfile/trainCalendar': '/edu/trainfile/trainCalendar',
+    '/report/ar/viewTrainReport': '/report/ar/viewTrainReport',
+    '/edu/traineducation/trainArchives': '/edu/traineducation/trainArchives',
+    '/edu/traineducation/courseApply': '/edu/traineducation/courseApply',
+    '/edu/traineducation/courseMaker': '/edu/traineducation/courseMaker',
+    '/edu/traineducation/courseConfirm': '/edu/traineducation/courseConfirm',
+    '/edu/traineducation/makerSituation': '/edu/traineducation/makerSituation',
+    '/edu/traineducation/makerSituationHUB': '/edu/traineducation/makerSituationHUB',
   };
 
   protected readonly authService = inject(AuthService);
@@ -254,14 +297,35 @@ export class AppShellComponent implements OnInit, OnDestroy {
   protected readonly menuTree = signal<MenuNode[]>([]);
   protected readonly siderCollapsed = signal(false);
   /** Đường dẫn menu ông -> cha -> menu đang chọn, cập nhật mỗi khi bấm 1 menu ở sidebar - xem
-   *  onMenuSelect. Dùng để xác định menu gốc (root) nào đang active cho activeRootMenuNo(). */
+   *  onMenuSelect. Dùng để xác định các menu hiển thị trên topbar (topbarNodes) và menu nào trong
+   *  số đó đang active (activeTopbarMenuNo). */
   protected readonly breadcrumbPath = signal<MenuNode[]>([]);
-  /** menuNo của menu cấp gốc (root) đang active, dùng để tô sáng mục tương ứng trên menu ngang ở
-   *  header - xem hae-dashboard-header-menu trong template. */
-  protected readonly activeRootMenuNo = computed(() => this.breadcrumbPath()[0]?.menuNo ?? null);
   /** Toàn bộ menuNo trên đường đi root -> menu lá đang active, truyền cho app-menu-node để highlight
    *  (menu lá nzSelected + menu cha chứa nó tô nền active) - xem MenuNodeComponent. */
   protected readonly activeMenuPath = computed(() => this.breadcrumbPath().map((n) => n.menuNo));
+  /** Đường đi từ root tới "ông" (grandparent) của menu lá đang active - rỗng nếu menu lá active nằm
+   *  ở cấp 1 hoặc cấp 2 (khi đó topbar hiển thị menu cấp gốc như mặc định). Dùng làm tiền tố
+   *  ancestors khi bấm 1 menu trên topbar (onHeaderRootSelect/onHeaderChildSelect) để mở đúng nhánh
+   *  accordion ở sidebar dù menu đó nằm ở cấp sâu bao nhiêu. */
+  protected readonly topbarAncestors = computed<MenuNode[]>(() => {
+    const trail = this.breadcrumbPath();
+    return trail.length >= 3 ? trail.slice(0, trail.length - 2) : [];
+  });
+  /** Danh sách menu hiển thị trên menu ngang ở header: mặc định là các menu cấp gốc; khi menu lá
+   *  đang active nằm sâu hơn 2 cấp thì đổi sang hiển thị menu cha trực tiếp của nó cùng các menu
+   *  cùng cấp với menu cha đó (tức children của "ông" - cùng chung 1 menu cha là "ông" này) - đúng
+   *  theo yêu cầu: bấm vào 1 menu thì topbar hiện menu cha + các menu cùng cấp với menu cha đó. */
+  protected readonly topbarNodes = computed<MenuNode[]>(() => {
+    const ancestors = this.topbarAncestors();
+    return ancestors.length ? (ancestors[ancestors.length - 1].children ?? []) : this.menuTree();
+  });
+  /** menuNo của menu đang active trong topbarNodes() (là menu cha trực tiếp của menu lá đang active,
+   *  hoặc chính menu lá đó nếu nó ở cấp gốc), dùng để tô sáng mục tương ứng trên topbar. */
+  protected readonly activeTopbarMenuNo = computed<string | null>(() => {
+    const trail = this.breadcrumbPath();
+    if (!trail.length) return null;
+    return trail[Math.max(trail.length - 2, 0)].menuNo;
+  });
 
   private currentSysType: SysType | null = null;
   protected readonly sysType = signal<SysType>('1');
@@ -273,6 +337,11 @@ export class AppShellComponent implements OnInit, OnDestroy {
   protected readonly changePasswordLoading = signal(false);
   protected readonly changePasswordError = signal<string | null>(null);
 
+  // Popup bắt buộc xác nhận đồng ý xử lý dữ liệu cá nhân (sy_user.PERSONAL_DATA_CONFIRM_BY)
+  protected readonly showPersonalDataConfirmModal = signal(false);
+  protected readonly personalDataConfirmInfo = signal<PersonalDataConfirmInfo | null>(null);
+  protected readonly personalDataConfirmLoading = signal(false);
+
   // Modal đổi mật khẩu tự nguyện (topbar) - POST /password/api/change-password
   protected readonly showVoluntaryCpwdModal = signal(false);
   protected readonly voluntaryOldPassword = signal('');
@@ -281,7 +350,12 @@ export class AppShellComponent implements OnInit, OnDestroy {
   protected readonly voluntaryCpwdLoading = signal(false);
   protected readonly voluntaryCpwdError = signal<string | null>(null);
 
-  protected readonly pendingCounts = signal<PendingCounts>({ total: 0, leave: 0, ot: 0, anomaly: 0 });
+  protected readonly pendingCounts = signal<PendingCounts>({
+    total: 0,
+    leave: 0,
+    ot: 0,
+    anomaly: 0,
+  });
   protected readonly hrmPendingCounts = signal<HrmPendingCounts>({
     total: 0,
     leave: 0,
@@ -314,11 +388,16 @@ export class AppShellComponent implements OnInit, OnDestroy {
     // authGuard đã gọi loadCurrentUser() trước khi route này được kích hoạt
     const user: CurrentUser | null = this.authService.currentUser();
     await this.syncMenuForActiveRoute();
-    this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd)).subscribe(() => {
-      this.syncMenuForActiveRoute();
-    });
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => {
+        this.syncMenuForActiveRoute();
+      });
     if (user?.requirePasswordChange) {
       this.showChangePasswordModal.set(true);
+    }
+    if (user?.requirePersonalDataConfirm) {
+      await this.openPersonalDataConfirmModal();
     }
 
     this.pendingCountsTimer = setInterval(() => this.loadPendingCounts(), PENDING_COUNTS_POLL_MS);
@@ -384,12 +463,17 @@ export class AppShellComponent implements OnInit, OnDestroy {
     const basePath = queryIndex === -1 ? url : url.slice(0, queryIndex);
     const query = queryIndex === -1 ? '' : url.slice(queryIndex);
     const ngRoute = AppShellComponent.MIGRATED_ROUTES[basePath];
-    const targetPath = ngRoute ? ngRoute + query : url;
+    let targetPath = ngRoute ? ngRoute + query : url;
+    // Route dùng chung cho nhiều menu (vd: /report/ar/viewArReportsList) cần biết menuNo - gắn vào
+    // query để mỗi menu là 1 tab riêng (tab key = path) và component đọc được menuNo.
+    if (ngRoute && menuNo && AppShellComponent.MENU_NO_QUERY_ROUTES.has(ngRoute) && !/[?&]menuNo=/.test(query)) {
+      targetPath += (query ? '&' : '?') + 'menuNo=' + encodeURIComponent(menuNo);
+    }
     this.tabs.openTab(targetPath, title, ngRoute ? 'route' : 'external', menuNo);
   }
 
-  /** Tìm đường đi từ root tới node có menuNo tương ứng trong cây menu (dùng để xác định menu gốc
-   *  đang active cho activeRootMenuNo()). */
+  /** Tìm đường đi từ root tới node có menuNo tương ứng trong cây menu (dùng để tính topbarNodes/
+   *  activeTopbarMenuNo). */
   private findMenuPath(menuNo: string, nodes: MenuNode[], trail: MenuNode[] = []): MenuNode[] {
     for (const node of nodes) {
       const nextTrail = [...trail, node];
@@ -402,27 +486,33 @@ export class AppShellComponent implements OnInit, OnDestroy {
     return [];
   }
 
-  /** Bấm 1 menu cấp gốc trên menu ngang ở header: nếu có children thì mở nhánh đó trong sidebar
-   *  (dùng chung MenuAccordionService với hành vi accordion của app-menu-node) để người dùng thấy
-   *  ngay menu con tương ứng, nếu là menu lá thì mở/chuyển tới tab tương ứng như bấm trực tiếp
-   *  trong sidebar. */
-  onHeaderRootSelect(node: MenuNode): void {
+  /** Bấm 1 menu trên menu ngang ở header (topbarNodes() - có thể là menu cấp gốc hoặc menu cấp sâu
+   *  hơn nếu topbar đang hiển thị theo ngữ cảnh, xem topbarNodes): nếu có children thì mở nhánh đó
+   *  trong sidebar (dùng chung MenuAccordionService với hành vi accordion của app-menu-node) để
+   *  người dùng thấy ngay menu con tương ứng, nếu là menu lá thì mở/chuyển tới tab tương ứng như
+   *  bấm trực tiếp trong sidebar. `ancestors` là đường đi từ root tới cha của node (topbarAncestors()),
+   *  rỗng nếu node đang ở cấp gốc. */
+  onHeaderRootSelect(node: MenuNode, ancestors: MenuNode[] = []): void {
     if (node.children?.length) {
-      this.menuAccordion.onOpenChange([], node.menuNo, true);
-      this.breadcrumbPath.set([node]);
+      const ancestorNos = ancestors.map((n) => n.menuNo);
+      this.menuAccordion.onOpenChange(ancestorNos, node.menuNo, true);
+      this.breadcrumbPath.set([...ancestors, node]);
       return;
     }
     this.onMenuSelect(node);
   }
 
-  /** Bấm 1 menu con trong dropdown (hiện ra khi di chuột vào menu cha trên menu ngang ở header):
+  /** Bấm 1 menu con trong dropdown (hiện ra khi di chuột vào 1 menu cha trên menu ngang ở header):
    *  mở luôn nhánh cha đó trong sidebar dọc (đồng bộ accordion) rồi mở/chuyển tới tab tương ứng
-   *  như bấm trực tiếp trong sidebar; nếu bản thân menu con này lại có children (menu 3 cấp) thì
-   *  chỉ mở tiếp nhánh đó trong sidebar (dropdown ở header chỉ hiển thị 1 cấp con). */
-  onHeaderChildSelect(node: MenuNode, rootMenuNo: string): void {
-    this.menuAccordion.onOpenChange([], rootMenuNo, true);
+   *  như bấm trực tiếp trong sidebar; nếu bản thân menu con này lại có children thì chỉ mở tiếp
+   *  nhánh đó trong sidebar (dropdown ở header chỉ hiển thị 1 cấp con). `ancestors` là đường đi từ
+   *  root tới cha của `rootNode` (topbarAncestors()), rỗng nếu rootNode đang ở cấp gốc. */
+  onHeaderChildSelect(node: MenuNode, ancestors: MenuNode[], rootNode: MenuNode): void {
+    const ancestorNos = ancestors.map((n) => n.menuNo);
+    this.menuAccordion.onOpenChange(ancestorNos, rootNode.menuNo, true);
     if (node.children?.length) {
-      this.menuAccordion.onOpenChange([rootMenuNo], node.menuNo, true);
+      this.menuAccordion.onOpenChange([...ancestorNos, rootNode.menuNo], node.menuNo, true);
+      this.breadcrumbPath.set([...ancestors, rootNode, node]);
       return;
     }
     this.onMenuSelect(node);
@@ -523,6 +613,48 @@ export class AppShellComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Tải thông tin nhân viên (Họ tên, ID, Chức vụ, Team/Part/Cell) rồi mở popup bắt buộc xác
+   *  nhận đồng ý xử lý dữ liệu cá nhân. Lỗi tải thông tin -> đăng xuất luôn vì không thể hiển
+   *  thị đầy đủ nội dung bắt buộc phải đọc trước khi xác nhận. */
+  private async openPersonalDataConfirmModal(): Promise<void> {
+    try {
+      const info = await firstValueFrom(
+        this.http.get<PersonalDataConfirmInfo>('/api/personal-data-confirm/info'),
+      );
+      this.personalDataConfirmInfo.set(info);
+      this.showPersonalDataConfirmModal.set(true);
+    } catch {
+      this.authService.logout();
+    }
+  }
+
+  async agreePersonalDataConfirm(): Promise<void> {
+    this.personalDataConfirmLoading.set(true);
+    try {
+      const resp = await firstValueFrom(
+        this.http.post<{ success: boolean; message?: string }>(
+          '/api/personal-data-confirm/confirm',
+          {},
+        ),
+      );
+      if (resp.success) {
+        this.message.success(this.i18n.t('personalDataConfirm.successMessage', 'Xác nhận đồng ý xử lý dữ liệu cá nhân thành công!'));
+        this.showPersonalDataConfirmModal.set(false);
+      } else {
+        this.message.error(resp.message ?? this.i18n.t('personalDataConfirm.errorMessage', 'Không thể lưu xác nhận. Vui lòng thử lại.'));
+      }
+    } catch (err: any) {
+      this.message.error(err?.error?.message ?? this.i18n.t('personalDataConfirm.errorMessage', 'Không thể lưu xác nhận. Vui lòng thử lại.'));
+    } finally {
+      this.personalDataConfirmLoading.set(false);
+    }
+  }
+
+  /** Bấm Hủy, hoặc đóng popup (X / ESC) - vì popup bắt buộc, mọi cách đóng đều đăng xuất luôn. */
+  cancelPersonalDataConfirm(): void {
+    this.authService.logout();
+  }
+
   openVoluntaryCpwdModal(): void {
     this.voluntaryOldPassword.set('');
     this.voluntaryNewPassword.set('');
@@ -533,7 +665,11 @@ export class AppShellComponent implements OnInit, OnDestroy {
 
   async submitVoluntaryChangePassword(): Promise<void> {
     this.voluntaryCpwdError.set(null);
-    if (!this.voluntaryOldPassword() || !this.voluntaryNewPassword() || !this.voluntaryConfirmPassword()) {
+    if (
+      !this.voluntaryOldPassword() ||
+      !this.voluntaryNewPassword() ||
+      !this.voluntaryConfirmPassword()
+    ) {
       this.voluntaryCpwdError.set('Vui lòng nhập đầy đủ thông tin.');
       return;
     }

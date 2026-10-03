@@ -11,6 +11,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyFeedbackRow, SyFeedbackService } from './sy-feedback.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Danh sách góp ý người dùng (viewFeedback) - xem ghi chú trong
  * sy-feedback.service.ts. Trang chỉ đọc, click 1 dòng mở modal xem chi
@@ -24,6 +25,9 @@ import { SyFeedbackRow, SyFeedbackService } from './sy-feedback.service';
   styleUrl: './sy-feedback.component.scss',
 })
 export class SyFeedbackComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(SyFeedbackService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);
@@ -33,7 +37,7 @@ export class SyFeedbackComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsTotal = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
 
   protected readonly detailVisible = signal(false);
   protected readonly detailRow = signal<SyFeedbackRow | null>(null);

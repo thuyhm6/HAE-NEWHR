@@ -22,6 +22,7 @@ import {
   TempEmpInfoListService,
 } from './temp-emp-info-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../../core/config/table-pagination.config';
 /**
  * Quản lý nhân viên nữ (viewTempEmpInfoList) - port lại từ
  * hrm/empinfo/viewTempEmpInfoList.html + editEmployee.html (đã xoá).
@@ -53,6 +54,9 @@ import {
   styleUrl: './temp-emp-info-list.component.scss',
 })
 export class TempEmpInfoListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(TempEmpInfoListService);
   private readonly employeeService = inject(EmpSearchService);
   private readonly message = inject(NzMessageService);
@@ -72,7 +76,7 @@ export class TempEmpInfoListComponent implements OnInit {
   protected readonly rows = signal<FemaleEmployeeRow[]>([]);
   protected readonly total = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(10);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   private listBootstrapped = false;
   private drawCounter = 0;
 

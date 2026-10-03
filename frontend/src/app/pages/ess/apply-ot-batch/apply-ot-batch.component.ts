@@ -26,6 +26,7 @@ import {
 } from './apply-ot-batch.service';
 import { EmployeeSearchResult, SstOtApplyService, SyCodeOption } from '../sst-ot-apply/sst-ot-apply.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface OtRowVm {
   rowKey: string;
   isNew: boolean;
@@ -147,6 +148,10 @@ function newRowId(): string {
   styleUrl: './apply-ot-batch.component.scss',
 })
 export class ApplyOtBatchComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   @ViewChild('detailModal') detailModal!: ApplyDetailModalComponent;
 
   private readonly service = inject(ApplyOtBatchService);
@@ -413,19 +418,8 @@ export class ApplyOtBatchComponent implements OnInit {
 
     if (this.pickerTarget === 'rowEmployee' && this.activeRowKey) {
       const rowKey = this.activeRowKey;
-      this.updateRow(rowKey, {
-        personId: emp.personId ?? '',
-        empId: emp.empId ?? '',
-        localName: emp.localName ?? '',
-        deptName: emp.deptName ?? '',
-      });
       this.closePicker();
-      const row = this.getRow(rowKey);
-      if (row) {
-        const applyOtDate = this.toApiDate(row.applyOtDate) || this.toApiDate(new Date());
-        await this.autoFillByEmp(rowKey, emp.personId ?? '', applyOtDate);
-        await this.fetchOtTotals(rowKey, emp.personId ?? '', applyOtDate);
-      }
+      await this.selectRowEmployee(rowKey, emp);
       return;
     }
 
@@ -439,6 +433,42 @@ export class ApplyOtBatchComponent implements OnInit {
         ),
       );
       this.closePicker();
+    }
+  }
+
+  private async selectRowEmployee(rowKey: string, emp: EmployeeSearchResult): Promise<void> {
+    this.updateRow(rowKey, {
+      personId: emp.personId ?? '',
+      empId: emp.empId ?? '',
+      localName: emp.localName ?? '',
+      deptName: emp.deptName ?? '',
+    });
+    const row = this.getRow(rowKey);
+    if (row) {
+      const applyOtDate = this.toApiDate(row.applyOtDate) || this.toApiDate(new Date());
+      await this.autoFillByEmp(rowKey, emp.personId ?? '', applyOtDate);
+      await this.fetchOtTotals(rowKey, emp.personId ?? '', applyOtDate);
+    }
+  }
+
+  async onRowEmpKeywordEnter(rowKey: string, event: Event): Promise<void> {
+    event.preventDefault();
+    const keyword = (event.target as HTMLInputElement).value.trim();
+    if (!keyword) return;
+    try {
+      const results = await this.otService.searchEmployees(keyword);
+      if (results.length === 1) {
+        await this.selectRowEmployee(rowKey, results[0]);
+      } else if (results.length === 0) {
+        this.message.warning(this.i18n.t('vpie.search.noResult', 'Không tìm thấy nhân viên phù hợp.'));
+      } else {
+        this.pickerTarget = 'rowEmployee';
+        this.activeRowKey = rowKey;
+        this.pickerSearchResults.set(results);
+        this.pickerVisible.set(true);
+      }
+    } catch {
+      this.message.error(this.i18n.t('common.loadError', 'Lỗi tải dữ liệu'));
     }
   }
 

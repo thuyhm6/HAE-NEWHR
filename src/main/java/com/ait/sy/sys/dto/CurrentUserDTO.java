@@ -23,4 +23,5 @@ public class CurrentUserDTO {
     private boolean admin;
     private boolean requirePasswordChange;
     private boolean hasSysTypeZeroMenus;
+    private boolean requirePersonalDataConfirm;
 }

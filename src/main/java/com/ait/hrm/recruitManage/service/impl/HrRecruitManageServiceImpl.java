@@ -1,5 +1,7 @@
 package com.ait.hrm.recruitManage.service.impl;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.hrm.recruitManage.dto.HrEmployeeRecruitDto;
 import com.ait.hrm.recruitManage.dto.HrEducationRecruitDto;
 import com.ait.hrm.recruitManage.dto.HrWorkExperienceRecruitDto;
@@ -93,7 +95,7 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             return mapper.selectEducationList(personId);
         } catch (Exception e) {
             log.error("Lỗi lấy danh sách giáo dục personId={}", personId, e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 
@@ -140,7 +142,7 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             return mapper.selectWorkExpList(personId);
         } catch (Exception e) {
             log.error("Lỗi lấy quá trình làm việc personId={}", personId, e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 
@@ -187,7 +189,7 @@ public class HrRecruitManageServiceImpl implements HrRecruitManageService {
             return mapper.selectFamilyList(personId);
         } catch (Exception e) {
             log.error("Lỗi lấy thông tin gia đình personId={}", personId, e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 

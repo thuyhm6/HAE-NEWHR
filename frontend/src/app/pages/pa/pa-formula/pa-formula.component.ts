@@ -12,6 +12,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { PaFormulaItem, PaFormulaRow, PaFormulaService, PaFormulaToolItem, PaFormulaToolItems } from './pa-formula.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Cấu hình công thức tính toán (viewPaFormula) - xem ghi chú trong
  * pa-formula.service.ts. Panel "Công cụ" trong modal cho phép click 1 mục để
@@ -26,6 +27,9 @@ import { PaFormulaItem, PaFormulaRow, PaFormulaService, PaFormulaToolItem, PaFor
   styleUrl: './pa-formula.component.scss',
 })
 export class PaFormulaComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(PaFormulaService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -43,7 +47,7 @@ export class PaFormulaComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsTotal = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly checkedSeqs = signal<Set<number>>(new Set());
 
   protected readonly toolItems = signal<PaFormulaToolItems>({});

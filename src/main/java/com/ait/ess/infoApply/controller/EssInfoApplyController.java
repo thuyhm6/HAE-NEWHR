@@ -105,7 +105,7 @@ public class EssInfoApplyController {
         } catch (Exception e) {
             log.error("Failed to cancel OT over applications", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Hủy bỏ thất bại." : e.getMessage());
         }
         return ResponseEntity.ok(response);
@@ -168,7 +168,7 @@ public class EssInfoApplyController {
         } catch (Exception e) {
             log.error("Failed to cancel OT applications", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Hủy bỏ thất bại." : e.getMessage());
         }
         return ResponseEntity.ok(response);

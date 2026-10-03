@@ -19,6 +19,7 @@ import {
   ArPersonalSelfSummaryRow,
 } from './ar-personal-self-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface ArPersonalSelfPivotRow {
   personId: string;
   empId?: string;
@@ -53,6 +54,10 @@ interface ArPersonalSelfPivotRow {
   styleUrl: './ar-personal-self-list.component.scss',
 })
 export class ArPersonalSelfListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ArPersonalSelfListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

@@ -24,6 +24,7 @@ import {
   SyCodeOption,
 } from './pa-input-item-data.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function currentMonth(): string {
   const now = new Date();
   return String(now.getMonth() + 1).padStart(2, '0') + now.getFullYear();
@@ -76,6 +77,9 @@ function toYYYYMM(mmyyyy: string): string {
   styleUrl: './pa-input-item-data.component.scss',
 })
 export class PaInputItemDataComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(PaInputItemDataService);
   private readonly deptService = inject(EvsAffirmorSetupService);
   private readonly empService = inject(EmpSearchService);
@@ -104,7 +108,7 @@ export class PaInputItemDataComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsTotal = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly checkedIds = signal<Set<number>>(new Set());
 
   protected readonly formVisible = signal(false);
@@ -113,7 +117,9 @@ export class PaInputItemDataComponent implements OnInit {
   protected readonly formParamDataNo = signal<number | null>(null);
   protected readonly formPersonId = signal('');
   protected readonly formPersonDisplay = signal('');
+  protected readonly formEmpIdInput = signal('');
   protected readonly formEmployeeOptions = signal<EmployeeSearchResult[]>([]);
+  protected readonly formEmpPickerVisible = signal(false);
   protected readonly formReturnValueDisplay = signal('');
   protected readonly formStartMonth = signal('');
   protected readonly formEndMonth = signal('');
@@ -231,7 +237,9 @@ export class PaInputItemDataComponent implements OnInit {
     this.formParamDataNo.set(null);
     this.formPersonId.set('');
     this.formPersonDisplay.set('');
+    this.formEmpIdInput.set('');
     this.formEmployeeOptions.set([]);
+    this.formEmpPickerVisible.set(false);
     this.formReturnValueDisplay.set('');
     this.formStartMonth.set('');
     this.formEndMonth.set('');
@@ -257,21 +265,44 @@ export class PaInputItemDataComponent implements OnInit {
     }
   }
 
-  async onEmployeeSearch(keyword: string): Promise<void> {
-    const kw = keyword.trim();
+  async lookupEmployee(): Promise<void> {
+    const kw = this.formEmpIdInput().trim();
     if (!kw) {
-      this.formEmployeeOptions.set([]);
+      this.message.warning(this.i18n.t('pa.inputItemData.personIdRequired', 'Vui lòng nhập mã nhân viên!'));
       return;
     }
     try {
-      this.formEmployeeOptions.set(await this.empService.searchEmployees(kw));
+      const results = await this.empService.searchEmployees(kw);
+      if (!results.length) {
+        this.formEmployeeOptions.set([]);
+        this.formEmpPickerVisible.set(false);
+        this.formPersonId.set('');
+        this.formPersonDisplay.set('');
+        this.message.warning(this.i18n.t('esscal.msg.empNotFound', 'Không tìm thấy thông tin nhân viên.'));
+        return;
+      }
+      if (results.length === 1) {
+        this.formEmployeeOptions.set([]);
+        this.formEmpPickerVisible.set(false);
+        this.selectEmployee(results[0]);
+      } else {
+        this.formEmployeeOptions.set(results);
+        this.formEmpPickerVisible.set(true);
+      }
     } catch {
-      this.formEmployeeOptions.set([]);
+      this.message.error(this.i18n.t('common.loadError', 'Lỗi tải dữ liệu'));
     }
   }
 
-  onEmployeeSelect(personId: string | null): void {
-    this.formPersonId.set(personId ?? '');
+  selectEmployeeFromPicker(emp: EmployeeSearchResult): void {
+    this.formEmpPickerVisible.set(false);
+    this.selectEmployee(emp);
+  }
+
+  private selectEmployee(emp: EmployeeSearchResult): void {
+    this.formPersonId.set(emp.personId ?? '');
+    this.formPersonDisplay.set(`${emp.empId ?? emp.personId ?? ''} - ${emp.localName ?? ''}`);
+    this.formEmpIdInput.set(emp.empId ?? '');
   }
 
   onReturnValueInput(event: Event): void {

@@ -23,6 +23,7 @@ import {
   OrgResumeOption,
 } from './org-compose.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 type ComposeMode = 'VIEW' | 'NEW' | 'EDIT';
 
 interface OrgInfoForm {
@@ -80,6 +81,10 @@ const EMPTY_FORM: OrgInfoForm = {
   styleUrl: './org-compose.component.scss',
 })
 export class OrgComposeComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(OrgComposeService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

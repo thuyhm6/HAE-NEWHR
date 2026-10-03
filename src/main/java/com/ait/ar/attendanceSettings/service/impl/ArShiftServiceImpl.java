@@ -163,9 +163,9 @@ public class ArShiftServiceImpl implements ArShiftService {
         // lưu. Đây là bug có thật ở bản gốc, không phải do migrate sang Angular.
         try {
             if (dto.getFromTimeStr() != null && !dto.getFromTimeStr().trim().isEmpty())
-                entity.setFromTime(LocalDateTime.of(LocalDate.EPOCH, LocalTime.parse(dto.getFromTimeStr())));
+                entity.setFromTime(LocalDateTime.of(LocalDate.of(1970, 1, 1), LocalTime.parse(dto.getFromTimeStr())));
             if (dto.getToTimeStr() != null && !dto.getToTimeStr().trim().isEmpty())
-                entity.setToTime(LocalDateTime.of(LocalDate.EPOCH, LocalTime.parse(dto.getToTimeStr())));
+                entity.setToTime(LocalDateTime.of(LocalDate.of(1970, 1, 1), LocalTime.parse(dto.getToTimeStr())));
         } catch (Exception e) {
             log.error("Invalid shift detail time format for shiftNo={}", dto.getShiftNo(), e);
         }

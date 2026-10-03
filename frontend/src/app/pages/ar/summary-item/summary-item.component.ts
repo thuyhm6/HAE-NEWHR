@@ -17,6 +17,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SummaryItemRow, SummaryItemSavePayload, SummaryItemService } from './summary-item.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * CRUD phẳng danh mục "Hạng mục tổng hợp" - port lại từ
  * ar/attendanceSettings/viewSummaryItem.html (đã xoá). Cùng cấu trúc với
@@ -45,6 +46,10 @@ import { SummaryItemRow, SummaryItemSavePayload, SummaryItemService } from './su
   styleUrl: './summary-item.component.scss',
 })
 export class SummaryItemComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SummaryItemService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

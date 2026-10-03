@@ -13,6 +13,7 @@ import { I18nService } from '../../../i18n/i18n.service';
 import { buildOrgTree, collectAllTreeKeys } from '../org-tree.util';
 import { CurrentOrgEmployeeRow, HrDepartmentRow, OrgCurrentInfoService } from './org-current-info.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Sơ đồ tổ chức hiện hành (viewCurrentOrgInfo) - xem ghi chú trong org-current-info.service.ts. jsTree
  * bản gốc thay bằng nz-tree (dựng cây thật theo parent/child, dùng chung util với org-compose), DataTables
@@ -28,6 +29,10 @@ import { CurrentOrgEmployeeRow, HrDepartmentRow, OrgCurrentInfoService } from '.
   styleUrl: './org-current-info.component.scss',
 })
 export class OrgCurrentInfoComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(OrgCurrentInfoService);
   protected readonly i18n = inject(I18nService);
 

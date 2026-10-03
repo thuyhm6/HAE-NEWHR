@@ -13,6 +13,7 @@ export interface PaWorkFlowRow {
   paCalFlag?: number;
   paConfirmFlag?: number;
   paOpenFlag?: number;
+  arLockFlag?: number;
   empCount?: number;
 }
 
@@ -34,11 +35,10 @@ interface ActionResponse {
 const BASE_URL = '/pa/workManagement/api/workFlow';
 
 /**
- * Quy trình tính lương (viewPaWorkFlow) - port lại từ
- * pa/workManagement/viewPaWorkFlow.html (đã xoá). Sơ đồ quy trình 5 cột, 3
- * bước có checkbox thực hiện qua stored procedure (objCreate/arMonthCal/
- * paCal/paConfirm/paOpen chạy tuần tự), các bước còn lại chỉ xem lịch sử
- * thao tác hoặc điều hướng sang trang khác.
+ * Quy trình tính lương (viewPaWorkFlow) - port từ viewPaWorkFlow.jsp (Hanwha_HAE).
+ * Mọi thao tác (createPaObj/arMonthCal/paMonthCal/paConfirm/paUnConfirm/paOpen/
+ * paUnOpen/arLockYes/arLockNo) đều gọi PKG_PA_WORK_FLOW.PA_WORKFLOW_EXECUTE qua
+ * cùng 1 endpoint execute.
  */
 @Injectable({ providedIn: 'root' })
 export class PaWorkFlowService {
@@ -48,9 +48,9 @@ export class PaWorkFlowService {
     return firstValueFrom(this.http.get<PaWorkFlowRow | null>(BASE_URL, { params: { payScheduleNo } }));
   }
 
-  getRecords(payScheduleNo: string, flowStep: number | null): Promise<PaWorkFlowRecordRow[]> {
-    const params: Record<string, string | number> = { payScheduleNo };
-    if (flowStep != null) params['flowStep'] = flowStep;
+  /** flowSteps dạng "1" hoặc "4,6" / "5,7" (gồm cả bước hủy) giống FLOW_STEP của bản gốc. */
+  getRecords(payScheduleNo: string, flowSteps: string): Promise<PaWorkFlowRecordRow[]> {
+    const params = { payScheduleNo, flowSteps };
     return firstValueFrom(this.http.get<PaWorkFlowRecordRow[]>(`${BASE_URL}/records`, { params }));
   }
 

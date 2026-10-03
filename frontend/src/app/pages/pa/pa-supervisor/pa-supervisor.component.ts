@@ -18,6 +18,7 @@ import { EmployeeSearchResult, EmpSearchService } from '../../hrm/empinfo/shared
 import { EvsAffirmorSetupService } from '../../evs/evs-affirmor-setup/evs-affirmor-setup.service';
 import { PaSupervisorRow, PaSupervisorService } from './pa-supervisor.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Người phụ trách lương (viewPaSupervisor) - xem ghi chú trong
  * pa-supervisor.service.ts. Cây phòng ban dùng nz-tree checkable (cascading
@@ -45,6 +46,10 @@ import { PaSupervisorRow, PaSupervisorService } from './pa-supervisor.service';
   styleUrl: './pa-supervisor.component.scss',
 })
 export class PaSupervisorComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(PaSupervisorService);
   private readonly deptService = inject(EvsAffirmorSetupService);
   private readonly empService = inject(EmpSearchService);

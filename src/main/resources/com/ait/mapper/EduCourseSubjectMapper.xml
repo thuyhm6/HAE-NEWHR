@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduCourseSubjectMapper">
+
+    <resultMap id="EduCourseSubjectResultMap" type="com.ait.edu.trainEducation.model.EduCourseSubject">
+        <id column="SUBJECT_ID" property="subjectId" jdbcType="VARCHAR"/>
+        <result column="SUBJECT_NO" property="subjectNo" jdbcType="VARCHAR"/>
+        <result column="SUBJECT_NAME" property="subjectName" jdbcType="VARCHAR"/>
+        <result column="MAIN_BUSINESS" property="mainBusiness" jdbcType="VARCHAR"/>
+        <result column="MAIN_BUSINESS_NAME" property="mainBusinessName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="findList" resultMap="EduCourseSubjectResultMap">
+        SELECT E.SUBJECT_ID, E.SUBJECT_NO, E.SUBJECT_NAME, E.MAIN_BUSINESS, E.MAIN_BUSINESS_NAME
+        FROM EDU_TRAIN_SUBJECT E
+        WHERE E.ACTIVITY = '1'
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="subjectName != null and subjectName != ''">
+            AND UPPER(E.SUBJECT_NAME) LIKE '%' || UPPER(#{subjectName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="subjectNo != null and subjectNo != ''">
+            AND E.SUBJECT_NO = #{subjectNo, jdbcType=VARCHAR}
+        </if>
+        <if test="mainBusiness != null and mainBusiness != ''">
+            AND E.MAIN_BUSINESS LIKE '%' || #{mainBusiness, jdbcType=VARCHAR} || '%'
+        </if>
+        ORDER BY E.SUBJECT_NO ASC
+    </select>
+
+    <select id="findById" resultMap="EduCourseSubjectResultMap">
+        SELECT E.SUBJECT_ID, E.SUBJECT_NO, E.SUBJECT_NAME, E.MAIN_BUSINESS, E.MAIN_BUSINESS_NAME
+        FROM EDU_TRAIN_SUBJECT E
+        WHERE E.SUBJECT_ID = #{subjectId, jdbcType=VARCHAR}
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND E.ACTIVITY &lt;&gt; '0'
+    </select>
+
+    <select id="countBySubjectNo" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM EDU_TRAIN_SUBJECT E
+        WHERE E.ACTIVITY = '1'
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND E.SUBJECT_NO = #{subjectNo, jdbcType=VARCHAR}
+        <if test="excludeId != null and excludeId != ''">
+            AND E.SUBJECT_ID &lt;&gt; #{excludeId, jdbcType=VARCHAR}
+        </if>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO EDU_TRAIN_SUBJECT (
+            SUBJECT_ID, SUBJECT_NO, SUBJECT_NAME, MAIN_BUSINESS, MAIN_BUSINESS_NAME,
+            CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID
+        ) VALUES (
+            EDU_TRAIN_SUBJECT_SEQ.NEXTVAL,
+            #{subjectNo, jdbcType=VARCHAR},
+            #{subjectName, jdbcType=VARCHAR},
+            #{mainBusiness, jdbcType=VARCHAR},
+            #{mainBusinessName, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE EDU_TRAIN_SUBJECT
+           SET SUBJECT_NO = #{subjectNo, jdbcType=VARCHAR},
+               SUBJECT_NAME = #{subjectName, jdbcType=VARCHAR},
+               MAIN_BUSINESS = #{mainBusiness, jdbcType=VARCHAR},
+               MAIN_BUSINESS_NAME = #{mainBusinessName, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE SUBJECT_ID = #{subjectId, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <update id="softDelete">
+        UPDATE EDU_TRAIN_SUBJECT
+           SET ACTIVITY = '0'
+         WHERE SUBJECT_ID = #{subjectId, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

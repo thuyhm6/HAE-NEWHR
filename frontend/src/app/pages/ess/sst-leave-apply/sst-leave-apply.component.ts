@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzGridModule } from 'ng-zorro-antd/grid';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -14,9 +15,12 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 
 import { I18nService } from '../../../i18n/i18n.service';
 import {
+  APPROV_TYPE_APPROVAL,
+  APPROV_TYPE_NOTICE,
   ApproverInput,
   EmployeeSearchResult,
   LEAVE_TYPE_PARENT_CODE,
+  MyInfo,
   SstLeaveApplyService,
   SyCodeOption,
   VacationInfo,
@@ -46,11 +50,11 @@ function defaultToTime(): Date {
  * tìm kiếm server-side chọn người phê duyệt (giống ChangeUserComponent). Giữ
  * nguyên toàn bộ rule nghiệp vụ validate trước khi gửi (giới tính, thời
  * lượng tối đa nghỉ phụ nữ, bội số nửa ngày cho phép năm...) đúng như bản
- * gốc. Không kèm khối "Thông tin nhân viên" (essEmpInfoCard) vì chưa có
- * component Angular tương đương, theo tiền lệ đã áp dụng ở
- * YearUseInfoComponent. Không port phần đính kèm file vì bản gốc không có UI
- * cho việc này (chỉ còn dead code trong script, không có input file/nút hiển
- * thị trong HTML).
+ * gốc. Khối "Thông tin nhân viên" tái dùng luôn API myInfo() sẵn có (đã gọi
+ * để lấy personId/sexCode) và render bằng nz-descriptions theo đúng pattern
+ * đã dùng ở personal-info-ess.component.html. Không port phần đính kèm file
+ * vì bản gốc không có UI cho việc này (chỉ còn dead code trong script,
+ * không có input file/nút hiển thị trong HTML).
  */
 @Component({
   selector: 'app-sst-leave-apply',
@@ -61,6 +65,7 @@ function defaultToTime(): Date {
     NzButtonModule,
     NzCardModule,
     NzDatePickerModule,
+    NzDescriptionsModule,
     NzFormModule,
     NzGridModule,
     NzIconModule,
@@ -79,6 +84,7 @@ export class SstLeaveApplyComponent implements OnInit {
   private personId = '';
   private localName = '';
   private sexCode = '';
+  protected readonly myInfo = signal<MyInfo | null>(null);
   private vacData: VacationInfo | null = null;
   private durationDays: number | null = null;
   private durationHours: number | null = null;
@@ -97,8 +103,12 @@ export class SstLeaveApplyComponent implements OnInit {
   protected readonly approverSearching = signal(false);
   protected readonly addingApprover = signal(false);
   protected readonly selectedApproverPersonId = signal<string | null>(null);
+  protected readonly newApproverApprovType = signal<string>(APPROV_TYPE_APPROVAL);
 
   protected readonly submitting = signal(false);
+
+  protected readonly APPROV_TYPE_APPROVAL = APPROV_TYPE_APPROVAL;
+  protected readonly APPROV_TYPE_NOTICE = APPROV_TYPE_NOTICE;
 
   protected get leaveTypeOptions(): SyCodeOption[] {
     if (this.sexCode === FEMALE_SEX_CODE) {
@@ -119,6 +129,7 @@ export class SstLeaveApplyComponent implements OnInit {
       this.personId = info.personId ?? '';
       this.localName = info.localName ?? '';
       this.sexCode = info.sexCode ?? '';
+      this.myInfo.set(info);
     } catch {
       // im lặng bỏ qua - form vẫn dùng được, chỉ thiếu thông tin cá nhân mặc định
     }
@@ -234,6 +245,7 @@ export class SstLeaveApplyComponent implements OnInit {
   showAddApproverRow(): void {
     this.addingApprover.set(true);
     this.selectedApproverPersonId.set(null);
+    this.newApproverApprovType.set(APPROV_TYPE_APPROVAL);
     this.approverSearchResults.set([]);
   }
 
@@ -262,6 +274,7 @@ export class SstLeaveApplyComponent implements OnInit {
           personId: emp.personId ?? '',
           localName: emp.localName ?? '',
           empId: emp.empId ?? '',
+          approvType: this.newApproverApprovType(),
         },
       ]);
     }
@@ -272,6 +285,15 @@ export class SstLeaveApplyComponent implements OnInit {
   removeApprover(idx: number): void {
     const list = [...this.approverList()];
     list.splice(idx, 1);
+    this.approverList.set(list);
+  }
+
+  changeApproverType(idx: number, approvType: string): void {
+    const list = [...this.approverList()];
+    if (!list[idx]) {
+      return;
+    }
+    list[idx] = { ...list[idx], approvType };
     this.approverList.set(list);
   }
 

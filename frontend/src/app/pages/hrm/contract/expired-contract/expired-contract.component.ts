@@ -17,6 +17,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { ContractFormModalComponent } from '../contract-form-modal.component';
 import { ContractRow, ContractSearchFilter, ContractSavePayload, ContractService } from '../contract.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../../core/config/table-pagination.config';
 /** CONTRACT_TYPE_CODE tiến trình: Thử việc -> 1 năm -> 2 năm -> Vô thời hạn,
  * giữ nguyên đúng logic `extendContract()` bản gốc. */
 const NEXT_CONTRACT_TYPE: Record<string, { nextCode: string; durationMonths: number; indefinite: boolean }> = {
@@ -63,6 +64,9 @@ function addDays(date: Date, days: number): Date {
   styleUrl: './expired-contract.component.scss',
 })
 export class ExpiredContractComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(ContractService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);
@@ -86,7 +90,7 @@ export class ExpiredContractComponent implements OnInit {
   protected readonly rows = signal<ContractRow[]>([]);
   protected readonly total = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(10);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   private listBootstrapped = false;
   private drawCounter = 0;
 

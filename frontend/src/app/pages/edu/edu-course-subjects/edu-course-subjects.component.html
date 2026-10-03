@@ -1,0 +1,146 @@
+<div class="ecs-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.studentEvaluate.SUBJECT_NO.a', 'Mã môn học') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ecs-search-no" nz-input name="ecsSearchNo" [ngModel]="searchNo()" (ngModelChange)="searchNo.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.studentEvaluate.SUBJECT_NAME.a', 'Tên môn học') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ecs-search-name" nz-input name="ecsSearchName" [ngModel]="searchName()" (ngModelChange)="searchName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.MAIN_BUSINESS_NAME', 'Công việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ecs-search-business" name="ecsSearchBusiness" [ngModel]="searchBusiness()" (ngModelChange)="searchBusiness.set($event)" nzAllowClear nzShowSearch [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                @for (opt of businessOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="10" class="ecs-toolbar-actions">
+          <button id="ecs-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.SEARCH', 'Tìm kiếm') }}
+          </button>
+          <button id="ecs-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="ecs-add-btn" nz-button nzType="primary" type="button" (click)="openAddModal()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('button.add', 'Thêm mới') }}
+          </button>
+          <button id="ecs-edit-btn" nz-button type="button" (click)="openEditModal()">
+            <span nz-icon nzType="edit"></span>
+            {{ i18n.t('button.update', 'Sửa') }}
+          </button>
+          <button id="ecs-delete-btn" nz-button nzDanger type="button" (click)="deleteSelected()">
+            <span nz-icon nzType="delete"></span>
+            {{ i18n.t('button.delete', 'Xóa') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="ecs-quick-filter">
+      <input id="ecs-quick-filter" nz-input name="ecsQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #ecsTable
+      id="ecs-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="ecs-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th nzWidth="140px">{{ i18n.t('edu.studentEvaluate.SUBJECT_NO.a', 'Mã môn học') }}</th>
+          <th>{{ i18n.t('edu.studentEvaluate.SUBJECT_NAME.a', 'Tên môn học') }}</th>
+          <th>{{ i18n.t('hrm.empinfo.MAIN_BUSINESS_NAME', 'Công việc') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ecsTable.data; track row.subjectId; let idx = $index) {
+          <tr class="ecs-row" [class.ecs-row-selected]="row.subjectId === selectedId()" (click)="selectRow(row)" (dblclick)="openEditModal(row.subjectId)">
+            <td class="ecs-col-center">{{ (ecsTable.nzPageIndex - 1) * ecsTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.subjectNo }}</td>
+            <td>{{ row.subjectName }}</td>
+            <td>{{ row.mainBusinessName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="ecs-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Thêm/Sửa: nzMaskClosable=true -> bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="modalIsEdit() ? i18n.t('edu.courseSubjects.modal.editTitle', 'Cập nhật môn học') : i18n.t('edu.courseSubjects.modal.addTitle', 'Thêm mới môn học')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  nzWidth="720px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="8">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.studentEvaluate.SUBJECT_NO.a', 'Mã môn học') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ecs-f-no" nz-input name="ecsFNo" [ngModel]="formNo()" (ngModelChange)="formNo.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="16">
+          <nz-form-item>
+            <nz-form-label nzRequired>{{ i18n.t('edu.studentEvaluate.SUBJECT_NAME.a', 'Tên môn học') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ecs-f-name" nz-input name="ecsFName" [ngModel]="formName()" (ngModelChange)="formName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.MAIN_BUSINESS_NAME', 'Công việc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ecs-f-business" name="ecsFBusiness" nzMode="multiple" nzShowSearch nzAllowClear [ngModel]="formBusiness()" (ngModelChange)="formBusiness.set($event)" [nzPlaceHolder]="i18n.t('common.selectOne', 'Lựa chọn')">
+                @for (opt of businessOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="ecs-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="ecs-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('common.save', 'Lưu') }}</button>
+  </div>
+</nz-modal>

@@ -1,0 +1,16 @@
+@use '../shared/pa-salary-check';
+
+.pmpc-count {
+  flex: 0 0 56%;
+}
+
+.pmpc-change {
+  flex: 1 1 0;
+}
+
+.pmpc-emp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}

@@ -1,0 +1,113 @@
+<!-- nzMaskClosable=true: bấm ra ngoài vùng modal sẽ đóng modal -->
+<nz-modal
+  [nzVisible]="visible"
+  [nzTitle]="title || i18n.t('edu.common.pickEmployee', 'Chọn nhân viên')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="close()"
+  nzWidth="760px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="showDeptFilter || showSort ? 8 : 16">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.GONGHAOXINGMING.a', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eep-keyword" nz-input name="eepKeyword" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        @if (showDeptFilter) {
+          <div nz-col [nzXs]="24" [nzMd]="8">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.deptName', 'Phòng ban') }}</nz-form-label>
+              <nz-form-control>
+                <nz-tree-select
+                  id="eep-dept"
+                  name="eepDept"
+                  [nzNodes]="deptNodes()"
+                  [ngModel]="deptRoot()"
+                  (ngModelChange)="deptRoot.set($event)"
+                  nzAllowClear
+                  nzShowSearch
+                  [nzDropdownStyle]="{ 'max-height': '320px' }"
+                  [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+                ></nz-tree-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        @if (showSort) {
+          <div nz-col [nzXs]="24" [nzMd]="8">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t('edu.planManager.PAIXUFANGSHI.a', 'Phương thức sắp xếp') }}</nz-form-label>
+              <nz-form-control>
+                <nz-select id="eep-order" name="eepOrder" [ngModel]="orderBy()" (ngModelChange)="orderBy.set($event)">
+                  <nz-option nzValue="L" [nzLabel]="i18n.t('edu.planManager.ANXINGMINGPAIXU.a', 'Họ tên')"></nz-option>
+                  <nz-option nzValue="E" [nzLabel]="i18n.t('edu.planManager.ANSHEHAOPAIXU.a', 'Mã nhân viên')"></nz-option>
+                </nz-select>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzXs]="24" [nzMd]="8" class="eep-actions">
+          <button id="eep-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('common.search', 'Tìm kiếm') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="eep-total">Total: {{ rows().length }}</div>
+    <nz-table
+      #eepTable
+      id="eep-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="defaultPageSize"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          @if (multiple) {
+            <th nzWidth="40px" [nzChecked]="allChecked()" (nzCheckedChange)="toggleAll($event)"></th>
+          }
+          <th nzWidth="50px" class="eep-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('ess.infoApply.EMPID', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('ess.trans.title.postGradeName', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('ess.infoApply.title.dutyName', 'Chức danh') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of eepTable.data; track row.empid; let idx = $index) {
+          <tr
+            class="eep-row"
+            [class.eep-row-selected]="multiple ? checked().has(row.empid) : selectedSingle() === row.empid"
+            (click)="onRowClick(row)"
+            (dblclick)="!multiple && confirm()"
+          >
+            @if (multiple) {
+              <td [nzChecked]="checked().has(row.empid)" (nzCheckedChange)="toggle(row.empid, $event)" (click)="$event.stopPropagation()"></td>
+            }
+            <td class="eep-center">{{ (eepTable.nzPageIndex - 1) * eepTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.empid }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.positionName }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="eep-cancel-btn" nz-button (click)="close()">{{ i18n.t('hrm.empinfo.CANCLE', 'Hủy bỏ') }}</button>
+    <button id="eep-confirm-btn" nz-button nzType="primary" (click)="confirm()">{{ i18n.t('hrm.empinfo.CONFIRM', 'Xác nhận') }}</button>
+  </div>
+</nz-modal>

@@ -1,6 +1,9 @@
 package com.ait.pa.salary.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.salary.dto.PaItemInputSaveReqDto;
+import com.ait.pa.salary.dto.PaResultExportReqDto;
 import com.ait.pa.salary.service.PaItemInputService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
@@ -45,7 +44,7 @@ public class PaItemInputController {
             return ResponseEntity.ok(paItemInputService.getAllSectionItems());
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách hạng mục phần: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -58,7 +57,7 @@ public class PaItemInputController {
             return ResponseEntity.ok(paItemInputService.getSavedItems(isUse, itemType));
         } catch (Exception e) {
             log.error("Lỗi khi lấy PA_ITEM_INPUT isUse={}, itemType={}: {}", isUse, itemType, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -67,45 +66,37 @@ public class PaItemInputController {
     public ResponseEntity<?> save(@RequestBody PaItemInputSaveReqDto req) {
         try {
             if (req.getIsUse() == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn Hạng mục tích chọn!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn Hạng mục tích chọn!"));
             }
             if (req.getItemType() == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn Phân biệt hạng mục!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn Phân biệt hạng mục!"));
             }
             paItemInputService.saveItems(req);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Lưu thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Lưu thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi lưu PA_ITEM_INPUT: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
-    @GetMapping("/result/api/exportExcel")
-    public ResponseEntity<byte[]> exportExcel(
-            @RequestParam String payScheduleNo,
-            @RequestParam(required = false, defaultValue = "") String deptNos,
-            @RequestParam String itemIds) {
+    @PostMapping("/result/api/exportExcel")
+    public ResponseEntity<byte[]> exportExcel(@RequestBody PaResultExportReqDto req) {
         try {
-            if (payScheduleNo == null || payScheduleNo.isBlank()) {
+            if (req.getPayScheduleNo() == null || req.getPayScheduleNo().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
-            if (itemIds == null || itemIds.isBlank()) {
+            if (req.getColumns() == null || req.getColumns().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
-            List<String> deptList = deptNos.isBlank()
-                    ? Collections.emptyList()
-                    : Arrays.asList(deptNos.split(","));
-            List<String> itemIdList = Arrays.asList(itemIds.split(","));
+            byte[] data = paItemInputService.exportSummaryHae(req);
 
-            byte[] data = paItemInputService.exportSummaryHae(payScheduleNo, deptList, itemIdList);
-
-            String filename = URLEncoder.encode("PaSummary_" + payScheduleNo + ".xlsx", StandardCharsets.UTF_8);
+            String filename = URLEncoder.encode("PaResult_" + req.getPayScheduleNo() + ".xlsx", StandardCharsets.UTF_8.name());
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
                     .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                     .body(data);
         } catch (Exception e) {
-            log.error("Lỗi khi xuất Excel PA_SUMMARY_HAE payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
+            log.error("Lỗi khi xuất Excel PA_SUMMARY_HAE payScheduleNo={}: {}", req.getPayScheduleNo(), e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

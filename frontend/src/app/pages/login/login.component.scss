@@ -58,7 +58,7 @@
   object-fit: contain;
   border-radius: 12px;
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
-  animation: hae-login-float-img 4s ease-in-out infinite;
+  // animation: hae-login-float-img 4s ease-in-out infinite;
 }
 
 @keyframes hae-login-float-img {
@@ -105,7 +105,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
   padding: 2.2rem 2rem;
   width: 100%;
-  max-width: 380px;
+  max-width: 80%;
 }
 
 .hae-login-card-header {

@@ -2,6 +2,7 @@ package com.ait.pa.salary.service;
 
 import com.ait.pa.salary.dto.PaItemInputDto;
 import com.ait.pa.salary.dto.PaItemInputSaveReqDto;
+import com.ait.pa.salary.dto.PaResultExportReqDto;
 
 import java.util.List;
 import java.util.Map;
@@ -14,5 +15,5 @@ public interface PaItemInputService {
 
     void saveItems(PaItemInputSaveReqDto req);
 
-    byte[] exportSummaryHae(String payScheduleNo, List<String> deptNos, List<String> itemIds);
+    byte[] exportSummaryHae(PaResultExportReqDto req);
 }

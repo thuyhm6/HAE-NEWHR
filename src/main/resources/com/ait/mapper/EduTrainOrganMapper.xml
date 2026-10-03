@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainOrganMapper">
+
+    <resultMap id="EduTrainOrganResultMap" type="com.ait.edu.trainEducation.model.EduTrainOrgan">
+        <id column="ORGAN_NO" property="organNo" jdbcType="VARCHAR"/>
+        <result column="ORGAN_NAME" property="organName" jdbcType="VARCHAR"/>
+        <result column="LINKMAN" property="linkman" jdbcType="VARCHAR"/>
+        <result column="ADDRESS" property="address" jdbcType="VARCHAR"/>
+        <result column="OFFICE_PHONE" property="officePhone" jdbcType="VARCHAR"/>
+        <result column="CELLPHONE" property="cellphone" jdbcType="VARCHAR"/>
+        <result column="URL_NET" property="urlNet" jdbcType="VARCHAR"/>
+        <result column="MAIN_FIELD" property="mainField" jdbcType="VARCHAR"/>
+        <result column="WORK_TOGETHER" property="workTogether" jdbcType="VARCHAR"/>
+        <result column="ORGAN_ABSTRACT" property="organAbstract" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="selectColumns">
+        O.ORGAN_NO, O.ORGAN_NAME, O.LINKMAN, O.ADDRESS, O.OFFICE_PHONE, O.CELLPHONE,
+        O.URL_NET, O.MAIN_FIELD, O.WORK_TOGETHER, O.ORGAN_ABSTRACT
+    </sql>
+
+    <select id="findList" resultMap="EduTrainOrganResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_TRAIN_ORGAN O
+        WHERE O.ACTIVITY = '1'
+          AND O.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="organName != null and organName != ''">
+            AND UPPER(O.ORGAN_NAME) LIKE '%' || UPPER(#{organName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="address != null and address != ''">
+            AND UPPER(O.ADDRESS) LIKE '%' || UPPER(#{address, jdbcType=VARCHAR}) || '%'
+        </if>
+        ORDER BY O.ORGAN_NO DESC
+    </select>
+
+    <select id="findByOrganNo" resultMap="EduTrainOrganResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_TRAIN_ORGAN O
+        WHERE O.ORGAN_NO = #{organNo, jdbcType=VARCHAR}
+          AND O.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="nextOrganNo" resultType="java.lang.String">
+        SELECT TO_CHAR(EDU_TRAIN_ORGAN_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert">
+        INSERT INTO EDU_TRAIN_ORGAN (
+            ORGAN_NO, ORGAN_NAME, LINKMAN, ADDRESS, OFFICE_PHONE, CELLPHONE, URL_NET,
+            MAIN_FIELD, WORK_TOGETHER, ORGAN_ABSTRACT, CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID
+        ) VALUES (
+            #{organNo, jdbcType=VARCHAR},
+            #{organName, jdbcType=VARCHAR},
+            #{linkman, jdbcType=VARCHAR},
+            #{address, jdbcType=VARCHAR},
+            #{officePhone, jdbcType=VARCHAR},
+            #{cellphone, jdbcType=VARCHAR},
+            #{urlNet, jdbcType=VARCHAR},
+            #{mainField, jdbcType=VARCHAR},
+            #{workTogether, jdbcType=VARCHAR},
+            #{organAbstract, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE EDU_TRAIN_ORGAN
+           SET ORGAN_NAME = #{organName, jdbcType=VARCHAR},
+               LINKMAN = #{linkman, jdbcType=VARCHAR},
+               ADDRESS = #{address, jdbcType=VARCHAR},
+               OFFICE_PHONE = #{officePhone, jdbcType=VARCHAR},
+               CELLPHONE = #{cellphone, jdbcType=VARCHAR},
+               URL_NET = #{urlNet, jdbcType=VARCHAR},
+               MAIN_FIELD = #{mainField, jdbcType=VARCHAR},
+               WORK_TOGETHER = #{workTogether, jdbcType=VARCHAR},
+               ORGAN_ABSTRACT = #{organAbstract, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE ORGAN_NO = #{organNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <update id="softDelete">
+        UPDATE EDU_TRAIN_ORGAN
+           SET ACTIVITY = '0'
+         WHERE ORGAN_NO = #{organNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

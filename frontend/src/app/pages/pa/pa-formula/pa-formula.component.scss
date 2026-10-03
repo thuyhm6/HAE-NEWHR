@@ -105,6 +105,11 @@
   cursor: pointer;
 }
 
+.vpf-wrap-cell {
+  white-space: normal;
+  word-break: break-word;
+}
+
 .vpf-seq-val {
   margin-right: 4px;
 }

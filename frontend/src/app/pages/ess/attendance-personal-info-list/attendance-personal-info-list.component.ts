@@ -19,6 +19,7 @@ import {
   AttendancePersonalRow,
 } from './attendance-personal-info-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 function firstDayOfMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -58,6 +59,9 @@ function lastDayOfMonth(): Date {
   styleUrl: './attendance-personal-info-list.component.scss',
 })
 export class AttendancePersonalInfoListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(AttendancePersonalInfoListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

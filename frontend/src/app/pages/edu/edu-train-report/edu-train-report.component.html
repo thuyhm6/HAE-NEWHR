@@ -1,0 +1,180 @@
+<div class="etrp-page">
+  <!-- Cây loại báo cáo (viewTrainReport.jsp bản gốc) -->
+  <nz-card class="etrp-side" [nzTitle]="i18n.t('rp.report.title.reporttype', 'Loại bảng biểu')" [nzLoading]="menuLoading()" nzSize="small">
+    <ul id="etrp-menu" nz-menu nzMode="inline" class="etrp-menu">
+      @for (item of menu(); track item.key) {
+        <li nz-menu-item [nzSelected]="active()?.key === item.key" (click)="selectReport(item)">
+          <span nz-icon nzType="file-text"></span>
+          <span>{{ item.label }}</span>
+        </li>
+      }
+    </ul>
+  </nz-card>
+
+  <nz-card class="etrp-main" [nzTitle]="active()?.label || ''">
+    @if (!active()) {
+      <div class="etrp-hint">{{ i18n.t('edu.trainReport.selectReport', 'Chọn một báo cáo ở danh sách bên trái.') }}</div>
+    } @else if (!activeType()) {
+      <div class="etrp-hint">{{ i18n.t('edu.trainReport.notSupported', 'Báo cáo này chưa được hỗ trợ trên giao diện mới.') }}</div>
+    } @else {
+      <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+        <div nz-row [nzGutter]="12">
+          @switch (activeType()) {
+            @case ('course') {
+              <div nz-col [nzXs]="24" [nzMd]="6">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('liang.hr.viewTraining.title.TRAINING_DIFFERENTIATE', 'Chương trình đào tạo') }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="etrp-diff" name="etrpDiff" [ngModel]="trainDiffCode()" (ngModelChange)="onDiffChange($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                      @for (o of diffOptions(); track o.codeNo) {
+                        <nz-option [nzValue]="o.codeNo" [nzLabel]="codeLabel(o)"></nz-option>
+                      }
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzXs]="24" [nzMd]="6">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="etrp-type" name="etrpType" [ngModel]="trainTypeCode()" (ngModelChange)="trainTypeCode.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                      @for (o of typeOptions(); track o.codeNo) {
+                        <nz-option [nzValue]="o.codeNo" [nzLabel]="codeLabel(o)"></nz-option>
+                      }
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+              <div nz-col [nzXs]="24" [nzMd]="6">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+                  <nz-form-control>
+                    <input id="etrp-course-name" nz-input name="etrpCourseName" [ngModel]="courseName()" (ngModelChange)="courseName.set($event)" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            }
+            @case ('postGrade') {
+              <div nz-col [nzXs]="24" [nzMd]="8">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('hr.viewPersonalInfo.title.POST_NAME', 'Tên chức vụ') }}</nz-form-label>
+                  <nz-form-control>
+                    <input id="etrp-post-grade" nz-input name="etrpPostGrade" [ngModel]="postGradeName()" (ngModelChange)="postGradeName.set($event)" />
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            }
+            @case ('dept') {
+              <div nz-col [nzXs]="24" [nzMd]="8">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-tree-select
+                      id="etrp-dept"
+                      name="etrpDept"
+                      [nzNodes]="deptNodes()"
+                      [ngModel]="deptNo()"
+                      (ngModelChange)="deptNo.set($event)"
+                      nzAllowClear
+                      nzShowSearch
+                      [nzDropdownStyle]="{ 'max-height': '320px' }"
+                      [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+                    ></nz-tree-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            }
+            @case ('year') {
+              <div nz-col [nzXs]="24" [nzMd]="6">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('pa.salary.canShu.nianDu', 'Năm') }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-date-picker id="etrp-year" name="etrpYear" nzMode="year" nzFormat="yyyy" [ngModel]="year()" (ngModelChange)="year.set($event)" class="etrp-full"></nz-date-picker>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            }
+            @case ('month') {
+              <div nz-col [nzXs]="24" [nzMd]="6">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('ar.excelexport.title.month', 'Tháng') }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-date-picker id="etrp-month" name="etrpMonth" nzMode="month" nzFormat="MM/yyyy" [ngModel]="month()" (ngModelChange)="month.set($event)" class="etrp-full"></nz-date-picker>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            }
+            @case ('form') {
+              <div nz-col [nzXs]="24" [nzMd]="8">
+                <nz-form-item>
+                  <nz-form-label>{{ i18n.t('edu.trainreport.KECHENGLEIBIE.a', 'Hình thức đào tạo') }}</nz-form-label>
+                  <nz-form-control>
+                    <nz-select id="etrp-form" name="etrpForm" [ngModel]="trainFormCode()" (ngModelChange)="trainFormCode.set($event)" nzAllowClear [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')">
+                      @for (o of formOptions(); track o.codeNo) {
+                        <nz-option [nzValue]="o.codeNo" [nzLabel]="codeLabel(o)"></nz-option>
+                      }
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            }
+          }
+          <div nz-col nzFlex="auto" class="etrp-actions">
+            <button id="etrp-search-btn" nz-button nzType="primary" type="submit">
+              <span nz-icon nzType="search"></span>
+              {{ i18n.t('ar.viewempcalender.title.search', 'Tìm kiếm') }}
+            </button>
+            <button id="etrp-clear-btn" nz-button type="button" (click)="clearSearch()">
+              <span nz-icon nzType="close"></span>
+              {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+            </button>
+            <button id="etrp-export-btn" nz-button type="button" (click)="exportExcel()">
+              <span nz-icon nzType="file-excel"></span>
+              {{ i18n.t('pa.insurance.title.excelExport', 'Xuất Excel') }}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <nz-table
+        #etrpTable
+        id="etrp-data-table"
+        [nzData]="rows()"
+        [nzLoading]="listLoading()"
+        [nzPageSize]="50"
+        [nzShowSizeChanger]="true"
+        [nzPageSizeOptions]="pageSizeOptions"
+        [nzScroll]="{ x: 'max-content' }"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="60px" class="etrp-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            @for (c of columns(); track $index) {
+              <th [class.etrp-right]="c.num">{{ colTitle(c) }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of etrpTable.data; track $index; let idx = $index) {
+            <tr>
+              <td class="etrp-center">{{ (etrpTable.nzPageIndex - 1) * etrpTable.nzPageSize + idx + 1 }}</td>
+              @for (c of columns(); track $index) {
+                @if (c.num) {
+                  <td class="etrp-right">{{ $any(cellValue(row, c)) | number: '1.0-2' }}</td>
+                } @else {
+                  <td>{{ cellValue(row, c) }}</td>
+                }
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td [attr.colspan]="columns().length + 1" class="etrp-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    }
+  </nz-card>
+</div>

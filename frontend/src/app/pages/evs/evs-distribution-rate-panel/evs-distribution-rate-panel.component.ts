@@ -17,6 +17,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { EvsDistributionRatePanelService, EvsResumeOption, EvsScore } from './evs-distribution-rate-panel.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Tỷ lệ phân bổ (viewEvsDistributionRatePanel) - port lại từ
  * evs/manage/viewEvsDistributionRatePanel.html (đã xoá).
@@ -42,6 +43,10 @@ import { EvsDistributionRatePanelService, EvsResumeOption, EvsScore } from './ev
   styleUrl: './evs-distribution-rate-panel.component.scss',
 })
 export class EvsDistributionRatePanelComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(EvsDistributionRatePanelService);
   private readonly message = inject(NzMessageService);
   private readonly route = inject(ActivatedRoute);

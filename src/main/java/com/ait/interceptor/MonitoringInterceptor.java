@@ -1,5 +1,7 @@
 package com.ait.interceptor;
 
+import com.ait.util.CollectionUtil;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -41,7 +43,7 @@ public class MonitoringInterceptor implements HandlerInterceptor {
         loggingService.setCorrelationId(correlationId);
 
         // Record request start metrics
-        Map<String, String> tags = Map.of(
+        Map<String, String> tags = CollectionUtil.mapOf(
                 "method", request.getMethod(),
                 "endpoint", request.getRequestURI());
 
@@ -81,7 +83,7 @@ public class MonitoringInterceptor implements HandlerInterceptor {
             loggingService.logApiCall(endpoint, method, statusCode, duration, context);
 
             // Record metrics
-            Map<String, String> tags = Map.of(
+            Map<String, String> tags = CollectionUtil.mapOf(
                     "method", method,
                     "endpoint", endpoint,
                     "status", String.valueOf(statusCode));

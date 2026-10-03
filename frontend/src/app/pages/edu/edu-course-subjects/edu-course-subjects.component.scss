@@ -1,0 +1,37 @@
+.ecs-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ecs-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.ecs-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.ecs-col-center {
+  text-align: center;
+}
+
+.ecs-row {
+  cursor: pointer;
+}
+
+// Dòng đang chọn - tương đương background:#aaccf6 ở bản gốc
+.ecs-row-selected > td {
+  background: #e6f4ff !important;
+}

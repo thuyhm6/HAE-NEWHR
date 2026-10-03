@@ -1,0 +1,220 @@
+<div class="etr-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.START_DATE1', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etr-search-start" name="etrSearchStart" [ngModel]="searchStart()" (ngModelChange)="searchStart.set($event)" nzFormat="dd/MM/yyyy" class="etr-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.END_DATE1', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etr-search-end" name="etrSearchEnd" [ngModel]="searchEnd()" (ngModelChange)="searchEnd.set($event)" nzFormat="dd/MM/yyyy" class="etr-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="14" class="etr-toolbar-actions">
+          <button id="etr-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ar.viewempcalender.title.search', 'Tìm kiếm') }}
+          </button>
+          <button id="etr-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="etr-quick-filter">
+      <input id="etr-quick-filter" nz-input name="etrQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #etrTable
+      id="etr-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="etr-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('edu.trainArchives.KECHENGMINGCHENGQICI.a', 'Tên khóa đào tạo') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.trainBasicInformation.PEIXUNSHISHIQIJIAN.a', 'Thời gian') }}</th>
+          <th class="etr-col-center">{{ i18n.t('inct.salesman.eval.result', 'Kết quả') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of etrTable.data; track row.basicNo; let idx = $index) {
+          <tr class="etr-row" [class.etr-row-selected]="row.basicNo === selectedNo()" (click)="selectRow(row)">
+            <td class="etr-col-center">{{ (etrTable.nzPageIndex - 1) * etrTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td [class.etr-in-progress]="row.inProgress">{{ courseTitle(row.courseNameCode, row.periodTime) }}</td>
+            <td class="etr-col-center">{{ row.impleClassHour }} {{ unitLabel(row.impleClassUnit) }}</td>
+            <td class="etr-col-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="etr-col-center etr-links">
+              @if (row.canEvaluate) {
+                <a [class.etr-done]="(row.resultEvalCount ?? 0) > 0" (click)="$event.stopPropagation(); openEvaluate(row)">
+                  {{ (row.resultEvalCount ?? 0) > 0 ? i18n.t('edu.teacherEvaluate.YIKAOPING.a', 'Đã đánh giá') : i18n.t('edu.teacherEvaluate.WEIKAOPING.a', 'Chưa đánh giá') }}
+                </a>
+              }
+              <a (click)="$event.stopPropagation(); openResults(row.basicNo, true)">{{ i18n.t('button.sys.view', 'Xem') }}</a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="etr-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Popup đánh giá (trainResultTSTOInfo bản gốc); nzMaskClosable=true -->
+<nz-modal
+  [nzVisible]="evalVisible()"
+  [nzTitle]="i18n.t('edu.studentEvaluate.KAOPING.a', 'Đánh giá')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="evalVisible.set(false)"
+  nzWidth="960px"
+>
+  <ng-container *nzModalContent>
+    <app-edu-course-summary [course]="course()"></app-edu-course-summary>
+    <div class="etr-modal-toolbar">
+      <input #etrImportInput id="etr-import-file" type="file" accept=".xlsx,.xls" class="etr-hidden" (change)="onImportFileSelected($event)" />
+      <button id="etr-template-btn" nz-button nzSize="small" (click)="downloadTemplate()">
+        <span nz-icon nzType="download"></span>
+        {{ i18n.t('pa.button.message.specialempimportmodeldown', 'Bản mẫu') }}
+      </button>
+      <button id="etr-import-btn" nz-button nzSize="small" [nzLoading]="importing()" (click)="etrImportInput.click()">
+        <span nz-icon nzType="upload"></span>
+        {{ i18n.t('hrm.contract.Excel_import', 'Chèn file') }}
+      </button>
+      <span class="etr-spacer"></span>
+      <span>{{ i18n.t('edu.trainResult.KAOPINGRENYUAN.a', 'Nhân viên đánh giá') }}:</span>
+      <a id="etr-evaluators-link" (click)="basicNo() && openResults(basicNo()!, false)">{{ i18n.t('button.sys.view', 'Xem') }}</a>
+    </div>
+    <nz-table #etrStatTable id="etr-stat-table" [nzData]="stats()" [nzLoading]="evalLoading()" [nzFrontPagination]="false" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th>{{ i18n.t('display.emp.ben.or.benhs67', 'Phân biệt') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.teacherEvaluate.FEICHANGHAO.a', 'Rất tốt') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.teacherEvaluate.BIJIAOHAO.a', 'Tốt') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.teacherEvaluate.YIBAN.a', 'Bình thường') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.teacherEvaluate.BIJIAOBUHAO.a', 'Không tốt') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.teacherEvaluate.FEICHANGBUHAO.a', 'Kém') }}</th>
+          <th class="etr-col-center">{{ i18n.t('edu.teacherEvaluate.MANYIDU.a', 'Độ hài lòng') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of etrStatTable.data; track s.key) {
+          <tr>
+            <td>{{ criteriaLabel(s.key) }}</td>
+            <td class="etr-col-center">{{ s.rev05 }}</td>
+            <td class="etr-col-center">{{ s.rev04 }}</td>
+            <td class="etr-col-center">{{ s.rev03 }}</td>
+            <td class="etr-col-center">{{ s.rev02 }}</td>
+            <td class="etr-col-center">{{ s.rev01 }}</td>
+            <td class="etr-col-center etr-strong">{{ s.revTotal }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+    <div class="etr-report">
+      <div class="etr-report-title">{{ i18n.t('edu.trainResult.PEIXUNBAOGAO.a', 'Báo cáo') }}</div>
+      <app-edu-attachment
+        [files]="reportFiles()"
+        [pendingFiles]="[]"
+        (pendingFilesChange)="onReportFilesSelected($event)"
+        (fileDeleted)="reloadReportFiles()"
+      ></app-edu-attachment>
+    </div>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="etr-close-btn" nz-button (click)="evalVisible.set(false)">{{ i18n.t('hrm.empinfo.cancel', 'Hủy bỏ') }}</button>
+  </div>
+</nz-modal>
+
+<!-- Popup danh sách phiếu: người đánh giá (checkTrainResultTSTOInfoPer) / Xem (alreadyTrainResultInfoSingle) -->
+<nz-modal
+  [nzVisible]="resultsVisible()"
+  [nzTitle]="resultsReadonlyView() ? i18n.t('pa.salary.title.fullInfo', 'Thông tin chi tiết') : i18n.t('edu.trainResult.KAOPINGRENYUAN.a', 'Nhân viên đánh giá')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="resultsVisible.set(false)"
+  nzWidth="1000px"
+>
+  <ng-container *nzModalContent>
+    @if (resultsReadonlyView()) {
+      <app-edu-course-summary [course]="course()"></app-edu-course-summary>
+      <div class="etr-modal-toolbar">
+        <button id="etr-export-btn" nz-button nzSize="small" (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>
+          {{ i18n.t('ar.addempshift.title.excelexport', 'Xuất Excel') }}
+        </button>
+        <span class="etr-spacer"></span>
+        <span>{{ i18n.t('edu.trainResult.KAOPINGRENYUAN.a', 'Nhân viên đánh giá') }}: {{ results().length }}</span>
+      </div>
+    }
+    <nz-table #etrResultTable id="etr-result-table" [nzData]="results()" [nzLoading]="resultsLoading()" [nzPageSize]="defaultPageSize" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content' }" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="etr-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('alert.pa.pasalarycanshu.shehao', 'Mã nhân viên') }}</th>
+          <th>{{ resultsReadonlyView() ? i18n.t('edu.trainResult.PINGJIAZHE.a', 'Người đánh giá') : i18n.t('alert.pa.pasalarycanshu.xingming', 'Họ tên') }}</th>
+          <th class="etr-col-center">{{ criteriaLabel('DIFFICULTY') }}</th>
+          <th class="etr-col-center">{{ criteriaLabel('CONTENT_RICH') }}</th>
+          <th class="etr-col-center">{{ criteriaLabel('TIME_MODERATE') }}</th>
+          <th class="etr-col-center">{{ criteriaLabel('PRACTICABILITY') }}</th>
+          @if (resultsReadonlyView()) {
+            <th class="etr-col-center">{{ i18n.t('hrm.approve.AMOUNT', 'Tổng') }}</th>
+            <th>{{ i18n.t('hr.viewSuggestion.title.Suggestion', 'Ý kiến') }}</th>
+            <th>{{ i18n.t('edu.trainResult.PEIXUNBAOGAO.a', 'Báo cáo') }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of etrResultTable.data; track r.resultNo; let idx = $index) {
+          <tr>
+            <td class="etr-col-center">{{ (etrResultTable.nzPageIndex - 1) * etrResultTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ r.stuEmpid }}</td>
+            <td>{{ r.stuLocalName }}</td>
+            <td class="etr-col-center">{{ r.difficulty }}</td>
+            <td class="etr-col-center">{{ r.contentRich }}</td>
+            <td class="etr-col-center">{{ r.timeModerate }}</td>
+            <td class="etr-col-center">{{ r.practicability }}</td>
+            @if (resultsReadonlyView()) {
+              <td class="etr-col-center">{{ r.allscore }}</td>
+              <td>{{ r.otherAdvise }}</td>
+              <td>
+                @for (f of r.files; track f.fileNo; let fi = $index) {
+                  <div><a [href]="common.fileDownloadUrl(f.fileNo)" target="_blank" rel="noopener">{{ fi + 1 }}. {{ f.fileName }}</a></div>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="resultsReadonlyView() ? 10 : 7" class="etr-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="etr-results-close-btn" nz-button (click)="resultsVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </div>
+</nz-modal>

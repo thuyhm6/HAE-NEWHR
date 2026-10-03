@@ -21,6 +21,7 @@ import {
   SyCodeOption,
 } from './apply-leave-info-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 interface SelectableRow extends CardApplyRow {
   checked: boolean;
 }
@@ -52,6 +53,9 @@ interface SelectableRow extends CardApplyRow {
   styleUrl: './apply-leave-info-list.component.scss',
 })
 export class ApplyLeaveInfoListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(ApplyLeaveInfoListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

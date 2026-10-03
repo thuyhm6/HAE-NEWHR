@@ -1,5 +1,7 @@
 package com.ait.sy.sys.service.impl;
 
+import com.ait.util.CollectionUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -79,7 +81,7 @@ public class LoggingServiceImpl implements LoggingService {
         // Log to performance metrics if needed
         if (details != null && details.containsKey("executionTime")) {
             Long executionTime = (Long) details.get("executionTime");
-            logPerformanceMetric("user_activity_time", executionTime, Map.of("userId", userId, "activity", activity));
+            logPerformanceMetric("user_activity_time", executionTime, CollectionUtil.mapOf("userId", userId, "activity", activity));
         }
     }
 
@@ -135,7 +137,7 @@ public class LoggingServiceImpl implements LoggingService {
                 String.format("Database %s on table %s %s in %dms",
                         operation, table, success ? "completed" : "failed", executionTime));
 
-        Map<String, Object> context = Map.of(
+        Map<String, Object> context = CollectionUtil.mapOf(
                 "operation", operation,
                 "table", table,
                 "executionTime", executionTime,
@@ -148,7 +150,7 @@ public class LoggingServiceImpl implements LoggingService {
         if (success) {
             logger.debug(logMessage);
             logPerformanceMetric("database_operation_time", executionTime,
-                    Map.of("operation", operation, "table", table));
+                    CollectionUtil.mapOf("operation", operation, "table", table));
         } else {
             logger.error(logMessage);
         }
@@ -197,7 +199,7 @@ public class LoggingServiceImpl implements LoggingService {
 
         // Log performance metrics
         logPerformanceMetric("api_response_time", responseTime,
-                Map.of("endpoint", endpoint, "method", method, "statusCode", statusCode));
+                CollectionUtil.mapOf("endpoint", endpoint, "method", method, "statusCode", statusCode));
     }
 
     @Override
@@ -321,7 +323,7 @@ public class LoggingServiceImpl implements LoggingService {
             if (request == null)
                 return null;
             String remoteAddr = request.getRemoteAddr();
-            return (remoteAddr == null || remoteAddr.isBlank()) ? null : remoteAddr;
+            return (remoteAddr == null || remoteAddr.trim().isEmpty()) ? null : remoteAddr;
         } catch (Exception e) {
             // Return null if not in web request context (e.g., scheduled tasks)
             return null;
@@ -333,7 +335,7 @@ public class LoggingServiceImpl implements LoggingService {
      */
     private boolean isPerformanceThresholdExceeded(String metricName, long value) {
         // Define performance thresholds
-        Map<String, Long> thresholds = Map.of(
+        Map<String, Long> thresholds = CollectionUtil.mapOf(
                 "api_response_time", 5000L, // 5 seconds
                 "database_operation_time", 3000L, // 3 seconds
                 "user_activity_time", 10000L // 10 seconds

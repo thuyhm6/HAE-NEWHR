@@ -15,6 +15,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyRoleGroupRow, SyRoleGroupListService, SyRoleOption } from './sy-role-group-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Danh sách Nhóm quyền (viewSyRolesGroupList) - xem ghi chú trong
  * sy-role-group-list.service.ts.
@@ -39,6 +40,10 @@ import { SyRoleGroupRow, SyRoleGroupListService, SyRoleOption } from './sy-role-
   styleUrl: './sy-role-group-list.component.scss',
 })
 export class SyRoleGroupListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SyRoleGroupListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

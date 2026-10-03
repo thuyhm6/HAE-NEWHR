@@ -19,6 +19,7 @@ import { EmployeeSearchResult, SstOtApplyService } from '../../ess/sst-ot-apply/
 import { CardRecordDayService, ShiftOption } from '../card-record-day/card-record-day.service';
 import { AddEmpShiftService, DOWNLOAD_TEMPLATE_URL, EmpShiftRow, EmpShiftSavePayload } from './add-emp-shift.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const DAY_TYPE_PARENT_CODE = '1439';
 
 function currentMonthDate(): Date {
@@ -56,6 +57,10 @@ function currentMonthDate(): Date {
   styleUrl: './add-emp-shift.component.scss',
 })
 export class AddEmpShiftComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(AddEmpShiftService);
   private readonly shiftService = inject(CardRecordDayService);
   private readonly codeService = inject(AttendanceExForBatchService);

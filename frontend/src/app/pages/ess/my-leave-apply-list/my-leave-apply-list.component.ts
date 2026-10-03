@@ -26,6 +26,7 @@ import {
   SyCodeOption,
 } from './my-leave-apply-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 function firstDayOfMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -69,6 +70,10 @@ function lastDayOfMonth(): Date {
   styleUrl: './my-leave-apply-list.component.scss',
 })
 export class MyLeaveApplyListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   @ViewChild('detailModal') detailModal!: ApplyDetailModalComponent;
 
   private readonly service = inject(MyLeaveApplyListService);

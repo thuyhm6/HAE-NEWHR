@@ -16,6 +16,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { EvsResume, ResumeListService, SyCodeOption } from './resume-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const CYCLE_PARENT = '14015038';
 const EVS_LEVEL_PARENT = '14015060';
 
@@ -61,6 +62,10 @@ const ACTIVITY_COLOR: Record<string, string> = { '1': 'blue', '2': 'gold', '3': 
   styleUrl: './resume-list.component.scss',
 })
 export class ResumeListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ResumeListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

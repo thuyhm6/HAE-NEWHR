@@ -57,6 +57,7 @@ public class EssLeaveApplyController {
     public ResponseEntity<List<EssLeaveApplyDto>> getList(
             @RequestParam(required = false) String empId,
             @RequestParam(required = false) String localName,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate,
             @RequestParam(required = false) String affirmFlag,
@@ -65,6 +66,7 @@ public class EssLeaveApplyController {
         EssLeaveApplyDto dto = new EssLeaveApplyDto();
         dto.setEmpId(empId);
         dto.setLocalName(localName);
+        dto.setKeyword(keyword);
         dto.setFromDate(fromDate);
         dto.setToDate(toDate);
         dto.setAffirmFlag(affirmFlag);
@@ -190,7 +192,7 @@ public class EssLeaveApplyController {
         } catch (Exception e) {
             log.error("Failed to cancel leave application applyNo={}", params != null ? params.get("applyNo") : null, e);
             response.put("success", false);
-            response.put("error", e.getMessage() != null && !e.getMessage().isBlank() ? e.getMessage() : "Lỗi hệ thống khi hủy đơn nghỉ phép.");
+            response.put("error", e.getMessage() != null && !e.getMessage().trim().isEmpty() ? e.getMessage() : "Lỗi hệ thống khi hủy đơn nghỉ phép.");
         }
         return ResponseEntity.ok(response);
     }
@@ -214,7 +216,7 @@ public class EssLeaveApplyController {
         } catch (Exception e) {
             log.error("Failed to resubmit leave application applyNo={}", params != null ? params.get("applyNo") : null, e);
             response.put("success", false);
-            response.put("error", e.getMessage() != null && !e.getMessage().isBlank() ? e.getMessage() : "Lỗi hệ thống khi lưu lại đơn nghỉ phép.");
+            response.put("error", e.getMessage() != null && !e.getMessage().trim().isEmpty() ? e.getMessage() : "Lỗi hệ thống khi lưu lại đơn nghỉ phép.");
         }
         return ResponseEntity.ok(response);
     }
@@ -226,11 +228,11 @@ public class EssLeaveApplyController {
         try {
             String message = service.importTempToOfficial();
             response.put("success", true);
-            response.put("message", message.isBlank() ? "Luu thanh cong" : message);
+            response.put("message", message.trim().isEmpty() ? "Luu thanh cong" : message);
         } catch (Exception e) {
             log.error("Failed to import attendance apply temp data", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Loi he thong khi luu du lieu import."
                     : e.getMessage());
         }

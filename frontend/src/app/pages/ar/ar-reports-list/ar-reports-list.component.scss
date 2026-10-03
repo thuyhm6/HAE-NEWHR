@@ -1,0 +1,41 @@
+.arrl-page {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  align-items: flex-start;
+}
+
+.arrl-side {
+  flex: 0 0 240px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+}
+
+.arrl-menu {
+  border-inline-end: none !important;
+}
+
+.arrl-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  min-height: 200px;
+}
+
+.arrl-hint {
+  color: #8c8c8c;
+  padding: 24px 8px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .arrl-page {
+    flex-direction: column;
+  }
+
+  .arrl-side {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}

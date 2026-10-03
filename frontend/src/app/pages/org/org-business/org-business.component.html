@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <nz-table [nzData]="businessList()" [nzLoading]="loadingList()" [nzPageSize]="20" nzShowSizeChanger [nzPageSizeOptions]="[20, 50, 100]" nzSize="small" nzBordered #obizTable>
+    <nz-table [nzData]="businessList()" [nzLoading]="loadingList()" [nzPageSize]="defaultPageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered #obizTable>
       <thead>
         <tr>
           <th nzWidth="50px" class="obiz-col-center">{{ i18n.t('common.stt', 'STT') }}</th>

@@ -17,6 +17,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { EmpSearchService, EmployeeSearchResult } from '../shared/emp-search.service';
 import { FamilyRow, FamilySavePayload, FamilyService } from './family.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../../core/config/table-pagination.config';
 function toDateOrNull(value: string): Date | null {
   if (!value) return null;
   const d = new Date(value);
@@ -55,6 +56,10 @@ function toIsoDateOrUndefined(value: Date | null): string | undefined {
   styleUrl: './family.component.scss',
 })
 export class FamilyComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(FamilyService);
   private readonly employeeService = inject(EmpSearchService);
   private readonly message = inject(NzMessageService);

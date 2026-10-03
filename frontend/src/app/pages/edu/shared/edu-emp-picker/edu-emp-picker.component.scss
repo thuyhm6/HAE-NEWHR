@@ -1,0 +1,22 @@
+.eep-actions {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 24px;
+}
+
+.eep-total {
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.eep-center {
+  text-align: center;
+}
+
+.eep-row {
+  cursor: pointer;
+}
+
+.eep-row-selected > td {
+  background: #e6f4ff !important;
+}

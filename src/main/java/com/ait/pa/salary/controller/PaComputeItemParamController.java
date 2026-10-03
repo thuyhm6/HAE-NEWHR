@@ -1,5 +1,7 @@
 package com.ait.pa.salary.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.salary.dto.PaComputeItemParamDto;
 import com.ait.pa.salary.service.PaComputeItemParamService;
 import com.ait.sy.sys.dto.DataTablesResponse;
@@ -64,7 +66,7 @@ public class PaComputeItemParamController {
             return ResponseEntity.ok(dto);
         } catch (Exception e) {
             log.error("Lỗi khi lấy thông số mục tính toán paramNo={}: {}", paramNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -73,13 +75,13 @@ public class PaComputeItemParamController {
     public ResponseEntity<?> insert(@RequestBody PaComputeItemParamDto dto) {
         try {
             if (dto.getItemNo() == null || dto.getItemNo().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Thiếu thông tin Tên hạng mục!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Thiếu thông tin Tên hạng mục!"));
             }
             paComputeItemParamService.insert(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Thêm mới thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Thêm mới thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi thêm mới thông số mục tính toán: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -88,13 +90,13 @@ public class PaComputeItemParamController {
     public ResponseEntity<?> update(@RequestBody PaComputeItemParamDto dto) {
         try {
             if (dto.getParamNo() == null || dto.getParamNo().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Thiếu thông tin PARAM_NO!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Thiếu thông tin PARAM_NO!"));
             }
             paComputeItemParamService.update(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật thành công"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Cập nhật thành công"));
         } catch (Exception e) {
             log.error("Lỗi khi cập nhật thông số mục tính toán: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -103,13 +105,13 @@ public class PaComputeItemParamController {
     public ResponseEntity<?> deleteList(@RequestBody List<String> paramNos) {
         try {
             if (paramNos == null || paramNos.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Không có bản ghi được chọn!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Không có bản ghi được chọn!"));
             }
             paComputeItemParamService.deleteList(paramNos);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa thành công " + paramNos.size() + " bản ghi"));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true, "message", "Xóa thành công " + paramNos.size() + " bản ghi"));
         } catch (Exception e) {
             log.error("Lỗi khi xóa thông số mục tính toán: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -120,7 +122,7 @@ public class PaComputeItemParamController {
             return ResponseEntity.ok(paComputeItemParamService.getItemList());
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách PA_ITEM: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -131,7 +133,7 @@ public class PaComputeItemParamController {
             return ResponseEntity.ok(paComputeItemParamService.getApplyTypeList());
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách APPLY_TYPE: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -142,13 +144,13 @@ public class PaComputeItemParamController {
             String paramNo   = body.get("paramNo");
             String direction = body.get("direction");
             if (paramNo == null || direction == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Thiếu thông tin paramNo hoặc direction!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Thiếu thông tin paramNo hoặc direction!"));
             }
             paComputeItemParamService.swapOrder(paramNo, direction);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
             log.error("Lỗi khi hoán đổi thứ tự tính: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 }

@@ -7,6 +7,12 @@ export interface MyInfo {
   localName?: string;
   empId?: string;
   postFamily?: string;
+  deptName?: string;
+  headDepartment?: string;
+  postFamilyName?: string;
+  dutyName?: string;
+  positionNoName?: string;
+  dateStarted?: string;
 }
 
 export interface HrDeptManager {
@@ -50,6 +56,8 @@ export interface ApproverInput {
   personId: string;
   localName: string;
   empId: string;
+  /** AFFIRM_TYPE bên backend: '1' = Phê duyệt, '3' = Thông báo */
+  approvType: string;
 }
 
 export interface OvertimeSavePayload {
@@ -92,16 +100,23 @@ const CODE_LIST_URL = '/sys/api/getCode/list';
 
 export const CAR_ADDRESS_PARENT_CODE = '90000578';
 
+/** Giá trị AFFIRM_TYPE bên backend (SY_AFFIRM_EMAIL): '1' = Phê duyệt, '3' = Thông báo */
+export const APPROV_TYPE_APPROVAL = '1';
+export const APPROV_TYPE_NOTICE = '3';
+
 /**
- * Form tạo đơn xin tăng ca mới cho bản thân - dùng chung cho 2 trang gần
- * như trùng lặp: ess/infoApply/viewSSTOtApplyInfo.html (tăng ca thường) và
- * viewSSTOtApplyInfoTx.html (tăng ca vượt), cả 2 đã xoá. Khác nhau ở
- * `otTypeNo`/URL lưu (chọn qua route data - xem app.routes.ts) và ở việc
- * trang "thường" có thêm rule validate min/max theo nhóm nhân viên + tự
- * động thêm Trưởng bộ phận nhân sự khi nộp sau giờ làm (trang "vượt" không
- * có các rule này, theo đúng bản gốc). Thay EmployeeSearchModal (jQuery)
- * bằng nz-select tìm kiếm server-side chọn người phê duyệt (giống
- * SstLeaveApplyComponent). Gọi lại nguyên vẹn API JSON sẵn có.
+ * Các API dùng cho form xin tăng ca - dùng chung cho cả SstOtApplyComponent
+ * (tăng ca thường - ess/infoApply/viewSSTOtApplyInfo.html, đã xoá) và
+ * SstOtApplyOverComponent (tăng ca vượt - viewSSTOtApplyInfoTx.html, đã
+ * xoá). 2 component tách riêng vì áp dụng rule nghiệp vụ khác nhau (giới
+ * hạn giờ/tháng/năm, min duration theo nhóm nhân viên, tự động thêm Trưởng
+ * bộ phận nhân sự - chỉ ở trang thường) và lưu vào 2 bảng khác nhau
+ * (ESS_APPLY_OT vs ESS_APPLY_OT_OVER qua `saveUrl` truyền vào save()), nhưng
+ * các API gọi (myInfo, otDateInfo, otDuration, tìm người phê duyệt, mã
+ * tuyến xe...) hoàn toàn giống nhau nên giữ chung 1 service, tránh viết lại.
+ * Thay EmployeeSearchModal (jQuery) bằng nz-select tìm kiếm server-side chọn
+ * người phê duyệt (giống SstLeaveApplyComponent). Gọi lại nguyên vẹn API
+ * JSON sẵn có.
  */
 @Injectable({ providedIn: 'root' })
 export class SstOtApplyService {

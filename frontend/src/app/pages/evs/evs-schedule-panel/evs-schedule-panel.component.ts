@@ -22,6 +22,7 @@ import {
   SyCodeOption,
 } from './evs-schedule-panel.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const TYPES: ScheduleType[] = ['CPNY', 'DEPT', 'EMP'];
 
 function toDateOrNull(value: string | undefined): Date | null {
@@ -66,6 +67,10 @@ function toDdMmYyyy(value: Date | null): string {
   styleUrl: './evs-schedule-panel.component.scss',
 })
 export class EvsSchedulePanelComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(EvsSchedulePanelService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

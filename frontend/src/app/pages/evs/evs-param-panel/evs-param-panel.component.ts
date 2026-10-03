@@ -25,6 +25,7 @@ import {
   SyCodeOption,
 } from './evs-param-panel.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const GRADE_TYPE_PARENT = '14015137';
 const GRADE_PARENT = '14015161';
 const START_STEP_PARENT = '14015351';
@@ -59,6 +60,10 @@ type ParamType = 'ITEM' | 'LIST' | 'GROUP' | 'FAMILY';
   styleUrl: './evs-param-panel.component.scss',
 })
 export class EvsParamPanelComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(EvsParamPanelService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

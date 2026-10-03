@@ -1,5 +1,7 @@
 package com.ait.sy.excel.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.ar.attendanceSettings.dto.ArShift010Dto;
 import com.ait.ar.attendanceSettings.service.ArShiftService;
 import com.ait.sy.basicMaintenance.dto.SyCodeParamDto;
@@ -119,7 +121,7 @@ public class ExcelController {
         }
 
         String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || originalFilename.isBlank()) {
+        if (originalFilename == null || originalFilename.trim().isEmpty()) {
             return "Ten file khong hop le.";
         }
 
@@ -130,11 +132,11 @@ public class ExcelController {
         }
 
         String contentType = file.getContentType();
-        if (contentType == null || contentType.isBlank()) {
+        if (contentType == null || contentType.trim().isEmpty()) {
             return "Khong xac dinh duoc dinh dang file upload.";
         }
 
-        Set<String> allowedContentTypes = Set.of(
+        Set<String> allowedContentTypes = CollectionUtil.setOf(
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "application/vnd.ms-excel",
                 "application/octet-stream"
@@ -156,7 +158,7 @@ public class ExcelController {
         try (Workbook wb = buildTemplateByName(normalizedName)) {
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             String filename = normalizedName + ".xlsx";
-            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.name()).replace("+", "%20");
             response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFilename);
             wb.write(response.getOutputStream());
         } catch (IllegalArgumentException ex) {
@@ -275,7 +277,7 @@ public class ExcelController {
                     Map<String, Object> item = new HashMap<>();
                     item.put("shiftNo", s.getShiftNo());
                     String name = s.getNameVi();
-                    if (name == null || name.isBlank()) {
+                    if (name == null || name.trim().isEmpty()) {
                         name = s.getShiftNo();
                     }
                     item.put("nameVi", name);
@@ -297,7 +299,7 @@ public class ExcelController {
                     Map<String, Object> item = new HashMap<>();
                     item.put("code", t.getCodeNo());
                     String name = t.getNameVi();
-                    if (name == null || name.isBlank()) {
+                    if (name == null || name.trim().isEmpty()) {
                         name = t.getCodeNo();
                     }
                     item.put("name", name);

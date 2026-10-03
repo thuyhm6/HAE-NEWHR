@@ -74,7 +74,7 @@ public class DataSourceConfig {
         config.setMaxLifetime(maxLifetime);
         config.setLeakDetectionThreshold(leakDetectionThreshold);
         config.setPoolName(poolName);
-        if (connectionInitSql != null && !connectionInitSql.isBlank()) {
+        if (connectionInitSql != null && !connectionInitSql.trim().isEmpty()) {
             config.setConnectionInitSql(connectionInitSql);
         }
 

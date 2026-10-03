@@ -26,6 +26,7 @@ import {
   ToolStaItem,
 } from './summary-formula.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý Công thức Hạng mục tổng hợp (Tree-Table + Tools) - port lại từ
  * ar/attendanceSettings/viewSummaryFormula.html (đã xoá). Bản gốc gắn
@@ -59,6 +60,10 @@ import {
   styleUrl: './summary-formula.component.scss',
 })
 export class SummaryFormulaComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SummaryFormulaService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

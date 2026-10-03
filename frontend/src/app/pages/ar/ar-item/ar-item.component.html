@@ -29,7 +29,7 @@
   </nz-card>
 
   <nz-card class="ai-table-card">
-    <nz-table #aiTable id="ai-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+    <nz-table #aiTable id="ai-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="defaultPageSize" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
       <thead>
         <tr>
           <th nzWidth="60px" class="ai-col-center">{{ i18n.t('common.stt', 'STT') }}</th>

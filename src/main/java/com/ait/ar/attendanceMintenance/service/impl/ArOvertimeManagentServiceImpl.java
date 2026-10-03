@@ -284,8 +284,10 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         for (Map<String, Object> approver : manualApprovers) {
             String approverPersonId = safeString(approver.get("personId"));
             if (approverPersonId.isEmpty()) continue;
+            // approvType từ FE: '1' = Phê duyệt, '3' = Thông báo (mặc định '1' nếu không gửi lên)
+            String approvType = safeString(approver.get("approvType"));
             SyAffirmEmailDto affirmor = new SyAffirmEmailDto();
-            affirmor.setAffirmType("1");
+            affirmor.setAffirmType(approvType.isEmpty() ? "1" : approvType);
             affirmor.setApplyNo(applyNo);
             affirmor.setApplyType(otTypeCode);
             affirmor.setApplyTypeCode(OT_TYPE_NO);
@@ -395,8 +397,10 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
         for (Map<String, Object> approver : manualApprovers) {
             String approverPersonId = safeString(approver.get("personId"));
             if (approverPersonId.isEmpty()) continue;
+            // approvType từ FE: '1' = Phê duyệt, '3' = Thông báo (mặc định '1' nếu không gửi lên)
+            String approvType = safeString(approver.get("approvType"));
             SyAffirmEmailDto affirmor = new SyAffirmEmailDto();
-            affirmor.setAffirmType("1");
+            affirmor.setAffirmType(approvType.isEmpty() ? "1" : approvType);
             affirmor.setApplyNo(applyNo);
             affirmor.setApplyType(otTypeCode);
             affirmor.setApplyTypeCode(OT_TYPE_NO_OVER);
@@ -675,7 +679,7 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
     }
 
     private boolean isProcedureErrorMessage(String message) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return false;
         }
         String normalized = message.toLowerCase(Locale.ROOT);

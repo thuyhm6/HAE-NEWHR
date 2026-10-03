@@ -20,6 +20,7 @@ import {
   EssApplyInfoRow,
 } from './apply-info.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 interface DetailRowConfig {
   labelKey: string;
   labelFallback: string;
@@ -75,6 +76,9 @@ const DISTINCTION_LABEL_KEYS: Record<number, { key: string; fallback: string }> 
   styleUrl: './apply-info.component.scss',
 })
 export class ApplyInfoComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(ApplyInfoService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

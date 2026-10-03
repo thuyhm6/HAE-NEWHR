@@ -13,6 +13,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { PaDistinctOption, PaInputItemParamRow, PaInputItemParamService } from './pa-input-item-param.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const ITEM_TYPES: { value: number; key: string; fallback: string }[] = [
   { value: 1, key: 'pa.salaryCode.itemType.std', fallback: 'Hạng mục tiêu chuẩn' },
   { value: 2, key: 'pa.salaryCode.itemType.adj', fallback: 'Điều chỉnh trả lương' },
@@ -34,6 +35,9 @@ const ITEM_TYPES: { value: number; key: string; fallback: string }[] = [
   styleUrl: './pa-input-item-param.component.scss',
 })
 export class PaInputItemParamComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(PaInputItemParamService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -48,7 +52,7 @@ export class PaInputItemParamComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsTotal = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly checkedSeqs = signal<Set<string>>(new Set());
 
   protected readonly distinctOptions = signal<PaDistinctOption[]>([]);

@@ -5,7 +5,7 @@
       <input nz-input style="max-width: 200px" [ngModel]="searchEmpSearch()" (ngModelChange)="searchEmpSearch.set($event)" (keydown.enter)="search()" />
 
       <span class="vppo-inline-label">{{ i18n.t('pa.payObj.payScheduleNo', 'Kế hoạch trả lương') }}</span>
-      <nz-select style="min-width: 220px" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch nzAllowClear>
+      <nz-select style="min-width: 220px" [ngModel]="searchPayScheduleNo()" (ngModelChange)="onPayScheduleNoChange($event)" nzShowSearch nzAllowClear>
         <nz-option *ngFor="let sch of scheduleOptions()" [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
       </nz-select>
 
@@ -48,7 +48,7 @@
       [nzTotal]="recordsTotal()"
       [nzPageIndex]="pageIndex()"
       [nzPageSize]="pageSize()"
-      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      [nzPageSizeOptions]="pageSizeOptions"
       nzShowSizeChanger
       (nzPageIndexChange)="onPageIndexChange($event)"
       (nzPageSizeChange)="onPageSizeChange($event)"

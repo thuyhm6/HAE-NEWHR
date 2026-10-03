@@ -244,7 +244,7 @@ public class HrAuthenticationServiceImpl implements HrAuthenticationService {
         }
         // Security-sensitive flow (rate limit): avoid trusting user-controlled forwarded headers.
         String remoteAddr = request.getRemoteAddr();
-        return (remoteAddr == null || remoteAddr.isBlank()) ? "unknown" : remoteAddr;
+        return (remoteAddr == null || remoteAddr.trim().isEmpty()) ? "unknown" : remoteAddr;
     }
 
     public boolean validateCsrfToken(HttpServletRequest request) {

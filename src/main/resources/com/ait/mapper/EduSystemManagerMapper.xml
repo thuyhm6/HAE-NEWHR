@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduSystemManagerMapper">
+
+    <resultMap id="EduSystemManagerResultMap" type="com.ait.edu.trainEducation.model.EduSystemManager">
+        <id column="SYSMANA_NO" property="sysmanaNo" jdbcType="VARCHAR"/>
+        <result column="TRAIN_DIFF_CODE" property="trainDiffCode" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE" property="trainTypeCode" jdbcType="VARCHAR"/>
+        <result column="TRAIN_DIFF_CODE_NAME" property="trainDiffCodeName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_NO" property="trainTypeNo" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="selectColumns">
+        S.SYSMANA_NO,
+        S.TRAIN_DIFF_CODE,
+        S.TRAIN_TYPE_CODE,
+        GET_GLOBAL_NAME(S.TRAIN_DIFF_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_DIFF_CODE_NAME,
+        GET_GLOBAL_NAME(S.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+        S.TRAIN_TYPE_NO,
+        S.REMARK
+    </sql>
+
+    <select id="findList" resultMap="EduSystemManagerResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_SYSTEM_MANAGER S
+        WHERE S.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND S.ACTIVITY = '1'
+        <if test="trainDiffCode != null and trainDiffCode != ''">
+            AND S.TRAIN_DIFF_CODE = #{trainDiffCode, jdbcType=VARCHAR}
+        </if>
+        <if test="trainTypeCode != null and trainTypeCode != ''">
+            AND S.TRAIN_TYPE_CODE = #{trainTypeCode, jdbcType=VARCHAR}
+        </if>
+        ORDER BY S.CREATE_DATE DESC
+    </select>
+
+    <select id="findBySysmanaNo" resultMap="EduSystemManagerResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_SYSTEM_MANAGER S
+        WHERE S.SYSMANA_NO = #{sysmanaNo, jdbcType=VARCHAR}
+          AND S.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="findMaxTrainTypeNo" resultType="java.lang.String">
+        SELECT MAX(TRAIN_TYPE_NO)
+        FROM EDU_SYSTEM_MANAGER
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND ACTIVITY = '1'
+          AND TRAIN_DIFF_CODE = #{trainDiffCode, jdbcType=VARCHAR}
+    </select>
+
+    <select id="countActiveByTrainTypeCode" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM EDU_SYSTEM_MANAGER
+        WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND ACTIVITY = '1'
+          AND TRAIN_TYPE_CODE = #{trainTypeCode, jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO EDU_SYSTEM_MANAGER (
+            SYSMANA_NO, TRAIN_DIFF_CODE, TRAIN_TYPE_CODE, TRAIN_TYPE_NO, REMARK,
+            CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID
+        ) VALUES (
+            EDU_SYS_MANA_SEQ.NEXTVAL,
+            #{trainDiffCode, jdbcType=VARCHAR},
+            #{trainTypeCode, jdbcType=VARCHAR},
+            #{trainTypeNo, jdbcType=VARCHAR},
+            #{remark, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <update id="updateRemark">
+        UPDATE EDU_SYSTEM_MANAGER
+           SET REMARK = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE SYSMANA_NO = #{sysmanaNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <update id="softDelete">
+        UPDATE EDU_SYSTEM_MANAGER
+           SET ACTIVITY = '0',
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE SYSMANA_NO = #{sysmanaNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

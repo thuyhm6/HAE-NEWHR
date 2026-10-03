@@ -27,6 +27,7 @@ import {
   DOWNLOAD_TEMPLATE_URL,
 } from './apply-att-batch.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface AttRowVm {
   rowKey: string;
   isNew: boolean;
@@ -136,6 +137,10 @@ function formatDuration(applyLength: string, dayHours: string, i18n: I18nService
   styleUrl: './apply-att-batch.component.scss',
 })
 export class ApplyAttBatchComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   @ViewChild('detailModal') detailModal!: ApplyDetailModalComponent;
 
   private readonly service = inject(ApplyAttBatchService);
@@ -145,8 +150,7 @@ export class ApplyAttBatchComponent implements OnInit {
   private readonly modal = inject(NzModalService);
   protected readonly i18n = inject(I18nService);
 
-  protected readonly searchEmpId = signal('');
-  protected readonly searchEmpName = signal('');
+  protected readonly searchEmpKeyword = signal('');
   protected readonly searchFromDate = signal<Date | null>(null);
   protected readonly searchToDate = signal<Date | null>(null);
   protected readonly searchAffirmFlag = signal<string | null>(null);
@@ -281,8 +285,7 @@ export class ApplyAttBatchComponent implements OnInit {
     this.loading.set(true);
     try {
       const filter: AttBatchFilter = {
-        empId: this.searchEmpId() || undefined,
-        localName: this.searchEmpName() || undefined,
+        keyword: this.searchEmpKeyword() || undefined,
         fromDate: this.toApiDate(this.searchFromDate()),
         toDate: this.toApiDate(this.searchToDate()),
         affirmFlag: this.searchAffirmFlag() ?? undefined,
@@ -300,8 +303,7 @@ export class ApplyAttBatchComponent implements OnInit {
   }
 
   clearSearch(): void {
-    this.searchEmpId.set('');
-    this.searchEmpName.set('');
+    this.searchEmpKeyword.set('');
     const { from, to } = currentWeekRange();
     this.searchFromDate.set(from);
     this.searchToDate.set(to);
@@ -373,17 +375,15 @@ export class ApplyAttBatchComponent implements OnInit {
     if (!emp) return;
 
     if (this.pickerTarget === 'searchFilter') {
-      this.searchEmpId.set(emp.empId ?? '');
-      this.searchEmpName.set(emp.localName ?? '');
+      this.searchEmpKeyword.set(emp.empId ?? '');
       this.closePicker();
       return;
     }
 
     if (this.pickerTarget === 'rowEmployee' && this.activeRowKey) {
       const rowKey = this.activeRowKey;
-      this.updateRow(rowKey, { personId: emp.personId ?? '', empId: emp.empId ?? '', localName: emp.localName ?? '' });
       this.closePicker();
-      await this.loadEmpDefaultInfo(rowKey, emp.personId ?? '');
+      await this.selectRowEmployee(rowKey, emp);
       return;
     }
 
@@ -397,6 +397,32 @@ export class ApplyAttBatchComponent implements OnInit {
         ),
       );
       this.closePicker();
+    }
+  }
+
+  private async selectRowEmployee(rowKey: string, emp: EmployeeSearchResult): Promise<void> {
+    this.updateRow(rowKey, { personId: emp.personId ?? '', empId: emp.empId ?? '', localName: emp.localName ?? '' });
+    await this.loadEmpDefaultInfo(rowKey, emp.personId ?? '');
+  }
+
+  async onRowEmpKeywordEnter(rowKey: string, event: Event): Promise<void> {
+    event.preventDefault();
+    const keyword = (event.target as HTMLInputElement).value.trim();
+    if (!keyword) return;
+    try {
+      const results = await this.otService.searchEmployees(keyword);
+      if (results.length === 1) {
+        await this.selectRowEmployee(rowKey, results[0]);
+      } else if (results.length === 0) {
+        this.message.warning(this.i18n.t('vpie.search.noResult', 'Không tìm thấy nhân viên phù hợp.'));
+      } else {
+        this.pickerTarget = 'rowEmployee';
+        this.activeRowKey = rowKey;
+        this.pickerSearchResults.set(results);
+        this.pickerVisible.set(true);
+      }
+    } catch {
+      this.message.error(this.i18n.t('common.loadError', 'Lỗi tải dữ liệu'));
     }
   }
 

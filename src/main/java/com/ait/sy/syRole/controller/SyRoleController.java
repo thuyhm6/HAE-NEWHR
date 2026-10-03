@@ -29,7 +29,7 @@ public class SyRoleController {
     @Autowired
     private com.ait.util.AngularIndexService angularIndexService;
 
-    @GetMapping("/syRole/viewRolesGroup")
+    @GetMapping("/rightsManagement/viewRolesGroup")
     public String viewRolesGroup(HttpServletResponse response) throws IOException {
         angularIndexService.writeIndexHtml(response);
         return null;

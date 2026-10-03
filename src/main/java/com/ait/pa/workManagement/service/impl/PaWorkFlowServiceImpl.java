@@ -30,10 +30,10 @@ public class PaWorkFlowServiceImpl implements PaWorkFlowService {
     }
 
     @Override
-    public List<PaWorkFlowRecordsDto> getRecordList(String payScheduleNo, Integer flowStep) {
+    public List<PaWorkFlowRecordsDto> getRecordList(String payScheduleNo, List<Integer> flowSteps) {
         try {
-            log.info("Lấy lịch sử thao tác payScheduleNo={}, flowStep={}", payScheduleNo, flowStep);
-            return mapper.selectRecordList(payScheduleNo, flowStep);
+            log.info("Lấy lịch sử thao tác payScheduleNo={}, flowSteps={}", payScheduleNo, flowSteps);
+            return mapper.selectRecordList(payScheduleNo, flowSteps);
         } catch (Exception e) {
             log.error("Lỗi khi lấy lịch sử thao tác payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
             throw e;

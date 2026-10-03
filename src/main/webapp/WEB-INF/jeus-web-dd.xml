@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    JEUS Web Deployment Descriptor for HR-11
-    Spring Boot 3.5.5 + JDK 21
-    Target: JEUS 8.5 — server 10.42.200.141
+    JEUS Web Deployment Descriptor for HAE_VHR
+    Spring Boot 2.7.18 + JDK 8
+    Target: JEUS 7.0 (Fix#4)
 
     Lưu ý:
     - Security, Login: do Spring Security xử lý (@Configuration)
@@ -14,10 +14,10 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.tmaxsoft.com/xml/ns/jeus
              http://www.tmaxsoft.com/xml/ns/jeus/jeus-web-dd.xsd"
-             version="8.5">
+             version="7.0">
 
     <!-- Context Root -->
-    <context-root>/HR-11</context-root>
+    <context-root>/HAE_VHR</context-root>
 
     <!-- Class Loader: isolation để tránh conflict với JEUS built-in libs -->
     <class-loader>
@@ -29,7 +29,7 @@
         <session-timeout>30</session-timeout>
         <cookie-config>
             <name>JSESSIONID_HR11</name>
-            <path>/HR-11</path>
+            <path>/HAE_VHR</path>
             <http-only>true</http-only>
             <secure>false</secure>
         </cookie-config>

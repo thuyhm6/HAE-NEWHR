@@ -19,9 +19,9 @@
       <nz-table
         id="vpas-supervisor-table"
         [nzData]="filteredSupervisors()"
-        [nzPageSize]="20"
+        [nzPageSize]="defaultPageSize"
         nzShowSizeChanger
-        [nzPageSizeOptions]="[20, 50, 100]"
+        [nzPageSizeOptions]="pageSizeOptions"
         nzSize="small"
         nzBordered
         #vpasTable

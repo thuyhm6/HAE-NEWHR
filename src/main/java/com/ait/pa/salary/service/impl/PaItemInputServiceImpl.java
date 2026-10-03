@@ -2,6 +2,7 @@ package com.ait.pa.salary.service.impl;
 
 import com.ait.pa.salary.dto.PaItemInputDto;
 import com.ait.pa.salary.dto.PaItemInputSaveReqDto;
+import com.ait.pa.salary.dto.PaResultExportReqDto;
 import com.ait.pa.salary.mapper.PaItemInputMapper;
 import com.ait.pa.salary.service.PaItemInputService;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -18,10 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,78 +84,65 @@ public class PaItemInputServiceImpl implements PaItemInputService {
         }
     }
 
+    /**
+     * Xuất Excel kết quả tính lương - port từ /pa/excelExport/exportResult +
+     * ExcelUtilSerImp#exportIntoExcel bản cũ: cột là các hạng mục được tích chọn,
+     * sắp theo thứ tự (trống = 999, giữ thứ tự ổn định), số của hạng mục nhập/tính
+     * định dạng 0.00000.
+     */
     @Override
-    public byte[] exportSummaryHae(String payScheduleNo, List<String> deptNos, List<String> itemIds) {
+    public byte[] exportSummaryHae(PaResultExportReqDto req) {
         try {
-            // Lấy tên hiển thị cho từng ITEM_ID (dùng làm header cột)
-            List<PaItemInputDto> itemDefs = mapper.selectItemNamesByIds(itemIds);
-            Map<String, String> itemNameMap = new LinkedHashMap<>();
-            for (PaItemInputDto d : itemDefs) {
-                if (d.getItemId() != null) {
-                    itemNameMap.put(d.getItemId().toUpperCase(), d.getItemName() != null ? d.getItemName() : d.getItemId());
+            List<PaResultExportReqDto.Column> columns = new ArrayList<>();
+            for (PaResultExportReqDto.Column c : req.getColumns()) {
+                if (c.getItemId() != null && !c.getItemId().trim().isEmpty()) {
+                    columns.add(c);
                 }
             }
-            // Đảm bảo đủ tất cả itemIds được chọn (fallback về itemId nếu không tìm thấy tên)
-            for (String id : itemIds) {
-                itemNameMap.putIfAbsent(id.toUpperCase(), id);
-            }
+            columns.sort(Comparator.comparingInt(c -> c.getOrderNo() == null ? 999 : c.getOrderNo()));
 
-            List<Map<String, Object>> dataList = mapper.selectSummaryHaeData(payScheduleNo, deptNos);
-            log.info("Xuất Excel PA_SUMMARY_HAE payScheduleNo={}, deptNos={}, itemIds={}: rows={}",
-                    payScheduleNo, deptNos, itemIds, dataList.size());
+            List<Map<String, Object>> dataList = mapper.selectSummaryHaeData(req.getPayScheduleNo(), req.getDeptNo());
+            log.info("Xuất Excel PA_SUMMARY_HAE payScheduleNo={}, deptNo={}, columns={}: rows={}",
+                    req.getPayScheduleNo(), req.getDeptNo(), columns.size(), dataList.size());
 
             try (XSSFWorkbook wb = new XSSFWorkbook()) {
-                XSSFSheet sheet = wb.createSheet("PA Summary");
+                XSSFSheet sheet = wb.createSheet("sheet1");
 
-                // Style header
                 CellStyle headerStyle = wb.createCellStyle();
                 headerStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
                 headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                CellStyle decimalStyle = wb.createCellStyle();
+                decimalStyle.setDataFormat(wb.createDataFormat().getFormat("0.00000"));
+                CellStyle dateStyle = wb.createCellStyle();
+                dateStyle.setDataFormat(wb.createDataFormat().getFormat("dd/mm/yyyy"));
 
-                // Các cột cố định: STT, Mã NV, Họ tên, Phòng ban
-                List<String> fixedHeaders = Arrays.asList("STT", "EMP_ID", "LOCAL_NAME_EMP", "DEPT_NAME_VAL");
-                List<String> fixedDisplayHeaders = Arrays.asList("STT", "Mã NV", "Họ tên", "Phòng ban");
-
-                // Hàng header
                 XSSFRow headerRow = sheet.createRow(0);
-                int col = 0;
-                for (String h : fixedDisplayHeaders) {
-                    XSSFCell cell = headerRow.createCell(col++);
-                    cell.setCellValue(h);
-                    cell.setCellStyle(headerStyle);
-                }
-                List<String> upperItemIds = new ArrayList<>();
-                for (String id : itemIds) {
-                    upperItemIds.add(id.toUpperCase());
-                    XSSFCell cell = headerRow.createCell(col++);
-                    cell.setCellValue(itemNameMap.getOrDefault(id.toUpperCase(), id));
+                for (int i = 0; i < columns.size(); i++) {
+                    PaResultExportReqDto.Column c = columns.get(i);
+                    XSSFCell cell = headerRow.createCell(i);
+                    cell.setCellValue(c.getItemName() != null ? c.getItemName() : c.getItemId());
                     cell.setCellStyle(headerStyle);
                 }
 
-                // Hàng dữ liệu
                 int rowIdx = 1;
                 for (Map<String, Object> row : dataList) {
-                    XSSFRow dataRow = sheet.createRow(rowIdx);
-                    int c = 0;
-                    dataRow.createCell(c++).setCellValue(rowIdx);
-                    dataRow.createCell(c++).setCellValue(str(row.get("EMPID")));
-                    dataRow.createCell(c++).setCellValue(str(row.get("LOCAL_NAME_EMP")));
-                    dataRow.createCell(c++).setCellValue(str(row.get("DEPT_NAME_VAL")));
-                    for (String itemId : upperItemIds) {
-                        Object val = row.get(itemId);
-                        XSSFCell cell = dataRow.createCell(c++);
+                    XSSFRow dataRow = sheet.createRow(rowIdx++);
+                    for (int i = 0; i < columns.size(); i++) {
+                        PaResultExportReqDto.Column c = columns.get(i);
+                        Object val = row.get(c.getItemId().toUpperCase());
+                        XSSFCell cell = dataRow.createCell(i);
                         if (val instanceof Number) {
                             cell.setCellValue(((Number) val).doubleValue());
+                            if (Boolean.TRUE.equals(c.getDecimal())) {
+                                cell.setCellStyle(decimalStyle);
+                            }
+                        } else if (val instanceof java.util.Date) {
+                            cell.setCellValue((java.util.Date) val);
+                            cell.setCellStyle(dateStyle);
                         } else {
-                            cell.setCellValue(val != null ? val.toString() : "");
+                            cell.setCellValue(str(val));
                         }
                     }
-                    rowIdx++;
-                }
-
-                // Auto-size các cột cố định
-                for (int i = 0; i < fixedHeaders.size(); i++) {
-                    sheet.autoSizeColumn(i);
                 }
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -163,7 +150,7 @@ public class PaItemInputServiceImpl implements PaItemInputService {
                 return baos.toByteArray();
             }
         } catch (Exception e) {
-            log.error("Lỗi khi xuất Excel PA_SUMMARY_HAE payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
+            log.error("Lỗi khi xuất Excel PA_SUMMARY_HAE payScheduleNo={}: {}", req.getPayScheduleNo(), e.getMessage(), e);
             throw new RuntimeException("Lỗi khi xuất Excel: " + e.getMessage(), e);
         }
     }

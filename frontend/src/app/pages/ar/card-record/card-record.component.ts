@@ -30,6 +30,7 @@ import {
   DOWNLOAD_TEMPLATE_URL,
 } from './card-record.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface RowVm {
   raw: CardRecordRow;
   checked: boolean;
@@ -80,6 +81,9 @@ function isAutoSource(insertBy: string | undefined): boolean {
   styleUrl: './card-record.component.scss',
 })
 export class CardRecordComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(CardRecordService);
   private readonly deptService = inject(ArPersonalListService);
   private readonly empService = inject(SstOtApplyService);
@@ -101,7 +105,7 @@ export class CardRecordComponent implements OnInit {
   protected readonly rows = signal<RowVm[]>([]);
   protected readonly total = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   private listBootstrapped = false;
   private drawCounter = 0;
 

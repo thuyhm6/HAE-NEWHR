@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduEvaluateMapper">
+
+    <resultMap id="EduEvalCourseResultMap" type="com.ait.edu.trainEducation.model.EduEvalCourse">
+        <id column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_HOUR" property="impleClassHour" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_UNIT" property="impleClassUnit" jdbcType="VARCHAR"/>
+        <result column="IMPLE_START_DATE" property="impleStartDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_END_DATE" property="impleEndDate" jdbcType="VARCHAR"/>
+        <result column="TRAIN_CONTENT" property="trainContent" jdbcType="VARCHAR"/>
+        <result column="STUDENT_EVAL_COUNT" property="studentEvalCount" jdbcType="INTEGER"/>
+        <result column="RESULT_EVAL_COUNT" property="resultEvalCount" jdbcType="INTEGER"/>
+        <result column="STUDENT_COUNT" property="studentCount" jdbcType="INTEGER"/>
+        <result column="RESULT_NO" property="resultNo" jdbcType="VARCHAR"/>
+        <result column="IN_PROGRESS" property="inProgress" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="EduTeacherCheckResultMap" type="com.ait.edu.trainEducation.model.EduTeacherCheck">
+        <id column="CHECK_NO" property="checkNo" jdbcType="VARCHAR"/>
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="TEA_EMPID" property="teaEmpid" jdbcType="VARCHAR"/>
+        <result column="TEA_LOCAL_NAME" property="teaLocalName" jdbcType="VARCHAR"/>
+        <result column="TEA_DEPT_NAME" property="teaDeptName" jdbcType="VARCHAR"/>
+        <result column="TEA_POST_GRADE_NAME" property="teaPostGradeName" jdbcType="VARCHAR"/>
+        <result column="STU_EMPID" property="stuEmpid" jdbcType="VARCHAR"/>
+        <result column="STU_LOCAL_NAME" property="stuLocalName" jdbcType="VARCHAR"/>
+        <result column="GROOMING" property="grooming" jdbcType="VARCHAR"/>
+        <result column="ALLSCORE" property="allscore" jdbcType="VARCHAR"/>
+        <result column="OTHER_ADVISE" property="otherAdvise" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduTrainResultResultMap" type="com.ait.edu.trainEducation.model.EduTrainResult">
+        <id column="RESULT_NO" property="resultNo" jdbcType="VARCHAR"/>
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="STU_EMPID" property="stuEmpid" jdbcType="VARCHAR"/>
+        <result column="STU_LOCAL_NAME" property="stuLocalName" jdbcType="VARCHAR"/>
+        <result column="DIFFICULTY" property="difficulty" jdbcType="VARCHAR"/>
+        <result column="CONTENT_RICH" property="contentRich" jdbcType="VARCHAR"/>
+        <result column="PRACTICABILITY" property="practicability" jdbcType="VARCHAR"/>
+        <result column="TIME_MODERATE" property="timeModerate" jdbcType="VARCHAR"/>
+        <result column="ALLSCORE" property="allscore" jdbcType="VARCHAR"/>
+        <result column="OTHER_ADVISE" property="otherAdvise" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- Dựa trên trainBasicInformation + isKaoping + lọc theo người đăng nhập của bản gốc -->
+    <select id="findCourses" resultMap="EduEvalCourseResultMap">
+        SELECT TO_CHAR(E.BASIC_NO) AS BASIC_NO,
+               GET_GLOBAL_NAME(E.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+               E.COURSE_NAME_CODE,
+               E.PERIOD_TIME,
+               E.IMPLE_CLASS_HOUR,
+               E.IMPLE_CLASS_UNIT,
+               TO_CHAR(E.IMPLE_START_DATE, 'DD/MM/YYYY') AS IMPLE_START_DATE,
+               TO_CHAR(E.IMPLE_END_DATE, 'DD/MM/YYYY') AS IMPLE_END_DATE,
+               E.TRAIN_CONTENT,
+               (SELECT COUNT(1) FROM EDU_FREE_EMPLOYEE C
+                 WHERE C.BASIC_NO = E.BASIC_NO AND C.EVA_RESULT IS NOT NULL) AS STUDENT_EVAL_COUNT,
+               (SELECT COUNT(1) FROM EDU_TRAIN_RESULT R
+                 WHERE R.BASIC_NO = E.BASIC_NO
+                   AND (R.DIFFICULTY IS NOT NULL OR R.CONTENT_RICH IS NOT NULL
+                        OR R.PRACTICABILITY IS NOT NULL OR R.TIME_MODERATE IS NOT NULL)) AS RESULT_EVAL_COUNT,
+               (SELECT COUNT(1) FROM EDU_FREE_EMPLOYEE F
+                 WHERE F.BASIC_NO = E.BASIC_NO AND F.ACTIVITY = '1' AND F.CPNY_ID = E.CPNY_ID) AS STUDENT_COUNT,
+               (SELECT TO_CHAR(MAX(R.RESULT_NO)) FROM EDU_TRAIN_RESULT R
+                 WHERE R.BASIC_NO = E.BASIC_NO AND R.STU_EMPID = #{empid, jdbcType=VARCHAR}) AS RESULT_NO,
+               <choose>
+                   <when test="evalType == '1'">
+                       CASE WHEN EXISTS (SELECT 1 FROM EDU_STUDENT_CHECK S
+                                          WHERE S.BASIC_NO = E.BASIC_NO AND S.ACTIVITY = '1'
+                                            AND S.CPNY_ID = E.CPNY_ID
+                                            AND S.TEA_PERSON_ID = #{personId, jdbcType=VARCHAR})
+                            THEN 1 ELSE 0 END AS IN_PROGRESS
+                   </when>
+                   <when test="evalType == '2'">
+                       CASE WHEN EXISTS (SELECT 1 FROM EDU_TEACHER_CHECK T
+                                          WHERE T.BASIC_NO = E.BASIC_NO AND T.ACTIVITY = '1'
+                                            AND T.CPNY_ID = E.CPNY_ID
+                                            AND T.STU_EMPID = #{empid, jdbcType=VARCHAR}
+                                            AND (T.ALLSCORE IS NOT NULL OR T.GROOMING IS NOT NULL))
+                            THEN 1 ELSE 0 END AS IN_PROGRESS
+                   </when>
+                   <otherwise>
+                       CASE WHEN EXISTS (SELECT 1 FROM EDU_TRAIN_RESULT R
+                                          WHERE R.BASIC_NO = E.BASIC_NO AND R.ACTIVITY = '1'
+                                            AND R.CPNY_ID = E.CPNY_ID AND R.ALLSCORE IS NOT NULL)
+                            THEN 1 ELSE 0 END AS IN_PROGRESS
+                   </otherwise>
+               </choose>
+        FROM EDU_BASIC_INFORMATION E
+        JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = E.PLAN_NO
+        WHERE E.ACTIVITY = '1'
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND INSTR(NVL(P.ISNOT_EVALUATE, '0'), #{evalType, jdbcType=VARCHAR}) &gt; 0
+        <if test="startDate != null and startDate != ''">
+            AND E.IMPLE_START_DATE &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND E.IMPLE_END_DATE &lt;= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="restrict == 'EVA_TEACHER'">
+            AND INSTR(',' || TO_CHAR(E.EVA_TEACHER_EMPID) || ',', ',' || #{empid, jdbcType=VARCHAR} || ',') &gt; 0
+        </if>
+        <if test="restrict == 'STUDENT'">
+            AND EXISTS (SELECT 1 FROM EDU_FREE_EMPLOYEE F
+                         WHERE F.BASIC_NO = E.BASIC_NO AND F.ACTIVITY = '1'
+                           AND F.CPNY_ID = E.CPNY_ID AND F.EMPID = #{empid, jdbcType=VARCHAR})
+        </if>
+        ORDER BY E.CREATE_DATE DESC
+    </select>
+
+    <!-- ===== Đánh giá học viên ===== -->
+    <update id="updateEvaResult">
+        UPDATE EDU_FREE_EMPLOYEE
+           SET EVA_RESULT = #{evaResult, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE FREE_NO = #{freeNo, jdbcType=NUMERIC}
+           AND BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND ACTIVITY = '1'
+    </update>
+
+    <!-- Import điểm thi: giống pa.excelUtil.updateEduFreeEmployee bản gốc (khớp BASIC_NO + EMPID) -->
+    <update id="updateEvaResultByEmpid">
+        UPDATE EDU_FREE_EMPLOYEE
+           SET EVA_RESULT = #{evaResult, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND EMPID = #{empid, jdbcType=VARCHAR}
+           AND ACTIVITY = '1'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ===== Đánh giá giảng viên ===== -->
+    <select id="findTeacherChecks" resultMap="EduTeacherCheckResultMap">
+        SELECT T.CHECK_NO,
+               T.BASIC_NO,
+               T.TEA_EMPID,
+               T.TEA_LOCAL_NAME,
+               (SELECT GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+                 WHERE H.EMPID = T.TEA_EMPID AND ROWNUM = 1) AS TEA_DEPT_NAME,
+               (SELECT GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+                 WHERE H.EMPID = T.TEA_EMPID AND ROWNUM = 1) AS TEA_POST_GRADE_NAME,
+               T.STU_EMPID,
+               T.STU_LOCAL_NAME,
+               T.GROOMING,
+               T.ALLSCORE,
+               T.OTHER_ADVISE
+        FROM EDU_TEACHER_CHECK T
+        WHERE T.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+          AND T.ACTIVITY = 1
+          AND T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="teaEmpid != null and teaEmpid != ''">
+            AND T.TEA_EMPID = #{teaEmpid, jdbcType=VARCHAR}
+        </if>
+        ORDER BY T.TEA_EMPID, T.STU_EMPID
+    </select>
+
+    <!-- Import điểm đánh giá giảng viên: giống pa.excelUtil.insertTeacherEvaluate bản gốc -->
+    <update id="updateGrooming">
+        UPDATE EDU_TEACHER_CHECK
+           SET GROOMING = #{grooming, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND TEA_EMPID = #{teaEmpid, jdbcType=VARCHAR}
+           AND STU_EMPID = #{stuEmpid, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <!-- ===== Kết quả đào tạo ===== -->
+    <select id="findTrainResults" resultMap="EduTrainResultResultMap">
+        SELECT TO_CHAR(R.RESULT_NO) AS RESULT_NO,
+               R.BASIC_NO,
+               R.STU_EMPID,
+               R.STU_LOCAL_NAME,
+               R.DIFFICULTY,
+               R.CONTENT_RICH,
+               R.PRACTICABILITY,
+               R.TIME_MODERATE,
+               R.ALLSCORE,
+               R.OTHER_ADVISE
+        FROM EDU_TRAIN_RESULT R
+        WHERE R.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+          AND R.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND R.ACTIVITY = 1
+        <if test="onlyEvaluated">
+            AND (R.DIFFICULTY IS NOT NULL OR R.CONTENT_RICH IS NOT NULL
+                 OR R.PRACTICABILITY IS NOT NULL OR R.TIME_MODERATE IS NOT NULL OR R.ALLSCORE IS NOT NULL)
+        </if>
+        ORDER BY R.STU_EMPID
+    </select>
+
+    <!-- Import kết quả đào tạo: giống pa.excelUtil.insertTrainResult bản gốc (khớp BASIC_NO + STU_EMPID) -->
+    <update id="updateTrainResultScores">
+        UPDATE EDU_TRAIN_RESULT
+           SET DIFFICULTY = #{difficulty, jdbcType=VARCHAR},
+               CONTENT_RICH = #{contentRich, jdbcType=VARCHAR},
+               PRACTICABILITY = #{practicability, jdbcType=VARCHAR},
+               TIME_MODERATE = #{timeModerate, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND STU_EMPID = #{stuEmpid, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </update>
+
+</mapper>

@@ -183,6 +183,12 @@
         <if test="localName != null and localName != ''">
             AND CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{localName, jdbcType=VARCHAR})) || '%'
         </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                UPPER(E.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                OR CONVERTTOUNSIGN(UPPER(E.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+            )
+        </if>
         <if test="fromDate != null and fromDate != ''">
             AND A.LEAVE_FROM_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
         </if>

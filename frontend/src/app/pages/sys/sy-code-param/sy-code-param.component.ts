@@ -17,6 +17,7 @@ import { NzTreeNodeKey, NzTreeNodeOptions } from 'ng-zorro-antd/core/tree';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyCodeParamRow, SyCodeParamService, SyCodeTreeSource, SyCompanyOption } from './sy-code-param.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý tham số Code theo công ty (viewCodePamers) - xem ghi chú trong
  * sy-code-param.service.ts. Checkbox từng dòng chỉ cập nhật trạng thái cục
@@ -44,6 +45,10 @@ import { SyCodeParamRow, SyCodeParamService, SyCodeTreeSource, SyCompanyOption }
   styleUrl: './sy-code-param.component.scss',
 })
 export class SyCodeParamComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SyCodeParamService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

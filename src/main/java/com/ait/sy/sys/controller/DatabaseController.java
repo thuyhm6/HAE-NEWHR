@@ -1,5 +1,7 @@
 package com.ait.sy.sys.controller;
 
+import com.ait.util.CollectionUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,16 +31,16 @@ public class DatabaseController {
      */
     private ResponseEntity<Map<String, Object>> checkAdminAccess(HttpSession session) {
         if (session == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Chưa đăng nhập"));
+            return ResponseEntity.status(401).body(CollectionUtil.mapOf("error", "Chưa đăng nhập"));
         }
         HrUserInfo user = (HrUserInfo) session.getAttribute("currentHrUser");
         if (user == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Chưa đăng nhập"));
+            return ResponseEntity.status(401).body(CollectionUtil.mapOf("error", "Chưa đăng nhập"));
         }
         String userType = user.getSyUser() != null ? user.getSyUser().getUserType() : null;
         boolean isAdmin = "ADMIN".equalsIgnoreCase(userType) || "SYS".equalsIgnoreCase(userType);
         if (!isAdmin) {
-            return ResponseEntity.status(403).body(Map.of("error", "Không có quyền truy cập. Chỉ dành cho Admin."));
+            return ResponseEntity.status(403).body(CollectionUtil.mapOf("error", "Không có quyền truy cập. Chỉ dành cho Admin."));
         }
         return null;
     }
@@ -273,19 +275,19 @@ public class DatabaseController {
             List<DatabaseMonitoringService.IndexUsageInfo> indexUsage = databaseMonitoringService.getIndexUsage();
 
             Map<String, Object> response = new HashMap<>();
-            response.put("connectionPool", Map.of(
+            response.put("connectionPool", CollectionUtil.mapOf(
                     "activeConnections", connectionInfo.getActiveConnections(),
                     "maxConnections", connectionInfo.getMaxConnections(),
                     "utilizationPercentage",
                     (double) connectionInfo.getActiveConnections() / connectionInfo.getMaxConnections() * 100));
 
-            response.put("health", Map.of(
+            response.put("health", CollectionUtil.mapOf(
                     "healthy", health.isHealthy(),
                     "status", health.getStatus(),
                     "activeSessions", health.getActiveSessions(),
                     "longRunningQueries", health.getLongRunningQueries()));
 
-            response.put("statistics", Map.of(
+            response.put("statistics", CollectionUtil.mapOf(
                     "totalTables", tableStats.size(),
                     "totalIndexes", indexUsage.size(),
                     "usedIndexes", indexUsage.stream().mapToLong(info -> info.isUsed() ? 1 : 0).sum(),

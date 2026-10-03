@@ -16,6 +16,7 @@ import { NzTreeSelectModule } from 'ng-zorro-antd/tree-select';
 import { I18nService } from '../../../i18n/i18n.service';
 import { EmployeeOption, EvsAffirmorRow, EvsAffirmorSetupService, EvsResumeOption } from './evs-affirmor-setup.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 type PickerTarget =
   | { kind: 'row'; seq: string; level: 1 | 2 }
   | { kind: 'bulk' }
@@ -52,6 +53,9 @@ const TEMPLATE_DOWNLOAD_URL = '/sy/excel/api/downloadTemplate?templateName=EvsOb
   styleUrl: './evs-affirmor-setup.component.scss',
 })
 export class EvsAffirmorSetupComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(EvsAffirmorSetupService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

@@ -328,7 +328,8 @@
                    ATT.PERSON_ID,
                    ATT.LEAVE_TYPE_NO   APPLY_TYPE_NO,
                    ATT.LEAVE_TYPE_CODE APPLY_TYPE_CODE,
-                   (CASE WHEN (
+                   <!-- TIME_FLAG = 1: cần gửi email bảo vệ; đã gửi (ATTENDACE_FLAG = 1) thì không gửi lại -->
+                   (CASE WHEN NVL(ATT.ATTENDACE_FLAG, 0) = 0 AND (
                        TO_DATE(TO_CHAR(ATT.LEAVE_FROM_TIME, 'HH24:MI'), 'HH24:MI') >
                        TO_DATE(SUBSTR(SUBSTR(GET_AR_SHIFT_TIME(GET_AR_SHIFTNO(ATT.PERSON_ID, TO_CHAR(ATT.LEAVE_FROM_TIME, 'YYYY/MM/DD'), 'HAE'),
                            TO_CHAR(ATT.LEAVE_FROM_TIME, 'YYYY/MM/DD'), 'HAE', 'FIRST'), 0, 16), 12, 16), 'HH24:MI')

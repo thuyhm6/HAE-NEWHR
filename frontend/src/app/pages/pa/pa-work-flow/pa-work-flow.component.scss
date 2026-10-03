@@ -9,9 +9,10 @@
   flex-wrap: wrap;
   background: var(--ant-color-bg-container, #fff);
   border: 1px solid var(--ant-color-border, #f0f0f0);
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 10px 14px;
   margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .vpwf-label {
@@ -20,20 +21,39 @@
   white-space: nowrap;
 }
 
-.vpwf-period-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  flex-wrap: wrap;
+.vpwf-schedule-select {
+  min-width: 280px;
 }
 
-.vpwf-muted {
-  color: #888;
+// Bảng thông tin kỳ lương (Thời gian QĐ / CC / Số lượng) như user_table bản gốc
+.vpwf-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  background: var(--ant-color-bg-container, #fff);
+
+  th,
+  td {
+    border: 1px solid var(--ant-color-border, #e8e8e8);
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  th {
+    width: 10%;
+    background: var(--ant-color-fill-tertiary, #fafafa);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  td {
+    text-align: center;
+  }
 }
 
 .vpwf-emp-count {
-  color: var(--ant-color-primary, #1677ff);
+  color: #ee7f47;
+  font-weight: 600;
 }
 
 .vpwf-header-actions {
@@ -42,25 +62,29 @@
   margin-left: auto;
 }
 
+// ==== Sơ đồ quy trình ====
 .vpwf-diagram {
   display: flex;
   align-items: stretch;
-  gap: 8px;
-  background: var(--ant-color-fill-tertiary, #fafafa);
-  border: 1px solid var(--ant-color-border, #f0f0f0);
-  border-radius: 4px;
-  padding: 16px;
+  gap: 10px;
+  background: #eaf6ef;
+  border: 1px solid #d9ece1;
+  border-radius: 10px;
+  padding: 20px;
   overflow-x: auto;
 }
 
 .vpwf-col {
   display: flex;
   flex-direction: column;
-  min-width: 200px;
+  gap: 4px;
+  min-width: 210px;
 }
 
-.vpwf-col-single {
-  min-width: 200px;
+// Bước đã thực hiện - màu #0A258F giống bản gốc
+.vpwf-done {
+  color: #0a258f;
+  font-weight: 600;
 }
 
 .vpwf-connector {
@@ -68,7 +92,7 @@
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  color: #999;
+  color: #a3a3a3;
   flex-shrink: 0;
 }
 
@@ -77,33 +101,39 @@
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  color: #999;
-  padding: 4px 0;
+  color: #a3a3a3;
+  padding: 2px 0;
 }
 
 .vpwf-group {
-  background: #fff;
-  border: 1px solid var(--ant-color-border, #f0f0f0);
-  border-radius: 4px;
+  background: #fffaf6;
+  border: 1.5px solid #f2b088;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(238, 127, 71, 0.08);
+  transition: box-shadow 0.15s ease;
+}
+
+.vpwf-group:hover {
+  box-shadow: 0 2px 8px rgba(238, 127, 71, 0.16);
 }
 
 .vpwf-group-header {
-  background: #595959;
-  color: #fff;
-  font-weight: 600;
-  font-size: 12px;
+  background: transparent;
+  color: #d9622b;
+  font-weight: 700;
+  font-size: 13px;
   text-align: center;
-  padding: 6px 8px;
+  letter-spacing: 0.2px;
+  padding: 10px 10px 8px;
 }
 
 .vpwf-step {
-  border-bottom: 1px solid var(--ant-color-border, #f0f0f0);
-  padding: 6px 10px;
+  padding: 0 10px 10px;
 }
 
 .vpwf-step:last-child {
-  border-bottom: none;
+  padding-bottom: 10px;
 }
 
 .vpwf-step-checkbox {
@@ -111,6 +141,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 6px;
+  background: #fff;
+  border: 1px solid #f0e2d8;
+  border-radius: 6px;
+  padding: 6px 8px 6px 12px;
 }
 
 .vpwf-step-checkbox label {
@@ -118,24 +152,42 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
+  color: #333;
   cursor: pointer;
+}
+
+.vpwf-status-btn {
+  border-radius: 6px;
+  color: #8c8c8c;
+}
+
+.vpwf-status-btn.vpwf-status-done {
+  color: #389e0d;
 }
 
 .vpwf-active-step {
   display: block;
   width: 100%;
-  background: var(--ant-color-primary, #1677ff);
+  background: #ee7f47;
   color: #fff;
   border: none;
-  padding: 6px 10px;
+  padding: 8px 12px;
   font-size: 13px;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
 
 .vpwf-active-step:hover {
-  opacity: 0.85;
+  background: #e06a30;
+  box-shadow: 0 2px 6px rgba(224, 106, 48, 0.35);
+}
+
+.vpwf-active-step:active {
+  transform: translateY(1px);
 }
 
 .vpwf-loading-overlay {
@@ -167,22 +219,7 @@
   margin-top: 4px;
 }
 
-.vpwf-records-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.vpwf-records-table th,
-.vpwf-records-table td {
-  border: 1px solid var(--ant-color-border, #f0f0f0);
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.vpwf-records-table th {
-  background: var(--ant-color-fill-tertiary, #fafafa);
-}
-
-.vpwf-col-center {
-  text-align: center;
+// Modal lỗi khi thực hiện - message procedure có nhiều dòng (render ngoài host nên cần ::ng-deep)
+::ng-deep .vpwf-msg-modal .ant-modal-confirm-content {
+  white-space: pre-line;
 }

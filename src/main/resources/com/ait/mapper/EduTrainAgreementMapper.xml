@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainAgreementMapper">
+
+    <resultMap id="EduTrainAgreementResultMap" type="com.ait.edu.trainEducation.model.EduTrainAgreement">
+        <id column="AGREE_NO" property="agreeNo" jdbcType="VARCHAR"/>
+        <result column="AGREE_ID" property="agreeId" jdbcType="VARCHAR"/>
+        <result column="AGREE_NAME" property="agreeName" jdbcType="VARCHAR"/>
+        <result column="PERSON_ID" property="personId" jdbcType="VARCHAR"/>
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
+        <result column="DEPART_NAME" property="departName" jdbcType="VARCHAR"/>
+        <result column="CON_START_DATE" property="conStartDate" jdbcType="VARCHAR"/>
+        <result column="CON_END_DATE" property="conEndDate" jdbcType="VARCHAR"/>
+        <result column="STUDY_START_DATE" property="studyStartDate" jdbcType="VARCHAR"/>
+        <result column="STUDY_END_DATE" property="studyEndDate" jdbcType="VARCHAR"/>
+        <result column="STUDY_DAY" property="studyDay" jdbcType="VARCHAR"/>
+        <result column="SER_START_DATE" property="serStartDate" jdbcType="VARCHAR"/>
+        <result column="SER_END_DATE" property="serEndDate" jdbcType="VARCHAR"/>
+        <result column="SERVICE_YEAR" property="serviceYear" jdbcType="VARCHAR"/>
+        <result column="EXCHANGE_RATE" property="exchangeRate" jdbcType="VARCHAR"/>
+        <result column="TOTAL_FEE" property="totalFee" jdbcType="VARCHAR"/>
+        <result column="LEFT_DATE" property="leftDate" jdbcType="VARCHAR"/>
+        <result column="HQ_FREE" property="hqFree" jdbcType="VARCHAR"/>
+        <result column="CGFY_FREE" property="cgfyFree" jdbcType="VARCHAR"/>
+        <result column="JP_FREE" property="jpFree" jdbcType="VARCHAR"/>
+        <result column="ZFBZ_FREE" property="zfbzFree" jdbcType="VARCHAR"/>
+        <result column="CGBZ_FREE" property="cgbzFree" jdbcType="VARCHAR"/>
+        <result column="CGBZ_FREE_FACT" property="cgbzFreeFact" jdbcType="VARCHAR"/>
+        <result column="SYBX_FREE" property="sybxFree" jdbcType="VARCHAR"/>
+        <result column="YX_PAY" property="yxPay" jdbcType="VARCHAR"/>
+        <result column="JT_FREE" property="jtFree" jdbcType="VARCHAR"/>
+        <result column="TX_FREE" property="txFree" jdbcType="VARCHAR"/>
+        <result column="FACT_PAY" property="factPay" jdbcType="VARCHAR"/>
+        <result column="AGREE_START_DATE" property="agreeStartDate" jdbcType="VARCHAR"/>
+        <result column="AGREE_END_DATE" property="agreeEndDate" jdbcType="VARCHAR"/>
+        <result column="REMARK" property="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="selectColumns">
+        A.AGREE_NO,
+        A.AGREE_ID,
+        A.AGREE_NAME,
+        A.PERSON_ID,
+        A.EMPID,
+        A.LOCAL_NAME,
+        (SELECT GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+          WHERE H.EMPID = A.EMPID AND H.CPNY_ID = A.CPNY_ID AND ROWNUM = 1) AS DEPART_NAME,
+        TO_CHAR(A.CON_START_DATE, 'DD/MM/YYYY') AS CON_START_DATE,
+        TO_CHAR(A.CON_END_DATE, 'DD/MM/YYYY') AS CON_END_DATE,
+        TO_CHAR(A.STUDY_START_DATE, 'DD/MM/YYYY') AS STUDY_START_DATE,
+        TO_CHAR(A.STUDY_END_DATE, 'DD/MM/YYYY') AS STUDY_END_DATE,
+        A.STUDY_DAY,
+        TO_CHAR(A.SER_START_DATE, 'DD/MM/YYYY') AS SER_START_DATE,
+        TO_CHAR(A.SER_END_DATE, 'DD/MM/YYYY') AS SER_END_DATE,
+        A.SERVICE_YEAR,
+        A.EXCHANGE_RATE,
+        A.TOTAL_FEE,
+        TO_CHAR(A.LEFT_DATE, 'DD/MM/YYYY') AS LEFT_DATE,
+        A.HQ_FREE,
+        A.CGFY_FREE,
+        A.JP_FREE,
+        A.ZFBZ_FREE,
+        A.CGBZ_FREE,
+        A.CGBZ_FREE_FACT,
+        A.SYBX_FREE,
+        A.YX_PAY,
+        A.JT_FREE,
+        A.TX_FREE,
+        A.FACT_PAY,
+        TO_CHAR(A.AGREE_START_DATE, 'DD/MM/YYYY') AS AGREE_START_DATE,
+        TO_CHAR(A.AGREE_END_DATE, 'DD/MM/YYYY') AS AGREE_END_DATE,
+        A.REMARK
+    </sql>
+
+    <select id="findList" resultMap="EduTrainAgreementResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_TRAIN_AGREEMENT A
+        WHERE A.ACTIVITY = '1'
+          AND A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="deptNo != null and deptNo != ''">
+            AND A.EMPID IN (
+                SELECT H.EMPID FROM HR_EMPLOYEE H
+                WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                  AND H.DEPTNO IN (
+                      SELECT D.DEPTNO FROM HR_DEPARTMENT D
+                      START WITH D.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                      CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO
+                  )
+            )
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (UPPER(A.EMPID) = UPPER(#{keyword, jdbcType=VARCHAR})
+                 OR CONVERTTOUNSIGN(UPPER(A.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+        <if test="conStartDate != null and conStartDate != ''">
+            AND A.CON_START_DATE &gt;= TO_DATE(#{conStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="conEndDate != null and conEndDate != ''">
+            AND A.CON_END_DATE &lt;= TO_DATE(#{conEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        ORDER BY A.CREATE_DATE DESC
+    </select>
+
+    <select id="findByAgreeNo" resultMap="EduTrainAgreementResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_TRAIN_AGREEMENT A
+        WHERE A.ACTIVITY = '1'
+          AND A.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND A.AGREE_NO = #{agreeNo, jdbcType=VARCHAR}
+    </select>
+
+    <select id="nextAgreeNo" resultType="java.lang.String">
+        SELECT TO_CHAR(EDU_TRAIN_AGREE_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <select id="findMaxAgreeSeq" resultType="java.lang.Integer">
+        SELECT MAX(TO_NUMBER(SUBSTR(T.AGREE_ID, 4)))
+        FROM EDU_TRAIN_AGREEMENT T
+        WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND T.AGREE_ID LIKE 'TRA%'
+          AND REGEXP_LIKE(SUBSTR(T.AGREE_ID, 4), '^[0-9]+$')
+    </select>
+
+    <insert id="insert">
+        INSERT INTO EDU_TRAIN_AGREEMENT (
+            AGREE_NO, PERSON_ID, LOCAL_NAME, EMPID, AGREE_ID, AGREE_NAME,
+            SER_START_DATE, SER_END_DATE, TOTAL_FEE, EXCHANGE_RATE,
+            HQ_FREE, CGFY_FREE, JP_FREE, ZFBZ_FREE, CGBZ_FREE, CGBZ_FREE_FACT,
+            SYBX_FREE, YX_PAY, JT_FREE, TX_FREE, REMARK, FACT_PAY,
+            LEFT_DATE, AGREE_START_DATE, AGREE_END_DATE,
+            CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID,
+            STUDY_START_DATE, STUDY_END_DATE, STUDY_DAY, SERVICE_YEAR, CON_START_DATE, CON_END_DATE
+        ) VALUES (
+            #{agreeNo, jdbcType=VARCHAR},
+            #{personId, jdbcType=VARCHAR},
+            #{localName, jdbcType=VARCHAR},
+            #{empid, jdbcType=VARCHAR},
+            #{agreeId, jdbcType=VARCHAR},
+            #{agreeName, jdbcType=VARCHAR},
+            TO_DATE(#{serStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            TO_DATE(#{serEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            #{totalFee, jdbcType=VARCHAR},
+            #{exchangeRate, jdbcType=VARCHAR},
+            #{hqFree, jdbcType=VARCHAR},
+            #{cgfyFree, jdbcType=VARCHAR},
+            #{jpFree, jdbcType=VARCHAR},
+            #{zfbzFree, jdbcType=VARCHAR},
+            #{cgbzFree, jdbcType=VARCHAR},
+            #{cgbzFreeFact, jdbcType=VARCHAR},
+            #{sybxFree, jdbcType=VARCHAR},
+            #{yxPay, jdbcType=VARCHAR},
+            #{jtFree, jdbcType=VARCHAR},
+            #{txFree, jdbcType=VARCHAR},
+            #{remark, jdbcType=VARCHAR},
+            #{factPay, jdbcType=VARCHAR},
+            TO_DATE(#{leftDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            TO_DATE(#{agreeStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            TO_DATE(#{agreeEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            TO_DATE(#{studyStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            TO_DATE(#{studyEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            #{studyDay, jdbcType=VARCHAR},
+            #{serviceYear, jdbcType=VARCHAR},
+            TO_DATE(#{conStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            TO_DATE(#{conEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE EDU_TRAIN_AGREEMENT
+           SET AGREE_NAME = #{agreeName, jdbcType=VARCHAR},
+               PERSON_ID = #{personId, jdbcType=VARCHAR},
+               EMPID = #{empid, jdbcType=VARCHAR},
+               LOCAL_NAME = #{localName, jdbcType=VARCHAR},
+               CON_START_DATE = TO_DATE(#{conStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               CON_END_DATE = TO_DATE(#{conEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               STUDY_START_DATE = TO_DATE(#{studyStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               STUDY_END_DATE = TO_DATE(#{studyEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               STUDY_DAY = #{studyDay, jdbcType=VARCHAR},
+               HQ_FREE = #{hqFree, jdbcType=VARCHAR},
+               CGFY_FREE = #{cgfyFree, jdbcType=VARCHAR},
+               JP_FREE = #{jpFree, jdbcType=VARCHAR},
+               ZFBZ_FREE = #{zfbzFree, jdbcType=VARCHAR},
+               CGBZ_FREE = #{cgbzFree, jdbcType=VARCHAR},
+               CGBZ_FREE_FACT = #{cgbzFreeFact, jdbcType=VARCHAR},
+               SYBX_FREE = #{sybxFree, jdbcType=VARCHAR},
+               YX_PAY = #{yxPay, jdbcType=VARCHAR},
+               JT_FREE = #{jtFree, jdbcType=VARCHAR},
+               TX_FREE = #{txFree, jdbcType=VARCHAR},
+               FACT_PAY = #{factPay, jdbcType=VARCHAR},
+               AGREE_START_DATE = TO_DATE(#{agreeStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               AGREE_END_DATE = TO_DATE(#{agreeEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               REMARK = #{remark, jdbcType=VARCHAR},
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE AGREE_NO = #{agreeNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <update id="softDelete">
+        UPDATE EDU_TRAIN_AGREEMENT
+           SET ACTIVITY = '0'
+         WHERE AGREE_NO = #{agreeNo, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

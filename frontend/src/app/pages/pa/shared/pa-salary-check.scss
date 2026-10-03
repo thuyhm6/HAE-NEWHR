@@ -1,0 +1,125 @@
+// Style dùng chung cho nhóm màn Đối chiếu lương (port từ viewPaParamCtroller - Hanwha_HAE).
+// Mỗi component @use file này rồi chỉ bổ sung phần riêng.
+
+.psc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.psc-search-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 10px 12px;
+}
+
+.psc-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.psc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.psc-label {
+  font-weight: 500;
+}
+
+.psc-select {
+  width: 220px;
+}
+
+.psc-select-wide {
+  width: 280px;
+}
+
+.psc-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.psc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.psc-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  padding: 6px;
+  min-width: 0;
+}
+
+.psc-card-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.psc-total {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.psc-body {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.psc-row {
+  cursor: pointer;
+}
+
+.psc-row-selected > td {
+  background: #e6f7ff !important;
+}
+
+.psc-link {
+  color: #1677ff;
+  cursor: pointer;
+}
+
+.psc-link:hover {
+  text-decoration: underline;
+}
+
+.psc-hint {
+  color: #8c8c8c;
+  padding: 24px 8px;
+  text-align: center;
+}
+
+.psc-center {
+  text-align: center;
+}
+
+.psc-right {
+  text-align: right;
+}
+
+.psc-ellipsis {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+@media (max-width: 1200px) {
+  .psc-body {
+    flex-direction: column;
+  }
+
+  .psc-body > * {
+    width: 100%;
+  }
+}

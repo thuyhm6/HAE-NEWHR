@@ -1,0 +1,22 @@
+@use '../../shared/pa-salary-check';
+
+.prcd-left {
+  flex: 0 0 45%;
+}
+
+.prcd-right {
+  flex: 1 1 auto;
+}
+
+.prcd-group > td {
+  background: #fafafa;
+  font-weight: 500;
+}
+
+.prcd-count {
+  color: #1677ff;
+}
+
+.prcd-child {
+  padding-left: 28px !important;
+}

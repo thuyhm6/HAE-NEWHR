@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduBasicInfoMapper">
+
+    <!-- Các cột danh sách NV/giảng viên có thể là CLOB: đọc bằng getString (StringTypeHandler), ghi bằng jdbcType=CLOB -->
+    <resultMap id="EduBasicInformationResultMap" type="com.ait.edu.trainEducation.model.EduBasicInformation">
+        <id column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="PLAN_NO" property="planNo" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE" property="trainTypeCode" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="TRAIN_FORM_CODE" property="trainFormCode" jdbcType="VARCHAR"/>
+        <result column="TRAIN_FORM_CODE_NAME" property="trainFormCodeName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_ADDRESS" property="trainAddress" jdbcType="VARCHAR"/>
+        <result column="IMPLE_START_DATE" property="impleStartDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_END_DATE" property="impleEndDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_HOUR" property="impleClassHour" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_UNIT" property="impleClassUnit" jdbcType="VARCHAR"/>
+        <result column="TRAIN_CONTENT" property="trainContent" jdbcType="VARCHAR"/>
+        <result column="DES_DEPARTMENT" property="desDepartment" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+        <result column="APPLY_END_DATE" property="applyEndDate" jdbcType="VARCHAR"/>
+        <result column="COM_TEACHER_EMPID" property="comTeacherEmpid" jdbcType="VARCHAR"/>
+        <result column="COM_TEACHER_NAME" property="comTeacherName" jdbcType="VARCHAR"/>
+        <result column="EVA_TEACHER_EMPID" property="evaTeacherEmpid" jdbcType="VARCHAR"/>
+        <result column="EVA_TEACHER_NAME" property="evaTeacherName" jdbcType="VARCHAR"/>
+        <result column="PLAN_EMPLOYEE_EMPID" property="planEmployeeEmpid" jdbcType="VARCHAR"/>
+        <result column="PLAN_EMPLOYEE_NAME" property="planEmployeeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduBasicPlanOptionResultMap" type="com.ait.edu.trainEducation.model.EduBasicPlanOption">
+        <id column="PLAN_NO" property="planNo" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_CODE_NAME" property="trainTypeCodeName" jdbcType="VARCHAR"/>
+        <result column="COURSE_NUMBER" property="courseNumber" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduFreeEmployeeResultMap" type="com.ait.edu.trainEducation.model.EduFreeEmployee">
+        <id column="FREE_NO" property="freeNo" jdbcType="VARCHAR"/>
+        <result column="BASIC_NO" property="basicNo" jdbcType="VARCHAR"/>
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
+        <result column="FLAG" property="flag" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="EVA_RESULT" property="evaResult" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduPersonResultMap" type="com.ait.edu.trainEducation.model.EduPerson">
+        <id column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="selectColumns">
+        E.BASIC_NO,
+        E.PLAN_NO,
+        E.TRAIN_TYPE_CODE,
+        GET_GLOBAL_NAME(E.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+        E.COURSE_NAME_CODE,
+        E.TRAIN_FORM_CODE,
+        GET_GLOBAL_NAME(E.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_CODE_NAME,
+        E.TRAIN_ADDRESS,
+        TO_CHAR(E.IMPLE_START_DATE, 'DD/MM/YYYY') AS IMPLE_START_DATE,
+        TO_CHAR(E.IMPLE_END_DATE, 'DD/MM/YYYY') AS IMPLE_END_DATE,
+        E.IMPLE_CLASS_HOUR,
+        E.IMPLE_CLASS_UNIT,
+        E.TRAIN_CONTENT,
+        E.DES_DEPARTMENT,
+        E.PERIOD_TIME,
+        TO_CHAR(E.APPLY_END_DATE, 'DD/MM/YYYY') AS APPLY_END_DATE
+    </sql>
+
+    <select id="findList" resultMap="EduBasicInformationResultMap">
+        SELECT <include refid="selectColumns"/>
+        FROM EDU_BASIC_INFORMATION E
+        WHERE E.ACTIVITY = '1'
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="courseName != null and courseName != ''">
+            AND UPPER(E.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND E.IMPLE_START_DATE &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND E.IMPLE_END_DATE &lt;= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        ORDER BY E.CREATE_DATE DESC
+    </select>
+
+    <select id="findById" resultMap="EduBasicInformationResultMap">
+        SELECT <include refid="selectColumns"/>,
+               E.COM_TEACHER_EMPID,
+               E.COM_TEACHER_NAME,
+               E.EVA_TEACHER_EMPID,
+               E.EVA_TEACHER_NAME,
+               E.PLAN_EMPLOYEE_EMPID,
+               E.PLAN_EMPLOYEE_NAME
+        FROM EDU_BASIC_INFORMATION E
+        WHERE E.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <select id="nextBasicNo" resultType="java.lang.String">
+        SELECT TO_CHAR(EDU_BASIC_INFOR_SEQ.NEXTVAL) FROM DUAL
+    </select>
+
+    <insert id="insert">
+        INSERT INTO EDU_BASIC_INFORMATION (
+            BASIC_NO, PLAN_NO, TRAIN_TYPE_CODE, COURSE_NAME_CODE, TRAIN_FORM_CODE, TRAIN_ADDRESS,
+            IMPLE_START_DATE, IMPLE_END_DATE, IMPLE_CLASS_HOUR, IMPLE_CLASS_UNIT, TRAIN_CONTENT,
+            COM_TEACHER_EMPID, COM_TEACHER_NAME, EVA_TEACHER_EMPID, EVA_TEACHER_NAME,
+            PLAN_EMPLOYEE_EMPID, DES_DEPARTMENT, PLAN_EMPLOYEE_NAME,
+            CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID, PERIOD_TIME, APPLY_END_DATE
+        ) VALUES (
+            #{basicNo, jdbcType=NUMERIC},
+            #{planNo, jdbcType=NUMERIC},
+            #{trainTypeCode, jdbcType=VARCHAR},
+            #{courseNameCode, jdbcType=VARCHAR},
+            #{trainFormCode, jdbcType=VARCHAR},
+            #{trainAddress, jdbcType=VARCHAR},
+            TO_DATE(#{impleStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            TO_DATE(#{impleEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+            #{impleClassHour, jdbcType=VARCHAR},
+            #{impleClassUnit, jdbcType=VARCHAR},
+            #{trainContent, jdbcType=VARCHAR},
+            #{comTeacherEmpid, jdbcType=CLOB},
+            #{comTeacherName, jdbcType=CLOB},
+            #{evaTeacherEmpid, jdbcType=CLOB},
+            #{evaTeacherName, jdbcType=CLOB},
+            #{planEmployeeEmpid, jdbcType=CLOB},
+            #{desDepartment, jdbcType=VARCHAR},
+            #{planEmployeeName, jdbcType=CLOB},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            #{periodTime, jdbcType=VARCHAR},
+            TO_DATE(#{applyEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        )
+    </insert>
+
+    <!-- Giữ nguyên updateTrainBasicInformationInfo bản gốc: không cho đổi kế hoạch / giảng viên theo kế hoạch -->
+    <update id="update">
+        UPDATE EDU_BASIC_INFORMATION
+           SET IMPLE_START_DATE = TO_DATE(#{impleStartDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               IMPLE_END_DATE = TO_DATE(#{impleEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               IMPLE_CLASS_HOUR = #{impleClassHour, jdbcType=VARCHAR},
+               IMPLE_CLASS_UNIT = #{impleClassUnit, jdbcType=VARCHAR},
+               TRAIN_CONTENT = #{trainContent, jdbcType=VARCHAR},
+               EVA_TEACHER_EMPID = #{evaTeacherEmpid, jdbcType=CLOB},
+               EVA_TEACHER_NAME = #{evaTeacherName, jdbcType=CLOB},
+               DES_DEPARTMENT = #{desDepartment, jdbcType=VARCHAR},
+               APPLY_END_DATE = TO_DATE(#{applyEndDate, jdbcType=VARCHAR}, 'DD/MM/YYYY'),
+               UPDATE_DATE = SYSDATE,
+               UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+
+    <select id="findAvailablePlans" resultMap="EduBasicPlanOptionResultMap">
+        SELECT TO_CHAR(P.PLAN_NO) AS PLAN_NO,
+               GET_GLOBAL_NAME(P.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_CODE_NAME,
+               P.COURSE_NUMBER,
+               P.COURSE_NAME_CODE,
+               P.PERIOD_TIME
+        FROM EDU_PLAN_MANAGER P
+        WHERE P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND P.ACTIVITY = 1
+        ORDER BY P.COURSE_NAME_CODE, P.PERIOD_TIME
+    </select>
+
+    <update id="markPlanUsed">
+        UPDATE EDU_PLAN_MANAGER SET ACTIVITY = 2
+         WHERE PLAN_NO = #{planNo, jdbcType=NUMERIC}
+           AND ACTIVITY = 1
+    </update>
+
+    <update id="releasePlanByBasic">
+        UPDATE EDU_PLAN_MANAGER P SET P.ACTIVITY = 1
+         WHERE P.PLAN_NO = (SELECT B.PLAN_NO FROM EDU_BASIC_INFORMATION B WHERE B.BASIC_NO = #{basicNo, jdbcType=NUMERIC})
+           AND P.ACTIVITY = 2
+    </update>
+
+    <!-- ===== Học viên ===== -->
+    <select id="findFreeEmployees" resultMap="EduFreeEmployeeResultMap">
+        SELECT E.FREE_NO,
+               E.BASIC_NO,
+               E.EMPID,
+               E.LOCAL_NAME,
+               E.FLAG,
+               (SELECT GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+                 WHERE H.EMPID = E.EMPID AND H.CPNY_ID = E.CPNY_ID AND ROWNUM = 1) AS DEPT_NAME,
+               (SELECT GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+                 WHERE H.EMPID = E.EMPID AND H.CPNY_ID = E.CPNY_ID AND ROWNUM = 1) AS POST_GRADE_NAME,
+               E.EVA_RESULT
+        FROM EDU_FREE_EMPLOYEE E
+        WHERE E.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+          AND E.ACTIVITY = '1'
+          AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        ORDER BY E.FLAG, E.EMPID
+    </select>
+
+    <insert id="insertFreeEmployee">
+        INSERT INTO EDU_FREE_EMPLOYEE (
+            FREE_NO, EMPID, LOCAL_NAME, BASIC_NO, CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID, FLAG
+        ) VALUES (
+            EDU_FREE_EMP_SEQ.NEXTVAL,
+            #{empid, jdbcType=VARCHAR},
+            #{localName, jdbcType=VARCHAR},
+            #{basicNo, jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            #{flag, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteFreeEmployee">
+        DELETE FROM EDU_FREE_EMPLOYEE
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND ACTIVITY = '1'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND EMPID = #{empid, jdbcType=VARCHAR}
+    </delete>
+
+    <delete id="deleteStudentCheckByStudent">
+        DELETE FROM EDU_STUDENT_CHECK
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND ACTIVITY = '1'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND STU_EMPID = #{empid, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ===== Kết quả đào tạo / Đánh giá giảng viên ===== -->
+    <select id="countTrainResult" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM EDU_TRAIN_RESULT
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND STU_EMPID = #{empid, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </select>
+
+    <insert id="insertTrainResult">
+        INSERT INTO EDU_TRAIN_RESULT (
+            RESULT_NO, BASIC_NO, STU_EMPID, STU_LOCAL_NAME, CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID
+        ) VALUES (
+            EDU_TRAIN_RESULT_SEQ.NEXTVAL,
+            #{basicNo, jdbcType=NUMERIC},
+            #{empid, jdbcType=VARCHAR},
+            #{localName, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteTrainResultByStudent">
+        DELETE FROM EDU_TRAIN_RESULT
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND STU_EMPID = #{empid, jdbcType=VARCHAR}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ACTIVITY = 1
+    </delete>
+
+    <insert id="insertTeacherCheck">
+        INSERT INTO EDU_TEACHER_CHECK (
+            CHECK_NO, TEA_EMPID, TEA_LOCAL_NAME, STU_EMPID, STU_LOCAL_NAME,
+            CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID, BASIC_NO
+        ) VALUES (
+            EDU_TEACHER_CHECK_SEQ.NEXTVAL,
+            #{teaEmpid, jdbcType=VARCHAR},
+            #{teaName, jdbcType=VARCHAR},
+            #{stuEmpid, jdbcType=VARCHAR},
+            #{stuName, jdbcType=VARCHAR},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR},
+            #{basicNo, jdbcType=NUMERIC}
+        )
+    </insert>
+
+    <delete id="deleteTeacherChecks">
+        DELETE FROM EDU_TEACHER_CHECK
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ===== Nhân viên thực tế ===== -->
+    <select id="findFinalStudents" resultMap="EduPersonResultMap">
+        SELECT F.FINAL_STUDENT_EMPID AS EMPID,
+               F.FINAL_STUDENT_NAME AS NAME,
+               NULL AS DEPT_NAME
+        FROM EDU_FINAL_STUDENT F
+        WHERE F.BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+          AND F.ACTIVITY = '1'
+          AND F.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        ORDER BY F.FINAL_STUDENT_EMPID
+    </select>
+
+    <insert id="insertFinalStudent">
+        INSERT INTO EDU_FINAL_STUDENT (
+            FINAL_NO, FINAL_STUDENT_NAME, FINAL_STUDENT_EMPID, BASIC_NO, CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID
+        ) VALUES (
+            EDU_FINAL_STUDENT_SEQ.NEXTVAL,
+            #{name, jdbcType=VARCHAR},
+            #{empid, jdbcType=VARCHAR},
+            #{basicNo, jdbcType=NUMERIC},
+            SYSDATE,
+            #{adminID, jdbcType=VARCHAR},
+            #{adminIP, jdbcType=VARCHAR},
+            #{cpnyId, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteFinalStudents">
+        DELETE FROM EDU_FINAL_STUDENT
+         WHERE BASIC_NO = #{basicNo, jdbcType=NUMERIC}
+           AND ACTIVITY = '1'
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </delete>
+
+    <!-- ===== Chi phí ===== -->
+    <insert id="insertCostManager">
+        INSERT INTO EDU_COST_MANAGER (COST_NO, BASIC_NO, CREATE_DATE, CREATED_BY, CREATED_IP, CPNY_ID)
+        VALUES (EDU_COST_MANA_SEQ.NEXTVAL, #{basicNo, jdbcType=NUMERIC}, SYSDATE,
+                #{adminID, jdbcType=VARCHAR}, #{adminIP, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR})
+    </insert>
+
+    <!-- ===== Tra cứu cho popup ===== -->
+    <select id="findEmployeesByEmpids" resultMap="EduPersonResultMap">
+        SELECT T.EMPID,
+               T.LOCAL_NAME AS NAME,
+               GET_DEPT_NAME(T.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME
+        FROM HR_EMPLOYEE T
+        WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND T.ACTIVITY = '1'
+          AND T.EMPID IN
+          <foreach collection="empids" item="e" open="(" separator="," close=")">
+              #{e, jdbcType=VARCHAR}
+          </foreach>
+        ORDER BY T.EMPID
+    </select>
+
+    <select id="findTeachersByEmpids" resultMap="EduPersonResultMap">
+        SELECT T.EMPID,
+               T.TEACHER_NAME AS NAME,
+               (SELECT GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) FROM HR_EMPLOYEE H
+                 WHERE H.PERSON_ID = T.PERSON_ID AND ROWNUM = 1) AS DEPT_NAME
+        FROM EDU_TEACHER_MANAGER T
+        WHERE T.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND T.ACTIVITY = '1'
+          AND T.EMPID IN
+          <foreach collection="empids" item="e" open="(" separator="," close=")">
+              #{e, jdbcType=VARCHAR}
+          </foreach>
+        ORDER BY T.EMPID
+    </select>
+
+</mapper>

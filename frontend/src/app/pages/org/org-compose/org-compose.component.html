@@ -143,7 +143,7 @@
         </button>
       </div>
 
-      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="10" nzShowSizeChanger [nzPageSizeOptions]="[10, 25, 50, 100]" nzSize="small" nzBordered #vocEmpTable>
+      <nz-table [nzData]="employees()" [nzLoading]="loadingEmployees()" [nzPageSize]="defaultPageSize" nzShowSizeChanger [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered #vocEmpTable>
         <thead>
           <tr>
             <th nzWidth="50px" class="voc-col-center">{{ i18n.t('common.stt', 'STT') }}</th>

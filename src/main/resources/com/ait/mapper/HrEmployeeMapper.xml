@@ -845,6 +845,31 @@
     </select>
 
     <!-- Get employee statistics by department -->
+    <!-- Result Map cho popup xác nhận đồng ý xử lý dữ liệu cá nhân -->
+    <resultMap id="PersonalDataConfirmInfoResultMap" type="com.ait.sy.sys.dto.PersonalDataConfirmInfoDTO">
+        <result column="LOCAL_NAME" property="localName"/>
+        <result column="EMP_ID" property="empId"/>
+        <result column="POSITION_NAME" property="positionName"/>
+        <result column="TEAM_NAME" property="teamName"/>
+        <result column="PART_NAME" property="partName"/>
+        <result column="CELL_NAME" property="cellName"/>
+    </resultMap>
+
+    <!-- Thông tin nhân viên hiển thị trên popup xác nhận đồng ý xử lý dữ liệu cá nhân -->
+    <select id="findPersonalDataConfirmInfo" resultMap="PersonalDataConfirmInfoResultMap">
+        <![CDATA[
+        SELECT
+            he.LOCAL_NAME AS LOCAL_NAME,
+            he.EMPID AS EMP_ID,
+            GET_GLOBAL_NAME(he.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME,
+            GET_DEPT_NAME(GET_DEPT_NO_BY_LEVEL(he.DEPTNO, he.CPNY_ID, '2'), #{lang, jdbcType=VARCHAR}) AS TEAM_NAME,
+            GET_DEPT_NAME(GET_DEPT_NO_BY_LEVEL(he.DEPTNO, he.CPNY_ID, '3'), #{lang, jdbcType=VARCHAR}) AS PART_NAME,
+            GET_DEPT_NAME(GET_DEPT_NO_BY_LEVEL(he.DEPTNO, he.CPNY_ID, '4'), #{lang, jdbcType=VARCHAR}) AS CELL_NAME
+        FROM HR_EMPLOYEE he
+        WHERE he.PERSON_ID = #{personId, jdbcType=VARCHAR}
+        ]]>
+    </select>
+
     <select id="getEmployeeStatsByDept" resultType="java.util.Map">
         SELECT 
             DEPTNO as deptNo,

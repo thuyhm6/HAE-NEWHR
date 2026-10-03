@@ -14,6 +14,7 @@ import { I18nService } from '../../../i18n/i18n.service';
 import { AffirmTargetDetail, AffirmTargetRow, AffirmTargetService, EvsGradeOption, EvsResumeOption } from '../affirm-target/affirm-target.service';
 import { AbilityItem, AffirmTargetAbilityService, EvsScoreOption } from './affirm-target-ability.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 export interface AffirmTargetAbilityConfig {
   /** API dùng cho objectList/gradeSummary/standardRate/resume - dùng chung với AffirmTarget. */
   apiBase: 'affirmTarget1' | 'affirmTarget2';
@@ -38,6 +39,9 @@ export interface AffirmTargetAbilityConfig {
   styleUrl: './affirm-target-ability.component.scss',
 })
 export class AffirmTargetAbilityComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly listService = inject(AffirmTargetService);
   private readonly service = inject(AffirmTargetAbilityService);
   private readonly message = inject(NzMessageService);

@@ -1,0 +1,114 @@
+<div class="psc-page">
+  <div class="psc-search-card">
+    <div class="psc-search-row">
+      <div class="psc-field">
+        <label class="psc-label" for="pdpkSearchKey">{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</label>
+        <input id="pdpkSearchKey" nz-input class="psc-select" [ngModel]="searchKey()" (ngModelChange)="searchKey.set($event)" (keydown.enter)="search()" />
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <nz-select id="pdpkPaySchedule" class="psc-select-wide" [ngModel]="payScheduleNo()" (ngModelChange)="payScheduleNo.set($event)" nzShowSearch>
+          @for (sch of scheduleOptions(); track sch.payScheduleNo) {
+            <nz-option [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</label>
+        <nz-tree-select
+          id="pdpkDept"
+          class="psc-select-wide"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="deptNo()"
+          (ngModelChange)="deptNo.set($event)"
+          nzAllowClear
+          nzShowSearch
+          [nzDropdownStyle]="{ 'max-height': '320px' }"
+          [nzPlaceHolder]="i18n.t('pa.payStub.deptPlaceholder', 'Mã / Tên phòng ban')"
+        ></nz-tree-select>
+      </div>
+      <div class="psc-actions">
+        <button id="pdpkBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="psc-body">
+    <!-- Danh sách NV (detailPersonCountInfoLeft_left bản gốc) -->
+    <div class="psc-card pdpk-left">
+      <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</div>
+      <nz-table
+        #pdpkTable
+        id="pdpkTable"
+        [nzData]="rows()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzShowPagination]="false"
+        [nzScroll]="{ y: 'calc(100vh - 330px)' }"
+        [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="50px" class="psc-center">NO</th>
+            <th nzWidth="100px" [nzSortFn]="sortEmpId">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th [nzSortFn]="sortName">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="120px" class="psc-right" [nzSortFn]="sortWages">{{ i18n.t('ess.viewpersonalpainfo.shifagongzi', 'Lương thực lĩnh') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of pdpkTable.data; track $index) {
+            <tr class="psc-row" [class.psc-row-selected]="selected() === row" (click)="selectRow(row)">
+              <td class="psc-center">{{ $index + 1 }}</td>
+              <td class="psc-center">{{ row.empId }}</td>
+              <td>{{ row.localName }}</td>
+              <td class="psc-right">{{ fmt(row.realWages) }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </div>
+
+    <!-- Hạng mục lương kèm công thức (detailPersonCountInfoRight bản gốc) -->
+    <div class="psc-card pdpk-right">
+      @if (selected(); as emp) {
+        <div class="psc-card-title">{{ emp.empId }} - {{ emp.localName }}</div>
+        <nz-table
+          id="pdpkDetailTable"
+          [nzData]="detailItems()"
+          [nzLoading]="detailLoading()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+          [nzScroll]="{ y: 'calc(100vh - 340px)' }"
+          [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+          nzSize="small"
+          nzBordered
+        >
+          <thead>
+            <tr>
+              <th nzWidth="50px" class="psc-center">No.</th>
+              <th nzWidth="220px">{{ i18n.t('ess.empInfo.project', 'Hạng mục') }}</th>
+              <th nzWidth="130px" class="psc-right">{{ i18n.t('ess.empInfo.amount_of_money', 'Số tiền') }}</th>
+              <th>{{ i18n.t('pa.detailPersonCountInfoRight.SHIYONGSHI.b', 'Hình thức chuẩn') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of detailItems(); track $index) {
+              <tr>
+                <td class="psc-center">{{ $index + 1 }}</td>
+                <td>{{ item.itemName }}</td>
+                <td class="psc-right">{{ fmt(item.itemValue) }}</td>
+                <td>{{ item.itemFormular }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      } @else {
+        <div class="psc-hint">{{ i18n.t('pa.salaryDetail.selectEmpHint', 'Chọn một nhân viên ở danh sách bên trái để xem chi tiết lương.') }}</div>
+      }
+    </div>
+  </div>
+</div>

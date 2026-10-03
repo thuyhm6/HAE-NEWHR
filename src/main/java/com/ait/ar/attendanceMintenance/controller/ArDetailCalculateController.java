@@ -49,7 +49,7 @@ public class ArDetailCalculateController {
         } catch (Exception e) {
             log.error("Failed to run AR_DETAIL_CAL_P", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi thực hiện tính toán."
                     : e.getMessage());
         }

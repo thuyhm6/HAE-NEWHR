@@ -1,0 +1,320 @@
+<div class="psc-page">
+  <div class="psc-search-card">
+    <div class="psc-search-row">
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('pa.monthPersonCountInfoList.GONGZIQUFEN.b', 'Phân loại lương') }}</label>
+        <nz-select id="prcSalaryDistin" class="psc-select" [ngModel]="salaryDistinNo()" (ngModelChange)="changeSalaryDistin($event)">
+          @for (opt of salaryDistinOptions(); track opt.codeNo) {
+            <nz-option [nzValue]="opt.codeNo" [nzLabel]="opt.codeName ?? opt.codeNo"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('pa.viewResultConfirmList.ZHIFURIQIQIANDANGYU.b', 'Ngày phát (tháng trước—tháng này)') }}</label>
+        <div class="psc-inline">
+          <nz-select id="prcPayDatePro" class="psc-select" [ngModel]="payDatePro()" (ngModelChange)="payDatePro.set($event)">
+            @for (opt of payDateOptions(); track opt.payDate) {
+              <nz-option [nzValue]="opt.payDate" [nzLabel]="displayDate(opt.payDate)"></nz-option>
+            }
+          </nz-select>
+          <span>~</span>
+          <nz-select id="prcPayDate" class="psc-select" [ngModel]="payDate()" (ngModelChange)="payDate.set($event)">
+            @for (opt of payDateOptions(); track opt.payDate) {
+              <nz-option [nzValue]="opt.payDate" [nzLabel]="displayDate(opt.payDate)"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</label>
+        <nz-tree-select
+          id="prcDept"
+          class="psc-select-wide"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="deptNo()"
+          (ngModelChange)="deptNo.set($event)"
+          nzAllowClear
+          nzShowSearch
+          [nzDropdownStyle]="{ 'max-height': '320px' }"
+          [nzPlaceHolder]="i18n.t('pa.payStub.deptPlaceholder', 'Mã / Tên phòng ban')"
+        ></nz-tree-select>
+      </div>
+      <div class="psc-actions">
+        <button id="prcBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <nz-tabs id="prcTabs" class="psc-card" [nzSelectedIndex]="tabIndex()" (nzSelectChange)="changeTab($event.index!)" nzSize="small">
+    <!-- 1. Biến động chi tiết (viewResultConfirmSonList currentIndex=0) -->
+    <nz-tab [nzTitle]="'1. ' + i18n.t('pa.viewResultConfirmList.BIANDONGMINGXI.b', 'Thay đổi chi tiết')">
+      <nz-table id="prcSummaryTable" [nzData]="summary() ? [summary()] : []" [nzLoading]="loading()" [nzShowPagination]="false" [nzFrontPagination]="false" [nzScroll]="{ x: '1300px' }" nzSize="small" nzBordered>
+        <thead>
+          <tr>
+            <th colspan="4" class="psc-center">{{ i18n.t('display.emp.ben.or.benhs68', 'Tháng trước') }}</th>
+            <th colspan="4" class="psc-center">{{ i18n.t('pa.monthPersonCountInfoList.DANGYUE.b', 'Tháng này') }}</th>
+            <th colspan="4" class="psc-center">{{ i18n.t('org.title.ADDORDELETTE', 'Tăng giảm') }}</th>
+          </tr>
+          <tr>
+            @for (n of [1, 2, 3]; track n) {
+              <th class="psc-center">{{ i18n.t('pa.viewResultConfirmSonList.DUIXIANGRENYUAN.b', 'Nhân viên') }}</th>
+              <th class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.GONGZIZONGE.b', 'Tổng thu nhập') }}</th>
+              <th class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.KOUCHUHEJI.b', 'Tổng khoản trừ') }}</th>
+              <th class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SHIDEGONGZI.b', 'Lương thực lĩnh') }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @if (summary(); as s) {
+            <tr>
+              <td class="psc-center">{{ s.personNumPro }}</td>
+              <td class="psc-right">{{ fmt(s.salaryTotalPro) }}</td>
+              <td class="psc-right">{{ fmt(s.withholdTotalPro) }}</td>
+              <td class="psc-right">{{ fmt(s.netPayPro) }}</td>
+              <td class="psc-center">{{ s.personNumCur }}</td>
+              <td class="psc-right">{{ fmt(s.salaryTotalCur) }}</td>
+              <td class="psc-right">{{ fmt(s.withholdTotalCur) }}</td>
+              <td class="psc-right">{{ fmt(s.netPayCur) }}</td>
+              <td class="psc-center">{{ s.personNumDif }}</td>
+              <td class="psc-right">{{ fmt(s.salaryTotalDif) }}</td>
+              <td class="psc-right">{{ fmt(s.withholdTotalDif) }}</td>
+              <td class="psc-right">{{ fmt(s.netPayDif) }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+      <div class="prc-charts">
+        @if (personChart(); as c) {
+          <div class="prc-chart" id="prcPersonChart">
+            <apx-chart [series]="c.series" [chart]="c.chart" [xaxis]="c.xaxis" [yaxis]="c.yaxis" [title]="c.title" [stroke]="c.stroke" [dataLabels]="c.dataLabels"></apx-chart>
+          </div>
+        }
+        @if (amountChart(); as c) {
+          <div class="prc-chart" id="prcAmountChart">
+            <apx-chart [series]="c.series" [chart]="c.chart" [xaxis]="c.xaxis" [yaxis]="c.yaxis" [title]="c.title" [stroke]="c.stroke" [dataLabels]="c.dataLabels"></apx-chart>
+          </div>
+        }
+      </div>
+    </nz-tab>
+
+    <!-- 2. Đối chiếu hạng mục chi trả (currentIndex=1, ITEM_TYPE=1) -->
+    <nz-tab [nzTitle]="'2. ' + i18n.t('pa.viewResultConfirmList.ZHIFUXIANGMUDUIBI.b', 'Đối chiếu hạng mục trả lương')">
+      <app-prc-item-dif #prcPayItem itemType="1" idPrefix="prcPay"></app-prc-item-dif>
+    </nz-tab>
+
+    <!-- 3. Thống kê tăng ca (currentIndex=2) + chi tiết theo ngày (viewResultConfirmList2Bottom) -->
+    <nz-tab [nzTitle]="'3. ' + i18n.t('pa.viewResultConfirmList.JIABANTONGJI.b', 'Thống kê tăng ca')">
+      <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ overtimeRows().length }}</div>
+      <nz-table
+        id="prcOvertimeTable"
+        [nzData]="overtimeRows()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '1300px', y: 'calc(50vh - 200px)' }"
+        [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="50px" class="psc-center">NO</th>
+            <th nzWidth="100px">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th nzWidth="140px">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="160px">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+            <th nzWidth="110px">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+            <th nzWidth="100px">{{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}</th>
+            <th nzWidth="110px">{{ i18n.t('ess.infoApply.title.dutyName', 'Chức danh') }}</th>
+            <th nzWidth="150px">{{ i18n.t('ess.empInfo.project', 'Hạng mục') }}</th>
+            <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SHIJIJINE.b', 'Số tiền thực tế') }}</th>
+            <th nzWidth="260px">{{ i18n.t('pa.viewResultConfirmSonList.JISUANSHI.b', 'Công thức tính') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of overtimeRows(); track $index) {
+            <tr class="psc-row" [class.psc-row-selected]="overtimeSelected() === row" (click)="selectOvertime(row)">
+              <td class="psc-center">{{ $index + 1 }}</td>
+              <td class="psc-center">{{ row.empId }}</td>
+              <td>{{ row.localName }}</td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ row.postFamilyName }}</td>
+              <td>{{ row.postGradeName }}</td>
+              <td>{{ row.positionName }}</td>
+              <td>{{ row.itemName }}</td>
+              <td class="psc-right">{{ fmt(row.calValue) }}</td>
+              <td [title]="row.formularValue ?? ''"><span class="psc-ellipsis">{{ row.formularValue }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+      <div class="prc-bottom">
+        @if (overtimeSelected(); as ot) {
+          <div class="psc-card-title">{{ ot.empId }} - {{ ot.localName }}</div>
+          <nz-table
+            id="prcArDetailTable"
+            [nzData]="arRows()"
+            [nzLoading]="arLoading()"
+            [nzFrontPagination]="false"
+            [nzShowPagination]="false"
+            [nzScroll]="{ x: '1000px', y: 'calc(50vh - 220px)' }"
+            [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+            nzSize="small"
+            nzBordered
+          >
+            <thead>
+              <tr>
+                <th nzWidth="50px" class="psc-center">No.</th>
+                <th nzWidth="140px">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+                <th nzWidth="100px">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+                <th nzWidth="100px" class="psc-center">{{ i18n.t('ess.infoApply.date', 'Ngày') }}</th>
+                <th nzWidth="120px">{{ i18n.t('ess.message.work_shift', 'Ca') }}</th>
+                <th nzWidth="150px">{{ i18n.t('sys.affirm.title.type', 'Loại hình') }}</th>
+                <th nzWidth="140px" class="psc-center">{{ i18n.t('ar.viewshift.title.start', 'Bắt đầu') }}</th>
+                <th nzWidth="140px" class="psc-center">{{ i18n.t('ar.viewshift.title.end', 'Kết thúc') }}</th>
+                <th nzWidth="90px" class="psc-right">{{ i18n.t('ess.infoApply.duration', 'Thời lượng') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ar of arRows(); track $index) {
+                <tr>
+                  <td class="psc-center">{{ $index + 1 }}</td>
+                  <td>{{ ar.localName }}</td>
+                  <td class="psc-center">{{ ar.empId }}</td>
+                  <td class="psc-center">{{ ar.arDateStr }}</td>
+                  <td>{{ ar.shiftName }}</td>
+                  <td>{{ ar.itemName }}</td>
+                  <td class="psc-center">{{ ar.fromTime }}</td>
+                  <td class="psc-center">{{ ar.toTime }}</td>
+                  <td class="psc-right">{{ ar.quantity }}</td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        } @else {
+          <div class="psc-hint">{{ i18n.t('pa.salaryCheck.overtimeHint', 'Chọn một dòng ở bảng trên để xem chi tiết tăng ca.') }}</div>
+        }
+      </div>
+    </nz-tab>
+
+    <!-- 4. Đối chiếu bảo hiểm (currentIndex=3, ITEM_TYPE=3) -->
+    <nz-tab [nzTitle]="'4. ' + i18n.t('pa.viewResultConfirmList.BAOXIANDUIBI.b', 'Đối chiếu bảo hiểm')">
+      <app-prc-item-dif #prcInsItem itemType="3" idPrefix="prcIns"></app-prc-item-dif>
+    </nz-tab>
+
+    <!-- 5. Chi tiết bảo hiểm (currentIndex=6) -->
+    <nz-tab [nzTitle]="'5. ' + i18n.t('pa.viewResultConfirmList.BAOXIANMINGXI.b', 'Chi tiết bảo hiểm')">
+      <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ insuranceRows().length }}</div>
+      <nz-table
+        id="prcInsuranceTable"
+        [nzData]="insuranceRows()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '1300px', y: 'calc(100vh - 400px)' }"
+        [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="50px" nzLeft class="psc-center">No</th>
+            <th nzWidth="100px" nzLeft>{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th nzWidth="140px" nzLeft>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="160px">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+            <th nzWidth="110px">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+            <th nzWidth="100px">{{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}</th>
+            <th nzWidth="110px">{{ i18n.t('ess.infoApply.title.dutyName', 'Chức danh') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SHEHUIBAOXIANGEREN.b', 'BHXH (cá nhân)') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.YILIAOBAOXIANGEREN.b', 'BHYT (cá nhân)') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SHIYEBAOXIANGEREN.b', 'BHTN (cá nhân)') }}</th>
+            <th nzWidth="130px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.GERENSHEBAOHEJI.b', 'Tổng BHXH cá nhân') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of insuranceRows(); track $index) {
+            <tr>
+              <td nzLeft class="psc-center">{{ $index + 1 }}</td>
+              <td nzLeft class="psc-center">{{ row.empId }}</td>
+              <td nzLeft>{{ row.localName }}</td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ row.postFamilyName }}</td>
+              <td>{{ row.postGradeName }}</td>
+              <td>{{ row.positionName }}</td>
+              <td class="psc-right">{{ fmt(row.socialInsPersonal) }}</td>
+              <td class="psc-right">{{ fmt(row.medicalInsPersonal) }}</td>
+              <td class="psc-right">{{ fmt(row.unemploymentInsPersonal) }}</td>
+              <td class="psc-right">{{ fmt(row.personalInsTotal) }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+
+    <!-- 6. Thuế (currentIndex=5) -->
+    <nz-tab [nzTitle]="'6. ' + i18n.t('display.pa.tax', 'Tiền thuế')">
+      <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ taxRows().length }}</div>
+      <nz-table
+        id="prcTaxTable"
+        [nzData]="taxRows()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '2100px', y: 'calc(100vh - 400px)' }"
+        [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="50px" nzLeft class="psc-center">No</th>
+            <th nzWidth="100px" nzLeft>{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th nzWidth="140px" nzLeft>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="160px">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+            <th nzWidth="110px">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+            <th nzWidth="100px">{{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}</th>
+            <th nzWidth="110px">{{ i18n.t('ess.trans.title.dutyName', 'Chức danh') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SHUIQIANGONGZI.b', 'Lương trước thuế') }}</th>
+            <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.KAOQINKOUCHU.b', 'Khoản trừ') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.GERENSHEBAOHEJI.b', 'Tổng BHXH cá nhân') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.KOUSHUIJIZHUN.b', 'Tiêu chuẩn trừ thuế') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.TESHUKOUSHUIJIZHUN.b', 'Giảm trừ bản thân') }}</th>
+            <th nzWidth="100px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.TESHUKOUSHUIRENSHU.b', 'Người phụ thuộc') }}</th>
+            <th nzWidth="130px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.TESHUKOUSHUIJINE.b', 'Giảm trừ người phụ thuộc') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.YINGNASHUISUODEE.b', 'Thu nhập tính thuế') }}</th>
+            <th nzWidth="80px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SHUILV.b', 'Thuế suất') }}</th>
+            <th nzWidth="110px" class="psc-right">{{ i18n.t('pa.viewResultConfirmSonList.SUSUANKOUCHUSHU.b', 'Số tiền trừ nhanh') }}</th>
+            <th nzWidth="110px" class="psc-right">{{ i18n.t('ess.viewpersonalpainfo.gerensuodeshui', 'Thuế TNCN') }}</th>
+            <th nzWidth="120px" class="psc-right">{{ i18n.t('ess.viewpersonalpainfo.shifagongzi', 'Lương thực lĩnh') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of taxRows(); track $index) {
+            <tr>
+              <td nzLeft class="psc-center">{{ $index + 1 }}</td>
+              <td nzLeft class="psc-center">{{ row.empId }}</td>
+              <td nzLeft>{{ row.localName }}</td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ row.postFamilyName }}</td>
+              <td>{{ row.postGradeName }}</td>
+              <td>{{ row.positionName }}</td>
+              <td class="psc-right">{{ fmt(row.incomeBeforeTax) }}</td>
+              <td class="psc-right">{{ fmt(row.attDeductTotal) }}</td>
+              <td class="psc-right">{{ fmt(row.personalInsTotal) }}</td>
+              <td class="psc-right">{{ fmt(row.taxDeductStd) }}</td>
+              <td class="psc-right">{{ fmt(row.taxFamilyDeductStd) }}</td>
+              <td class="psc-right">{{ fmt(row.taxFamilyDeductCount) }}</td>
+              <td class="psc-right">{{ fmt(familyDeduct(row)) }}</td>
+              <td class="psc-right">{{ fmt(row.taxableIncome) }}</td>
+              <td class="psc-right">{{ row.ptTaxRate }}</td>
+              <td class="psc-right">{{ fmt(row.quickDeductionTax) }}</td>
+              <td class="psc-right">{{ fmt(row.personalTax) }}</td>
+              <td class="psc-right">{{ fmt(row.realWages) }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-tab>
+  </nz-tabs>
+</div>

@@ -19,6 +19,7 @@ import { I18nService } from '../../../i18n/i18n.service';
 import { AttendanceExForBatchService, SyCodeOption } from '../../ess/attendance-ex-for-batch/attendance-ex-for-batch.service';
 import { ArItemRow, ArItemSavePayload, ArItemService } from './ar-item.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const ITEM_GROUP_PARENT_CODE = '1429';
 
 /**
@@ -52,6 +53,10 @@ const ITEM_GROUP_PARENT_CODE = '1429';
   styleUrl: './ar-item.component.scss',
 })
 export class ArItemComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ArItemService);
   private readonly codeService = inject(AttendanceExForBatchService);
   private readonly message = inject(NzMessageService);

@@ -1,0 +1,142 @@
+<div class="etcal-page">
+  <div class="etcal-toolbar">
+    <div class="etcal-nav">
+      <button id="etcal-prev-btn" nz-button type="button" (click)="prevMonth()" [title]="i18n.t('ar.viewCompanyCalendar.prevMonth', 'Tháng trước')">
+        <span nz-icon nzType="left"></span>
+      </button>
+      <nz-select id="etcal-month-sel" class="etcal-month" [ngModel]="month()" (ngModelChange)="onMonthChange($event)">
+        @for (m of months; track m) {
+          <nz-option [nzValue]="m" [nzLabel]="i18n.t('ar.viewCompanyCalendar.monthPrefix', 'Tháng') + ' ' + (m < 10 ? '0' + m : m)"></nz-option>
+        }
+      </nz-select>
+      <nz-select id="etcal-year-sel" class="etcal-year" [ngModel]="year()" (ngModelChange)="onYearChange($event)">
+        @for (y of years; track y) {
+          <nz-option [nzValue]="y" [nzLabel]="'' + y"></nz-option>
+        }
+      </nz-select>
+      <button id="etcal-next-btn" nz-button type="button" (click)="nextMonth()" [title]="i18n.t('ar.viewCompanyCalendar.nextMonth', 'Tháng sau')">
+        <span nz-icon nzType="right"></span>
+      </button>
+    </div>
+    <div class="etcal-actions">
+      <button id="etcal-today-btn" nz-button type="button" (click)="goToday()">
+        {{ i18n.t('ar.viewCompanyCalendar.legendToday', 'Hôm nay') }}
+      </button>
+      <button id="etcal-search-btn" nz-button nzType="primary" type="button" [nzLoading]="loading()" (click)="load()">
+        <span nz-icon nzType="search"></span>
+        {{ i18n.t('ar.viewempcalender.title.search', 'Tìm kiếm') }}
+      </button>
+    </div>
+  </div>
+
+  <div class="etcal-grid">
+    <div class="etcal-hrow">
+      <div class="etcal-hcell etcal-sun">{{ i18n.t('ar.viewCompanyCalendar.sun', 'CN') }}</div>
+      <div class="etcal-hcell">{{ i18n.t('ar.viewCompanyCalendar.mon', 'T2') }}</div>
+      <div class="etcal-hcell">{{ i18n.t('ar.viewCompanyCalendar.tue', 'T3') }}</div>
+      <div class="etcal-hcell">{{ i18n.t('ar.viewCompanyCalendar.wed', 'T4') }}</div>
+      <div class="etcal-hcell">{{ i18n.t('ar.viewCompanyCalendar.thu', 'T5') }}</div>
+      <div class="etcal-hcell">{{ i18n.t('ar.viewCompanyCalendar.fri', 'T6') }}</div>
+      <div class="etcal-hcell etcal-sat">{{ i18n.t('ar.viewCompanyCalendar.sat', 'T7') }}</div>
+    </div>
+    <div id="etcal-body" class="etcal-body" [class.etcal-loading]="loading()">
+      @for (week of weeks(); track $index) {
+        <div class="etcal-week">
+          @for (cell of week; track $index) {
+            @if (cell.day === null) {
+              <div class="etcal-day etcal-empty"></div>
+            } @else {
+              <div class="etcal-day" [class.etcal-today]="cell.isToday" [class.etcal-has]="cell.items.length > 0">
+                <div class="etcal-day-num" [class.etcal-sun]="cell.isSun" [class.etcal-sat]="cell.isSat">{{ cell.day }}</div>
+                @for (it of cell.items; track it.planNo) {
+                  <a class="etcal-item" [title]="itemTitle(it)" (click)="openDetail(it, cell.dateKey!)">
+                    {{ itemTitle(it) }}
+                  </a>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Modal chi tiết kế hoạch (trainCalendarDetail + syllabusInfo bản gốc); nzMaskClosable=true -->
+<nz-modal
+  [nzVisible]="detailVisible()"
+  [nzTitle]="i18n.t('pa.ins.alert.message.title.clickForDetail', 'Xem')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeDetail()"
+  nzWidth="880px"
+>
+  <ng-container *nzModalContent>
+    @if (detailLoading()) {
+      <div class="etcal-modal-loading"><span nz-icon nzType="loading" nzSpin></span></div>
+    }
+    @if (detail(); as d) {
+      <nz-descriptions id="etcal-detail" nzBordered nzSize="small" [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }">
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.trainResult.KECHENGFENLEI.a', 'Loại đào tạo')">{{ d.plan.trainTypeCodeName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.PEIXUNNEIRONG.a', 'Nội dung')">{{ d.trainContent }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('empsubject.subjectNm', 'Tên đào tạo')">{{ d.plan.courseNameCode }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('empsubject.eduRm', 'Địa điểm đào tạo')">{{ d.plan.trainAddress }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.ZHUGUANBUMEN.a', 'Bộ phận chủ quản')">{{ d.plan.departManaCodeName || d.plan.departManaCode }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.PEIXUNRENSHU.a', 'Số lượng')">{{ d.plan.trainPersonCount }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.trainBasicInformation.PEIXUNFANGSHI.a', 'Hình thức đào tạo')">{{ d.plan.trainFormCodeName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng')">{{ d.plan.classHour }} {{ classUnitLabel(d.plan.classUnit) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.JIANGSHI.a', 'Giảng viên')">{{ d.plan.teacherDisplay }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.SHIFOUXUYAOKAOSHI.a', 'Kiểm tra')">{{ yesNo(d.isnotTest) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.YUSUANFEIYONG.a', 'Dự kiến chi phí')">{{ d.plan.budget }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t(evaluateOptions[0].key, evaluateOptions[0].fallback)">{{ hasEvaluate(d.plan.isnotEvaluate, '1') }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.JIHUAKAISHISHIJIAN.a', 'Ngày bắt đầu')">{{ d.plan.planStartdate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t(evaluateOptions[1].key, evaluateOptions[1].fallback)">{{ hasEvaluate(d.plan.isnotEvaluate, '2') }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.JIHUAJIESHUSHIJIAN.a', 'Ngày kết thúc')">{{ d.plan.planEnddate }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t(evaluateOptions[2].key, evaluateOptions[2].fallback)">{{ hasEvaluate(d.plan.isnotEvaluate, '3') }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.SHIFOUYUNXUSHENQING.a', 'Cho phép đăng ký')">{{ yesNo(d.plan.isnotApply) }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('edu.planManager.SHIFOUXUYAOPEIXUNBAOGAO.a', 'Báo cáo đào tạo')">{{ yesNo(d.isnotReport) }}</nz-descriptions-item>
+      </nz-descriptions>
+
+      <div class="etcal-syllabus-title">{{ i18n.t('edu.planManager.KECHENGBIAO.a', 'Lịch đào tạo') }}</div>
+      <nz-table
+        #etcalSyllTable
+        id="etcal-syllabus-table"
+        [nzData]="d.syllabus ?? []"
+        [nzPageSize]="defaultPageSize"
+        [nzPageSizeOptions]="pageSizeOptions"
+        [nzHideOnSinglePage]="true"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="50px" class="etcal-center">{{ i18n.t('common.stt', 'STT') }}</th>
+            <th>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</th>
+            <th class="etcal-center">{{ i18n.t('edu.planManager.KECHENGRIQI.a', 'Ngày học') }}</th>
+            <th class="etcal-center">{{ i18n.t('ess.infoApply.title.startTime', 'Thời gian bắt đầu') }}</th>
+            <th class="etcal-center">{{ i18n.t('ess.infoApply.title.endTime', 'Thời gian kết thúc') }}</th>
+            <th>{{ i18n.t('edu.planManager.XIANGXIDIDIAN.a', 'Địa điểm') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of etcalSyllTable.data; track s.syllNo; let idx = $index) {
+            <tr [class.etcal-row-active]="isDetailDate(s)">
+              <td class="etcal-center">{{ (etcalSyllTable.nzPageIndex - 1) * etcalSyllTable.nzPageSize + idx + 1 }}</td>
+              <td>{{ s.courseNameCode }}</td>
+              <td class="etcal-center">{{ s.courseDate }}</td>
+              <td class="etcal-center">{{ s.courseStartDate }}</td>
+              <td class="etcal-center">{{ s.courseEndDate }}</td>
+              <td>{{ s.detailAddress }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="etcal-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    }
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="etcal-detail-close-btn" nz-button (click)="closeDetail()">{{ i18n.t('common.close', 'Đóng') }}</button>
+  </div>
+</nz-modal>

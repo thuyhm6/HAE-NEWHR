@@ -19,6 +19,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { RecruitCodeService, SyCodeOption } from '../shared/recruit-code.service';
 import { RblRegister, RblRow, RecruitBatchListService } from './recruit-batch-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../../core/config/table-pagination.config';
 /**
  * Bug thật đã sửa (có ở bản gốc, không phải do migrate): HTML gốc
  * `rbl_editJoinType` dùng `data-parent-code="400001"` cho dropdown "Loại
@@ -72,6 +73,9 @@ const TEMPLATE_DOWNLOAD_URL = '/sy/excel/api/downloadTemplate?templateName=NewEm
   styleUrl: './recruit-batch-list.component.scss',
 })
 export class RecruitBatchListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(RecruitBatchListService);
   private readonly codeService = inject(RecruitCodeService);
   private readonly message = inject(NzMessageService);

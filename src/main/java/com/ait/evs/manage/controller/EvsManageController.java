@@ -1,5 +1,7 @@
 package com.ait.evs.manage.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.evs.manage.dto.EvsAffirmRuleDto;
 import com.ait.evs.manage.dto.EvsResultEmpDto;
 import com.ait.evs.manage.dto.EvsAffirmTarget1AbilityDto;
@@ -168,14 +170,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveResume(@RequestBody EvsResumeDto dto) {
         evsResumeService.save(dto);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/resume/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteResume(@RequestBody Map<String, String> body) {
         evsResumeService.delete(body.get("seq"));
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // ── Quy trình đánh giá (EVS_SCHEDULE) ────────────────────────────────────
@@ -203,14 +205,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveScheduleBatch(@RequestBody List<EvsScheduleDto> list) {
         evsScheduleService.saveBatch(list);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/schedule/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteScheduleBatch(@RequestBody EvsScheduleDto body) {
         evsScheduleService.deleteBatch(body.getSeqs());
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // ── Tiêu chuẩn đánh giá (EVS_PARAM panel) ────────────────────────────────
@@ -238,14 +240,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveEvsGradeBatch(@RequestBody List<EvsGradeDto> list) {
         evsGradeService.saveBatch(list);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/evsGrade/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteEvsGradeBatch(@RequestBody EvsGradeDto body) {
         evsGradeService.deleteBatch(body.getSeqs());
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // -- Hạng mục / Bảng / Nhóm / Chức vụ đánh giá (EVS_PARAM) --
@@ -274,14 +276,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveEvsParamBatch(@RequestBody List<EvsParamDto> list) {
         evsParamService.saveBatch(list);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/evsParam/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteEvsParamBatch(@RequestBody EvsParamDto body) {
         evsParamService.deleteBatch(body.getSeqs());
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // -- Đối tượng đánh giá (EVS_PARAM_OBJECT) --
@@ -301,14 +303,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveEvsParamObjectBatch(@RequestBody List<EvsParamObjectDto> list) {
         evsParamObjectService.saveBatch(list);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/evsParamObject/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteEvsParamObjectBatch(@RequestBody EvsParamObjectDto body) {
         evsParamObjectService.deleteBatch(body.getSeqs());
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // -- Người đánh giá (EVS_AFFIRM_RULE) --
@@ -326,14 +328,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveEvsAffirmRuleBatch(@RequestBody List<EvsAffirmRuleDto> list) {
         evsAffirmRuleService.saveBatch(list);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/evsAffirmRule/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteEvsAffirmRuleBatch(@RequestBody EvsAffirmRuleDto body) {
         evsAffirmRuleService.deleteBatch(body.getSeqs());
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // ── Công thức đánh giá (EVS_FORMULA) ─────────────────────────────────────
@@ -373,14 +375,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveEvsFormula(@RequestBody EvsFormulaDto dto) {
         evsFormulaService.save(dto);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/evsFormula/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteEvsFormula(@RequestBody Map<String, String> body) {
         evsFormulaService.delete(body.get("seq"));
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // ── Tỷ lệ phân bổ (EVS_SCORE) ────────────────────────────────────────────
@@ -416,14 +418,14 @@ public class EvsManageController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> saveEvsScore(@RequestBody EvsScoreDto dto) {
         evsScoreService.save(dto);
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     @PostMapping("/api/evsScore/delete")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> deleteEvsScore(@RequestBody Map<String, String> body) {
         evsScoreService.delete(body.get("seq"));
-        return ResponseEntity.ok(Map.of("success", true));
+        return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
     }
 
     // ── Đối tượng đánh giá và người đánh giá (EVS_OBJECT + EVS_AFFIRM) ────────
@@ -466,9 +468,9 @@ public class EvsManageController {
             @RequestBody List<EvsAffirmorSetupDto> list) {
         try {
             evsAffirmorSetupService.saveBatch(list);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -477,9 +479,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> addEvsObject(@RequestBody EvsAffirmorSetupDto dto) {
         try {
             evsAffirmorSetupService.addObject(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -488,9 +490,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> createEvsTarget(@RequestBody EvsAffirmorSetupDto dto) {
         try {
             evsAffirmorSetupService.createTarget(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -499,9 +501,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> evsStart(@RequestBody EvsAffirmorSetupDto dto) {
         try {
             evsAffirmorSetupService.evsStart(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -510,9 +512,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> deleteAffirmorSetup(@RequestBody List<String> seqList) {
         try {
             evsAffirmorSetupService.deleteObjects(seqList);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -534,7 +536,7 @@ public class EvsManageController {
                 result.put("message", "Chỉ hỗ trợ file Excel .xlsx hoặc .xls.");
                 return ResponseEntity.badRequest().body(result);
             }
-            if (resumeSeq == null || resumeSeq.isBlank()) {
+            if (resumeSeq == null || resumeSeq.trim().isEmpty()) {
                 result.put("success", false);
                 result.put("message", "Vui lòng chọn tên đánh giá trước khi import.");
                 return ResponseEntity.badRequest().body(result);
@@ -597,9 +599,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> evaluateEnd(@RequestBody EvsResultDto dto) {
         try {
             evsResultService.evaluateEnd(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -608,9 +610,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> changeEvsResultStatus(@RequestBody EvsResultDto dto) {
         try {
             evsResultService.changeStatus(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -619,9 +621,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> copyEvsGrade(@RequestBody EvsResultDto dto) {
         try {
             evsResultService.copyGrade(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -639,9 +641,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> saveEvsResult(@RequestBody List<EvsResultDto> list) {
         try {
             evsResultService.saveFinalResult(list);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -669,9 +671,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> saveEvsItem(@RequestBody List<EvsItemDto> list) {
         try {
             evsItemService.saveBatch(list);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -680,9 +682,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> deleteEvsItem(@RequestBody Map<String, List<String>> body) {
         try {
             evsItemService.deleteBatch(body.get("seqs"));
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -708,9 +710,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> saveEvsItemParam(@RequestBody List<EvsItemParamDto> list) {
         try {
             evsItemParamService.saveBatch(list);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -719,9 +721,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> deleteEvsItemParam(@RequestBody Map<String, List<String>> body) {
         try {
             evsItemParamService.deleteBatch(body.get("seqs"));
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -756,9 +758,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> savePersonalTargetItem(@RequestBody EvsItemSstDto dto) {
         try {
             evsPersonalTargetService.saveItem(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -767,9 +769,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> deletePersonalTargetItem(@RequestBody EvsItemSstDto dto) {
         try {
             evsPersonalTargetService.deleteItem(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -820,9 +822,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("2");
             evsConfirmTarget1Service.confirm(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -863,9 +865,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> saveEvsBySelfHAE(@RequestBody EvsEvsBySelfHaeDto dto) {
         try {
             evsEvsBySelfHaeService.save(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -892,9 +894,9 @@ public class EvsManageController {
             @RequestBody EvsEvsBySelfSSTAbilityDto dto) {
         try {
             evsEvsBySelfSSTAbilityService.save(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -949,9 +951,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("1");
             evsAffirmTarget1Service.saveBatch(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -961,9 +963,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("1");
             evsAffirmTarget1Service.executeActivity(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -987,9 +989,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("1");
             evsAffirmTarget1Service.saveDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -999,9 +1001,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("1");
             evsAffirmTarget1Service.confirmDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1010,9 +1012,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> rejectAffirmTarget1Detail(@RequestBody EvsAffirmTarget1Dto dto) {
         try {
             evsAffirmTarget1Service.rejectDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1039,9 +1041,9 @@ public class EvsManageController {
             @RequestBody EvsAffirmTarget1AbilityDto dto) {
         try {
             evsAffirmTarget1AbilityService.saveDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1051,9 +1053,9 @@ public class EvsManageController {
             @RequestBody EvsAffirmTarget1AbilityDto dto) {
         try {
             evsAffirmTarget1AbilityService.confirmDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1063,9 +1065,9 @@ public class EvsManageController {
             @RequestBody EvsAffirmTarget1AbilityDto dto) {
         try {
             evsAffirmTarget1AbilityService.rejectDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1092,9 +1094,9 @@ public class EvsManageController {
             @RequestBody EvsAffirmTarget2AbilityDto dto) {
         try {
             evsAffirmTarget2AbilityService.saveDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1104,9 +1106,9 @@ public class EvsManageController {
             @RequestBody EvsAffirmTarget2AbilityDto dto) {
         try {
             evsAffirmTarget2AbilityService.confirmDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1116,9 +1118,9 @@ public class EvsManageController {
             @RequestBody EvsAffirmTarget2AbilityDto dto) {
         try {
             evsAffirmTarget2AbilityService.rejectDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1173,9 +1175,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("2");
             evsAffirmTarget2Service.saveBatch(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1185,9 +1187,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("2");
             evsAffirmTarget2Service.executeActivity(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1211,9 +1213,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("2");
             evsAffirmTarget2Service.saveDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1223,9 +1225,9 @@ public class EvsManageController {
         try {
             dto.setAffirmLevel("2");
             evsAffirmTarget2Service.confirmDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1234,9 +1236,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> rejectAffirmTarget2Detail(@RequestBody EvsAffirmTarget2Dto dto) {
         try {
             evsAffirmTarget2Service.rejectDetail(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 
@@ -1285,9 +1287,9 @@ public class EvsManageController {
     public ResponseEntity<Map<String, Object>> confirmTarget1(@RequestBody EvsConfirmTarget1Dto dto) {
         try {
             evsConfirmTarget1Service.confirm(dto);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", true));
         } catch (Exception e) {
-            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+            return ResponseEntity.ok(CollectionUtil.mapOf("success", false, "message", e.getMessage()));
         }
     }
 }

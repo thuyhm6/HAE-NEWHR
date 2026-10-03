@@ -1,5 +1,7 @@
 package com.ait.hrm.contract.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.hrm.contract.model.HrContract;
 import com.ait.hrm.contract.service.HrContractService;
 import com.ait.sy.sys.dto.DataTablesRequest;
@@ -105,12 +107,12 @@ public class HrContractController {
         try {
             HrContract contract = hrContractService.getContractByContractNo(contractNo);
             if (contract == null) {
-                return ResponseEntity.status(404).body(Map.of("error", "Không tìm thấy hợp đồng"));
+                return ResponseEntity.status(404).body(CollectionUtil.mapOf("error", "Không tìm thấy hợp đồng"));
             }
             return ResponseEntity.ok(contract);
         } catch (Exception e) {
             log.error("Failed to get contract contractNo={}", contractNo, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -127,12 +129,12 @@ public class HrContractController {
             // Validate contract data
             String validationError = hrContractService.validateContract(contract);
             if (validationError != null) {
-                return ResponseEntity.badRequest().body(Map.of("error", validationError));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", validationError));
             }
 
             // Check if contract number already exists
             if (hrContractService.isContractNoExists(contract.getContractNo())) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Số hợp đồng đã tồn tại"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Số hợp đồng đã tồn tại"));
             }
 
             // Set audit fields
@@ -144,13 +146,13 @@ public class HrContractController {
             // Add contract
             boolean success = hrContractService.addContract(contract);
             if (success) {
-                return ResponseEntity.ok(Map.of("message", "Thêm hợp đồng thành công", "contract", contract));
+                return ResponseEntity.ok(CollectionUtil.mapOf("message", "Thêm hợp đồng thành công", "contract", contract));
             } else {
-                return ResponseEntity.status(500).body(Map.of("error", "Không thể thêm hợp đồng"));
+                return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Không thể thêm hợp đồng"));
             }
         } catch (Exception e) {
             log.error("Failed to add contract contractNo={}", contract.getContractNo(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -167,13 +169,13 @@ public class HrContractController {
             // Validate contract data
             String validationError = hrContractService.validateContract(contract);
             if (validationError != null) {
-                return ResponseEntity.badRequest().body(Map.of("error", validationError));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", validationError));
             }
 
             // Check if contract exists
             HrContract existingContract = hrContractService.getContractByContractNo(contract.getContractNo());
             if (existingContract == null) {
-                return ResponseEntity.status(404).body(Map.of("error", "Không tìm thấy hợp đồng"));
+                return ResponseEntity.status(404).body(CollectionUtil.mapOf("error", "Không tìm thấy hợp đồng"));
             }
 
             // Set audit fields
@@ -183,13 +185,13 @@ public class HrContractController {
             // Update contract
             boolean success = hrContractService.updateContract(contract);
             if (success) {
-                return ResponseEntity.ok(Map.of("message", "Cập nhật hợp đồng thành công", "contract", contract));
+                return ResponseEntity.ok(CollectionUtil.mapOf("message", "Cập nhật hợp đồng thành công", "contract", contract));
             } else {
-                return ResponseEntity.status(500).body(Map.of("error", "Không thể cập nhật hợp đồng"));
+                return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Không thể cập nhật hợp đồng"));
             }
         } catch (Exception e) {
             log.error("Failed to update contract contractNo={}", contract.getContractNo(), e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -206,19 +208,19 @@ public class HrContractController {
             // Check if contract exists
             HrContract existingContract = hrContractService.getContractByContractNo(contractNo);
             if (existingContract == null) {
-                return ResponseEntity.status(404).body(Map.of("error", "Không tìm thấy hợp đồng"));
+                return ResponseEntity.status(404).body(CollectionUtil.mapOf("error", "Không tìm thấy hợp đồng"));
             }
 
             // Delete contract
             boolean success = hrContractService.deleteContract(contractNo);
             if (success) {
-                return ResponseEntity.ok(Map.of("message", "Xóa hợp đồng thành công"));
+                return ResponseEntity.ok(CollectionUtil.mapOf("message", "Xóa hợp đồng thành công"));
             } else {
-                return ResponseEntity.status(500).body(Map.of("error", "Không thể xóa hợp đồng"));
+                return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Không thể xóa hợp đồng"));
             }
         } catch (Exception e) {
             log.error("Failed to delete contract contractNo={}", contractNo, e);
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong. Vui long thu lai."));
         }
     }
 
@@ -359,7 +361,7 @@ public class HrContractController {
             // Our frontend DataTables error handler: showError('Lỗi khi tải dữ liệu: ' +
             // (xhr.responseJSON?.error || thrown));
             // So we return a map with "error".
-            return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập lại"));
+            return ResponseEntity.status(401).body(CollectionUtil.mapOf("error", "Vui lòng đăng nhập lại"));
         }
 
         // Ensure response is not committed for redirect

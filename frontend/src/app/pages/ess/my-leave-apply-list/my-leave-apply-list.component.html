@@ -75,7 +75,7 @@
       </div>
     </div>
 
-    <nz-table id="al-data-table" #alTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+    <nz-table id="al-data-table" #alTable [nzData]="filteredRows()" [nzLoading]="loading()" [nzPageSize]="defaultPageSize" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
       <thead>
         <tr>
           <th nzWidth="40px" class="al-col-center">

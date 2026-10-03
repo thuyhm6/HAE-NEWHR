@@ -9,7 +9,7 @@
         (click)="selectItem(item)"
       >
         <span nz-icon nzType="file" nzTheme="fill" class="vpid-item-icon"></span>
-        <span class="vpid-item-name">{{ item.paramName || item.paramNo }}</span>
+        <span class="vpid-item-name" [attr.nz-value]="item.paramNo">{{ item.paramName || item.paramNo }}</span>
       </div>
       <div *ngIf="!items().length" class="vpid-empty">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</div>
     </div>
@@ -78,7 +78,7 @@
       [nzTotal]="recordsTotal()"
       [nzPageIndex]="pageIndex()"
       [nzPageSize]="pageSize()"
-      [nzPageSizeOptions]="[10, 20, 50, 100]"
+      [nzPageSizeOptions]="pageSizeOptions"
       nzShowSizeChanger
       (nzPageIndexChange)="onPageIndexChange($event)"
       (nzPageSizeChange)="onPageSizeChange($event)"
@@ -142,17 +142,21 @@
 
     <div class="vpid-form-row">
       <label class="vpid-form-label vpid-required">{{ i18n.t('pa.inputItemData.personId', 'Mã nhân viên') }}</label>
-      <nz-select
-        *ngIf="formIsAdd(); else vpidEmpPlaintext"
-        style="width: 100%"
-        [ngModel]="formPersonId()"
-        (ngModelChange)="onEmployeeSelect($event)"
-        nzShowSearch
-        [nzPlaceHolder]="i18n.t('pa.inputItemData.personIdPlaceholder', 'Nhập mã NV hoặc họ tên...')"
-        (nzOnSearch)="onEmployeeSearch($event)"
-      >
-        <nz-option *ngFor="let emp of formEmployeeOptions()" [nzValue]="emp.personId" [nzLabel]="(emp.empId ?? '') + ' - ' + (emp.localName ?? '')"></nz-option>
-      </nz-select>
+      <ng-container *ngIf="formIsAdd(); else vpidEmpPlaintext">
+        <div class="vpid-emp-lookup">
+          <input
+            nz-input
+            [ngModel]="formEmpIdInput()"
+            (ngModelChange)="formEmpIdInput.set($event)"
+            (keydown.enter)="lookupEmployee()"
+            [placeholder]="i18n.t('pa.inputItemData.personIdPlaceholder', 'Nhập mã nhân viên')"
+          />
+          <button nz-button nzType="default" (click)="lookupEmployee()">
+            <span nz-icon nzType="search"></span>{{ i18n.t('common.search', 'Tra cứu') }}
+          </button>
+        </div>
+        <div *ngIf="formPersonDisplay()" class="vpid-plaintext">{{ formPersonDisplay() }}</div>
+      </ng-container>
       <ng-template #vpidEmpPlaintext>
         <div class="vpid-plaintext">{{ formPersonDisplay() }}</div>
       </ng-template>
@@ -175,6 +179,34 @@
       <label class="vpid-form-label">{{ i18n.t('pa.inputItemData.remark', 'Ghi chú') }}</label>
       <textarea nz-input rows="2" [ngModel]="formRemark()" (ngModelChange)="formRemark.set($event)"></textarea>
     </div>
+  </ng-container>
+</nz-modal>
+
+<!-- Popup chọn nhân viên khi tra cứu tìm được nhiều kết quả -->
+<nz-modal
+  [(nzVisible)]="formEmpPickerVisible"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm kiếm nhân viên')"
+  [nzFooter]="null"
+  nzWidth="600px"
+  (nzOnCancel)="formEmpPickerVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <nz-table [nzData]="formEmployeeOptions()" nzSize="small" [nzShowPagination]="false" [nzScroll]="{ y: '320px' }">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('pa.inputItemData.empId', 'Mã NV') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.localName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('pa.inputItemData.deptName', 'Phòng ban') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of formEmployeeOptions()" class="vpid-clickable" (click)="selectEmployeeFromPicker(emp)">
+          <td>{{ emp.empId }}</td>
+          <td>{{ emp.localName }}</td>
+          <td>{{ emp.deptName }}</td>
+        </tr>
+      </tbody>
+    </nz-table>
   </ng-container>
 </nz-modal>
 

@@ -1,0 +1,183 @@
+<div class="etcm-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etcm-search-name" nz-input name="etcmSearchName" [ngModel]="searchName()" (ngModelChange)="searchName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.START_DATE1', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etcm-search-start" name="etcmSearchStart" [ngModel]="searchStart()" (ngModelChange)="searchStart.set($event)" nzFormat="dd/MM/yyyy" class="etcm-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.END_DATE1', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="etcm-search-end" name="etcmSearchEnd" [ngModel]="searchEnd()" (ngModelChange)="searchEnd.set($event)" nzFormat="dd/MM/yyyy" class="etcm-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="10" class="etcm-toolbar-actions">
+          <button id="etcm-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ar.viewempcalender.title.search', 'Tìm kiếm') }}
+          </button>
+          <button id="etcm-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="etcm-edit-btn" nz-button nzType="primary" type="button" (click)="openEditModal()">
+            <span nz-icon nzType="edit"></span>
+            {{ i18n.t('button.update', 'Sửa') }}
+          </button>
+          <button id="etcm-delete-btn" nz-button nzDanger type="button" (click)="deleteSelected()">
+            <span nz-icon nzType="delete"></span>
+            {{ i18n.t('button.delete', 'Xóa') }}
+          </button>
+          <button id="etcm-export-btn" nz-button type="button" (click)="exportList()">
+            <span nz-icon nzType="file-excel"></span>
+            {{ i18n.t('pa.insurance.title.excelExport', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="etcm-quick-filter">
+      <input id="etcm-quick-filter" nz-input name="etcmQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+
+    <nz-table
+      #etcmTable
+      id="etcm-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="etcm-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('edu.trainCostMANAGER.PEIXUNMINGCHENGQICI.a', 'Tên đào tạo (lần)') }}</th>
+          <th class="etcm-col-right">{{ i18n.t('edu.trainCostMANAGER.YUJIFEIYONG.a', 'Dự tính chi phí') }}</th>
+          <th class="etcm-col-right">{{ i18n.t('edu.trainCostMANAGER.FEIYONGHEJI.a', 'Tổng chi phí') }}</th>
+          <th class="etcm-col-right">{{ i18n.t('edu.trainCostMANAGER.RENJUNFEIYONG.a', 'Bình quân mỗi người') }}</th>
+          <th class="etcm-col-center">{{ i18n.t('edu.trainBasicInformation.PEIXUNSHISHIQIJIAN.a', 'Thời gian') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of etcmTable.data; track row.basicNo; let idx = $index) {
+          <tr class="etcm-row" [class.etcm-row-selected]="row.basicNo === selected()?.basicNo" (click)="selectRow(row)" (dblclick)="openEditModal(row)">
+            <td class="etcm-col-center">{{ (etcmTable.nzPageIndex - 1) * etcmTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.trainTypeCodeName }}</td>
+            <td>{{ courseTitle(row.courseNameCode, row.periodTime) }}</td>
+            <td class="etcm-col-right">{{ row.budget }}</td>
+            <td class="etcm-col-right">{{ row.allCost | number }}</td>
+            <td class="etcm-col-right">{{ row.avgCost | number }}</td>
+            <td class="etcm-col-center">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="etcm-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Sửa chi phí (trainCostManagerInfo bản gốc); nzMaskClosable=true -->
+<nz-modal
+  [nzVisible]="modalVisible()"
+  [nzTitle]="i18n.t('edu.trainCost.modal.editTitle', 'Cập nhật chi phí đào tạo')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeModal()"
+  nzWidth="900px"
+>
+  <ng-container *nzModalContent>
+    @if (detail(); as d) {
+      <div class="etcm-head">
+        <span class="etcm-course">{{ courseTitle(d.courseNameCode, d.periodTime) }}</span>
+        <span>{{ d.impleStartDate }} ~ {{ d.impleEndDate }}</span>
+        <span class="etcm-spacer"></span>
+        <button id="etcm-export-detail-btn" nz-button nzSize="small" (click)="exportDetail()">
+          <span nz-icon nzType="file-excel"></span>
+          {{ i18n.t('pa.insurance.title.excelExport', 'Xuất Excel') }}
+        </button>
+      </div>
+    }
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        @for (f of costFields; track f.key) {
+          <div nz-col [nzXs]="24" [nzMd]="6">
+            <nz-form-item>
+              <nz-form-label>{{ i18n.t(f.label, f.fallback) }}</nz-form-label>
+              <nz-form-control>
+                <nz-input-number [id]="'etcm-f-' + f.key" [name]="'etcmF' + f.key" [ngModel]="costs()[f.key]" (ngModelChange)="setCost(f.key, $event)" [nzMin]="0" class="etcm-full"></nz-input-number>
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+        }
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewarcardrecord.title.beizhu', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <input id="etcm-f-remark" nz-input name="etcmFRemark" [ngModel]="remark()" (ngModelChange)="remark.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <div class="etcm-summary">
+            <div>
+              {{ i18n.t('edu.trainCostMANAGER.FEIYONGHEJI.a', 'Tổng chi phí') }}:
+              <b class="etcm-red">{{ totalCost() | number }}</b>
+            </div>
+            <div>
+              {{ i18n.t('edu.trainCostMANAGER.FEIYONGHEJIRENJUN.a', 'Tổng chi phí (đầu người)') }}:
+              <b class="etcm-red">{{ avgCost() | number }}</b>
+            </div>
+            @if (showDirectCost()) {
+              <div>
+                {{ i18n.t('edu.trainCostMANAGER.ZHIJIEJINGFEI.a', 'Chi phí trực tiếp') }}:
+                <b class="etcm-red">{{ directCost() | number }}</b>
+                &nbsp;|&nbsp;
+                {{ i18n.t('edu.trainCostMANAGER.JIANJIEJINGFEI.a', 'Chi phí gián tiếp') }}:
+                <b class="etcm-red">{{ totalCost() - directCost() | number }}</b>
+              </div>
+            }
+          </div>
+        </div>
+        <div nz-col [nzSpan]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewBadArchives.title.FILE', 'File') }}</nz-form-label>
+            <nz-form-control>
+              <app-edu-attachment
+                [files]="files()"
+                [pendingFiles]="pendingFiles()"
+                (pendingFilesChange)="pendingFiles.set($event)"
+                (fileDeleted)="reloadFiles()"
+              ></app-edu-attachment>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="etcm-cancel-btn" nz-button (click)="closeModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="etcm-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">{{ i18n.t('ess.message.save', 'Lưu') }}</button>
+  </div>
+</nz-modal>

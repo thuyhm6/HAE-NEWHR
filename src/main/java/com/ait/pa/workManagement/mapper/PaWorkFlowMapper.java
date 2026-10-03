@@ -13,7 +13,7 @@ public interface PaWorkFlowMapper {
     PaWorkFlowDto selectOne(@Param("payScheduleNo") String payScheduleNo);
 
     List<PaWorkFlowRecordsDto> selectRecordList(@Param("payScheduleNo") String payScheduleNo,
-                                                @Param("flowStep") Integer flowStep);
+                                                @Param("flowSteps") List<Integer> flowSteps);
 
     void insert(PaWorkFlowDto dto);
 

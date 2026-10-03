@@ -76,13 +76,13 @@ public class ArMacRecordTempServiceImpl implements ArMacRecordTempService {
                     }
 
                     String rowError = null;
-                    if (empId.isBlank()) {
+                    if (empId.trim().isEmpty()) {
                         rowError = "Dòng " + (i + 1) + ": Thiếu Mã nhân viên (cột A)";
-                    } else if (rDate.isBlank()) {
+                    } else if (rDate.trim().isEmpty()) {
                         rowError = "Dòng " + (i + 1) + ": Thiếu Ngày quẹt thẻ (cột D)";
-                    } else if (rTime.isBlank()) {
+                    } else if (rTime.trim().isEmpty()) {
                         rowError = "Dòng " + (i + 1) + ": Thiếu Giờ quẹt thẻ (cột E)";
-                    } else if (doorType.isBlank()) {
+                    } else if (doorType.trim().isEmpty()) {
                         rowError = "Dòng " + (i + 1) + ": Thiếu Loại (cột F)";
                     }
 
@@ -95,12 +95,12 @@ public class ArMacRecordTempServiceImpl implements ArMacRecordTempService {
                     dto.setLineId((long) i);
                     dto.setCardNo(empId.trim());
                     dto.setEmpId(empId.trim());
-                    dto.setLocalName(localName.isBlank() ? null : localName.trim());
-                    dto.setArDateStr(arDateStr.isBlank() ? null : arDateStr.trim());
+                    dto.setLocalName(localName.trim().isEmpty() ? null : localName.trim());
+                    dto.setArDateStr(arDateStr.trim().isEmpty() ? null : arDateStr.trim());
                     dto.setRDate(rDate.trim());
                     dto.setRTime(rTime.trim());
                     dto.setDoorType(doorType.trim());
-                    dto.setRemark(remark.isBlank() ? null : remark.trim());
+                    dto.setRemark(remark.trim().isEmpty() ? null : remark.trim());
                     dto.setUploadErrorMsg(null);
 
                     try {
@@ -224,7 +224,7 @@ public class ArMacRecordTempServiceImpl implements ArMacRecordTempService {
             return "File vượt quá kích thước tối đa 5MB.";
         }
         String name = file.getOriginalFilename();
-        if (name == null || name.isBlank()) {
+        if (name == null || name.trim().isEmpty()) {
             return "Tên file không hợp lệ.";
         }
         String nameLower = name.toLowerCase(Locale.ROOT);
@@ -236,7 +236,7 @@ public class ArMacRecordTempServiceImpl implements ArMacRecordTempService {
 
     private boolean isAllBlank(String... values) {
         for (String v : values) {
-            if (v != null && !v.isBlank()) return false;
+            if (v != null && !v.trim().isEmpty()) return false;
         }
         return true;
     }

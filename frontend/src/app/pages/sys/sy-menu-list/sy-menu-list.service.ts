@@ -27,7 +27,7 @@ const BASE_URL = '/sys/api/menu';
 
 /**
  * Quản lý Menu hệ thống (viewMenuList) - port lại từ
- * sys/basicMaintenance/viewMenuList.html (đã xoá). ACTIVITY ở đây là số
+ * sys/menu/viewMenuList.html (đã xoá). ACTIVITY ở đây là số
  * nguyên 1/0 (khác quy ước chuỗi "1"/"0" của SY_CODE/HR_COMPANY) - khớp
  * đúng kiểu Integer của SyMenu model. Nút "Xuất Excel" bản gốc thực ra xuất
  * .csv (Content-Disposition filename=MenuList.csv, content-type

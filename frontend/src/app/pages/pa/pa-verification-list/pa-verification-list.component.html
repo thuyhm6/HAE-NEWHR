@@ -1,0 +1,74 @@
+<div class="psc-page">
+  <div class="psc-search-card">
+    <div class="psc-search-row">
+      <div class="psc-field">
+        <label class="psc-label" for="pvlSearchKey">{{ i18n.t('ess.infoApply.NAME_EMPID', 'Mã nhân viên/Họ tên') }}</label>
+        <input id="pvlSearchKey" nz-input class="psc-select" [ngModel]="searchKey()" (ngModelChange)="searchKey.set($event)" (keydown.enter)="search()" />
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <nz-select id="pvlPaySchedule" class="psc-select-wide" [ngModel]="payScheduleNo()" (ngModelChange)="payScheduleNo.set($event)" nzShowSearch>
+          @for (sch of scheduleOptions(); track sch.payScheduleNo) {
+            <nz-option [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-actions">
+        <button id="pvlBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="psc-card">
+    <div class="psc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</div>
+    <nz-table
+      #pvlTable
+      id="pvlTable"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzFrontPagination]="false"
+      [nzShowPagination]="false"
+      [nzScroll]="{ x: '1400px', y: 'calc(100vh - 320px)' }"
+      [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" nzLeft class="psc-center">No</th>
+          <th nzWidth="150px" nzLeft [nzSortFn]="textSort('localName')">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th nzWidth="100px" [nzSortFn]="textSort('empId')">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+          <th nzWidth="170px" [nzSortFn]="textSort('deptName')">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th nzWidth="120px" [nzSortFn]="textSort('postFamilyName')">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+          <th nzWidth="100px" [nzSortFn]="textSort('postGradeName')">{{ i18n.t('hrm.contract.Rank', 'Chức vụ') }}</th>
+          <th nzWidth="120px" [nzSortFn]="textSort('positionName')">{{ i18n.t('pa.salary.canShu.zhiZe', 'Chức danh') }}</th>
+          <th nzWidth="120px" [nzSortFn]="textSort('empTypeName')">{{ i18n.t('org.title.EMP_TYPE', 'Loại nhân viên') }}</th>
+          <th nzWidth="100px" class="psc-center">{{ i18n.t('ess.empInfo.entry_date', 'Ngày vào làm') }}</th>
+          <th nzWidth="100px" class="psc-center">{{ i18n.t('ess.empInfo.leaveDate', 'Ngày thôi việc') }}</th>
+          <th nzWidth="100px" class="psc-center">{{ i18n.t('hr.enpinfo.title.EMP.EXPDATE', 'Thời gian') }}</th>
+          <th nzWidth="140px" [nzSortFn]="textSort('transCodeName')">{{ i18n.t('hr.assignment.type', 'Quyết định') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of pvlTable.data; track $index) {
+          <tr class="psc-row" (click)="openDetail(row)">
+            <td nzLeft class="psc-center">{{ $index + 1 }}</td>
+            <td nzLeft>{{ row.localName }}</td>
+            <td class="psc-center">{{ row.empId }}</td>
+            <td>{{ row.deptName }}</td>
+            <td>{{ row.postFamilyName }}</td>
+            <td>{{ row.postGradeName }}</td>
+            <td>{{ row.positionName }}</td>
+            <td>{{ row.empTypeName }}</td>
+            <td class="psc-center">{{ row.dateStarted }}</td>
+            <td class="psc-center">{{ row.dateLeft }}</td>
+            <td class="psc-center">{{ row.transDate }}</td>
+            <td>{{ row.transCodeName }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </div>
+</div>

@@ -66,7 +66,7 @@
   </nz-card>
 
   <nz-card class="ve-table-card">
-    <nz-table #veTable id="ve-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="25" [nzShowSizeChanger]="true" [nzPageSizeOptions]="[25, 50, 100]" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
+    <nz-table #veTable id="ve-data-table" [nzData]="rows()" [nzLoading]="listLoading()" [nzPageSize]="defaultPageSize" [nzShowSizeChanger]="true" [nzPageSizeOptions]="pageSizeOptions" [nzScroll]="{ x: 'max-content', y: '100%' }" nzSize="small">
       <thead>
         <tr>
           <th nzWidth="50px" class="ve-col-center">No.</th>

@@ -1,5 +1,7 @@
 package com.ait.sy.sys.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.sy.basicMaintenance.model.SyCode;
 import com.ait.sy.sys.service.MultilingualService;
 import org.slf4j.Logger;
@@ -33,7 +35,7 @@ public class MultilingualManagementController {
         // Lấy tất cả nội dung đa ngôn ngữ theo mã số
         Map<String, String> contents = multilingualService.getContentsByNo(no);
 
-        return Map.of(
+        return CollectionUtil.mapOf(
                 "no", no,
                 "contents", contents,
                 "success", true);
@@ -52,12 +54,12 @@ public class MultilingualManagementController {
         try {
             multilingualService.saveContent(no, language, content);
 
-            return Map.of(
+            return CollectionUtil.mapOf(
                     "success", true,
                     "message", "Nội dung đã được lưu thành công");
         } catch (Exception e) {
             log.error("Failed to save multilingual content no={} language={}", no, language, e);
-            return Map.of(
+            return CollectionUtil.mapOf(
                     "success", false,
                     "message", "Loi he thong khi luu noi dung da ngon ngu.");
         }
@@ -76,12 +78,12 @@ public class MultilingualManagementController {
         try {
             multilingualService.updateContent(no, language, content);
 
-            return Map.of(
+            return CollectionUtil.mapOf(
                     "success", true,
                     "message", "Nội dung đã được cập nhật thành công");
         } catch (Exception e) {
             log.error("Failed to update multilingual content no={} language={}", no, language, e);
-            return Map.of(
+            return CollectionUtil.mapOf(
                     "success", false,
                     "message", "Loi he thong khi cap nhat noi dung da ngon ngu.");
         }
@@ -98,12 +100,12 @@ public class MultilingualManagementController {
         try {
             multilingualService.deleteContent(no, language);
 
-            return Map.of(
+            return CollectionUtil.mapOf(
                     "success", true,
                     "message", "Nội dung đã được xóa thành công");
         } catch (Exception e) {
             log.error("Failed to delete multilingual content no={} language={}", no, language, e);
-            return Map.of(
+            return CollectionUtil.mapOf(
                     "success", false,
                     "message", "Loi he thong khi xoa noi dung da ngon ngu.");
         }
@@ -148,7 +150,7 @@ public class MultilingualManagementController {
         // Lấy tất cả nội dung đa ngôn ngữ theo mã code
         Map<String, String> contents = multilingualService.getContentsByNo(codeNo);
 
-        return Map.of(
+        return CollectionUtil.mapOf(
                 "codeInfo", syCode,
                 "contents", contents,
                 "success", true);

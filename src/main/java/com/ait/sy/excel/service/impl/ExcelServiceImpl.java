@@ -115,19 +115,19 @@ public class ExcelServiceImpl implements ExcelService {
                 String shiftCode = getCellStr(row.getCell(6));
                 String remark = getCellStr(row.getCell(7));
 
-                if (empId.isBlank() && date.isBlank()) {
+                if (empId.trim().isEmpty() && date.trim().isEmpty()) {
                     continue;
                 }
 
-                if (empId.isBlank()) {
+                if (empId.trim().isEmpty()) {
                     errors.add("Dong " + (i + 1) + ": Thieu Employee ID");
                     continue;
                 }
-                if (date.isBlank()) {
+                if (date.trim().isEmpty()) {
                     errors.add("Dong " + (i + 1) + ": Thieu Date");
                     continue;
                 }
-                if (shiftCode.isBlank()) {
+                if (shiftCode.trim().isEmpty()) {
                     errors.add("Dong " + (i + 1) + ": Thieu Shift Code (cot G)");
                     continue;
                 }
@@ -145,7 +145,7 @@ public class ExcelServiceImpl implements ExcelService {
                 }
 
                 Long typeid = null;
-                if (!typeCodeRaw.isBlank()) {
+                if (!typeCodeRaw.trim().isEmpty()) {
                     try {
                         typeid = Long.parseLong(typeCodeRaw.replaceAll("\\.0$", ""));
                     } catch (NumberFormatException ignored) {
@@ -158,7 +158,7 @@ public class ExcelServiceImpl implements ExcelService {
                 rowData.put("shiftNo", shiftCode);
                 rowData.put("arDateStr", arDateStr);
                 rowData.put("typeid", typeid);
-                rowData.put("remark", remark.isBlank() ? null : remark);
+                rowData.put("remark", remark.trim().isEmpty() ? null : remark);
 
                 mapper.insertScheduleHae(rowData);
             }
@@ -195,10 +195,10 @@ public class ExcelServiceImpl implements ExcelService {
                 String leaveToTime = normalizeTimeCell(row.getCell(8), formatter);
                 String leaveReason = getCellText(row.getCell(9), formatter);
 
-                if (leaveFromDate.isBlank()) {
+                if (leaveFromDate.trim().isEmpty()) {
                     leaveFromDate = attendanceDate;
                 }
-                if (leaveToDate.isBlank()) {
+                if (leaveToDate.trim().isEmpty()) {
                     leaveToDate = attendanceDate;
                 }
 
@@ -206,22 +206,22 @@ public class ExcelServiceImpl implements ExcelService {
                         leaveFromTime, leaveToDate, leaveToTime, leaveReason)) {
                     continue;
                 }
-                if (empId.isBlank()) {
+                if (empId.trim().isEmpty()) {
                     errors.add("Dong " + (i + 1) + ": Thieu Employee ID");
                     continue;
                 }
 
                 Map<String, Object> rowData = new HashMap<>();
-                rowData.put("empId", empId.isBlank() ? null : empId);
-                rowData.put("applyName", applyName.isBlank() ? null : applyName);
-                rowData.put("leaveTypeCode", leaveTypeCode.isBlank() ? null : leaveTypeCode);
-                rowData.put("leaveFromDate", leaveFromDate.isBlank() ? null : leaveFromDate);
-                rowData.put("leaveFromTime", leaveFromTime.isBlank() ? null : leaveFromTime);
-                rowData.put("leaveToDate", leaveToDate.isBlank() ? null : leaveToDate);
-                rowData.put("leaveToTime", leaveToTime.isBlank() ? null : leaveToTime);
+                rowData.put("empId", empId.trim().isEmpty() ? null : empId);
+                rowData.put("applyName", applyName.trim().isEmpty() ? null : applyName);
+                rowData.put("leaveTypeCode", leaveTypeCode.trim().isEmpty() ? null : leaveTypeCode);
+                rowData.put("leaveFromDate", leaveFromDate.trim().isEmpty() ? null : leaveFromDate);
+                rowData.put("leaveFromTime", leaveFromTime.trim().isEmpty() ? null : leaveFromTime);
+                rowData.put("leaveToDate", leaveToDate.trim().isEmpty() ? null : leaveToDate);
+                rowData.put("leaveToTime", leaveToTime.trim().isEmpty() ? null : leaveToTime);
                 rowData.put("applyLength", null);
-                rowData.put("leaveReason", leaveReason.isBlank() ? null : leaveReason);
-                rowData.put("affirmFlag", affirmFlag.isBlank() ? null : affirmFlag);
+                rowData.put("leaveReason", leaveReason.trim().isEmpty() ? null : leaveReason);
+                rowData.put("affirmFlag", affirmFlag.trim().isEmpty() ? null : affirmFlag);
                 rowData.put("lineId", String.valueOf(i));
                 rowData.put("uploadErrorMsg", null);
                 rowData.put("resultFlag", "N");
@@ -276,10 +276,10 @@ public class ExcelServiceImpl implements ExcelService {
                 String acrossDayYn = normalizeFlagCell(row.getCell(8), formatter);
                 String applyOtRemark = getCellText(row.getCell(9), formatter);
 
-                if (otFromDate.isBlank()) {
+                if (otFromDate.trim().isEmpty()) {
                     otFromDate = applyOtDate;
                 }
-                if (otToDate.isBlank()) {
+                if (otToDate.trim().isEmpty()) {
                     otToDate = applyOtDate;
                 }
 
@@ -287,30 +287,30 @@ public class ExcelServiceImpl implements ExcelService {
                         acrossDayYn, applyOtRemark)) {
                     continue;
                 }
-                if (empId.isBlank()) {
+                if (empId.trim().isEmpty()) {
                     errors.add("Dong " + (i + 1) + ": Thieu Employee ID");
                     continue;
                 }
 
                 Map<String, Object> rowData = new HashMap<>();
-                rowData.put("empId", empId.isBlank() ? null : empId);
-                rowData.put("applyName", applyName.isBlank() ? null : applyName);
-                rowData.put("applyOtDate", applyOtDate.isBlank() ? null : applyOtDate);
-                rowData.put("otFromDate", otFromDate.isBlank() ? null : otFromDate);
-                rowData.put("otFromTime", otFromTime.isBlank() ? null : otFromTime);
-                rowData.put("otToDate", otToDate.isBlank() ? null : otToDate);
-                rowData.put("otToTime", otToTime.isBlank() ? null : otToTime);
+                rowData.put("empId", empId.trim().isEmpty() ? null : empId);
+                rowData.put("applyName", applyName.trim().isEmpty() ? null : applyName);
+                rowData.put("applyOtDate", applyOtDate.trim().isEmpty() ? null : applyOtDate);
+                rowData.put("otFromDate", otFromDate.trim().isEmpty() ? null : otFromDate);
+                rowData.put("otFromTime", otFromTime.trim().isEmpty() ? null : otFromTime);
+                rowData.put("otToDate", otToDate.trim().isEmpty() ? null : otToDate);
+                rowData.put("otToTime", otToTime.trim().isEmpty() ? null : otToTime);
                 rowData.put("otApplyHour", null);
-                rowData.put("applyOtRemark", applyOtRemark.isBlank() ? null : applyOtRemark);
+                rowData.put("applyOtRemark", applyOtRemark.trim().isEmpty() ? null : applyOtRemark);
                 rowData.put("affirmFlag", "14014306");
                 rowData.put("lineId", String.valueOf(i));
                 rowData.put("uploadErrorMsg", null);
                 rowData.put("resultFlag", "N");
                 rowData.put("otTypeCode", null);
                 rowData.put("adjustYn", "0");
-                rowData.put("specialYn", acrossDayYn.isBlank() ? "0" : acrossDayYn);
+                rowData.put("specialYn", acrossDayYn.trim().isEmpty() ? "0" : acrossDayYn);
                 rowData.put("offsetYn", "0");
-                rowData.put("deductYn", deductYn.isBlank() ? "0" : deductYn);
+                rowData.put("deductYn", deductYn.trim().isEmpty() ? "0" : deductYn);
 
                 try {
                     mapper.insertOvertimeApplyTemp(rowData);
@@ -484,7 +484,7 @@ public class ExcelServiceImpl implements ExcelService {
 
     private boolean isAllBlank(String... values) {
         for (String value : values) {
-            if (value != null && !value.isBlank()) {
+            if (value != null && !value.trim().isEmpty()) {
                 return false;
             }
         }
@@ -496,7 +496,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     private boolean isValidationErrorMessage(String message) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return false;
         }
         String normalized = message.toLowerCase(Locale.ROOT);

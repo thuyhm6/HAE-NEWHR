@@ -11,6 +11,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { YearUseInfoService, YearUseLeaveUsageRow, YearUseVacationRow } from './year-use-info.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Thông tin nghỉ phép năm + tình trạng sử dụng phép năm - port lại từ
  * ess/viewDept/yearUseInfo.html (Thymeleaf, đã xoá) sang Angular + NG-ZORRO,
@@ -26,6 +27,10 @@ import { YearUseInfoService, YearUseLeaveUsageRow, YearUseVacationRow } from './
   styleUrl: './year-use-info.component.scss',
 })
 export class YearUseInfoComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(YearUseInfoService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

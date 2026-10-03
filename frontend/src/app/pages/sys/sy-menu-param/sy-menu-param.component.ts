@@ -17,6 +17,7 @@ import { NzTreeNodeKey, NzTreeNodeOptions } from 'ng-zorro-antd/core/tree';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyMenuParamRow, SyMenuParamService, SyMenuTreeSource, SyCompanyOption } from './sy-menu-param.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý tham số Menu theo công ty (viewMenuParamList) - xem ghi chú trong
  * sy-menu-param.service.ts.
@@ -42,6 +43,10 @@ import { SyMenuParamRow, SyMenuParamService, SyMenuTreeSource, SyCompanyOption }
   styleUrl: './sy-menu-param.component.scss',
 })
 export class SyMenuParamComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SyMenuParamService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

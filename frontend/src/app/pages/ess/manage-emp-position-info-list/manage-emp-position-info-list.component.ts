@@ -26,6 +26,7 @@ import {
   SyCodeOption,
 } from './manage-emp-position-info-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const EMP_OFFICE_ACTIVE_CODE = '15119';
 const POST_FAMILY_PARENT_CODE = '14015812';
 const EMP_TYPE_PARENT_CODE = '13864';
@@ -61,6 +62,10 @@ const NATIONALITY_PARENT_CODE = '870';
   styleUrl: './manage-emp-position-info-list.component.scss',
 })
 export class ManageEmpPositionInfoListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ManageEmpPositionInfoService);
   private readonly message = inject(NzMessageService);
   private readonly location = inject(Location);

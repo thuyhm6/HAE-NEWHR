@@ -21,6 +21,7 @@ import {
   EvsResumeOption,
 } from './affirm-target.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../core/config/table-pagination.config';
 export interface AffirmTargetConfig {
   apiBase: 'affirmTarget1' | 'affirmTarget2';
   i18nPrefix: string;
@@ -61,6 +62,9 @@ interface SectionTotals {
   styleUrl: './affirm-target.component.scss',
 })
 export class AffirmTargetComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(AffirmTargetService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

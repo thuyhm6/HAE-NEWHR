@@ -1,5 +1,7 @@
 package com.ait.config;
 
+import com.ait.util.CollectionUtil;
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
@@ -34,7 +36,7 @@ public class GlobalApiExceptionHandler {
         log.error("Unhandled exception for uri={}", uri, ex);
 
         if (uri != null && uri.contains("/api/")) {
-            return ResponseEntity.status(500).body(Map.of("error", "Loi he thong. Vui long thu lai."));
+            return ResponseEntity.status(500).body(CollectionUtil.mapOf("error", "Loi he thong. Vui long thu lai."));
         }
 
         return "error/500";

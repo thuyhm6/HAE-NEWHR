@@ -172,11 +172,11 @@ public class ArOvertimeManagentController {
         try {
             String message = service.importTempToOfficial();
             response.put("success", true);
-            response.put("message", message.isBlank() ? "Luu thanh cong" : message);
+            response.put("message", message.trim().isEmpty() ? "Luu thanh cong" : message);
         } catch (Exception e) {
             log.error("Failed to import overtime temp data", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Loi he thong khi luu du lieu import."
                     : e.getMessage());
         }
@@ -204,7 +204,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to save batch overtime data", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi lưu tăng ca."
                     : e.getMessage());
         }
@@ -232,7 +232,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to save batch overtime-over data", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi lưu tăng ca vượt."
                     : e.getMessage());
         }
@@ -258,7 +258,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to resubmit overtime-over apply", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi lưu lại đơn tăng ca vượt."
                     : e.getMessage());
         }
@@ -282,7 +282,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to batch cancel overtime-over applies", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi hủy đơn tăng ca vượt."
                     : e.getMessage());
         }
@@ -308,7 +308,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to save overtime over data", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi lưu tăng ca vượt."
                     : e.getMessage());
         }
@@ -335,7 +335,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to save overtime fast data", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi lưu tăng ca."
                     : e.getMessage());
         }
@@ -362,7 +362,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to resubmit overtime apply", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi lưu lại đơn tăng ca."
                     : e.getMessage());
         }
@@ -396,7 +396,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to cancel overtime apply", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi hủy đơn tăng ca."
                     : e.getMessage());
         }
@@ -420,7 +420,7 @@ public class ArOvertimeManagentController {
         } catch (Exception e) {
             log.error("Failed to batch cancel overtime applies", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Lỗi hệ thống khi hủy đơn tăng ca."
                     : e.getMessage());
         }

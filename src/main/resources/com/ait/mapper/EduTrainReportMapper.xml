@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    Báo cáo đào tạo - port từ sqlTrainReport.xml (Hanwha_HTSV). Giữ nguyên công thức
+    tổng hợp của bản gốc; chỉ sửa: tên danh mục theo ngôn ngữ đăng nhập (bản gốc
+    cố định 'zh'), NVL cho chi phí NULL, NULLIF tránh chia cho 0.
+-->
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainReportMapper">
+
+    <resultMap id="EduTrainReportMenuResultMap" type="com.ait.edu.trainEducation.model.EduTrainReportMenu">
+        <result column="CODE_NO" property="codeNo" jdbcType="VARCHAR"/>
+        <result column="CONTENT" property="content" jdbcType="VARCHAR"/>
+        <result column="REPORT_NAME" property="reportName" jdbcType="VARCHAR"/>
+        <result column="URL_JSP" property="urlJsp" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="EduTrainReportRowResultMap" type="com.ait.edu.trainEducation.model.EduTrainReportRow">
+        <result column="GROUP_NAME" property="groupName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_DIFF_NAME" property="trainDiffName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_TYPE_NAME" property="trainTypeName" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="TRAIN_FORM_NAME" property="trainFormName" jdbcType="VARCHAR"/>
+        <result column="COUNTS" property="counts" jdbcType="NUMERIC"/>
+        <result column="NUMB" property="numb" jdbcType="NUMERIC"/>
+        <result column="AVG_COUNTS" property="avgCounts" jdbcType="NUMERIC"/>
+        <result column="ALL_TIME" property="allTime" jdbcType="NUMERIC"/>
+        <result column="TOTAL_PT" property="totalPt" jdbcType="NUMERIC"/>
+        <result column="AVG_TIME" property="avgTime" jdbcType="NUMERIC"/>
+        <result column="ALL_COST" property="allCost" jdbcType="NUMERIC"/>
+        <result column="DIRECT_COST" property="directCost" jdbcType="NUMERIC"/>
+        <result column="INDIRECT_COST" property="indirectCost" jdbcType="NUMERIC"/>
+        <result column="AVG_COST" property="avgCost" jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <!-- ===== Cây loại báo cáo (getCodeListByParentCode + getreportList bản gốc) ===== -->
+    <select id="findMenu" resultMap="EduTrainReportMenuResultMap">
+        SELECT TO_CHAR(T.CODE_NO) AS CODE_NO,
+               NVL(GET_GLOBAL_NAME(T.CODE_NO, #{lang, jdbcType=VARCHAR}), ' ') AS CONTENT,
+               GET_GLOBAL_NAME(C.REPORT_NO, #{lang, jdbcType=VARCHAR}) AS REPORT_NAME,
+               C.URL_JSP
+        FROM (SELECT X.CODE_NO, ROWNUM AS RN
+                FROM (SELECT S.CODE_NO
+                        FROM SY_CODE S
+                       WHERE S.ACTIVITY = 1
+                       START WITH S.PARENT_CODE_NO = #{parentCodeNo, jdbcType=NUMERIC}
+                       CONNECT BY PRIOR S.CODE_NO = S.PARENT_CODE_NO
+                       ORDER SIBLINGS BY S.ORDERNO) X) T
+        JOIN REPORT_CENTER C ON TO_CHAR(C.REPORT_TYPE_NO) = TO_CHAR(T.CODE_NO)
+        WHERE C.ACTIVITY = '1'
+          AND C.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        ORDER BY T.RN, C.ORDERNO
+    </select>
+
+    <!-- ===== Công thức dùng chung ===== -->
+    <sql id="allCost">
+        (NVL(C.TEACHER_COST, 0) + NVL(C.MATERIAL_COST, 0) + NVL(C.FIELD_COST, 0) + NVL(C.FOOD_COST, 0)
+         + NVL(C.STAY_COST, 0) + NVL(C.TRAFFIC_COST, 0) + NVL(C.VISA_COST, 0) + NVL(C.OTHER_COST, 0))
+    </sql>
+
+    <sql id="directCost">
+        (NVL(C.TEACHER_COST, 0) + NVL(C.MATERIAL_COST, 0) + NVL(C.FIELD_COST, 0))
+    </sql>
+
+    <sql id="indirectCost">
+        (NVL(C.FOOD_COST, 0) + NVL(C.STAY_COST, 0) + NVL(C.TRAFFIC_COST, 0) + NVL(C.VISA_COST, 0) + NVL(C.OTHER_COST, 0))
+    </sql>
+
+    <sql id="studentCount">
+        (SELECT COUNT(1) FROM EDU_FREE_EMPLOYEE FE WHERE FE.BASIC_NO = B.BASIC_NO)
+    </sql>
+
+    <!-- Quy đổi thời lượng ra giờ: ngày = 24 giờ, tháng = 30 ngày (công thức bản gốc) -->
+    <sql id="hours24">
+        CASE WHEN TO_CHAR(B.IMPLE_CLASS_UNIT) = '2' THEN TO_NUMBER(B.IMPLE_CLASS_HOUR)
+             WHEN TO_CHAR(B.IMPLE_CLASS_UNIT) = '1' THEN TO_NUMBER(B.IMPLE_CLASS_HOUR) * 24
+             WHEN TO_CHAR(B.IMPLE_CLASS_UNIT) = '0' THEN TO_NUMBER(B.IMPLE_CLASS_HOUR) * 30 * 24
+             ELSE 0 END
+    </sql>
+
+    <!-- Tổng thời gian của báo cáo theo khóa học: bản gốc quy đổi ngày = 8 giờ -->
+    <sql id="hours8">
+        CASE WHEN TO_CHAR(B.IMPLE_CLASS_UNIT) = '2' THEN TO_NUMBER(B.IMPLE_CLASS_HOUR)
+             WHEN TO_CHAR(B.IMPLE_CLASS_UNIT) = '1' THEN TO_NUMBER(B.IMPLE_CLASS_HOUR) * 8
+             WHEN TO_CHAR(B.IMPLE_CLASS_UNIT) = '0' THEN TO_NUMBER(B.IMPLE_CLASS_HOUR) * 30 * 8
+             ELSE 0 END
+    </sql>
+
+    <sql id="costSums">
+        SUM(<include refid="allCost"/>) AS ALL_COST,
+        SUM(<include refid="directCost"/>) AS DIRECT_COST,
+        SUM(<include refid="indirectCost"/>) AS INDIRECT_COST
+    </sql>
+
+    <!-- Báo cáo theo năm / tháng / hình thức: đếm theo khóa (không nhân theo học viên) -->
+    <sql id="courseAggregates">
+        COUNT(*) AS COUNTS,
+        SUM(<include refid="studentCount"/>) AS NUMB,
+        SUM(<include refid="hours24"/>) AS ALL_TIME,
+        SUM(<include refid="studentCount"/>) * SUM(<include refid="hours24"/>) AS TOTAL_PT,
+        <include refid="costSums"/>
+    </sql>
+
+    <sql id="courseAggregateColumns">
+        T.COUNTS,
+        T.NUMB,
+        ROUND(T.COUNTS / NULLIF(T.NUMB, 0), 2) AS AVG_COUNTS,
+        T.ALL_TIME,
+        T.TOTAL_PT,
+        ROUND(T.ALL_TIME / NULLIF(T.NUMB, 0), 2) AS AVG_TIME,
+        T.ALL_COST,
+        T.DIRECT_COST,
+        T.INDIRECT_COST,
+        ROUND(T.ALL_COST / NULLIF(T.NUMB, 0), 2) AS AVG_COST
+    </sql>
+
+    <!-- Báo cáo theo chức vụ / phòng ban: mỗi dòng là 1 học viên của khóa -->
+    <sql id="employeeAggregates">
+        COUNT(*) AS COUNTS,
+        COUNT(E.EMPID) AS NUMB,
+        ROUND(COUNT(E.EMPID) / COUNT(*), 2) AS AVG_COUNTS,
+        SUM(TO_NUMBER(B.IMPLE_CLASS_HOUR)) AS ALL_TIME,
+        ROUND(SUM(TO_NUMBER(B.IMPLE_CLASS_HOUR)) / NULLIF(COUNT(E.EMPID), 0), 2) AS AVG_TIME,
+        COUNT(E.EMPID) * SUM(TO_NUMBER(B.IMPLE_CLASS_HOUR)) AS TOTAL_PT,
+        ROUND(SUM(<include refid="allCost"/>) / NULLIF(COUNT(E.EMPID), 0), 2) AS AVG_COST,
+        <include refid="costSums"/>
+    </sql>
+
+    <sql id="employeeFrom">
+        FROM EDU_BASIC_INFORMATION B
+        JOIN EDU_FREE_EMPLOYEE E ON E.BASIC_NO = B.BASIC_NO
+        JOIN EDU_COST_MANAGER C ON C.BASIC_NO = B.BASIC_NO
+        JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = B.PLAN_NO
+        JOIN HR_EMPLOYEE H ON H.EMPID = E.EMPID AND H.CPNY_ID = B.CPNY_ID
+        WHERE B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </sql>
+
+    <sql id="employeeAggregateColumns">
+        T.COUNTS,
+        T.NUMB,
+        T.AVG_COUNTS,
+        T.ALL_TIME,
+        T.TOTAL_PT,
+        T.AVG_TIME,
+        T.ALL_COST,
+        T.DIRECT_COST,
+        T.INDIRECT_COST,
+        T.AVG_COST
+    </sql>
+
+    <!-- ===== Báo cáo theo khóa học (courseTrainList) ===== -->
+    <select id="findCourseReport" resultMap="EduTrainReportRowResultMap">
+        SELECT GET_GLOBAL_NAME(T.TRAIN_DIFF_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_DIFF_NAME,
+               GET_GLOBAL_NAME(T.TRAIN_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_TYPE_NAME,
+               GET_GLOBAL_NAME(T.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_NAME,
+               T.COURSE_NAME_CODE,
+               T.COUNTS,
+               T.NUMB,
+               T.ALL_TIME,
+               T.TOTAL_PT,
+               ROUND(T.ALL_TIME / NULLIF(T.NUMB, 0), 2) AS AVG_TIME,
+               T.ALL_COST,
+               T.DIRECT_COST,
+               T.INDIRECT_COST,
+               ROUND(T.ALL_COST / NULLIF(T.NUMB, 0), 2) AS AVG_COST
+        FROM (SELECT P.TRAIN_DIFF_CODE,
+                     P.TRAIN_TYPE_CODE,
+                     P.COURSE_NAME_CODE,
+                     P.TRAIN_FORM_CODE,
+                     COUNT(P.PLAN_NO) AS COUNTS,
+                     SUM(<include refid="studentCount"/>) AS NUMB,
+                     SUM(<include refid="hours8"/>) AS ALL_TIME,
+                     SUM(<include refid="studentCount"/>) * SUM(<include refid="hours24"/>) AS TOTAL_PT,
+                     <include refid="costSums"/>
+                FROM EDU_PLAN_MANAGER P
+                JOIN EDU_BASIC_INFORMATION B ON B.PLAN_NO = P.PLAN_NO AND B.CPNY_ID = P.CPNY_ID
+                JOIN EDU_COST_MANAGER C ON C.BASIC_NO = B.BASIC_NO
+               WHERE P.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                <if test="trainDiffCode != null and trainDiffCode != ''">
+                    AND P.TRAIN_DIFF_CODE = #{trainDiffCode, jdbcType=VARCHAR}
+                </if>
+                <if test="trainTypeCode != null and trainTypeCode != ''">
+                    AND P.TRAIN_TYPE_CODE = #{trainTypeCode, jdbcType=VARCHAR}
+                </if>
+                <if test="courseName != null and courseName != ''">
+                    AND UPPER(P.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+                </if>
+               GROUP BY P.TRAIN_DIFF_CODE, P.TRAIN_TYPE_CODE, P.COURSE_NAME_CODE, P.TRAIN_FORM_CODE) T
+        ORDER BY T.TRAIN_DIFF_CODE, T.TRAIN_TYPE_CODE, T.COURSE_NAME_CODE
+    </select>
+
+    <!-- ===== Báo cáo theo chức vụ (postGradeTrainList) ===== -->
+    <select id="findPostGradeReport" resultMap="EduTrainReportRowResultMap">
+        SELECT GET_GLOBAL_NAME(T.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS GROUP_NAME,
+               GET_GLOBAL_NAME(T.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_NAME,
+               <include refid="employeeAggregateColumns"/>
+        FROM (SELECT H.POST_GRADE_NO,
+                     P.TRAIN_FORM_CODE,
+                     <include refid="employeeAggregates"/>
+                <include refid="employeeFrom"/>
+                <if test="postGradeName != null and postGradeName != ''">
+                    AND CONVERTTOUNSIGN(UPPER(GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR})))
+                        LIKE '%' || CONVERTTOUNSIGN(UPPER(#{postGradeName, jdbcType=VARCHAR})) || '%'
+                </if>
+               GROUP BY H.POST_GRADE_NO, P.TRAIN_FORM_CODE) T
+        ORDER BY GROUP_NAME, TRAIN_FORM_NAME
+    </select>
+
+    <!-- ===== Báo cáo theo phòng ban (deptTrainList) - gồm phòng ban con ===== -->
+    <select id="findDeptReport" resultMap="EduTrainReportRowResultMap">
+        SELECT GET_DEPT_NAME(T.DEPTNO, #{lang, jdbcType=VARCHAR}) AS GROUP_NAME,
+               GET_GLOBAL_NAME(T.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_NAME,
+               <include refid="employeeAggregateColumns"/>
+        FROM (SELECT H.DEPTNO,
+                     P.TRAIN_FORM_CODE,
+                     <include refid="employeeAggregates"/>
+                <include refid="employeeFrom"/>
+                <if test="deptNo != null and deptNo != ''">
+                    AND EXISTS (SELECT 1 FROM HR_DEPARTMENT D
+                                 WHERE D.DEPTNO = H.DEPTNO
+                                 START WITH D.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                                 CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)
+                </if>
+               GROUP BY H.DEPTNO, P.TRAIN_FORM_CODE) T
+        ORDER BY GROUP_NAME, TRAIN_FORM_NAME
+    </select>
+
+    <!-- ===== Báo cáo theo năm (yearTrainList) ===== -->
+    <select id="findYearReport" resultMap="EduTrainReportRowResultMap">
+        SELECT T.PERIOD_KEY AS GROUP_NAME,
+               GET_GLOBAL_NAME(T.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_NAME,
+               <include refid="courseAggregateColumns"/>
+        FROM (SELECT TO_CHAR(B.IMPLE_START_DATE, 'YYYY') AS PERIOD_KEY,
+                     P.TRAIN_FORM_CODE,
+                     <include refid="courseAggregates"/>
+                FROM EDU_BASIC_INFORMATION B
+                JOIN EDU_COST_MANAGER C ON C.BASIC_NO = B.BASIC_NO
+                JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = B.PLAN_NO
+               WHERE B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                <if test="year != null and year != ''">
+                    AND TO_CHAR(B.IMPLE_START_DATE, 'YYYY') = #{year, jdbcType=VARCHAR}
+                </if>
+               GROUP BY TO_CHAR(B.IMPLE_START_DATE, 'YYYY'), P.TRAIN_FORM_CODE) T
+        ORDER BY T.PERIOD_KEY, TRAIN_FORM_NAME
+    </select>
+
+    <!-- ===== Báo cáo theo tháng (monthTrainList) - lọc MMYYYY, hiển thị MM/YYYY ===== -->
+    <select id="findMonthReport" resultMap="EduTrainReportRowResultMap">
+        SELECT SUBSTR(T.PERIOD_KEY, 5, 2) || '/' || SUBSTR(T.PERIOD_KEY, 1, 4) AS GROUP_NAME,
+               GET_GLOBAL_NAME(T.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS TRAIN_FORM_NAME,
+               <include refid="courseAggregateColumns"/>
+        FROM (SELECT TO_CHAR(B.IMPLE_START_DATE, 'YYYYMM') AS PERIOD_KEY,
+                     P.TRAIN_FORM_CODE,
+                     <include refid="courseAggregates"/>
+                FROM EDU_BASIC_INFORMATION B
+                JOIN EDU_COST_MANAGER C ON C.BASIC_NO = B.BASIC_NO
+                JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = B.PLAN_NO
+               WHERE B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                <if test="month != null and month != ''">
+                    AND TO_CHAR(B.IMPLE_START_DATE, 'MMYYYY') = #{month, jdbcType=VARCHAR}
+                </if>
+               GROUP BY TO_CHAR(B.IMPLE_START_DATE, 'YYYYMM'), P.TRAIN_FORM_CODE) T
+        ORDER BY T.PERIOD_KEY, TRAIN_FORM_NAME
+    </select>
+
+    <!-- ===== Báo cáo theo hình thức đào tạo (formTrainList) ===== -->
+    <select id="findFormReport" resultMap="EduTrainReportRowResultMap">
+        SELECT GET_GLOBAL_NAME(T.TRAIN_FORM_CODE, #{lang, jdbcType=VARCHAR}) AS GROUP_NAME,
+               <include refid="courseAggregateColumns"/>
+        FROM (SELECT P.TRAIN_FORM_CODE,
+                     <include refid="courseAggregates"/>
+                FROM EDU_BASIC_INFORMATION B
+                JOIN EDU_PLAN_MANAGER P ON P.PLAN_NO = B.PLAN_NO AND P.CPNY_ID = B.CPNY_ID
+                JOIN EDU_COST_MANAGER C ON C.BASIC_NO = B.BASIC_NO
+               WHERE B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+                <if test="trainFormCode != null and trainFormCode != ''">
+                    AND P.TRAIN_FORM_CODE = #{trainFormCode, jdbcType=VARCHAR}
+                </if>
+               GROUP BY P.TRAIN_FORM_CODE) T
+        ORDER BY GROUP_NAME
+    </select>
+</mapper>

@@ -1,0 +1,86 @@
+.etr-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.etr-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.etr-quick-filter {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 280px;
+  }
+}
+
+.etr-modal-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.etr-spacer {
+  flex: 1;
+}
+
+.etr-links {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+// Đã đánh giá - bản gốc tô đỏ
+.etr-done {
+  color: #ff4d4f;
+}
+
+.etr-report {
+  margin-top: 16px;
+}
+
+.etr-report-title {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.etr-col-center {
+  text-align: center;
+}
+
+.etr-strong {
+  font-weight: 600;
+}
+
+.etr-full {
+  width: 100%;
+}
+
+.etr-hidden {
+  display: none;
+}
+
+.etr-row {
+  cursor: pointer;
+}
+
+// Dòng đang chọn - tương đương background:#aaccf6 ở bản gốc
+.etr-row-selected > td {
+  background: #e6f4ff !important;
+}
+
+// Khóa đang được đánh giá - bản gốc tô xanh tên khóa
+.etr-in-progress {
+  color: #1677ff;
+}

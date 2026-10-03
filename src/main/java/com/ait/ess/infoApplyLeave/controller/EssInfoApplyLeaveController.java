@@ -35,6 +35,12 @@ public class EssInfoApplyLeaveController {
         return null;
     }
 
+    @GetMapping("/viewCheckAttencetanceExForBatchList")
+    public String viewCheckAttencetanceExForBatchList(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
+    }
+
     @GetMapping("/api/myCardApply/list")
     @ResponseBody
     public ResponseEntity<List<EssCardApplyListDto>> getMyCardApplyList(
@@ -65,7 +71,7 @@ public class EssInfoApplyLeaveController {
         } catch (Exception e) {
             log.error("Failed to cancel card apply list", e);
             response.put("success", false);
-            response.put("error", e.getMessage() == null || e.getMessage().isBlank()
+            response.put("error", e.getMessage() == null || e.getMessage().trim().isEmpty()
                     ? "Hủy bỏ thất bại." : e.getMessage());
         }
         return ResponseEntity.ok(response);

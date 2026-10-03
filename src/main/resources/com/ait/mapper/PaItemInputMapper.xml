@@ -12,6 +12,8 @@
         <result column="ITEM_TYPE" property="itemType" jdbcType="NUMERIC" />
         <result column="ACTIVITY"  property="activity" jdbcType="NUMERIC" />
         <result column="CPNY_ID"   property="cpnyId"   jdbcType="VARCHAR" />
+        <result column="ITEM_FLAG"   property="itemFlag"   jdbcType="VARCHAR" />
+        <result column="ITEM_NUMBER" property="itemNumber" jdbcType="NUMERIC" />
     </resultMap>
 
     <!-- ── Hạng mục nhân sự (PA_DISTINCT_LIST + SY_GLOBAL_NAME) ─────────────── -->
@@ -31,7 +33,9 @@
     <select id="selectAttendanceItems" resultMap="PaItemInputResultMap">
         SELECT AR_STA_ITEM.ITEM_NO    AS ITEM_NO,
                COLUMN_NAME            AS ITEM_ID,
-               SY_GLOBAL_NAME.CONTENT AS ITEM_NAME
+               SY_GLOBAL_NAME.CONTENT AS ITEM_NAME,
+               GET_ITEM_GLAG(COLUMN_NAME, AR_STA_ITEM_PARAM.CPNY_ID)   AS ITEM_FLAG,
+               GET_ITEM_NUMBER(COLUMN_NAME, AR_STA_ITEM_PARAM.CPNY_ID) AS ITEM_NUMBER
           FROM USER_TAB_COLUMNS,
                AR_STA_ITEM,
                AR_STA_ITEM_PARAM,
@@ -73,7 +77,9 @@
     <select id="selectComputeItems" resultMap="PaItemInputResultMap">
         SELECT T.ITEM_NO    AS ITEM_NO,
                PI.ITEM_ID   AS ITEM_ID,
-               SY.CONTENT   AS ITEM_NAME
+               SY.CONTENT   AS ITEM_NAME,
+               GET_ITEM_GLAG(PI.ITEM_ID, T.CPNY_ID)   AS ITEM_FLAG,
+               GET_ITEM_NUMBER(PI.ITEM_ID, T.CPNY_ID) AS ITEM_NUMBER
           FROM PA_ITEM_PARAM  T,
                PA_ITEM        PI,
                SY_GLOBAL_NAME SY
@@ -139,37 +145,27 @@
            AND ITEM_TYPE = #{itemType, jdbcType=NUMERIC}
     </delete>
 
-    <!-- ── Lấy tên hạng mục theo danh sách ITEM_ID (dùng cho header Excel) ─── -->
-    <select id="selectItemNamesByIds" resultMap="PaItemInputResultMap">
-        SELECT ITEM_ID, MAX(ITEM_NAME) AS ITEM_NAME
-          FROM PA_ITEM_INPUT
-         WHERE CPNY_ID  = #{cpnyId, jdbcType=VARCHAR}
-           AND ACTIVITY = 1
-           AND ITEM_ID IN
-               <foreach collection="itemIds" item="id" open="(" separator="," close=")">
-                   #{id, jdbcType=VARCHAR}
-               </foreach>
-         GROUP BY ITEM_ID
-    </select>
-
-    <!-- ── Lấy dữ liệu PA_SUMMARY_HAE theo kế hoạch và phòng ban ───────────── -->
-    <select id="selectSummaryHaeData" resultType="java.util.Map">
-        SELECT S.*,
-               E.LOCAL_NAME      AS LOCAL_NAME_EMP,
-               HD.ORG_NAME_LOCAL AS DEPT_NAME_VAL
+    <!-- ── Dữ liệu PA_SUMMARY_HAE để xuất Excel (viewPaResult) ──────────────────
+         Giống /pa/excelExport/exportResult bản cũ: lọc theo kế hoạch trả lương,
+         phòng ban (gồm phòng ban con) và quyền quản lý lương PA_SUPERVISOR_INFO.
+         Lấy S.* rồi chọn cột ở service để tránh ghép SQL động từ tham số client. -->
+    <select id="selectSummaryHaeData" resultType="java.util.LinkedHashMap">
+        SELECT S.*
           FROM PA_SUMMARY_HAE S
-          LEFT JOIN HR_EMPLOYEE   E  ON S.EMPID   = E.EMPID
-                                    AND E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
-          LEFT JOIN HR_DEPARTMENT HD ON E.DEPTNO  = HD.DEPTNO
          WHERE S.CPNY_ID         = #{cpnyId, jdbcType=VARCHAR}
            AND S.PAY_SCHEDULE_NO = #{payScheduleNo, jdbcType=VARCHAR}
-           <if test="deptNos != null and deptNos.size() > 0">
-           AND E.DEPTNO IN
-               <foreach collection="deptNos" item="d" open="(" separator="," close=")">
-                   #{d, jdbcType=VARCHAR}
-               </foreach>
+           <if test="deptNo != null and deptNo != ''">
+           AND EXISTS (SELECT 1
+                         FROM HR_DEPARTMENT B1
+                        WHERE B1.DEPTNO = S.DEPTNO
+                        START WITH B1.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                      CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO)
            </if>
-         ORDER BY S.EMPID
+           AND EXISTS (SELECT 1
+                         FROM PA_SUPERVISOR_INFO PS
+                        WHERE PS.DEPTNO    = S.DEPTNO
+                          AND PS.PERSON_ID = #{adminID, jdbcType=VARCHAR})
+         ORDER BY S.DEPT_ORDERNO, S.EMPID
     </select>
 
 </mapper>

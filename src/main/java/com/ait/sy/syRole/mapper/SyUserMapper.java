@@ -110,8 +110,18 @@ public interface SyUserMapper {
 
     /**
      * Kiểm tra migration đã hoàn thành chưa
-     * 
+     *
      * @return true nếu tất cả passwords đã được mã hóa
      */
     boolean isMigrationCompleted();
+
+    /**
+     * Xác nhận đồng ý xử lý dữ liệu cá nhân - lưu PERSONAL_DATA_CONFIRM_BY,
+     * PERSONAL_DATA_CONFIRM_DATE, PERSONAL_DATA_CONFIRM_IP (adminID/adminIP
+     * được interceptor tự inject từ session, không cần truyền tham số)
+     *
+     * @param userNo Mã người dùng
+     * @return Số dòng được cập nhật
+     */
+    int confirmPersonalData(@Param("userNo") String userNo);
 }

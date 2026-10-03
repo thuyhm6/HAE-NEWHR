@@ -1,0 +1,227 @@
+<div class="acil-page">
+  <nz-card class="acil-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="acil-dept-select"
+                [nzNodes]="deptTreeNodes()"
+                [nzCheckable]="true"
+                [nzShowSearch]="true"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="acilDeptNos"
+                [nzPlaceHolder]="i18n.t('ex.placeholder.dept', 'Chọn phòng ban')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.keyword', 'Mã NV / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input
+                id="acil-keyword"
+                nz-input
+                [ngModel]="keyword()"
+                (ngModelChange)="keyword.set($event)"
+                name="acilKeyword"
+                [placeholder]="i18n.t('ex.placeholder.empIdOrName', 'Nhập mã hoặc họ tên')"
+              />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.empType', 'Loại nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="acil-emp-type"
+                [ngModel]="empTypeCode()"
+                (ngModelChange)="empTypeCode.set($event)"
+                name="acilEmpTypeCode"
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')"
+              >
+                <nz-option
+                  *ngFor="let opt of empTypeOptions()"
+                  [nzValue]="opt.codeNo"
+                  [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"
+                ></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.startDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="acil-start-date"
+                [ngModel]="startDate()"
+                (ngModelChange)="startDate.set($event)"
+                name="acilStartDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('vapl.label.endDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker
+                id="acil-end-date"
+                [ngModel]="endDate()"
+                (ngModelChange)="endDate.set($event)"
+                name="acilEndDate"
+                nzFormat="dd/MM/yyyy"
+                style="width: 100%"
+              ></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+
+      <div nz-row>
+        <div nz-col [nzSpan]="24" class="acil-search-actions">
+          <button id="acil-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="leaveLoading() || otLoading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('ex.btn.search', 'Tra cứu') }}
+          </button>
+          <button id="acil-export-btn" nz-button nzType="default" (click)="exportExcel()">
+            <span nz-icon nzType="export"></span>
+            {{ i18n.t('ex.btn.export', 'Xuất Excel') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="acil-table-card">
+    <nz-tabs [nzSelectedIndex]="activeTabIndex()" (nzSelectChange)="onTabChange($event.index!)">
+      <nz-tab [nzTitle]="i18n.t('acil.tab.leave', 'Nghỉ phép')">
+        <nz-table
+          id="acil-leave-table"
+          #acilLeaveTable
+          [nzData]="leaveRows()"
+          [nzLoading]="leaveLoading()"
+          [nzPageSize]="defaultPageSize"
+          [nzShowSizeChanger]="true"
+          [nzPageSizeOptions]="pageSizeOptions"
+          [nzScroll]="{ x: 'max-content', y: '520px' }"
+          nzSize="small"
+        >
+          <thead>
+            <tr>
+              <th nzWidth="50px" [nzLeft]="true" class="acil-col-center">{{ i18n.t('vapl.msg.stt', 'STT') }}</th>
+              <th nzWidth="90px" nzLeft="50px" class="acil-col-center">{{ i18n.t('vapl.msg.empId', 'Mã NV') }}</th>
+              <th nzWidth="160px" nzLeft="140px">{{ i18n.t('vapl.msg.empName', 'Họ tên') }}</th>
+              <th nzWidth="150px" nzLeft="300px">{{ i18n.t('vapl.msg.deptName', 'Phòng ban') }}</th>
+              <th class="acil-col-nowrap">{{ i18n.t('vapl.msg.position', 'Chức vụ') }}</th>
+              <th nzWidth="60px" class="acil-col-center">{{ i18n.t('vapl.msg.normalWork', 'Tổng giờ công') }}</th>
+              <th nzWidth="70px" class="acil-col-center">{{ i18n.t('vapl.msg.lateEarlyGoTotal', 'Tổng (muộn/sớm/ra ngoài)') }}</th>
+              @for (item of leaveItems(); track item.itemId) {
+                <th nzWidth="60px" class="acil-col-center">{{ item.itemName }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of acilLeaveTable.data; track $index; let idx = $index) {
+              <tr>
+                <td [nzLeft]="true" class="acil-col-center">{{ idx + 1 }}</td>
+                <td nzLeft="50px" class="acil-col-center">{{ row['EMPID'] }}</td>
+                <td nzLeft="140px">{{ row['LOCAL_NAME'] }}</td>
+                <td nzLeft="300px">{{ row['DEPT_NAME'] }}</td>
+                <td class="acil-col-nowrap">{{ row['POSITION_NAME'] }}</td>
+                <td class="acil-col-center acil-col-bold">{{ formatQty(quantityOf(row, 'NORMAL_WORK')) }}</td>
+                <td class="acil-col-center acil-col-bold">{{ formatQty(quantityOf(row, 'LATE_EARLY_GO_TOTAL')) }}</td>
+                @for (item of leaveItems(); track item.itemId) {
+                  <td class="acil-col-center">{{ formatQty(quantityOf(row, item.itemId ?? '')) }}</td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="7 + leaveItems().length" class="acil-col-center">
+                  {{ i18n.t('vapl.msg.noData', 'Không có dữ liệu') }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+
+      <nz-tab [nzTitle]="i18n.t('acil.tab.overtime', 'Tăng ca')">
+        <nz-table
+          id="acil-ot-table"
+          #acilOtTable
+          [nzData]="otRows()"
+          [nzLoading]="otLoading()"
+          [nzPageSize]="defaultPageSize"
+          [nzShowSizeChanger]="true"
+          [nzPageSizeOptions]="pageSizeOptions"
+          [nzScroll]="{ x: 'max-content', y: '520px' }"
+          nzSize="small"
+        >
+          <thead>
+            <tr>
+              <th rowspan="2" nzWidth="50px" class="acil-col-center">{{ i18n.t('vapl.msg.stt', 'STT') }}</th>
+              <th rowspan="2" nzWidth="90px" class="acil-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+              <th rowspan="2" nzWidth="160px">{{ i18n.t('common.empName', 'Họ tên') }}</th>
+              <th rowspan="2" nzWidth="150px">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+              <th rowspan="2" nzWidth="120px">{{ i18n.t('acil.col.team', 'Tổ/Nhóm') }}</th>
+              <th rowspan="2" nzWidth="120px" class="acil-col-nowrap">{{ i18n.t('common.position', 'Chức vụ') }}</th>
+              <th rowspan="2" nzWidth="120px" class="acil-col-nowrap">{{ i18n.t('common.empType', 'Loại nhân viên') }}</th>
+              <th rowspan="2" nzWidth="90px" class="acil-col-center">{{ i18n.t('common.shift', 'Ca làm việc') }}</th>
+              <th rowspan="2" nzWidth="80px" class="acil-col-center">{{ i18n.t('acil.col.otTotal', 'Tổng tăng ca') }}</th>
+              @for (m of otMonths; track m.num) {
+                <th colspan="5" class="acil-col-center">{{ i18n.t('ar.viewVacEmpList.col.month', 'Tháng') }} {{ m.num }}</th>
+              }
+            </tr>
+            <tr>
+              @for (m of otMonths; track m.num) {
+                @for (sc of otSubColumns; track sc.suffix) {
+                  <th nzWidth="70px" class="acil-col-center">{{ i18n.t(sc.labelKey, sc.labelDefault) }}</th>
+                }
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of acilOtTable.data; track $index; let idx = $index) {
+              <tr>
+                <td class="acil-col-center">{{ idx + 1 }}</td>
+                <td class="acil-col-center">{{ row.empId }}</td>
+                <td>{{ row.localName }}</td>
+                <td>{{ row.deptName }}</td>
+                <td>{{ row.teamName }}</td>
+                <td class="acil-col-nowrap">{{ row.postGradeNo }}</td>
+                <td class="acil-col-nowrap">{{ row.empTypeName }}</td>
+                <td class="acil-col-center">{{ row.shiftName }}</td>
+                <td class="acil-col-center acil-col-bold">{{ otValue(row, 'otTotal') }}</td>
+                @for (m of otMonths; track m.num) {
+                  @for (sc of otSubColumns; track sc.suffix) {
+                    <td class="acil-col-center">{{ otValue(row, m.field + sc.suffix) }}</td>
+                  }
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="9 + otMonths.length * 5" class="acil-col-center">
+                  {{ i18n.t('vapl.msg.noData', 'Không có dữ liệu') }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-tab>
+    </nz-tabs>
+  </nz-card>
+</div>

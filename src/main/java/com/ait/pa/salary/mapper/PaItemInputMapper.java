@@ -26,8 +26,6 @@ public interface PaItemInputMapper {
     void deleteByIsUseAndItemType(@Param("isUse") Integer isUse,
                                   @Param("itemType") Integer itemType);
 
-    List<PaItemInputDto> selectItemNamesByIds(@Param("itemIds") List<String> itemIds);
-
     List<Map<String, Object>> selectSummaryHaeData(@Param("payScheduleNo") String payScheduleNo,
-                                                    @Param("deptNos") List<String> deptNos);
+                                                    @Param("deptNo") String deptNo);
 }

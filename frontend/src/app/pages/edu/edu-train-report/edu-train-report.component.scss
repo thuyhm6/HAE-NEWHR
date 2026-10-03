@@ -1,0 +1,59 @@
+.etrp-page {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+// Cây loại báo cáo - bản gốc cố định 240px bên trái
+.etrp-side {
+  flex: 0 0 260px;
+  max-width: 260px;
+}
+
+.etrp-menu {
+  border-inline-end: none !important;
+}
+
+.etrp-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.etrp-hint {
+  padding: 24px;
+  text-align: center;
+  color: #8c8c8c;
+}
+
+.etrp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.etrp-full {
+  width: 100%;
+}
+
+.etrp-center {
+  text-align: center;
+}
+
+.etrp-right {
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .etrp-page {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .etrp-side {
+    flex: none;
+    max-width: none;
+  }
+}

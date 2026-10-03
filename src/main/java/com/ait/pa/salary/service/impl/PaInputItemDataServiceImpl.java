@@ -135,17 +135,17 @@ public class PaInputItemDataServiceImpl implements PaInputItemDataService {
                     String returnValue = getCellText(row.getCell(4), formatter);
                     String remark      = getCellText(row.getCell(5), formatter);
 
-                    if (empId.isBlank() && startMonth.isBlank() && returnValue.isBlank()) continue;
+                    if (empId.trim().isEmpty() && startMonth.trim().isEmpty() && returnValue.trim().isEmpty()) continue;
 
-                    if (empId.isBlank()) {
+                    if (empId.trim().isEmpty()) {
                         errors.add("Dòng " + (i + 1) + ": Thiếu Mã nhân viên");
                         continue;
                     }
-                    if (startMonth.isBlank()) {
+                    if (startMonth.trim().isEmpty()) {
                         errors.add("Dòng " + (i + 1) + ": Thiếu Tháng bắt đầu");
                         continue;
                     }
-                    if (returnValue.isBlank()) {
+                    if (returnValue.trim().isEmpty()) {
                         errors.add("Dòng " + (i + 1) + ": Thiếu Giá trị");
                         continue;
                     }
@@ -153,11 +153,11 @@ public class PaInputItemDataServiceImpl implements PaInputItemDataService {
                     Map<String, Object> rowData = new HashMap<>();
                     rowData.put("paramNo",      paramNo);
                     rowData.put("empId",        empId);
-                    rowData.put("localName",     localName.isBlank() ? null : localName);
+                    rowData.put("localName",     localName.trim().isEmpty() ? null : localName);
                     rowData.put("startMonth",   startMonth);
-                    rowData.put("endMonth",     endMonth.isBlank() ? null : endMonth);
+                    rowData.put("endMonth",     endMonth.trim().isEmpty() ? null : endMonth);
                     rowData.put("returnValue",  returnValue);
-                    rowData.put("remark",       remark.isBlank() ? null : remark);
+                    rowData.put("remark",       remark.trim().isEmpty() ? null : remark);
                     rowData.put("lineId",       (long) i);
                     rowData.put("uploadErrorMsg", null);
                     rowData.put("resultFlag",   "N");

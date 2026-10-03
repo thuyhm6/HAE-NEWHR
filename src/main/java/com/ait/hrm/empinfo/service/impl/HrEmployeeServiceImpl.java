@@ -1,5 +1,7 @@
 package com.ait.hrm.empinfo.service.impl;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.hrm.empinfo.dto.EmpMonthlyStatsDto;
 import com.ait.hrm.empinfo.dto.EmployeeSearchResponse;
 import com.ait.hrm.empinfo.mapper.HrEmployeeMapper;
@@ -52,12 +54,12 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     public List<HrEmployee> findByDeptNo(String deptNo) {
         try {
             if (deptNo == null || deptNo.trim().isEmpty()) {
-                return List.of();
+                return CollectionUtil.listOf();
             }
             return hrEmployeeMapper.findByDeptNo(deptNo.trim());
         } catch (Exception e) {
             log.error("Error finding employees by deptNo={}", deptNo, e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 
@@ -65,12 +67,12 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
     public List<HrEmployee> findByCpnyId(String cpnyId) {
         try {
             if (cpnyId == null || cpnyId.trim().isEmpty()) {
-                return List.of();
+                return CollectionUtil.listOf();
             }
             return hrEmployeeMapper.findByCpnyId(cpnyId.trim());
         } catch (Exception e) {
             log.error("Error finding employees by cpnyId={}", cpnyId, e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 
@@ -106,7 +108,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
             return hrEmployeeMapper.findAll();
         } catch (Exception e) {
             log.error("Error finding all employees", e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 
@@ -124,7 +126,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
             return hrEmployeeMapper.getEmployeesWithPagination(offset, size);
         } catch (Exception e) {
             log.error("Error finding employees with pagination page={} size={}", page, size, e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 
@@ -147,7 +149,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
             return hrEmployeeMapper.searchByKeyword(keyword.trim());
         } catch (Exception e) {
             log.error("Error searching employees by keyword", e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 
@@ -196,7 +198,7 @@ public class HrEmployeeServiceImpl implements HrEmployeeService {
             return hrEmployeeMapper.selectEmpMonthlyStats(year);
         } catch (Exception e) {
             log.error("Error getting emp monthly stats year={}", year, e);
-            return List.of();
+            return CollectionUtil.listOf();
         }
     }
 }

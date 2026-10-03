@@ -18,6 +18,7 @@ import {
   PaItemOption,
 } from './pa-compute-item-param.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Thông số mục tính toán (viewPaComputeItemParamList) - xem ghi chú trong
  * pa-compute-item-param.service.ts.
@@ -40,6 +41,9 @@ import {
   styleUrl: './pa-compute-item-param.component.scss',
 })
 export class PaComputeItemParamComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(PaComputeItemParamService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);
@@ -51,7 +55,7 @@ export class PaComputeItemParamComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly recordsTotal = signal(0);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly checkedSeqs = signal<Set<string>>(new Set());
 
   protected readonly itemOptions = signal<PaItemOption[]>([]);

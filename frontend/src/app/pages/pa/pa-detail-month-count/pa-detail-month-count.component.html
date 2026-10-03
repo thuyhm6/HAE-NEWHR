@@ -1,0 +1,97 @@
+<div class="pdmc-page">
+  <div class="pdmc-search-card">
+    <div class="pdmc-search-row">
+      <div class="pdmc-field">
+        <label class="pdmc-label" for="pdmcSearchKey">{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</label>
+        <input id="pdmcSearchKey" nz-input [ngModel]="searchKey()" (ngModelChange)="searchKey.set($event)" (keydown.enter)="search()" />
+      </div>
+      <div class="pdmc-field">
+        <label class="pdmc-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <nz-select id="pdmcPaySchedule" class="pdmc-select" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch>
+          @for (sch of scheduleOptions(); track sch.payScheduleNo) {
+            <nz-option [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="pdmc-field">
+        <label class="pdmc-label">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</label>
+        <nz-tree-select
+          id="pdmcDept"
+          class="pdmc-select"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="searchDeptNo()"
+          (ngModelChange)="searchDeptNo.set($event)"
+          nzAllowClear
+          nzShowSearch
+          [nzDropdownStyle]="{ 'max-height': '320px' }"
+          [nzPlaceHolder]="i18n.t('pa.payStub.deptPlaceholder', 'Mã / Tên phòng ban')"
+        ></nz-tree-select>
+      </div>
+      <div class="pdmc-actions">
+        <button id="pdmcBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pdmc-body">
+    <!-- Danh sách nhân viên của kỳ lương (detailmonthCountInfoLeft_left bản gốc) -->
+    <div class="pdmc-left">
+      <div class="pdmc-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</div>
+      <nz-table
+        #pdmcTable
+        id="pdmcTable"
+        [nzData]="rows()"
+        [nzLoading]="loading()"
+        [nzFrontPagination]="false"
+        [nzShowPagination]="false"
+        [nzScroll]="{ x: '1100px', y: 'calc(100vh - 330px)' }"
+        [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+        nzSize="small"
+        nzBordered
+      >
+        <thead>
+          <tr>
+            <th nzWidth="50px" nzLeft class="pdmc-center">NO</th>
+            <th nzWidth="100px" nzLeft [nzSortFn]="textSort('empId')">{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+            <th nzWidth="150px" nzLeft [nzSortFn]="textSort('localName')">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+            <th nzWidth="160px" [nzSortFn]="textSort('deptName')">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+            <th nzWidth="110px" [nzSortFn]="textSort('postFamilyName')">{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+            <th nzWidth="100px" [nzSortFn]="textSort('postGradeName')">{{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}</th>
+            <th nzWidth="110px" [nzSortFn]="textSort('positionName')">{{ i18n.t('ess.trans.title.dutyName', 'Chức danh') }}</th>
+            <th nzWidth="110px" class="pdmc-right" [nzSortFn]="numSort('incomeBeforeTax')">{{ i18n.t('pa.viewResultConfirmSonList.SHUIQIANGONGZI.b', 'Lương trước thuế') }}</th>
+            <th nzWidth="110px" class="pdmc-right" [nzSortFn]="numSort('withholdTotal')">{{ i18n.t('pa.detailmonthCountInfoLeft.DAIKOUHEJI.b', 'Tổng khoản trừ') }}</th>
+            <th nzWidth="110px" class="pdmc-right" [nzSortFn]="numSort('realWages')">{{ i18n.t('pa.viewResultConfirmSonList.SHIDEGONGZI.b', 'Lương thực lĩnh') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of pdmcTable.data; track $index) {
+            <tr class="pdmc-row" [class.pdmc-row-selected]="selected() === row" (click)="selectRow(row)">
+              <td nzLeft class="pdmc-center">{{ $index + 1 }}</td>
+              <td nzLeft class="pdmc-center">{{ row.empId }}</td>
+              <td nzLeft>{{ row.localName }}</td>
+              <td>{{ row.deptName }}</td>
+              <td>{{ row.postFamilyName }}</td>
+              <td>{{ row.postGradeName }}</td>
+              <td>{{ row.positionName }}</td>
+              <td class="pdmc-right">{{ formatNumber(row.incomeBeforeTax) }}</td>
+              <td class="pdmc-right">{{ formatNumber(row.withholdTotal) }}</td>
+              <td class="pdmc-right">{{ formatNumber(row.realWages) }}</td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </div>
+
+    <!-- Chi tiết hạng mục lương (detailYearCountInfoRight?pFrom=month bản gốc) -->
+    <div class="pdmc-right-panel">
+      @if (selected(); as emp) {
+        <div class="pdmc-emp-title">{{ emp.empId }} - {{ emp.localName }}</div>
+        <app-pa-salary-detail-panel [items]="detailItems()" [loading]="detailLoading()"></app-pa-salary-detail-panel>
+      } @else {
+        <div class="pdmc-hint">{{ i18n.t('pa.salaryDetail.selectEmpHint', 'Chọn một nhân viên ở danh sách bên trái để xem chi tiết lương.') }}</div>
+      }
+    </div>
+  </div>
+</div>

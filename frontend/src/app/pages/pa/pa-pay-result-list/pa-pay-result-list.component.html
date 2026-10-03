@@ -1,0 +1,115 @@
+<div class="pprl-page">
+  <div class="pprl-search-card">
+    <div class="pprl-search-row">
+      <div class="pprl-field">
+        <label class="pprl-label" for="pprlSearchKey">{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</label>
+        <input id="pprlSearchKey" nz-input [ngModel]="searchKey()" (ngModelChange)="searchKey.set($event)" (keydown.enter)="search()" />
+      </div>
+      <div class="pprl-field">
+        <label class="pprl-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <nz-select id="pprlPaySchedule" class="pprl-select" [ngModel]="searchPayScheduleNo()" (ngModelChange)="searchPayScheduleNo.set($event)" nzShowSearch>
+          @for (sch of scheduleOptions(); track sch.payScheduleNo) {
+            <nz-option [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="pprl-field">
+        <label class="pprl-label">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</label>
+        <nz-tree-select
+          id="pprlDept"
+          class="pprl-select-wide"
+          [nzNodes]="deptTreeNodes()"
+          [ngModel]="searchDeptNos()"
+          (ngModelChange)="searchDeptNos.set($event)"
+          nzMultiple
+          nzCheckable
+          nzShowSearch
+          nzAllowClear
+          [nzMaxTagCount]="2"
+          [nzDropdownStyle]="{ 'max-height': '320px' }"
+          [nzPlaceHolder]="i18n.t('pa.payStub.deptPlaceholder', 'Mã / Tên phòng ban')"
+        ></nz-tree-select>
+      </div>
+      <div class="pprl-actions">
+        <button id="pprlBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+        <button id="pprlBtnExport" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>{{ i18n.t('hrm.empinfo.EXPORT', 'Xuất Excel') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pprl-table-card">
+    <div class="pprl-toolbar">
+      <span class="pprl-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</span>
+      <input
+        id="pprlQuickFilter"
+        nz-input
+        class="pprl-quick-filter"
+        [ngModel]="quickFilter()"
+        (ngModelChange)="quickFilter.set($event); pageIndex.set(1)"
+        [placeholder]="i18n.t('ess.message.rapid_screening', 'Lọc nhanh')"
+      />
+    </div>
+    <nz-table
+      #pprlTable
+      id="pprlTable"
+      [nzData]="displayRows()"
+      [nzLoading]="loading()"
+      [nzPageIndex]="pageIndex()"
+      [nzPageSize]="pageSize()"
+      [nzPageSizeOptions]="pageSizeOptions"
+      nzShowSizeChanger
+      (nzPageIndexChange)="pageIndex.set($event)"
+      (nzPageSizeChange)="pageSize.set($event)"
+      [nzScroll]="{ x: '15200px', y: 'calc(100vh - 360px)' }"
+      [nzShowTotal]="pprlTotalTpl"
+      [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" nzLeft class="pprl-center">No</th>
+          @for (col of infoColumns; track col.field; let i = $index) {
+            <th [nzWidth]="col.field === 'LOCAL_NAME' || col.field === 'DEPT_NAME' ? '160px' : '110px'" [nzLeft]="i < 3" [nzSortFn]="sortFn(col.field)">
+              {{ i18n.t(col.key, col.fallback) }}
+            </th>
+          }
+          @for (col of amountColumns; track col.field) {
+            <th nzWidth="120px" class="pprl-right" [nzSortFn]="sortFn(col.field)">{{ i18n.t(col.key, col.fallback) }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of pprlTable.data; track $index) {
+          <tr class="pprl-row" [class.pprl-row-selected]="selectedRows().has(row)" (click)="toggleRow(row)">
+            <td nzLeft class="pprl-center">{{ (pageIndex() - 1) * pageSize() + $index + 1 }}</td>
+            @for (col of infoColumns; track col.field; let i = $index) {
+              <td [nzLeft]="i < 3" class="pprl-center">{{ row[col.field] }}</td>
+            }
+            @for (col of amountColumns; track col.field) {
+              <td [class.pprl-right]="col.money" [class.pprl-center]="!col.money">{{ formatCell(row[col.field], col.money) }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if (sum(); as total) {
+        <tfoot nzSummary [nzFixed]="true">
+          <tr class="pprl-sum-row">
+            <td nzLeft class="pprl-center">{{ i18n.t('ess.viewpersonalpainfo.heji', 'Tổng') }}</td>
+            @for (col of infoColumns; track col.field; let i = $index) {
+              <td [nzLeft]="i < 3"></td>
+            }
+            @for (col of amountColumns; track col.field) {
+              <td [class.pprl-right]="col.money" [class.pprl-center]="!col.money">{{ formatCell(total[col.field], col.money) }}</td>
+            }
+          </tr>
+        </tfoot>
+      }
+    </nz-table>
+    <ng-template #pprlTotalTpl let-total let-range="range">{{ range[0] }}-{{ range[1] }} / {{ total }}</ng-template>
+  </div>
+</div>

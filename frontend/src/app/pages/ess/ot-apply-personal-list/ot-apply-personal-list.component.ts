@@ -26,6 +26,7 @@ import {
   SyCodeOption,
 } from '../ar-personal-list/ar-personal-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const EMP_TYPE_PARENT_CODE = '13864';
 /** Nhóm tăng ca dùng để lọc AR_ITEM (khác viewArPersonalList dùng '!1433' = tất cả trừ nhóm nghỉ phép). */
 const OT_ITEM_GROUP = '1433';
@@ -60,6 +61,10 @@ const STICKY_COLUMN_COUNT = 4;
   styleUrl: './ot-apply-personal-list.component.scss',
 })
 export class OtApplyPersonalListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ArPersonalListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

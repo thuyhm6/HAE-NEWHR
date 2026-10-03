@@ -11,6 +11,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { SyLoginUserRow, SyLoginUserService, SyRoleGroupOption } from './sy-login-user.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 const DEFAULT_PASSWORD = '123456A@';
 
 /**
@@ -25,6 +26,10 @@ const DEFAULT_PASSWORD = '123456A@';
   styleUrl: './sy-login-user.component.scss',
 })
 export class SyLoginUserComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(SyLoginUserService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

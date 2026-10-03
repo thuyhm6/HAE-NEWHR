@@ -42,10 +42,10 @@ public class EssEntryInfoListServiceImpl implements EssEntryInfoListService {
 
     private void applyDefaultDateRange(EssEntryInfoListDto dto) {
         LocalDate today = LocalDate.now();
-        if (dto.getFromDate() == null || dto.getFromDate().isBlank()) {
+        if (dto.getFromDate() == null || dto.getFromDate().trim().isEmpty()) {
             dto.setFromDate(today.format(DATE_FORMAT));
         }
-        if (dto.getToDate() == null || dto.getToDate().isBlank()) {
+        if (dto.getToDate() == null || dto.getToDate().trim().isEmpty()) {
             dto.setToDate(today.format(DATE_FORMAT));
         }
     }

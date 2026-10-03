@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ait.edu.trainEducation.mapper.EduTrainArchivesMapper">
+
+    <resultMap id="EduTrainArchiveResultMap" type="com.ait.edu.trainEducation.model.EduTrainArchive">
+        <result column="EMPID" property="empid" jdbcType="VARCHAR"/>
+        <result column="LOCAL_NAME" property="localName" jdbcType="VARCHAR"/>
+        <result column="SEX_NAME" property="sexName" jdbcType="VARCHAR"/>
+        <result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR"/>
+        <result column="POST_GRADE_NAME" property="postGradeName" jdbcType="VARCHAR"/>
+        <result column="DATE_STARTED" property="dateStarted" jdbcType="VARCHAR"/>
+        <result column="COURSE_NAME_CODE" property="courseNameCode" jdbcType="VARCHAR"/>
+        <result column="PERIOD_TIME" property="periodTime" jdbcType="VARCHAR"/>
+        <result column="TRAIN_CONTENT" property="trainContent" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_HOUR" property="impleClassHour" jdbcType="VARCHAR"/>
+        <result column="IMPLE_CLASS_UNIT" property="impleClassUnit" jdbcType="VARCHAR"/>
+        <result column="IMPLE_START_DATE" property="impleStartDate" jdbcType="VARCHAR"/>
+        <result column="IMPLE_END_DATE" property="impleEndDate" jdbcType="VARCHAR"/>
+        <result column="DEPART_MANA_NAME" property="departManaName" jdbcType="VARCHAR"/>
+        <result column="TRAIN_ADDRESS" property="trainAddress" jdbcType="VARCHAR"/>
+        <result column="EVA_RESULT" property="evaResult" jdbcType="VARCHAR"/>
+        <result column="ALL_COST" property="allCost" jdbcType="VARCHAR"/>
+        <result column="RESULT_NO" property="resultNo" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="deptFilter">
+        <if test="deptNo != null and deptNo != ''">
+            AND H.DEPTNO IN (SELECT D.DEPTNO FROM HR_DEPARTMENT D
+                              START WITH D.DEPTNO = #{deptNo, jdbcType=VARCHAR}
+                              CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO)
+        </if>
+    </sql>
+
+    <sql id="keywordFilter">
+        <if test="keyword != null and keyword != ''">
+            AND (H.EMPID = #{keyword, jdbcType=VARCHAR}
+                 OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+    </sql>
+
+    <!--
+        trainArchives bản gốc. Khác bản gốc: EDU_TRAIN_RESULT nối ngoài thật sự (bản gốc
+        viết (+) nhưng có điều kiện nối trong nên chỉ ra học viên đã có phiếu kết quả);
+        tổng chi phí dùng NVL (bản gốc 1 khoản NULL làm cả tổng NULL).
+    -->
+    <select id="findList" resultMap="EduTrainArchiveResultMap">
+        SELECT E.EMPID,
+               H.LOCAL_NAME,
+               GET_GLOBAL_NAME(PI.SEXCODE, #{lang, jdbcType=VARCHAR}) AS SEX_NAME,
+               GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY') AS DATE_STARTED,
+               B.COURSE_NAME_CODE,
+               TO_CHAR(B.PERIOD_TIME) AS PERIOD_TIME,
+               B.TRAIN_CONTENT,
+               TO_CHAR(B.IMPLE_CLASS_HOUR) AS IMPLE_CLASS_HOUR,
+               TO_CHAR(B.IMPLE_CLASS_UNIT) AS IMPLE_CLASS_UNIT,
+               TO_CHAR(B.IMPLE_START_DATE, 'DD/MM/YYYY') AS IMPLE_START_DATE,
+               TO_CHAR(B.IMPLE_END_DATE, 'DD/MM/YYYY') AS IMPLE_END_DATE,
+               NVL(GET_DEPT_NAME(EPM.DEPART_MANA_CODE, #{lang, jdbcType=VARCHAR}), EPM.DEPART_MANA_CODE) AS DEPART_MANA_NAME,
+               B.TRAIN_ADDRESS,
+               TO_CHAR(ROUND(TO_NUMBER(E.TEST_SCORE) * 0.6
+                   + (SELECT AVG(S.ALLSCORE) FROM EDU_STUDENT_CHECK S
+                       WHERE S.BASIC_NO = E.BASIC_NO AND S.STU_EMPID = E.EMPID) * 0.4)) AS EVA_RESULT,
+               CASE WHEN M.COST_NO IS NULL THEN NULL
+                    ELSE TO_CHAR(NVL(M.TEACHER_COST, 0) + NVL(M.MATERIAL_COST, 0) + NVL(M.FIELD_COST, 0)
+                         + NVL(M.FOOD_COST, 0) + NVL(M.STAY_COST, 0) + NVL(M.TRAFFIC_COST, 0)
+                         + NVL(M.VISA_COST, 0) + NVL(M.OTHER_COST, 0)) END AS ALL_COST,
+               TO_CHAR(R.RESULT_NO) AS RESULT_NO
+        FROM EDU_FREE_EMPLOYEE E
+        JOIN HR_EMPLOYEE H ON H.EMPID = E.EMPID
+        LEFT JOIN HR_PERSONAL_INFO PI ON PI.PERSON_ID = H.PERSON_ID
+        JOIN EDU_BASIC_INFORMATION B ON B.BASIC_NO = E.BASIC_NO
+        LEFT JOIN EDU_COST_MANAGER M ON M.BASIC_NO = E.BASIC_NO
+        LEFT JOIN EDU_PLAN_MANAGER EPM ON EPM.PLAN_NO = B.PLAN_NO
+        LEFT JOIN EDU_TRAIN_RESULT R ON R.BASIC_NO = E.BASIC_NO AND R.STU_EMPID = E.EMPID
+        WHERE E.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <include refid="deptFilter"/>
+        <include refid="keywordFilter"/>
+        <if test="courseName != null and courseName != ''">
+            AND UPPER(B.COURSE_NAME_CODE) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND B.IMPLE_START_DATE &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND B.IMPLE_END_DATE &lt; TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY') + 1
+        </if>
+        <if test="trainContent != null and trainContent != ''">
+            AND UPPER(B.TRAIN_CONTENT) LIKE '%' || UPPER(#{trainContent, jdbcType=VARCHAR}) || '%'
+        </if>
+        ORDER BY B.COURSE_NAME_CODE, B.PERIOD_TIME, E.EMPID
+    </select>
+
+    <!--
+        trainArchiveshistory bản gốc (dữ liệu trước 07/08/2015). Sửa lỗi bản gốc:
+        so sánh ngày dạng chuỗi DD/MM/YYYY -> so sánh DATE; cột IMPLE_CLASS_UNIT không
+        tồn tại trong subquery -> tách thời lượng thành số + đơn vị (>= 8 giờ quy ra ngày).
+    -->
+    <select id="findHistory" resultMap="EduTrainArchiveResultMap">
+        SELECT H.EMPID,
+               H.LOCAL_NAME,
+               GET_GLOBAL_NAME(PI.SEXCODE, #{lang, jdbcType=VARCHAR}) AS SEX_NAME,
+               GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               GET_GLOBAL_NAME(H.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               TO_CHAR(H.DATE_STARTED, 'DD/MM/YYYY') AS DATE_STARTED,
+               T.EDU_CLASS AS COURSE_NAME_CODE,
+               TO_CHAR(T.EDU_TIMES) AS PERIOD_TIME,
+               NULL AS TRAIN_CONTENT,
+               CASE WHEN TO_NUMBER(T.EDU_TIME_LENGTH) &gt;= 8 THEN TO_CHAR(TO_NUMBER(T.EDU_TIME_LENGTH) / 8)
+                    ELSE TO_CHAR(T.EDU_TIME_LENGTH) END AS IMPLE_CLASS_HOUR,
+               CASE WHEN TO_NUMBER(T.EDU_TIME_LENGTH) &gt;= 8 THEN '1' ELSE '2' END AS IMPLE_CLASS_UNIT,
+               TO_CHAR(TO_DATE(T.EDU_BEGIN_DATE, 'YYYY/MM/DD'), 'DD/MM/YYYY') AS IMPLE_START_DATE,
+               TO_CHAR(TO_DATE(T.EDU_END_DATE, 'YYYY/MM/DD'), 'DD/MM/YYYY') AS IMPLE_END_DATE,
+               NULL AS DEPART_MANA_NAME,
+               T.EDU_LOCATION AS TRAIN_ADDRESS,
+               TO_CHAR(T.PASS_SCORE) AS EVA_RESULT,
+               TO_CHAR(NVL(T.EDU_COST, 0)) AS ALL_COST,
+               NULL AS RESULT_NO
+        FROM EDU_TRAIN_BASIC_HISTORY T
+        JOIN HR_EMPLOYEE H ON H.EMPID = T.PERSON_ID
+        LEFT JOIN HR_PERSONAL_INFO PI ON PI.PERSON_ID = H.PERSON_ID
+        WHERE H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <include refid="deptFilter"/>
+        <include refid="keywordFilter"/>
+        <if test="courseName != null and courseName != ''">
+            AND UPPER(T.EDU_CLASS) LIKE '%' || UPPER(#{courseName, jdbcType=VARCHAR}) || '%'
+        </if>
+        <if test="startDate != null and startDate != ''">
+            AND TO_DATE(T.EDU_BEGIN_DATE, 'YYYY/MM/DD') &gt;= TO_DATE(#{startDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="endDate != null and endDate != ''">
+            AND TO_DATE(T.EDU_END_DATE, 'YYYY/MM/DD') &lt;= TO_DATE(#{endDate, jdbcType=VARCHAR}, 'DD/MM/YYYY')
+        </if>
+        <if test="trainContent != null and trainContent != ''">
+            <!-- Dữ liệu cũ không có nội dung đào tạo -->
+            AND 1 = 0
+        </if>
+        ORDER BY T.EDU_CLASS, T.EDU_TIMES, H.EMPID
+    </select>
+</mapper>

@@ -1,6 +1,8 @@
 <nz-layout class="hae-dashboard-layout">
   <nz-sider nzCollapsible [(nzCollapsed)]="siderCollapsed" [nzWidth]="240">
-    <div class="hae-dashboard-logo">{{ sysType() === '0' ? 'HR Management' : 'HR System' }}</div>
+    <div class="hae-dashboard-logo">
+      <img id="ash-logo-img" src="/assets/images/logo.png" [alt]="i18n.t('common.footer', 'HR System')" />
+    </div>
     <ul nz-menu nzMode="inline" nzTheme="dark" class="hae-dashboard-menu">
       <app-menu-node [nodes]="menuTree()" [activePath]="activeMenuPath()" (select)="onMenuSelect($event)"></app-menu-node>
     </ul>
@@ -9,23 +11,27 @@
   <nz-layout>
     <nz-header class="hae-dashboard-header">
       <ul nz-menu nzMode="horizontal" id="hae-dashboard-header-menu" class="hae-dashboard-header-menu">
-        @for (root of menuTree(); track root.menuNo) {
+        @for (root of topbarNodes(); track root.menuNo) {
           @if (root.children && root.children.length) {
             <li
               nz-submenu
               [nzTitle]="root.menuName"
-              [class.hae-dashboard-header-menu-active]="activeRootMenuNo() === root.menuNo"
+              [class.hae-dashboard-header-menu-active]="activeTopbarMenuNo() === root.menuNo"
             >
               <ul>
                 @for (child of root.children; track child.menuNo) {
-                  <li nz-menu-item (click)="onHeaderChildSelect(child, root.menuNo)">
+                  <li nz-menu-item (click)="onHeaderChildSelect(child, topbarAncestors(), root)">
                     {{ child.menuName }}
                   </li>
                 }
               </ul>
             </li>
           } @else {
-            <li nz-menu-item [nzSelected]="activeRootMenuNo() === root.menuNo" (click)="onHeaderRootSelect(root)">
+            <li
+              nz-menu-item
+              [nzSelected]="activeTopbarMenuNo() === root.menuNo"
+              (click)="onHeaderRootSelect(root, topbarAncestors())"
+            >
               {{ root.menuName }}
             </li>
           }
@@ -337,6 +343,9 @@
 >
   <ng-container *nzModalContent>
     <p>Mật khẩu hiện tại chưa được mã hoá an toàn, vui lòng đổi mật khẩu mới để tiếp tục.</p>
+    <p id="ash-cpwd-requirements-hint" class="hae-dashboard-cpwd-hint">
+      {{ i18n.t('fcp.requirements', 'Ít nhất 8 ký tự, gồm: chữ hoa, chữ thường, số và ký tự đặc biệt.') }}
+    </p>
     <form nz-form (ngSubmit)="submitChangePassword()">
       <nz-form-item>
         <nz-form-control>
@@ -378,6 +387,105 @@
         Xác nhận
       </button>
     </form>
+  </ng-container>
+</nz-modal>
+
+<!-- Popup bắt buộc xác nhận đồng ý xử lý dữ liệu cá nhân (sy_user.PERSONAL_DATA_CONFIRM_BY) -->
+<nz-modal
+  id="ash-pdc-modal"
+  [(nzVisible)]="showPersonalDataConfirmModal"
+  [nzTitle]="i18n.t('personalDataConfirm.title', 'PHIẾU ĐỒNG Ý XỬ LÝ DỮ LIỆU CÁ NHÂN')"
+  [nzWidth]="760"
+  [nzClosable]="true"
+  [nzMaskClosable]="false"
+  (nzOnCancel)="cancelPersonalDataConfirm()"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <div class="hae-dashboard-pdc-content" *ngIf="personalDataConfirmInfo() as info">
+      <p id="ash-pdc-hint" class="hae-dashboard-pdc-hint">
+        {{ i18n.t('personalDataConfirm.mandatoryHint', 'Bạn cần đọc và xác nhận đồng ý với nội dung dưới đây để tiếp tục sử dụng hệ thống. Nếu chọn Hủy hoặc đóng cửa sổ này, bạn sẽ bị đăng xuất khỏi hệ thống.') }}
+      </p>
+
+      <table class="hae-dashboard-pdc-info">
+        <tr>
+          <td>{{ i18n.t('personalDataConfirm.fullNameLabel', 'Họ và tên') }}:</td>
+          <td>{{ info.localName }}</td>
+        </tr>
+        <tr>
+          <td>{{ i18n.t('personalDataConfirm.idLabel', 'ID') }}:</td>
+          <td>{{ info.empId }}</td>
+        </tr>
+        <tr>
+          <td>{{ i18n.t('personalDataConfirm.positionLabel', 'Chức vụ') }}:</td>
+          <td>{{ info.positionName }}</td>
+        </tr>
+        <tr>
+          <td>{{ i18n.t('personalDataConfirm.teamLabel', 'Team') }} / {{ i18n.t('personalDataConfirm.partLabel', 'Part') }} / {{ i18n.t('personalDataConfirm.cellLabel', 'Cell') }}:</td>
+          <td>{{ info.teamName }} / {{ info.partName }} / {{ info.cellName }}</td>
+        </tr>
+      </table>
+
+      <p>{{ i18n.t('personalDataConfirm.intro', 'Nhằm tuân thủ các quy định pháp luật về bảo vệ dữ liệu cá nhân, đồng thời xác lập cơ sở pháp lý để Công ty thực hiện công tác quản lý nhân sự, bảo đảm các quyền lợi cho Người lao động, Tôi tự nguyện cung cấp và cho phép Công ty xử lý dữ liệu cá nhân của tôi theo các nội dung sau:') }}</p>
+
+      <p class="hae-dashboard-pdc-section-title">{{ i18n.t('personalDataConfirm.section1.title', '1. Loại dữ liệu cá nhân được xử lý') }}</p>
+      <ul>
+        <li>{{ i18n.t('personalDataConfirm.section1.item1', 'Dữ liệu cá nhân cơ bản: Họ và tên, ngày tháng năm sinh, giới tính, số điện thoại, địa chỉ email, địa chỉ liên hệ, hình ảnh cá nhân, thông tin CMND/CCCD/Hộ chiếu...') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section1.item2', 'Dữ liệu cá nhân nhạy cảm (nếu có): Hình ảnh thẻ căn cước, thông tin sức khỏe (nếu có yêu cầu)...') }}</li>
+      </ul>
+
+      <p class="hae-dashboard-pdc-section-title">{{ i18n.t('personalDataConfirm.section2.title', '2. Phương thức xử lý dữ liệu:') }}</p>
+      <p>{{ i18n.t('personalDataConfirm.section2.content', 'Dữ liệu cá nhân có thể được thu thập, phân tích, lưu trữ, mã hóa, cung cấp, chuyển giao, hoặc các hành động khác có liên quan theo quy định pháp luật.') }}</p>
+
+      <p class="hae-dashboard-pdc-section-title">{{ i18n.t('personalDataConfirm.section3.title', '3. Mục đích xử lý dữ liệu cá nhân') }}</p>
+      <ul>
+        <li>{{ i18n.t('personalDataConfirm.section3.item1', 'Quản lý quan hệ lao động, thực hiện hợp đồng, đánh giá hiệu suất') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item2', 'Kê khai, tham gia bảo hiểm xã hội (BHXH)') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item3', 'Mở tài khoản, chi trả lương qua ngân hàng') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item4', 'Đăng ký mã số thuế TNCN, người phụ thuộc') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item5', 'Tham gia bảo hiểm nhóm Hanwha Life và quản lý các chế độ ốm đau, thai sản, tai nạn lao động, khám sức khỏe định kỳ') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item6', 'Đào tạo nâng cao trình độ chuyên môn, đào tạo cấp các loại chứng chỉ theo yêu cầu của pháp luật') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item7', 'Tuân thủ quy định pháp luật như: phục vụ thanh tra, kiểm tra và báo cáo cơ quan nhà nước') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item8', 'Liên hệ khẩn cấp, truyền thông nội bộ') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item9', 'Cấp, quản trị tài khoản truy cập hệ thống Groupware/Mail/ERP/MES') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section3.item10', 'Chia sẻ, chuyển dữ liệu cho công ty mẹ tại Hàn Quốc nhằm phục vụ quản trị trong tập đoàn') }}</li>
+      </ul>
+
+      <p class="hae-dashboard-pdc-section-title">{{ i18n.t('personalDataConfirm.section4.title', '4. Thời gian bắt đầu và kết thúc xử lý dữ liệu') }}</p>
+      <ul>
+        <li>{{ i18n.t('personalDataConfirm.section4.item1', 'Thời gian bắt đầu: Kể từ ngày tôi ký xác nhận vào Giấy đồng ý này.') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section4.item2', 'Thời gian kết thúc: Cho đến khi Hợp đồng lao động chấm dứt và Công ty đã hoàn tất toàn bộ các nghĩa vụ pháp lý, lưu trữ hồ sơ theo quy định của pháp luật (Thuế, BHXH, Lưu trữ quốc gia), trừ trường hợp có yêu cầu khác của cơ quan nhà nước.') }}</li>
+      </ul>
+
+      <p class="hae-dashboard-pdc-section-title">{{ i18n.t('personalDataConfirm.section5.title', '5. Quyền và nghĩa vụ của Người lao động') }}</p>
+      <ul>
+        <li>{{ i18n.t('personalDataConfirm.section5.item1', 'Quyền hạn: Tôi có quyền được biết, truy cập, chỉnh sửa, yêu cầu xóa dữ liệu, hạn chế hoặc phản đối xử lý dữ liệu, rút lại sự đồng ý (bằng văn bản) và các quyền khác quy định tại Nghị định 13/2023/NĐ-CP.') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section5.item2', 'Lưu ý về rút lại sự đồng ý: Tôi hiểu rằng việc rút lại sự đồng ý không làm ảnh hưởng đến tính hợp pháp của việc xử lý dữ liệu đã thực hiện trước đó, và Công ty vẫn có quyền tiếp tục xử lý các dữ liệu bắt buộc theo quy định của pháp luật về lao động, thuế, bảo hiểm và các bộ luật có liên quan khác.') }}</li>
+        <li>{{ i18n.t('personalDataConfirm.section5.item3', 'Nghĩa vụ: Tôi cam kết cung cấp thông tin/dữ liệu chính xác, trung thực và thông báo kịp thời cho Công ty khi có sự thay đổi.') }}</li>
+      </ul>
+
+      <p class="hae-dashboard-pdc-footer">{{ i18n.t('personalDataConfirm.footer', 'Tôi xác nhận đã đọc, hiểu rõ và đầy đủ toàn bộ nội dung của Biểu mẫu này. Tôi tự nguyện đưa ra sự đồng ý đối với các nội dung đã trình bày ở trên.') }}</p>
+
+      <div class="hae-dashboard-pdc-actions">
+        <button
+          id="ash-pdc-cancel-btn"
+          nz-button
+          nzType="default"
+          (click)="cancelPersonalDataConfirm()"
+        >
+          {{ i18n.t('common.cancel', 'Hủy') }}
+        </button>
+        <button
+          id="ash-pdc-agree-btn"
+          nz-button
+          nzType="primary"
+          [nzLoading]="personalDataConfirmLoading()"
+          (click)="agreePersonalDataConfirm()"
+        >
+          {{ i18n.t('personalDataConfirm.agreeBtn', 'Đồng ý') }}
+        </button>
+      </div>
+    </div>
   </ng-container>
 </nz-modal>
 

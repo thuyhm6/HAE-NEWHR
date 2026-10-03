@@ -1,4 +1,19 @@
 <div class="sa-page">
+  <nz-card class="sa-empinfo-card">
+    @if (myInfo(); as info) {
+      <nz-descriptions [nzColumn]="2" nzBordered nzSize="small">
+        <nz-descriptions-item [nzTitle]="i18n.t('common.empName', 'Họ tên')">{{ info.localName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.empId', 'Mã nhân viên')">{{ info.empId }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.deptName', 'Phòng ban')">{{ info.deptName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('vdp.card.dept', 'Trưởng phòng')">{{ info.headDepartment }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.empGroup', 'Nhóm nhân viên')">{{ info.postFamilyName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('common.position', 'Chức vụ')">{{ info.dutyName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.jobTitle', 'Chức danh')">{{ info.positionNoName }}</nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.dateStarted', 'Ngày vào làm')">{{ info.dateStarted }}</nz-descriptions-item>
+      </nz-descriptions>
+    }
+  </nz-card>
+
   <nz-card class="sa-form-card">
     <form nz-form [nzLayout]="'vertical'">
       <div nz-row [nzGutter]="12">
@@ -23,7 +38,7 @@
           <span class="sa-vac-text">{{ vacInfoText() }}</span>
         </div>
 
-        <div nz-col [nzSpan]="8">
+        <div nz-col [nzSpan]="24">
           <nz-form-item>
             <nz-form-label>{{ i18n.t('sa.label.startTime', 'Thời gian bắt đầu') }}</nz-form-label>
             <nz-form-control>
@@ -39,7 +54,7 @@
             </nz-form-control>
           </nz-form-item>
         </div>
-        <div nz-col [nzSpan]="8">
+        <div nz-col [nzSpan]="24">
           <nz-form-item>
             <nz-form-label>{{ i18n.t('sa.label.endTime', 'Thời gian kết thúc') }}</nz-form-label>
             <nz-form-control>
@@ -55,7 +70,7 @@
             </nz-form-control>
           </nz-form-item>
         </div>
-        <div nz-col [nzSpan]="8">
+        <div nz-col [nzSpan]="24">
           <nz-form-item>
             <nz-form-label>{{ i18n.t('sa.label.duration', 'Thời lượng') }}</nz-form-label>
             <nz-form-control>
@@ -74,7 +89,9 @@
         </div>
       </div>
     </form>
+  </nz-card>
 
+  <nz-card class="sa-approver-card">
     <nz-table id="sa-approver-table" [nzData]="approverList()" [nzShowPagination]="false" nzSize="small">
       <thead>
         <tr>
@@ -83,6 +100,7 @@
           <th nzWidth="130px" class="sa-col-center">{{ i18n.t('sa.col.empId', 'Mã nhân viên') }}</th>
           <th>{{ i18n.t('sa.col.dept', 'Phòng ban') }}</th>
           <th>{{ i18n.t('sa.col.position', 'Chức danh') }}</th>
+          <th nzWidth="150px" class="sa-col-center">{{ i18n.t('sys.affirm.title.affirmTypeNames', 'Loại phê duyệt') }}</th>
           <th nzWidth="60px" class="sa-col-center">
             <button id="sa-add-approver-btn" type="button" nz-button nzType="primary" nzSize="small" nzShape="circle" (click)="showAddApproverRow()" [title]="i18n.t('sa.btn.addApprover', 'Thêm người phê duyệt')">
               <span nz-icon nzType="plus"></span>
@@ -112,6 +130,18 @@
             </td>
             <td></td>
             <td class="sa-col-center">
+              <nz-select
+                id="sa-new-approver-type"
+                [ngModel]="newApproverApprovType()"
+                (ngModelChange)="newApproverApprovType.set($event)"
+                name="saNewApproverType"
+                style="width: 100%"
+              >
+                <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('sa.approvType.approval', 'Phê duyệt')"></nz-option>
+                <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('sa.approvType.notice', 'Thông báo')"></nz-option>
+              </nz-select>
+            </td>
+            <td class="sa-col-center">
               <button id="sa-cancel-approver-btn" type="button" nz-button nzSize="small" (click)="cancelAddApprover()">
                 <span nz-icon nzType="close"></span>
               </button>
@@ -126,6 +156,18 @@
             <td></td>
             <td></td>
             <td class="sa-col-center">
+              <nz-select
+                id="sa-approver-type-{{ idx }}"
+                [ngModel]="item.approvType"
+                (ngModelChange)="changeApproverType(idx, $event)"
+                name="saApproverType{{ idx }}"
+                style="width: 100%"
+              >
+                <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('sa.approvType.approval', 'Phê duyệt')"></nz-option>
+                <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('sa.approvType.notice', 'Thông báo')"></nz-option>
+              </nz-select>
+            </td>
+            <td class="sa-col-center">
               <button id="sa-remove-approver-{{ idx }}" type="button" nz-button nzDanger nzSize="small" (click)="removeApprover(idx)">
                 <span nz-icon nzType="delete"></span>
               </button>
@@ -134,7 +176,7 @@
         } @empty {
           @if (!addingApprover()) {
             <tr>
-              <td colspan="6" class="sa-col-center">{{ i18n.t('sa.msg.noApprover', 'Chưa có người phê duyệt') }}</td>
+              <td colspan="7" class="sa-col-center">{{ i18n.t('sa.msg.noApprover', 'Chưa có người phê duyệt') }}</td>
             </tr>
           }
         }

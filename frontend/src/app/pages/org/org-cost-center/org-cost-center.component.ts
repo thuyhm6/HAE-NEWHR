@@ -12,6 +12,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { OrgCostCenterPageService, OrgCostCenterRow } from './org-cost-center.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Quản lý trung tâm chi phí (viewOrgCostCenter) - xem ghi chú trong org-cost-center.service.ts. DataTables
  * (search server-side qua POST /org/api/costCenter/list) thay bằng nz-table phân trang phía client (API
@@ -27,6 +28,10 @@ import { OrgCostCenterPageService, OrgCostCenterRow } from './org-cost-center.se
   styleUrl: './org-cost-center.component.scss',
 })
 export class OrgCostCenterComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(OrgCostCenterPageService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

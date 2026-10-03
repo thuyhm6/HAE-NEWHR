@@ -19,6 +19,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { RecruitCodeService, SyCodeOption } from '../shared/recruit-code.service';
 import { ExpBatchRegister, ExpBatchRow, ExperienceBatchListService } from './experience-batch-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../../core/config/table-pagination.config';
 const TRANS_CODE_PARENT = '14013956';
 const EMP_TYPE_PARENT = '13864';
 const POST_FAMILY_PARENT = '14015812';
@@ -54,6 +55,9 @@ const TEMPLATE_DOWNLOAD_URL = '/sy/excel/api/downloadTemplate?templateName=Start
   styleUrl: './experience-batch-list.component.scss',
 })
 export class ExperienceBatchListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(ExperienceBatchListService);
   private readonly codeService = inject(RecruitCodeService);
   private readonly message = inject(NzMessageService);

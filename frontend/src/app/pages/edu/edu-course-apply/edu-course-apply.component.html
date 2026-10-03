@@ -1,0 +1,230 @@
+<div class="eca-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.subjectNm', 'Tên đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eca-search-name" nz-input name="ecaSearchName" [ngModel]="searchName()" (ngModelChange)="searchName.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.START_DATE1', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="eca-search-start" name="ecaSearchStart" [ngModel]="searchStart()" (ngModelChange)="searchStart.set($event)" nzFormat="dd/MM/yyyy" class="eca-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.recruitManage.END_DATE1', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="eca-search-end" name="ecaSearchEnd" [ngModel]="searchEnd()" (ngModelChange)="searchEnd.set($event)" nzFormat="dd/MM/yyyy" class="eca-full"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="10" class="eca-toolbar-actions">
+          <button id="eca-search-btn" nz-button nzType="primary" type="submit">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.SEARCH', 'Tìm kiếm') }}
+          </button>
+          <button id="eca-clear-btn" nz-button type="button" (click)="clearSearch()">
+            <span nz-icon nzType="close"></span>
+            {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+          </button>
+          <button id="eca-apply-btn" nz-button nzType="primary" type="button" [nzLoading]="applying()" (click)="submitApply()">
+            <span nz-icon nzType="send"></span>
+            {{ i18n.t('ess.infoApply.title.apply', 'Xin phép') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Người duyệt (addMaker bản gốc) -->
+  <nz-card [nzTitle]="i18n.t('ess.infoApply.title.affirmor', 'Người duyệt')" [nzExtra]="ecaMakerExtra" nzSize="small">
+    <ng-template #ecaMakerExtra>
+      <button id="eca-add-maker-btn" nz-button nzSize="small" type="button" (click)="openPicker()">
+        <span nz-icon nzType="user-add"></span>
+        {{ i18n.t('edu.courseApply.XINZENGJUECAIZHE.a', 'Thêm người duyệt') }}
+      </button>
+    </ng-template>
+    <nz-table #ecaMakerTable id="eca-maker-table" [nzData]="makers()" [nzShowPagination]="false" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th class="eca-center" nzWidth="90px">{{ i18n.t('ess.infoApply.title.affirmor', 'Người duyệt') }}</th>
+          <th class="eca-center">{{ i18n.t('hr.enpinfo.title.EMP.EMPNUMBER', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('alert.pa.pasalarycanshu.xingming', 'Họ tên') }}</th>
+          <th>{{ i18n.t('edu.teacherManager.BUMEN.a', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('org.title.POST_GRADE_NAME', 'Chức vụ') }}</th>
+          <th class="eca-center" nzWidth="80px">{{ i18n.t('edu.courseApply.SHIFOUSHANCHU.a', 'Xóa') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of ecaMakerTable.data; track m.personId; let idx = $index) {
+          <tr>
+            <td class="eca-center">{{ levelLabel(idx) }}</td>
+            <td class="eca-center">{{ m.empid }}</td>
+            <td>{{ m.localName }}</td>
+            <td>{{ m.deptName }}</td>
+            <td>{{ m.postGradeName }}</td>
+            <td class="eca-center">
+              @if (!m.fixed) {
+                <button nz-button nzType="link" nzDanger nzSize="small" type="button" (click)="removeMaker(idx)">
+                  <span nz-icon nzType="delete"></span>
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="eca-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+
+  <nz-card>
+    <div class="eca-list-head">
+      <span class="eca-applicant">{{ i18n.t('ess.viewApply.title.applyName', 'Người xin phép') }}: <b>{{ applicantName() }}</b></span>
+      <input id="eca-quick-filter" nz-input name="ecaQuickFilter" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')" />
+    </div>
+    <nz-table
+      #ecaTable
+      id="eca-data-table"
+      [nzData]="filteredRows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="50"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="40px" [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()" (nzCheckedChange)="toggleAll($event)"></th>
+          <th nzWidth="60px" class="eca-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th>{{ i18n.t('edu.trainArchives.KECHENGMINGCHENGQICI.a', 'Tên khóa đào tạo') }}</th>
+          <th class="eca-center">{{ i18n.t('edu.trainBasicInformation.PEIXUNSHISHIQIJIAN.a', 'Thời gian') }}</th>
+          <th class="eca-center">{{ i18n.t('edu.planManager.PEIXUNKESHI.a', 'Thời lượng') }}</th>
+          <th class="eca-center">{{ i18n.t('edu.planManager.KECHENGBIAO.a', 'Lịch đào tạo') }}</th>
+          <th nzWidth="220px">{{ i18n.t('pa.salarycode.affirm.reason', 'Lý do') }}</th>
+          <th class="eca-center">{{ i18n.t('edu.courseApply.SHENQINGZHUANGTAI.a', 'Trạng thái') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ecaTable.data; track row.basicNo; let idx = $index) {
+          <tr class="eca-row" [class.eca-row-selected]="checked().has(row.basicNo)">
+            <td [nzChecked]="checked().has(row.basicNo)" (nzCheckedChange)="toggleRow(row.basicNo, $event)"></td>
+            <td class="eca-center" (click)="toggleRow(row.basicNo)">{{ (ecaTable.nzPageIndex - 1) * ecaTable.nzPageSize + idx + 1 }}</td>
+            <td (click)="toggleRow(row.basicNo)">{{ row.trainTypeCodeName }}</td>
+            <td (click)="toggleRow(row.basicNo)">{{ courseTitle(row) }}</td>
+            <td class="eca-center" (click)="toggleRow(row.basicNo)">{{ row.impleStartDate }} ~ {{ row.impleEndDate }}</td>
+            <td class="eca-center" (click)="toggleRow(row.basicNo)">{{ classHour(row) }}</td>
+            <td class="eca-center">
+              @if (row.syllabusCount) {
+                <a (click)="syllabusPlanNo.set(row.planNo ?? null)">{{ i18n.t('edu.planManager.CHAKANKECHENGBIAO.a', 'Xem') }}</a>
+              }
+            </td>
+            <td>
+              <input nz-input nzSize="small" [id]="'eca-task-' + row.basicNo" [name]="'ecaTask' + row.basicNo" maxlength="500" [ngModel]="tasks()[row.basicNo] ?? ''" (ngModelChange)="setTask(row.basicNo, $event)" />
+            </td>
+            <td class="eca-center">{{ row.applyCount ?? 0 }}/{{ row.designatedCount ?? 0 }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="eca-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal chọn người duyệt (queryMaker.jsp bản gốc); nzMaskClosable=true -->
+<nz-modal
+  [nzVisible]="pickerVisible()"
+  [nzTitle]="i18n.t('edu.courseApply.XINZENGJUECAIZHE.a', 'Thêm người duyệt')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="pickerVisible.set(false)"
+  nzWidth="820px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="searchMakers()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="9">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.GONGHAOXINGMING.a', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="eca-picker-keyword" nz-input name="ecaPickerKeyword" [ngModel]="pickerKeyword()" (ngModelChange)="pickerKeyword.set($event)" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="9">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.attendanceView.viewNoSwipingCard.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="eca-picker-dept"
+                name="ecaPickerDept"
+                [nzNodes]="deptNodes()"
+                [ngModel]="pickerDept()"
+                (ngModelChange)="pickerDept.set($event)"
+                nzAllowClear
+                nzShowSearch
+                [nzDropdownStyle]="{ 'max-height': '320px' }"
+                [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="6" class="eca-toolbar-actions">
+          <button id="eca-picker-search-btn" nz-button nzType="primary" type="submit" [nzLoading]="pickerLoading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.SEARCH', 'Tìm kiếm') }}
+          </button>
+        </div>
+      </div>
+    </form>
+    <nz-table #ecaPickerTable id="eca-picker-table" [nzData]="pickerRows()" [nzLoading]="pickerLoading()" [nzPageSize]="defaultPageSize" [nzPageSizeOptions]="pageSizeOptions" nzSize="small" nzBordered>
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="eca-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th class="eca-center">{{ i18n.t('ess.infoApply.EMPID', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('ess.infoApply.Rank', 'Chức vụ') }}</th>
+          <th>{{ i18n.t('org.title.POSITION_NO', 'Chức danh') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of ecaPickerTable.data; track p.personId; let idx = $index) {
+          <tr class="eca-row" [class.eca-row-selected]="p.personId === pickerSelected()?.personId" (click)="pickerSelected.set(p)" (dblclick)="confirmPicker(p)">
+            <td class="eca-center">{{ (ecaPickerTable.nzPageIndex - 1) * ecaPickerTable.nzPageSize + idx + 1 }}</td>
+            <td class="eca-center">{{ p.empid }}</td>
+            <td>{{ p.localName }}</td>
+            <td>{{ p.deptName }}</td>
+            <td>{{ p.postGradeName }}</td>
+            <td>{{ p.positionName }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="eca-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="eca-picker-cancel-btn" nz-button (click)="pickerVisible.set(false)">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="eca-picker-ok-btn" nz-button nzType="primary" (click)="confirmPicker()">{{ i18n.t('hrm.empinfo.CONFIRM', 'Xác nhận') }}</button>
+  </div>
+</nz-modal>
+
+<app-edu-syllabus-modal [planNo]="syllabusPlanNo()" (closed)="syllabusPlanNo.set(null)"></app-edu-syllabus-modal>

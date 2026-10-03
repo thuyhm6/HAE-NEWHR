@@ -15,6 +15,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { EvsFormula, EvsFormulaListService } from './evs-formula-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Công thức đánh giá (viewEvsFormulaList) - port lại từ
  * evs/manage/viewEvsFormulaList.html (đã xoá).
@@ -39,6 +40,10 @@ import { EvsFormula, EvsFormulaListService } from './evs-formula-list.service';
   styleUrl: './evs-formula-list.component.scss',
 })
 export class EvsFormulaListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(EvsFormulaListService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

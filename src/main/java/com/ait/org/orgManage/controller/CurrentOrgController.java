@@ -1,5 +1,7 @@
 package com.ait.org.orgManage.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.hrm.empinfo.model.HrEmployee;
 import com.ait.org.orgManage.dto.OrgNode;
 import com.ait.org.orgManage.model.HrDepartment;
@@ -48,7 +50,7 @@ public class CurrentOrgController {
         } catch (Exception e) {
             log.error("Failed to load current org structure", e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(java.util.Map.of("error", "Loi he thong khi tai cau truc to chuc."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi tai cau truc to chuc."));
         }
     }
 
@@ -61,7 +63,7 @@ public class CurrentOrgController {
         } catch (Exception e) {
             log.error("Failed to load visual org tree", e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(java.util.Map.of("error", "Loi he thong khi tai so do to chuc."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi tai so do to chuc."));
         }
     }
 
@@ -74,7 +76,7 @@ public class CurrentOrgController {
         } catch (Exception e) {
             log.error("Failed to load employees for deptNo={}", deptNo, e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(java.util.Map.of("error", "Loi he thong khi tai danh sach nhan vien."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi tai danh sach nhan vien."));
         }
     }
 }

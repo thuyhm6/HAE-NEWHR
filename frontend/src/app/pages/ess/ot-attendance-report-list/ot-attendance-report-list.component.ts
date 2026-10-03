@@ -28,6 +28,7 @@ import {
   SyCodeOption,
 } from './ot-attendance-report-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * Báo cáo tăng ca theo phòng ban (server-side DataTables) - dùng chung cho 2
  * trang gần như trùng lặp 100% ở tầng backend: coordOt (tăng ca thường,
@@ -59,6 +60,9 @@ import {
   styleUrl: './ot-attendance-report-list.component.scss',
 })
 export class OtAttendanceReportListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+
   private readonly service = inject(OtAttendanceReportListService);
   private readonly message = inject(NzMessageService);
   private readonly route = inject(ActivatedRoute);
@@ -83,7 +87,7 @@ export class OtAttendanceReportListComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly rows = signal<OtAttendanceReportRow[]>([]);
   protected readonly pageIndex = signal(1);
-  protected readonly pageSize = signal(25);
+  protected readonly pageSize = signal(TABLE_DEFAULT_PAGE_SIZE);
   protected readonly total = signal(0);
 
   private listBootstrapped = false;

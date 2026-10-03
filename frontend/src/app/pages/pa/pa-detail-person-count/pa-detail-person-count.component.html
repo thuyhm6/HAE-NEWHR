@@ -1,0 +1,132 @@
+<div class="psc-page">
+  <div class="psc-search-card">
+    <div class="psc-search-row">
+      <div class="psc-field">
+        <label class="psc-label" for="pdpcSearchKey">{{ i18n.t('hr.viewContractByInsert.title.EMPIDANDLOCALNAME', 'Mã nhân viên/Họ tên') }}</label>
+        <div class="psc-inline">
+          <input
+            id="pdpcSearchKey"
+            nz-input
+            class="psc-select"
+            [ngModel]="searchKey()"
+            (ngModelChange)="searchKey.set($event); selectedPersonId.set(null)"
+            (keydown.enter)="lookupEmployee()"
+          />
+          <button id="pdpcBtnLookup" nz-button (click)="lookupEmployee()">
+            <span nz-icon nzType="search"></span>
+          </button>
+        </div>
+      </div>
+      <div class="psc-field">
+        <label class="psc-label">{{ i18n.t('ess.empInfo.pay_plan', 'Kế hoạch trả lương') }}</label>
+        <nz-select id="pdpcPaySchedule" class="psc-select-wide" [ngModel]="payScheduleNo()" (ngModelChange)="payScheduleNo.set($event)" nzShowSearch>
+          @for (sch of scheduleOptions(); track sch.payScheduleNo) {
+            <nz-option [nzValue]="sch.payScheduleNo" [nzLabel]="scheduleLabel(sch)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="psc-actions">
+        <button id="pdpcBtnSearch" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('public.title.search', 'Tra cứu') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thông tin nhân viên (bảng user_table bản gốc) -->
+  <div class="psc-card">
+    @if (empInfo(); as emp) {
+      <div class="psc-card-title">{{ emp.empId }} - {{ emp.localName }}</div>
+    }
+    <table id="pdpcEmpInfo" class="pdpc-info">
+      <tr>
+        <th>{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+        <td>{{ empInfo()?.deptName }}</td>
+        <th>{{ i18n.t('ess.empInfo.zhiqun', 'Nhóm nhân viên') }}</th>
+        <td>{{ empInfo()?.postFamilyName }}</td>
+        <th>{{ i18n.t('hrm.contract.Rank', 'Chức vụ') }}</th>
+        <td>{{ empInfo()?.postGradeName }}</td>
+        <th>{{ i18n.t('org.title.POSITION_NO', 'Chức danh') }}</th>
+        <td>{{ empInfo()?.positionName }}</td>
+      </tr>
+      <tr>
+        <th>{{ i18n.t('ess.empInfo.entry_date', 'Ngày vào làm') }}</th>
+        <td>{{ empInfo()?.dateStarted }}</td>
+        <th>{{ i18n.t('hr.viewPersonalInfo.title.END_PROBATION_DATE', 'Ngày chuyển chính thức') }}</th>
+        <td>{{ empInfo()?.endProbationDate }}</td>
+        <th>{{ i18n.t('ess.empInfo.leaveDate', 'Ngày thôi việc') }}</th>
+        <td>{{ empInfo()?.dateLeft }}</td>
+        <th>{{ i18n.t('ess.viewpersonalpainfo.shifagongzi', 'Lương thực lĩnh') }}</th>
+        <td class="psc-right">{{ fmt(empInfo()?.realWages) }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 3 bảng hạng mục: chi trả / khấu trừ / bảo hiểm công ty -->
+  <div class="psc-body">
+    @for (g of groups(); track g.type) {
+      <div class="psc-card pdpc-group">
+        <div class="psc-card-title">{{ i18n.t(g.labelKey, g.fallback) }}</div>
+        <nz-table
+          [id]="'pdpcItemTable' + g.type"
+          [nzData]="g.items"
+          [nzLoading]="loading()"
+          [nzFrontPagination]="false"
+          [nzShowPagination]="false"
+          [nzScroll]="{ y: 'calc(100vh - 420px)' }"
+          [nzNoResult]="i18n.t('common.noData', 'Không có dữ liệu')"
+          nzSize="small"
+          nzBordered
+        >
+          <thead>
+            <tr>
+              <th nzWidth="50px" class="psc-center">No.</th>
+              <th>{{ i18n.t('ess.empInfo.project', 'Hạng mục') }}</th>
+              <th nzWidth="110px" class="psc-right">{{ i18n.t('ess.empInfo.amount_of_money', 'Số tiền') }}</th>
+              <th nzWidth="35%">{{ i18n.t('pa.insurance.title.formula', 'Công thức') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of g.items; track $index) {
+              <tr>
+                <td class="psc-center">{{ $index + 1 }}</td>
+                <td>{{ item.itemName }}</td>
+                <td class="psc-right">{{ fmt(item.itemValue) }}</td>
+                <td [title]="item.itemFormular ?? ''">{{ shortFormula(item.itemFormular) }}</td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </div>
+    }
+  </div>
+</div>
+
+<nz-modal
+  [nzVisible]="empPickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm kiếm nhân viên')"
+  [nzFooter]="null"
+  nzWidth="600px"
+  (nzOnCancel)="empPickerVisible.set(false)"
+>
+  <ng-container *nzModalContent>
+    <nz-table id="pdpcEmpPickerTable" [nzData]="empOptions()" nzSize="small" [nzShowPagination]="false" [nzScroll]="{ y: '320px' }">
+      <thead>
+        <tr>
+          <th>{{ i18n.t('ess.infoApply.EMP_ID', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th>{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (emp of empOptions(); track $index) {
+          <tr class="psc-row" (click)="selectEmployee(emp)">
+            <td>{{ emp.empId }}</td>
+            <td>{{ emp.localName }}</td>
+            <td>{{ emp.deptName }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+</nz-modal>

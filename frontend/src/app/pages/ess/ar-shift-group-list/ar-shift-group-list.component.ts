@@ -15,6 +15,7 @@ import { NzTableModule } from 'ng-zorro-antd/table';
 import { I18nService } from '../../../i18n/i18n.service';
 import { ArShiftGroupListService, ArShiftGroupRow, SyCodeOption } from './ar-shift-group-list.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 interface EditableShiftGroupRow extends ArShiftGroupRow {
   editShiftNo: string | null;
   editStartDate: Date | null;
@@ -49,6 +50,10 @@ interface EditableShiftGroupRow extends ArShiftGroupRow {
   styleUrl: './ar-shift-group-list.component.scss',
 })
 export class ArShiftGroupListComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(ArShiftGroupListService);
   private readonly message = inject(NzMessageService);
   protected readonly i18n = inject(I18nService);

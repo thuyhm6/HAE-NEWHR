@@ -12,6 +12,13 @@ export interface MyInfo {
   personId?: string;
   localName?: string;
   sexCode?: string;
+  empId?: string;
+  deptName?: string;
+  headDepartment?: string;
+  postFamilyName?: string;
+  dutyName?: string;
+  positionNoName?: string;
+  dateStarted?: string;
 }
 
 export interface VacationInfo {
@@ -42,6 +49,8 @@ export interface ApproverInput {
   personId: string;
   localName: string;
   empId: string;
+  /** AFFIRM_TYPE bên backend: '1' = Phê duyệt, '3' = Thông báo */
+  approvType: string;
 }
 
 export interface LeaveApplySavePayload {
@@ -70,6 +79,10 @@ const EMPLOYEE_SEARCH_URL = '/hrm/empinfo/api/employee/search';
 const SAVE_URL = '/ar/attendanceMintenance/api/leaveApply/save';
 
 export const LEAVE_TYPE_PARENT_CODE = '21';
+
+/** Giá trị AFFIRM_TYPE bên backend (SY_AFFIRM_EMAIL): '1' = Phê duyệt, '3' = Thông báo */
+export const APPROV_TYPE_APPROVAL = '1';
+export const APPROV_TYPE_NOTICE = '3';
 
 /**
  * Form tạo đơn xin nghỉ phép mới cho bản thân - port lại từ

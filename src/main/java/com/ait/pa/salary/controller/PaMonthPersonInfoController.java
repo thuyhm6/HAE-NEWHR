@@ -1,5 +1,7 @@
 package com.ait.pa.salary.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.pa.workManagement.dto.PaPayScheduleDto;
 import com.ait.pa.workManagement.dto.PaPayStubDto;
 import com.ait.pa.workManagement.service.PaPayScheduleService;
@@ -47,7 +49,7 @@ public class PaMonthPersonInfoController {
             return ResponseEntity.ok(list);
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách kế hoạch trả lương đã mở: {}", e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 
@@ -60,7 +62,7 @@ public class PaMonthPersonInfoController {
             @RequestParam(required = false) String lang) {
         try {
             if (payScheduleNo == null || payScheduleNo.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Vui lòng chọn kế hoạch trả lương!"));
+                return ResponseEntity.badRequest().body(CollectionUtil.mapOf("error", "Vui lòng chọn kế hoạch trả lương!"));
             }
             PaPayStubDto params = new PaPayStubDto();
             params.setPayScheduleNo(payScheduleNo);
@@ -68,7 +70,7 @@ public class PaMonthPersonInfoController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Lỗi khi tải phiếu lương cá nhân payScheduleNo={}: {}", payScheduleNo, e.getMessage(), e);
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.internalServerError().body(CollectionUtil.mapOf("error", e.getMessage()));
         }
     }
 }

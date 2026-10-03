@@ -1,5 +1,7 @@
 package com.ait.hrm.empinfo.service.impl;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.hrm.empinfo.dto.PhotoImportResultDto;
 import com.ait.hrm.empinfo.model.HrEmployee;
 import com.ait.hrm.empinfo.model.HrPersonalInfo;
@@ -35,7 +37,7 @@ import java.util.Set;
 public class HrPhotoImportServiceImpl implements HrPhotoImportService {
 
     private static final Logger log = LoggerFactory.getLogger(HrPhotoImportServiceImpl.class);
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png");
+    private static final Set<String> ALLOWED_EXTENSIONS = CollectionUtil.setOf("jpg", "jpeg", "png");
     private static final int TARGET_WIDTH  = 600;
     private static final int TARGET_HEIGHT = 800;
 

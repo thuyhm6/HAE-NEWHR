@@ -16,6 +16,7 @@ import { I18nService } from '../../../../i18n/i18n.service';
 import { EmpSearchService, EmployeeSearchResult } from '../shared/emp-search.service';
 import { WorkExperienceRow, WorkExperienceSavePayload, WorkExperienceService } from './work-experience.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../../core/config/table-pagination.config';
 /**
  * Kinh nghiệm làm việc (Work Experience) - port lại từ
  * hrm/empinfo/viewWorkInformation.html (đã xoá).
@@ -40,6 +41,10 @@ import { WorkExperienceRow, WorkExperienceSavePayload, WorkExperienceService } f
   styleUrl: './work-experience.component.scss',
 })
 export class WorkExperienceComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(WorkExperienceService);
   private readonly employeeService = inject(EmpSearchService);
   private readonly message = inject(NzMessageService);

@@ -18,6 +18,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { I18nService } from '../../../i18n/i18n.service';
 import { CycleParameterRow, CycleParameterSavePayload, CycleParameterService } from './cycle-parameter.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * CRUD phẳng "Thông số chu kỳ chấm công" - port lại từ
  * ar/attendanceSettings/viewCycleParameter.html (đã xoá). Khác 2 trang CRUD
@@ -47,6 +48,10 @@ import { CycleParameterRow, CycleParameterSavePayload, CycleParameterService } f
   styleUrl: './cycle-parameter.component.scss',
 })
 export class CycleParameterComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   private readonly service = inject(CycleParameterService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

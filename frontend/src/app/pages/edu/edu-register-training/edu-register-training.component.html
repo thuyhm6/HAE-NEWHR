@@ -1,0 +1,333 @@
+<div class="ert-page">
+  <nz-card>
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ label('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select
+                id="ert-search-type"
+                name="ertSearchType"
+                [ngModel]="searchType()"
+                (ngModelChange)="searchType.set($event)"
+                [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
+                nzAllowClear
+                nzShowSearch
+              >
+                @for (opt of typeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="18" class="ert-toolbar-actions">
+          <button id="ert-search-btn" nz-button nzType="primary" type="submit" [nzLoading]="loading()">
+            <span nz-icon nzType="search"></span>
+            {{ i18n.t('hrm.empinfo.QUERY', 'Tra cứu') }}
+          </button>
+          <button id="ert-add-btn" nz-button nzType="primary" type="button" (click)="openForm()">
+            <span nz-icon nzType="plus"></span>
+            {{ i18n.t('ess.empInfo.insert', 'Thêm mới') }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card nzSize="small">
+    <div class="ert-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</div>
+    <nz-table
+      #ertTable
+      id="ert-table"
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="defaultPageSize"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzHideOnSinglePage]="true"
+      [nzScroll]="{ x: '2100px' }"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th rowspan="2" nzWidth="50px" nzLeft class="ert-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th rowspan="2" nzWidth="130px" nzLeft class="ert-center">{{ i18n.t('ess.affirmApply.title.remark.shenpizhuangtai', 'Trạng thái duyệt') }}</th>
+          <th rowspan="2" nzWidth="220px">{{ label('ess.empInfo.apply_content', 'Nội dung') }}</th>
+          <th rowspan="2" nzWidth="200px">{{ label('hr.viewGoAbroad.title.PURPOSE', 'Mục đích') }}</th>
+          <th rowspan="2" nzWidth="140px">{{ label('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</th>
+          <th rowspan="2" nzWidth="160px">{{ i18n.t('empsubject.eduRm', 'Địa điểm đào tạo') }}</th>
+          <th rowspan="2" nzWidth="160px">{{ i18n.t('hr.viewTraining.title.INSTITUTION_NAME', 'Đơn vị đào tạo') }}</th>
+          <th colspan="3" class="ert-center">{{ i18n.t('liang.hr.viewTraining.title.TRAINING_TIME', 'Thời gian đào tạo') }}</th>
+          <th colspan="4" class="ert-center">{{ i18n.t('edu.viewTrainEducation.FEIYONGGUANLI.a', 'Chi phí đào tạo') }}</th>
+          <th rowspan="2" nzWidth="110px" class="ert-right">{{ i18n.t('edu.trainCostMANAGER.QITAFEIYONG.a', 'Chi phí khác') }}</th>
+          <th rowspan="2" nzWidth="110px" class="ert-right">{{ i18n.t('edu.trainCostMANAGER.FEIYONGHEJI.a', 'Tổng chi phí') }}</th>
+          <th rowspan="2">{{ i18n.t('common.remark', 'Ghi chú') }}</th>
+        </tr>
+        <tr>
+          <th nzWidth="110px" class="ert-center">{{ i18n.t('ess.infoApply.title.applyTime', 'Thời gian bắt đầu') }}</th>
+          <th nzWidth="110px" class="ert-center">{{ i18n.t('ess.infoApply.title.endTime', 'Thời gian kết thúc') }}</th>
+          <th nzWidth="80px" class="ert-right">{{ i18n.t('ess.infoApply.withoutWork_days', 'Số ngày') }}</th>
+          <th nzWidth="110px" class="ert-center">{{ i18n.t('edu.registerTraining.currency', 'Đơn vị tiền tệ (VND/USD)') }}</th>
+          <th nzWidth="110px" class="ert-right">{{ i18n.t('edu.registerTraining.unitPrice', 'Đơn giá') }}</th>
+          <th nzWidth="90px" class="ert-right">{{ i18n.t('edu.planManager.PEIXUNRENSHU.a', 'Số lượng') }}</th>
+          <th nzWidth="110px" class="ert-right">{{ i18n.t('edu.registerTraining.amount', 'Thành tiền') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of ertTable.data; track r.applyNo; let idx = $index) {
+          <tr>
+            <td nzLeft class="ert-center">{{ (ertTable.nzPageIndex - 1) * ertTable.nzPageSize + idx + 1 }}</td>
+            <td nzLeft class="ert-center"><span class="ert-status">{{ r.affirmFlagName }}</span></td>
+            <td>{{ r.trainingContent }}</td>
+            <td>{{ r.trainingPurpose }}</td>
+            <td>{{ r.trainingTypeName }}</td>
+            <td>{{ r.trainingUnit }}</td>
+            <td>{{ r.trainingLocation }}</td>
+            <td class="ert-center">{{ r.startDate }}</td>
+            <td class="ert-center">{{ r.endDate }}</td>
+            <td class="ert-right">{{ r.trainFee }}</td>
+            <td class="ert-center">{{ r.trainUnit }}</td>
+            <td class="ert-right">{{ r.trainPrice }}</td>
+            <td class="ert-right">{{ r.trainTrainee }}</td>
+            <td class="ert-right">{{ r.trainAmount }}</td>
+            <td class="ert-right">{{ r.trainFeesOther }}</td>
+            <td class="ert-right">{{ r.trainFeesTotal }}</td>
+            <td>{{ r.remark }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="17" class="ert-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Popup thêm mới (RegisterForTrainingView.jsp bản gốc); nzMaskClosable=true -->
+<nz-modal
+  [nzVisible]="formVisible()"
+  [nzTitle]="i18n.t('edu.registerTraining.title', 'Đăng ký đào tạo')"
+  [nzMaskClosable]="true"
+  (nzOnCancel)="closeForm()"
+  nzWidth="1100px"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'vertical'" id="ert-form">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24">
+          <nz-form-item>
+            <nz-form-label>{{ label('ess.empInfo.apply_content', 'Nội dung') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ert-f-content" nz-input name="ertContent" maxlength="1000" [(ngModel)]="form.trainingContent" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ label('hr.viewGoAbroad.title.PURPOSE', 'Mục đích') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ert-f-purpose" nz-input name="ertPurpose" maxlength="1000" [(ngModel)]="form.trainingPurpose" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ label('edu.systemManager.PEIXUNLEIXING.a', 'Loại hình') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ert-f-type" name="ertType" [(ngModel)]="form.trainingType" nzAllowClear nzShowSearch>
+                @for (opt of typeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('empsubject.eduRm', 'Địa điểm đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ert-f-unit" nz-input name="ertUnit" maxlength="500" [(ngModel)]="form.trainingUnit" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="12">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewTraining.title.INSTITUTION_NAME', 'Đơn vị đào tạo') }}</nz-form-label>
+            <nz-form-control>
+              <input id="ert-f-location" nz-input name="ertLocation" maxlength="500" [(ngModel)]="form.trainingLocation" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.title.applyTime', 'Thời gian bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ert-f-start" name="ertStart" nzFormat="dd/MM/yyyy" class="ert-full" [(ngModel)]="form.startDate"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.title.endTime', 'Thời gian kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="ert-f-end" name="ertEnd" nzFormat="dd/MM/yyyy" class="ert-full" [(ngModel)]="form.endDate"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.withoutWork_days', 'Số ngày') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="ert-f-days" name="ertDays" class="ert-full" [nzMin]="0" [(ngModel)]="form.trainFee"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.registerTraining.currency', 'Đơn vị tiền tệ (VND/USD)') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="ert-f-currency" name="ertCurrency" [(ngModel)]="form.trainUnit">
+                @for (c of currencies; track c) {
+                  <nz-option [nzValue]="c" [nzLabel]="c"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.registerTraining.unitPrice', 'Đơn giá') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="ert-f-price" name="ertPrice" class="ert-full" [nzMin]="0" [(ngModel)]="form.trainPrice" (ngModelChange)="recalc()"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.planManager.PEIXUNRENSHU.a', 'Số lượng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="ert-f-trainee" name="ertTrainee" class="ert-full" [nzMin]="0" [(ngModel)]="form.trainTrainee" (ngModelChange)="recalc()"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.registerTraining.amount', 'Thành tiền') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="ert-f-amount" name="ertAmount" class="ert-full" [nzMin]="0" [ngModel]="form.trainAmount" (ngModelChange)="onAmountChange($event)"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainCostMANAGER.QITAFEIYONG.a', 'Chi phí khác') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="ert-f-other" name="ertOther" class="ert-full" [nzMin]="0" [(ngModel)]="form.trainFeesOther" (ngModelChange)="recalc()"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="12" [nzMd]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('edu.trainCostMANAGER.FEIYONGHEJI.a', 'Tổng chi phí') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="ert-f-total" name="ertTotal" class="ert-full" [nzMin]="0" [(ngModel)]="form.trainFeesTotal"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.remark', 'Ghi chú') }}</nz-form-label>
+            <nz-form-control>
+              <textarea id="ert-f-remark" nz-input name="ertRemark" rows="3" maxlength="2000" [(ngModel)]="form.remark"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+
+    <!-- Người phê duyệt (addApplyLeaveAffirm_list bản gốc) -->
+    <div class="ert-approver-head">
+      <span class="ert-approver-title">{{ i18n.t('sys.affirm.title.affirmPerson', 'Người duyệt') }}</span>
+      <button id="ert-add-approver-btn" nz-button nzSize="small" type="button" (click)="openPicker()">
+        <span nz-icon nzType="user-add"></span>
+        {{ i18n.t('edu.courseApply.XINZENGJUECAIZHE.a', 'Thêm người duyệt') }}
+      </button>
+    </div>
+    <nz-table
+      id="ert-approver-table"
+      [nzData]="approvers()"
+      [nzLoading]="approverLoading()"
+      [nzShowPagination]="false"
+      nzSize="small"
+      nzBordered
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="ert-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('sys.affirm.title.affirmPerson', 'Người duyệt') }}</th>
+          <th nzWidth="120px" class="ert-center">{{ i18n.t('hr.enpinfo.title.EMP.EMPNUMBER', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</th>
+          <th>{{ i18n.t('hrm.contract.POSITION_NO', 'Chức danh') }}</th>
+          <th nzWidth="140px" class="ert-center">{{ i18n.t('sys.affirm.title.affirmTypeNames', 'Loại phê duyệt') }}</th>
+          <th nzWidth="120px" class="ert-center">{{ i18n.t('common.action', 'Hành động') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of approvers(); track a.personId; let idx = $index; let first = $first; let last = $last) {
+          <tr>
+            <td class="ert-center">{{ idx + 1 }}</td>
+            <td>{{ a.localName }}</td>
+            <td class="ert-center">{{ a.empid }}</td>
+            <td>{{ a.deptName }}</td>
+            <td>{{ a.positionName }}</td>
+            <td class="ert-center">
+              <nz-select
+                [id]="'ert-approver-type-' + idx"
+                class="ert-full"
+                nzSize="small"
+                [ngModel]="a.affirmType"
+                (ngModelChange)="changeApproverType(idx, $event)"
+              >
+                <nz-option [nzValue]="AFFIRM_APPROVAL" [nzLabel]="i18n.t('sa.approvType.approval', 'Phê duyệt')"></nz-option>
+                <nz-option [nzValue]="AFFIRM_NOTICE" [nzLabel]="i18n.t('sa.approvType.notice', 'Thông báo')"></nz-option>
+              </nz-select>
+            </td>
+            <td class="ert-center ert-actions">
+              <button [id]="'ert-approver-up-' + idx" nz-button nzSize="small" type="button" [disabled]="first" (click)="moveApprover(idx, -1)">
+                <span nz-icon nzType="arrow-up"></span>
+              </button>
+              <button [id]="'ert-approver-down-' + idx" nz-button nzSize="small" type="button" [disabled]="last" (click)="moveApprover(idx, 1)">
+                <span nz-icon nzType="arrow-down"></span>
+              </button>
+              <button [id]="'ert-approver-del-' + idx" nz-button nzSize="small" nzDanger type="button" [title]="i18n.t('ess.empInfo.Delete', 'Xóa')" (click)="removeApprover(idx)">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="ert-center">{{ i18n.t('sa.msg.noApprover', 'Chưa có người phê duyệt') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="ert-form-cancel-btn" nz-button type="button" (click)="closeForm()">{{ i18n.t('common.cancel', 'Hủy') }}</button>
+    <button id="ert-form-save-btn" nz-button nzType="primary" type="button" [nzLoading]="saving()" (click)="submit()">
+      {{ i18n.t('ess.infoApply.title.apply', 'Xin phép') }}
+    </button>
+  </div>
+</nz-modal>
+
+<app-edu-emp-picker
+  [visible]="pickerVisible()"
+  (visibleChange)="pickerVisible.set($event)"
+  [multiple]="true"
+  [showDeptFilter]="true"
+  [title]="i18n.t('edu.courseApply.XINZENGJUECAIZHE.a', 'Thêm người duyệt')"
+  (confirmed)="onEmployeesPicked($event)"
+></app-edu-emp-picker>

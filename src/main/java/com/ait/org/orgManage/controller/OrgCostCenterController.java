@@ -1,5 +1,7 @@
 package com.ait.org.orgManage.controller;
 
+import com.ait.util.CollectionUtil;
+
 import com.ait.org.orgManage.model.OrgCostCenter;
 import com.ait.org.orgManage.service.OrgCostCenterService;
 import com.ait.sy.sys.service.HrAuthenticationService.HrUserInfo;
@@ -38,11 +40,11 @@ public class OrgCostCenterController {
             String codeNo = payload.get("codeNo");
             String codeName = payload.get("codeName");
             List<OrgCostCenter> list = service.getList(codeNo, codeName);
-            return org.springframework.http.ResponseEntity.ok(Map.of("data", list));
+            return org.springframework.http.ResponseEntity.ok(CollectionUtil.mapOf("data", list));
         } catch (Exception e) {
             log.error("Failed to get cost center list", e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(Map.of("error", "Loi he thong khi tai danh sach trung tam chi phi."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi tai danh sach trung tam chi phi."));
         }
     }
 
@@ -61,11 +63,11 @@ public class OrgCostCenterController {
                 // obj.setUpdatedIp(user.getIpAddress());
             }
             service.save(obj);
-            return org.springframework.http.ResponseEntity.ok(Map.of("message", "Lưu thành công"));
+            return org.springframework.http.ResponseEntity.ok(CollectionUtil.mapOf("message", "Lưu thành công"));
         } catch (Exception e) {
             log.error("Failed to save cost center seq={}", obj.getSeq(), e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(Map.of("error", "Loi he thong khi luu trung tam chi phi."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi luu trung tam chi phi."));
         }
     }
 
@@ -74,11 +76,11 @@ public class OrgCostCenterController {
     public org.springframework.http.ResponseEntity<?> delete(@RequestParam String seq) {
         try {
             service.delete(seq);
-            return org.springframework.http.ResponseEntity.ok(Map.of("message", "Xóa thành công"));
+            return org.springframework.http.ResponseEntity.ok(CollectionUtil.mapOf("message", "Xóa thành công"));
         } catch (Exception e) {
             log.error("Failed to delete cost center seq={}", seq, e);
             return org.springframework.http.ResponseEntity.status(500)
-                    .body(Map.of("error", "Loi he thong khi xoa trung tam chi phi."));
+                    .body(CollectionUtil.mapOf("error", "Loi he thong khi xoa trung tam chi phi."));
         }
     }
 }

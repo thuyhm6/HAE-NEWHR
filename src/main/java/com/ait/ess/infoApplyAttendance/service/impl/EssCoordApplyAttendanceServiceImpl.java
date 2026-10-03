@@ -45,10 +45,10 @@ public class EssCoordApplyAttendanceServiceImpl implements EssCoordApplyAttendan
         String startDate = dto.getStartDate();
         String endDate = dto.getEndDate();
         LocalDate today = LocalDate.now();
-        if (startDate == null || startDate.isBlank()) {
+        if (startDate == null || startDate.trim().isEmpty()) {
             dto.setStartDate(today.minusDays(1).format(DATE_FORMAT));
         }
-        if (endDate == null || endDate.isBlank()) {
+        if (endDate == null || endDate.trim().isEmpty()) {
             dto.setEndDate(today.format(DATE_FORMAT));
         }
     }

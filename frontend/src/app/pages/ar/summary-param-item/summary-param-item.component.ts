@@ -22,6 +22,7 @@ import {
   SummaryParamItemService,
 } from './summary-param-item.service';
 
+import { TABLE_PAGE_SIZE_OPTIONS, TABLE_DEFAULT_PAGE_SIZE } from '../../../core/config/table-pagination.config';
 /**
  * CRUD phẳng "Thông số Hạng mục tổng hợp" - port lại từ
  * ar/attendanceSettings/viewSummaryParamItem.html (đã xoá). Dropdown Hạng
@@ -53,6 +54,10 @@ import {
   styleUrl: './summary-param-item.component.scss',
 })
 export class SummaryParamItemComponent implements OnInit {
+  /** Danh sách số dòng/trang dùng chung - core/config/table-pagination.config.ts */
+  protected readonly pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS;
+  protected readonly defaultPageSize = TABLE_DEFAULT_PAGE_SIZE;
+
   protected readonly service = inject(SummaryParamItemService);
   private readonly message = inject(NzMessageService);
   private readonly modal = inject(NzModalService);

@@ -1,0 +1,27 @@
+.apc-center {
+  text-align: center;
+}
+
+.apc-center-text {
+  text-align: center;
+}
+
+.apc-full {
+  width: 100%;
+}
+
+.apc-emp-group {
+  display: flex;
+}
+
+.apc-emp-input {
+  flex: 1;
+}
+
+.apc-actions {
+  white-space: nowrap;
+
+  button + button {
+    margin-left: 6px;
+  }
+}

@@ -1,0 +1,85 @@
+<nz-table [attr.id]="idPrefix() + '-approver-table'" [nzData]="approvers()" [nzShowPagination]="false" [nzFrontPagination]="false" nzSize="small" nzBordered>
+  <thead>
+    <tr>
+      <th nzWidth="5%" class="apc-center">{{ i18n.t('org.title.NO', 'STT') }}</th>
+      <th nzWidth="20%" class="apc-center">{{ i18n.t('sys.affirm.title.affirmPerson', 'Người duyệt') }}</th>
+      <th nzWidth="20%" class="apc-center">{{ i18n.t('hr.enpinfo.title.EMP.EMPNUMBER', 'Mã nhân viên') }}</th>
+      <th nzWidth="20%" class="apc-center">{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</th>
+      <th nzWidth="15%" class="apc-center">{{ i18n.t('hrm.contract.POSITION_NO', 'Chức trách') }}</th>
+      <th nzWidth="10%" class="apc-center">{{ i18n.t('sys.affirm.title.affirmTypeNames', 'Loại phê duyệt') }}</th>
+      <th nzWidth="10%" class="apc-center">
+        {{ i18n.t('evs.viewRegPersonalProbation.SHIFOUXINZENG.a', 'Thêm mới') }}
+        <button [attr.id]="idPrefix() + '-add-first-btn'" nz-button nzSize="small" nzShape="circle" type="button" [title]="i18n.t('button.add', 'Thêm mới')" (click)="addFirst()">
+          <span nz-icon nzType="plus"></span>
+        </button>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (a of approvers(); track a.key; let idx = $index) {
+      <tr>
+        <td class="apc-center">{{ idx + 1 }}</td>
+        @if (a.fromDefault) {
+          <td class="apc-center">{{ a.localName }}</td>
+          <td class="apc-center">{{ a.empId }}</td>
+          <td class="apc-center">{{ a.deptName }}</td>
+          <td class="apc-center">{{ a.positionName }}</td>
+        } @else {
+          <td><input nz-input class="apc-center-text" [ngModel]="a.localName" disabled /></td>
+          <td>
+            <nz-input-group nzCompact class="apc-emp-group">
+              <input
+                nz-input
+                class="apc-center-text apc-emp-input"
+                [attr.id]="idPrefix() + '-emp-' + idx"
+                [ngModel]="a.empId"
+                (ngModelChange)="onEmpChange(a.key, $event)"
+                (keydown.enter)="onEmpEnter(a.key, $event)"
+                nz-tooltip
+                [nzTooltipTitle]="i18n.t('evs.affirm.please_input_enter.e', 'Chọn từ khóa sau đó Enter')"
+              />
+              <button nz-button type="button" (click)="openPicker(a.key, [])"><span nz-icon nzType="search"></span></button>
+            </nz-input-group>
+          </td>
+          <td><input nz-input class="apc-center-text" [ngModel]="a.deptName" disabled /></td>
+          <td><input nz-input class="apc-center-text" [ngModel]="a.positionName" disabled /></td>
+        }
+        <td class="apc-center">
+          <nz-select class="apc-full" [attr.id]="idPrefix() + '-type-' + idx" [ngModel]="a.approvType" (ngModelChange)="onTypeChange(a.key, $event)">
+            <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('hr.contract.title.shenpi', 'Phê duyệt')"></nz-option>
+            <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('ess.infoApply.gonggao', 'Thông báo')"></nz-option>
+          </nz-select>
+        </td>
+        <td class="apc-center apc-actions">
+          <button nz-button nzSize="small" nzShape="circle" type="button" [title]="i18n.t('button.add', 'Thêm mới')" (click)="addAfter(a.key)">
+            <span nz-icon nzType="plus"></span>
+          </button>
+          <button nz-button nzSize="small" nzShape="circle" nzDanger type="button" [title]="i18n.t('button.delete', 'Xóa')" (click)="remove(a.key)">
+            <span nz-icon nzType="minus"></span>
+          </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</nz-table>
+
+<!-- Popup tìm nhân viên (thay /ar/attendanceMintenance/viewAddAffirmList ở bản cũ) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="i18n.t('empSearch.title', 'Tìm kiếm nhân viên')" [nzFooter]="null" (nzOnCancel)="closePicker()">
+  <ng-container *nzModalContent>
+    <nz-select
+      [attr.id]="idPrefix() + '-picker-select'"
+      class="apc-full"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="pickerSearching()"
+      [ngModel]="null"
+      (ngModelChange)="onPickerSelected($event)"
+      (nzOnSearch)="onPickerSearch($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã NV hoặc họ tên...')"
+    >
+      @for (emp of pickerResults(); track emp.personId) {
+        <nz-option [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '') + (emp.deptName ? ' / ' + emp.deptName : '')"></nz-option>
+      }
+    </nz-select>
+  </ng-container>
+</nz-modal>

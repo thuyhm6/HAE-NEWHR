@@ -1,35 +1,50 @@
 .soa-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-.soa-time-range {
+.soa-form ::ng-deep .ant-descriptions-item-label {
+  width: 20%;
+  text-align: right;
+}
+
+.soa-time-row,
+.soa-car-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.soa-time-range nz-date-picker {
-  flex: 1;
+.soa-time-select {
+  width: 100px;
 }
 
-.soa-stat-text {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.45);
+.soa-type-select {
+  width: 220px;
+  max-width: 100%;
 }
 
-.soa-readonly-text {
-  display: inline-block;
-  margin-right: 8px;
-  font-size: 13px;
+.soa-car-select {
+  width: 200px;
 }
 
-.soa-col-center {
-  text-align: center;
+.soa-reason {
+  max-width: 500px;
+  resize: none;
+}
+
+.soa-required {
+  color: #ff4d4f;
+}
+
+.soa-approver {
+  margin-top: 16px;
 }
 
 .soa-submit-row {
-  text-align: right;
-  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }

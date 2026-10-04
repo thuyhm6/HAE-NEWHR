@@ -1,0 +1,153 @@
+<div class="aaa-page">
+  <nz-card class="aaa-card">
+    <app-ess-personal-head (loaded)="onPersonLoaded($event)"></app-ess-personal-head>
+  </nz-card>
+
+  <!-- Tra cứu -->
+  <nz-card class="aaa-card">
+    <form nz-form nzLayout="inline" (ngSubmit)="search()">
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('ar.viewcycleparameter.title.kaishiriqi', 'Ngày bắt đầu') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="aaa-start-date" name="aaaStartDate" nzFormat="dd/MM/yyyy" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>{{ i18n.t('ar.viewcycleparameter.title.jieshuriqi', 'Ngày kết thúc') }}</nz-form-label>
+        <nz-form-control>
+          <nz-date-picker id="aaa-end-date" name="aaaEndDate" nzFormat="dd/MM/yyyy" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"></nz-date-picker>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <button id="aaa-search-btn" nz-button nzType="primary" type="submit" [nzLoading]="loading()">
+          <span nz-icon nzType="search"></span>{{ i18n.t('button.search', 'Tra cứu') }}
+        </button>
+      </nz-form-item>
+    </form>
+  </nz-card>
+
+  <nz-card class="aaa-card">
+    <!-- Toàn bộ phản ánh -->
+    <div class="aaa-batch-row">
+      <span>{{ i18n.t('ess.infoApply.in_door_card', 'Thẻ vào') }}</span>
+      <nz-date-picker id="aaa-batch-in-date" nzFormat="dd/MM/yyyy" [ngModel]="batchInDate()" (ngModelChange)="batchInDate.set($event)"></nz-date-picker>
+      <nz-select id="aaa-batch-in-hour" class="aaa-hm-select" [ngModel]="batchInHour()" (ngModelChange)="batchInHour.set($event)">
+        @for (h of hourOptions; track h) {
+          <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+        }
+      </nz-select>
+      <span>:</span>
+      <nz-select id="aaa-batch-in-minute" class="aaa-hm-select" [ngModel]="batchInMinute()" (ngModelChange)="batchInMinute.set($event)">
+        @for (m of batchMinuteOptions; track m) {
+          <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
+        }
+      </nz-select>
+
+      <span class="aaa-gap">{{ i18n.t('ess.infoApply.out_door_card', 'Thẻ ra') }}</span>
+      <nz-date-picker id="aaa-batch-out-date" nzFormat="dd/MM/yyyy" [ngModel]="batchOutDate()" (ngModelChange)="batchOutDate.set($event)"></nz-date-picker>
+      <nz-select id="aaa-batch-out-hour" class="aaa-hm-select" [ngModel]="batchOutHour()" (ngModelChange)="batchOutHour.set($event)">
+        @for (h of hourOptions; track h) {
+          <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+        }
+      </nz-select>
+      <span>:</span>
+      <nz-select id="aaa-batch-out-minute" class="aaa-hm-select" [ngModel]="batchOutMinute()" (ngModelChange)="batchOutMinute.set($event)">
+        @for (m of batchMinuteOptions; track m) {
+          <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
+        }
+      </nz-select>
+
+      <button id="aaa-apply-all-btn" nz-button type="button" (click)="applyAll()">{{ i18n.t('ess.message.all_reaction', 'Toàn bộ phản ánh') }}</button>
+    </div>
+
+    <div class="aaa-toolbar">
+      <button id="aaa-submit-btn" nz-button nzType="primary" [nzLoading]="submitting()" (click)="submit()">
+        {{ i18n.t('ess.infoApply.title.apply', 'Xin phép') }}
+      </button>
+      <input
+        id="aaa-quick-filter"
+        nz-input
+        class="aaa-quick-filter"
+        [placeholder]="i18n.t('hrm.alert.contractInfo.Rapid_screening', 'Lọc nhanh')"
+        [ngModel]="quickFilter()"
+        (ngModelChange)="quickFilter.set($event)"
+      />
+    </div>
+
+    <nz-table
+      id="aaa-data-table"
+      #aaaTable
+      [nzData]="filteredRows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="50"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzSize="small"
+      nzBordered
+      [nzNoResult]="i18n.t('ess.infoApply.titel.messages200', 'Không có dữ liệu')"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="50px" class="aaa-center">NO.</th>
+          <th nzWidth="44px" class="aaa-center">
+            <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAll($event)"></label>
+          </th>
+          <th class="aaa-center" [nzSortFn]="sortItem">{{ i18n.t('ess.infoApply.yichangleixing', 'Loại bất thường') }}</th>
+          <th class="aaa-center" [nzSortFn]="sortDate">{{ i18n.t('ess.infoApply.attendance_date', 'Ngày chấm công') }}</th>
+          <th class="aaa-center">{{ i18n.t('ess.infoApply.card_clock_time', 'Thời gian quẹt thẻ') }}</th>
+          <th class="aaa-center aaa-col-time">{{ i18n.t('ess.infoApply.time_quantum', 'Khoảng thời gian') }}</th>
+          <th class="aaa-center aaa-col-reason">{{ i18n.t('ess.infoApply.Reason', 'Lý do') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of aaaTable.data; track row.pkNo; let idx = $index) {
+          <tr>
+            <td class="aaa-center">{{ idx + 1 }}</td>
+            <td class="aaa-center">
+              @if (!row.locked) {
+                <label nz-checkbox [ngModel]="row.checked" (ngModelChange)="updateRow(row.pkNo, { checked: $event })"></label>
+              }
+            </td>
+            <td class="aaa-center">{{ row.itemName }}</td>
+            <td class="aaa-center">{{ row.arDateStr }}</td>
+            <td class="aaa-center">
+              <div>{{ i18n.t('ess.infoApply.in_door_card', 'Thẻ vào') }} {{ row.indoorTime }}</div>
+              <div>{{ i18n.t('ess.infoApply.out_door_card', 'Thẻ ra') }} {{ row.outdoorTime }}</div>
+            </td>
+            <td>
+              <div class="aaa-time-row">
+                <span class="aaa-time-label">{{ i18n.t('ess.infoApply.in_door_card', 'Thẻ vào') }}</span>
+                <nz-date-picker [attr.id]="'aaa-in-date-' + idx" nzFormat="dd/MM/yyyy" [ngModel]="row.inDate" (ngModelChange)="updateRow(row.pkNo, { inDate: $event })"></nz-date-picker>
+                <nz-select [attr.id]="'aaa-in-hour-' + idx" class="aaa-hm-select" [ngModel]="row.inHour" (ngModelChange)="updateRow(row.pkNo, { inHour: $event })">
+                  @for (h of hourOptions; track h) {
+                    <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+                  }
+                </nz-select>
+                <span>:</span>
+                <input [attr.id]="'aaa-in-minute-' + idx" nz-input class="aaa-minute-input" maxlength="2" [ngModel]="row.inMinute" (ngModelChange)="updateRow(row.pkNo, { inMinute: $event })" />
+              </div>
+              <div class="aaa-time-row">
+                <span class="aaa-time-label">{{ i18n.t('ess.infoApply.out_door_card', 'Thẻ ra') }}</span>
+                <nz-date-picker [attr.id]="'aaa-out-date-' + idx" nzFormat="dd/MM/yyyy" [ngModel]="row.outDate" (ngModelChange)="updateRow(row.pkNo, { outDate: $event })"></nz-date-picker>
+                <nz-select [attr.id]="'aaa-out-hour-' + idx" class="aaa-hm-select" [ngModel]="row.outHour" (ngModelChange)="updateRow(row.pkNo, { outHour: $event })">
+                  @for (h of hourOptions; track h) {
+                    <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+                  }
+                </nz-select>
+                <span>:</span>
+                <input [attr.id]="'aaa-out-minute-' + idx" nz-input class="aaa-minute-input" maxlength="2" [ngModel]="row.outMinute" (ngModelChange)="updateRow(row.pkNo, { outMinute: $event })" />
+              </div>
+            </td>
+            <td>
+              <input [attr.id]="'aaa-reason-' + idx" nz-input [ngModel]="row.reason" (ngModelChange)="updateRow(row.pkNo, { reason: $event })" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+
+    <div class="aaa-approver">
+      <app-approver-chain idPrefix="aaa-apc" [(approvers)]="approvers"></app-approver-chain>
+    </div>
+  </nz-card>
+</div>

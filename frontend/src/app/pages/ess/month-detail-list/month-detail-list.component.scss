@@ -4,7 +4,11 @@
   gap: 16px;
 }
 
-.vmdl-search-actions {
+.vmdl-full-width {
+  width: 100%;
+}
+
+.vmdl-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -13,9 +17,9 @@
 .vmdl-toolbar {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
   flex-wrap: wrap;
   gap: 12px;
+  margin-bottom: 12px;
 }
 
 .vmdl-quick-filter {
@@ -30,10 +34,33 @@
   color: rgba(0, 0, 0, 0.55);
 }
 
-.vmdl-col-center {
-  text-align: center;
+.vmdl-quick-filter-input {
+  width: 200px;
 }
 
-.vmdl-col-right {
-  text-align: right;
+:host ::ng-deep #vmdl-data-table {
+  .ant-table-thead > tr > th {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .ant-table-tbody > tr > td {
+    white-space: nowrap;
+  }
+
+  .vmdl-center {
+    text-align: center;
+  }
+
+  .vmdl-day-head {
+    padding: 4px 2px;
+    line-height: 1.2;
+  }
+
+  // Ngày nghỉ / lễ (TYPEID khác 1440) tô xám giống bản gốc
+  .vmdl-off-day,
+  .ant-table-tbody > tr > td.vmdl-off-day,
+  .ant-table-thead > tr > th.vmdl-off-day {
+    background-color: #cccccc;
+  }
 }

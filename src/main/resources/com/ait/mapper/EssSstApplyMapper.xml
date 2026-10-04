@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    Form xin phép SST cho chính nhân viên đăng nhập:
+      /ess/infoApplyAttendance/viewSSTApplyAttendance (nghỉ phép)
+      /ess/infoApply/viewSSTOtApplyInfo (tăng ca thường)
+      /ess/infoApply/viewSSTOtApplyInfoTx (tăng ca vượt)
+    Port từ sqlInfoApply.xml / sqlInfoApplyLeave.xml (dự án Hanwha_HAE):
+    getOtShiftTime, getOtLength, getOtCheckSST, getLeaveCheckSST và câu doSql AR_GET_OT_CLASH ở JSP.
+-->
+<mapper namespace="com.ait.ess.infoApply.mapper.EssSstApplyMapper">
+
+    <resultMap id="SstApplyResultMap" type="com.ait.ess.infoApply.dto.EssSstApplyDto">
+        <result property="dateType"         column="DATETYPE"/>
+        <result property="shiftName"        column="SHIFTNAME"/>
+        <result property="shiftStartTime"   column="SHIFT_START_TIME"/>
+        <result property="shiftEndTime"     column="SHIFT_END_TIME"/>
+        <result property="shiftEndTime2"    column="SHIFT_END_TIME_2"/>
+        <result property="arShiftStartTime" column="AR_SHIFT_START_TIME"/>
+        <result property="arShiftEndTime"   column="AR_SHIFT_END_TIME"/>
+        <result property="indoorTime"       column="INDOOR_TIME"/>
+        <result property="outdoorTime"      column="OUTDOOR_TIME"/>
+        <result property="otTotailMonth"    column="OT_TOTAIL_MONTH"/>
+        <result property="otTotail"         column="OT_TOTAIL"/>
+        <result property="otLength"         column="OT_LENGTH"/>
+        <result property="otLimitMonth"     column="OT_LIMIT_MONTH"/>
+        <result property="otLimitYear"      column="OT_LIMIT_YEAR"/>
+    </resultMap>
+
+    <!-- getOtShiftTime: ca làm việc, giờ vào/ra, tổng tăng ca tháng/năm theo ngày chấm công -->
+    <select id="selectOtShiftTime" resultMap="SstApplyResultMap">
+        SELECT GET_AR_DATETYPE(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}) DATETYPE,
+               GET_GLOBAL_NAME(GET_AR_SHIFTNO(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}), #{lang, jdbcType=VARCHAR}) SHIFTNAME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI'), 'HH24:MI') SHIFT_END_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI') + 1/12, 'HH24:MI') SHIFT_END_TIME_2,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI'), 'HH24:MI') SHIFT_START_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_START_TIME(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI'), 'YYYY/MM/DD HH24:MI') AR_SHIFT_START_TIME,
+               TO_CHAR(TO_DATE(GET_AR_SHIFT_END_TIME(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}), 'YYYY.MM.DD HH24:MI'), 'YYYY/MM/DD HH24:MI') AR_SHIFT_END_TIME,
+               GET_AR_TIME_BY_CPNYID(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, 'IN', #{cpnyId, jdbcType=VARCHAR}) INDOOR_TIME,
+               GET_AR_TIME_BY_CPNYID(#{adminID, jdbcType=VARCHAR}, #{applyDate, jdbcType=VARCHAR}, 'OUT', #{cpnyId, jdbcType=VARCHAR}) OUTDOOR_TIME,
+               GET_AR_OT_TOTAIL(#{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, '30') OT_TOTAIL_MONTH,
+               GET_AR_OT_TOTAIL(#{applyDate, jdbcType=VARCHAR}, #{cpnyId, jdbcType=VARCHAR}, #{adminID, jdbcType=VARCHAR}, '200') OT_TOTAIL
+          FROM DUAL
+    </select>
+
+    <!-- getOtLength: thời lượng tăng ca + cờ giới hạn tháng/năm (bản gốc truyền ngày dạng YYYY.MM.DD) -->
+    <select id="selectOtLength" resultMap="SstApplyResultMap">
+        SELECT GET_OT_LENGTH_SPC(#{adminID, jdbcType=VARCHAR},
+                                 #{cpnyId, jdbcType=VARCHAR},
+                                 REPLACE(#{applyDate, jdbcType=VARCHAR}, '-', '.'),
+                                 #{otTypeCode, jdbcType=VARCHAR},
+                                 TO_CHAR(TO_DATE(#{otFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'YYYY.MM.DD HH24:MI'),
+                                 TO_CHAR(TO_DATE(#{otToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'YYYY.MM.DD HH24:MI'),
+                                 #{deductYn, jdbcType=VARCHAR}) OT_LENGTH,
+               GET_AR_OT_LIMIT_VALUE(REPLACE(#{applyDate, jdbcType=VARCHAR}, '-', '.'), #{adminID, jdbcType=VARCHAR}, 'MONTH') OT_LIMIT_MONTH,
+               GET_AR_OT_LIMIT_VALUE(REPLACE(#{applyDate, jdbcType=VARCHAR}, '-', '.'), #{adminID, jdbcType=VARCHAR}, 'YEAR') OT_LIMIT_YEAR
+          FROM DUAL
+    </select>
+
+    <!-- Kiểm tra trùng tăng ca (doSql AR_GET_OT_CLASH / AR_GET_OT_OVER_CLASH ở JSP gốc) -->
+    <select id="selectOtClash" resultType="java.lang.Integer">
+        SELECT
+        <choose>
+            <when test="over">AR_GET_OT_OVER_CLASH(</when>
+            <otherwise>AR_GET_OT_CLASH(</otherwise>
+        </choose>
+                   '11111111',
+                   #{adminID, jdbcType=VARCHAR},
+                   TO_CHAR(TO_DATE(#{otFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'YYYY.MM.DD HH24:MI'),
+                   TO_CHAR(TO_DATE(#{otToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'YYYY.MM.DD HH24:MI'),
+                   #{offsetYn, jdbcType=VARCHAR}) FLAG
+          FROM DUAL
+    </select>
+
+    <!--
+        getOtCheckSST: CHECK_OT_TIME_{cpnyId}(YYYY/MM/DD, HH24:MI, HH24:MI, PERSON_ID, OT_TYPE_CODE).
+        Tên hàm phụ thuộc công ty nên phải dùng ${cpnyId}; giá trị lấy từ session (interceptor inject), không từ client.
+    -->
+    <select id="selectCheckOtTime" resultType="java.lang.String">
+        SELECT CHECK_OT_TIME_${cpnyId}(TO_CHAR(TO_DATE(#{applyDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'), 'YYYY/MM/DD'),
+                                       #{otFromTime, jdbcType=VARCHAR},
+                                       #{otToTime, jdbcType=VARCHAR},
+                                       #{adminID, jdbcType=VARCHAR},
+                                       #{otTypeCode, jdbcType=VARCHAR})
+          FROM DUAL
+    </select>
+
+    <!--
+        getLeaveCheckSST: CHECK_LEAVE_TIME_{cpnyId}(YYYY.MM.DD, YYYY.MM.DDHH24:MI, YYYY.MM.DDHH24:MI, PERSON_ID, LEAVE_TYPE_CODE).
+        leaveFromTime/leaveToTime: YYYY-MM-DD HH24:MI. ${cpnyId} lấy từ session (xem ghi chú selectCheckOtTime).
+    -->
+    <select id="selectCheckLeaveTime" resultType="java.lang.String">
+        SELECT CHECK_LEAVE_TIME_${cpnyId}(TO_CHAR(TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'YYYY.MM.DD'),
+                                          TO_CHAR(TO_DATE(#{leaveFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'YYYY.MM.DDHH24:MI'),
+                                          TO_CHAR(TO_DATE(#{leaveToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'), 'YYYY.MM.DDHH24:MI'),
+                                          #{adminID, jdbcType=VARCHAR},
+                                          #{leaveTypeCode, jdbcType=VARCHAR})
+          FROM DUAL
+    </select>
+</mapper>

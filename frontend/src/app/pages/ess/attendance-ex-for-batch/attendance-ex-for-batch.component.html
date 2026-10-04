@@ -1,248 +1,205 @@
 <div class="exb-page">
-  <nz-card class="exb-search-card">
+  <!-- Điều kiện tìm kiếm -->
+  <nz-card class="exb-card" nzSize="small">
     <form nz-form [nzLayout]="'vertical'">
       <div nz-row [nzGutter]="12">
-        <div nz-col [nzSpan]="4">
+        <div nz-col [nzXs]="24" [nzMd]="12" [nzXl]="5">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('ex.field.empIdOrName', 'Mã NV / Họ tên') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.nameAndEmpid', 'Mã nhân viên/Họ tên') }}</nz-form-label>
             <nz-form-control>
-              <input id="exb-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="exbKeyword" [placeholder]="i18n.t('ex.placeholder.empIdOrName', 'Nhập mã hoặc họ tên')" />
+              <input id="exb-keyword" nz-input name="exbKeyword" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" (keydown.enter)="$event.preventDefault(); search()" />
             </nz-form-control>
           </nz-form-item>
         </div>
-        <div nz-col [nzSpan]="4">
+        <div nz-col [nzXs]="24" [nzMd]="12" [nzXl]="6">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('ex.field.dept', 'Phòng ban') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</nz-form-label>
             <nz-form-control>
               <nz-tree-select
                 id="exb-dept"
+                name="exbDept"
+                class="exb-full"
                 [nzNodes]="deptTreeNodes()"
                 [ngModel]="selectedDeptCodes()"
                 (ngModelChange)="selectedDeptCodes.set($event)"
-                name="exbDept"
                 nzMultiple
                 nzCheckable
                 nzShowSearch
-                [nzPlaceHolder]="i18n.t('ex.placeholder.dept', 'Chọn phòng ban')"
-                style="width: 100%"
+                [nzMaxTagCount]="2"
+                [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')"
               ></nz-tree-select>
             </nz-form-control>
           </nz-form-item>
         </div>
-        <div nz-col [nzSpan]="3">
+        <div nz-col [nzXs]="24" [nzMd]="12" [nzXl]="8">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('ex.field.fromDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('org.title.DATE', 'Ngày') }}</nz-form-label>
             <nz-form-control>
-              <nz-date-picker id="exb-from-date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" name="exbFromDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
+              <div class="exb-flex">
+                <nz-date-picker id="exb-start-date" name="exbStartDate" class="exb-grow" nzFormat="dd/MM/yyyy" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)"></nz-date-picker>
+                <span>~</span>
+                <nz-date-picker id="exb-end-date" name="exbEndDate" class="exb-grow" nzFormat="dd/MM/yyyy" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)"></nz-date-picker>
+              </div>
             </nz-form-control>
           </nz-form-item>
         </div>
-        <div nz-col [nzSpan]="3">
+        <div nz-col [nzXs]="24" [nzMd]="12" [nzXl]="5">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('ex.field.toDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('ess.infoApply.yichangleixing', 'Loại bất thường') }}</nz-form-label>
             <nz-form-control>
-              <nz-date-picker id="exb-to-date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" name="exbToDate" nzFormat="dd/MM/yyyy" style="width: 100%"></nz-date-picker>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="3">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('ex.field.postFamily', 'Nhóm nhân viên') }}</nz-form-label>
-            <nz-form-control>
-              <nz-select id="exb-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="exbPostFamily" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
-                <nz-option *ngFor="let opt of postFamilyOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.codeName || opt.nameVi || opt.codeNo"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="3">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('ex.field.shiftNo', 'Ca làm việc') }}</nz-form-label>
-            <nz-form-control>
-              <nz-select id="exb-shift-no" [ngModel]="shiftNo()" (ngModelChange)="shiftNo.set($event)" name="exbShiftNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.all', '-- Tất cả --')">
-                <nz-option *ngFor="let opt of shiftOptions()" [nzValue]="opt.shiftNo" [nzLabel]="opt.nameVi || opt.shiftNo || ''"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="4">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('ex.field.leaveType', 'Loại nghỉ phép') }}</nz-form-label>
-            <nz-form-control>
-              <nz-select id="exb-item-no" [ngModel]="itemNo()" (ngModelChange)="itemNo.set($event)" name="exbItemNo" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('ex.opt.select', 'Lựa chọn')">
-                <nz-option nzValue="141443" [nzLabel]="i18n.t('ex.opt.unauthorized', 'Nghỉ không phép')"></nz-option>
-                <nz-option nzValue="141442" [nzLabel]="i18n.t('ex.opt.earlyLeave', 'Về sớm')"></nz-option>
-                <nz-option nzValue="141441" [nzLabel]="i18n.t('ex.opt.lateArrival', 'Đến muộn')"></nz-option>
-                <nz-option nzValue="14015448" [nzLabel]="i18n.t('ex.opt.forgotSwipe', 'Quên quẹt thẻ')"></nz-option>
+              <nz-select id="exb-item-no" name="exbItemNo" [ngModel]="itemNo()" (ngModelChange)="itemNo.set($event)">
+                <nz-option nzValue="" [nzLabel]="i18n.t('org.title.PLEASE_SELECT', 'Lựa chọn')"></nz-option>
+                <nz-option nzValue="141443" [nzLabel]="i18n.t('ar.monthwork.title.kuanggong', 'Nghỉ không phép')"></nz-option>
+                <nz-option nzValue="141442" [nzLabel]="i18n.t('ar.monthwork.title.EarlyLeave', 'Về sớm')"></nz-option>
+                <nz-option nzValue="141441" [nzLabel]="i18n.t('ar.monthwork.title.Lateness', 'Đi muộn')"></nz-option>
+                <nz-option nzValue="14015448" [nzLabel]="i18n.t('ess.title.LOUKA', 'Quên quẹt thẻ')"></nz-option>
               </nz-select>
             </nz-form-control>
           </nz-form-item>
         </div>
       </div>
-      <div class="exb-toolbar-actions">
-        <button id="exb-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
-          <span nz-icon nzType="search"></span>
-          {{ i18n.t('ex.btn.search', 'Tra cứu') }}
-        </button>
-        <button id="exb-apply-btn" nz-button nzType="default" [nzLoading]="submitting()" (click)="submit()">
-          <span nz-icon nzType="send"></span>
-          {{ i18n.t('ex.btn.apply', 'Xin phép') }}
-        </button>
-        <button id="exb-export-btn" nz-button (click)="exportExcel()">
-          <span nz-icon nzType="export"></span>
-          {{ i18n.t('ex.btn.export', 'Xuất excel') }}
-        </button>
+    </form>
+  </nz-card>
+
+  <!-- Thanh nhập nhanh "Thực hiện tất cả" (Thẻ vào / Thẻ ra) -->
+  <nz-card class="exb-card" nzSize="small">
+    <div class="exb-fill">
+      <div class="exb-fill-item">
+        <label for="exb-fill-in-date">{{ i18n.t('ess.infoApply.in_door_card', 'Thẻ vào') }}</label>
+        <nz-date-picker id="exb-fill-in-date" nzFormat="dd/MM/yyyy" [ngModel]="fillInDate()" (ngModelChange)="fillInDate.set($event)"></nz-date-picker>
+        <nz-select id="exb-fill-in-hour" class="exb-hm" [ngModel]="fillInHour()" (ngModelChange)="fillInHour.set($event)">
+          @for (h of hourOptions; track h) {
+            <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+          }
+        </nz-select>
+        <span>:</span>
+        <nz-select id="exb-fill-in-minute" class="exb-hm" [ngModel]="fillInMinute()" (ngModelChange)="fillInMinute.set($event)">
+          @for (m of minuteOptions; track m) {
+            <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
+          }
+        </nz-select>
       </div>
-    </form>
+      <div class="exb-fill-item">
+        <label for="exb-fill-out-date">{{ i18n.t('ess.infoApply.out_door_card', 'Thẻ ra') }}</label>
+        <nz-date-picker id="exb-fill-out-date" nzFormat="dd/MM/yyyy" [ngModel]="fillOutDate()" (ngModelChange)="fillOutDate.set($event)"></nz-date-picker>
+        <nz-select id="exb-fill-out-hour" class="exb-hm" [ngModel]="fillOutHour()" (ngModelChange)="fillOutHour.set($event)">
+          @for (h of hourOptions; track h) {
+            <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+          }
+        </nz-select>
+        <span>:</span>
+        <nz-select id="exb-fill-out-minute" class="exb-hm" [ngModel]="fillOutMinute()" (ngModelChange)="fillOutMinute.set($event)">
+          @for (m of minuteOptions; track m) {
+            <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <button id="exb-fill-all-btn" nz-button nzType="primary" (click)="fillAll()">
+        <span nz-icon nzType="check"></span>{{ i18n.t('ess.message.all_reaction', 'Thực hiện tất cả') }}
+      </button>
+    </div>
   </nz-card>
 
-  <nz-card class="exb-batch-card">
-    <form nz-form [nzLayout]="'inline'">
-      <nz-form-item>
-        <nz-form-label>{{ i18n.t('ex.field.inTime', 'Thời gian vào') }}</nz-form-label>
-        <nz-form-control>
-          <nz-date-picker id="exb-bulk-in" [ngModel]="bulkInDateTime()" (ngModelChange)="bulkInDateTime.set($event)" name="exbBulkIn" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label>{{ i18n.t('ex.field.outTime', 'Thời gian ra') }}</nz-form-label>
-        <nz-form-control>
-          <nz-date-picker id="exb-bulk-out" [ngModel]="bulkOutDateTime()" (ngModelChange)="bulkOutDateTime.set($event)" name="exbBulkOut" [nzShowTime]="{ nzFormat: 'HH:mm' }" nzFormat="dd/MM/yyyy HH:mm"></nz-date-picker>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-control>
-          <button id="exb-apply-all-btn" nz-button (click)="applyAll()">{{ i18n.t('ex.btn.applyAll', 'Thực hiện tất cả') }}</button>
-        </nz-form-control>
-      </nz-form-item>
-    </form>
-  </nz-card>
+  <!-- Toolbar + bảng dữ liệu -->
+  <nz-card class="exb-card" nzSize="small">
+    <div class="exb-toolbar">
+      <button id="exb-search-btn" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+        <span nz-icon nzType="search"></span>{{ i18n.t('org.title.SELECT', 'Tra cứu') }}
+      </button>
+      <button id="exb-apply-btn" nz-button nzType="primary" [nzLoading]="submitting()" (click)="submit()">
+        <span nz-icon nzType="send"></span>{{ i18n.t('display.paecc.shenqing', 'Đăng ký') }}
+      </button>
+      <button id="exb-export-btn" nz-button (click)="exportExcel()">
+        <span nz-icon nzType="file-excel"></span>{{ i18n.t('hrm.empinfo.EXPORT', 'Xuất Excel') }}
+      </button>
+    </div>
 
-  <nz-card class="exb-table-card">
     <nz-table
-      id="exb-data-table"
+      id="exb-table"
       #exbTable
+      nzSize="small"
+      nzBordered
       [nzData]="rows()"
       [nzLoading]="loading()"
       [nzPageSize]="defaultPageSize"
       [nzShowSizeChanger]="true"
       [nzPageSizeOptions]="pageSizeOptions"
-      [nzScroll]="{ x: 'max-content', y: '100%' }"
-      nzSize="small"
+      [nzShowTotal]="exbTotalTpl"
+      [nzScroll]="{ x: '2300px', y: 'calc(100vh - 470px)' }"
+      [nzNoResult]="i18n.t('ess.message.NOT_FOUND_DATA_FROM_TABLE', 'Không có dữ liệu!')"
     >
       <thead>
         <tr>
-          <th nzWidth="40px" class="exb-col-center">
-            <label nz-checkbox [ngModel]="allChecked()" (ngModelChange)="toggleAll($event)"></label>
+          <th nzLeft nzWidth="50px" class="exb-center">NO</th>
+          <th nzLeft nzWidth="40px" class="exb-center" [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()" (nzCheckedChange)="toggleAll($event)"></th>
+          <th nzLeft nzWidth="100px" class="exb-center">{{ i18n.t('ess.infoApply.EMPID', 'Mã nhân viên') }}</th>
+          <th nzLeft nzWidth="150px" class="exb-center">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th nzWidth="200px" class="exb-center">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th nzWidth="100px" class="exb-center">{{ i18n.t('ess.infoApply.attendance_date', 'Ngày') }}</th>
+          <th nzWidth="170px" class="exb-center">{{ i18n.t('ar.viewArBaseEmpInfoList.BANZULEIXING.b', 'Loại ca') }}</th>
+          <th nzWidth="120px" class="exb-center">{{ i18n.t('ess.infoApply.yichangleixing', 'Loại bất thường') }}</th>
+          <th nzWidth="170px" class="exb-center">{{ i18n.t('ess.infoApply.card_clock_time', 'Thời gian quẹt thẻ') }}</th>
+          <th nzWidth="320px" class="exb-center exb-title-edit">{{ i18n.t('ar.viewardetail.title.dateduan', 'Khoảng thời gian') }}</th>
+          <th nzWidth="220px" class="exb-center exb-title-edit">
+            {{ i18n.t('ess.infoApply.Reason', 'Lý do') }}
+            ({{ i18n.t('ar.viewsummaryyiqueren', 'Đã xác nhận') }} {{ i18n.t('hr.viewRelation.title.YES', 'Có') }} {{ i18n.t('ess.title.SHANGBAN', 'đi làm') }})
           </th>
-          <th nzWidth="40px" class="exb-col-center">{{ i18n.t('ex.col.no', 'No.') }}</th>
-          <th class="exb-col-center">{{ i18n.t('ex.col.empId', 'Mã nhân viên') }}</th>
-          <th>{{ i18n.t('ex.col.fullName', 'Họ tên') }}</th>
-          <th>{{ i18n.t('ex.col.dept', 'Phòng ban') }}</th>
-          <th>{{ i18n.t('ex.col.position', 'Chức vụ') }}</th>
-          <th class="exb-col-center">{{ i18n.t('ex.col.workDate', 'Ngày công') }}</th>
-          <th>{{ i18n.t('ex.col.absenceType', 'Phân loại') }}</th>
-          <th class="exb-col-center">{{ i18n.t('ex.col.swipeTime', 'Thời gian quẹt thẻ') }}</th>
-          <th class="exb-col-center" style="min-width: 340px">{{ i18n.t('ex.col.actualTime', 'Thời gian thực tế') }}</th>
-          <th style="min-width: 160px">{{ i18n.t('ex.col.reason', 'Lý do') }}</th>
-          <th style="min-width: 220px">{{ i18n.t('ex.col.approver', 'Người duyệt') }}</th>
+          <th nzWidth="200px" class="exb-center">{{ i18n.t('ar.viewarcardrecord.title.beizhu', 'Ghi chú') }}</th>
+          <th nzWidth="560px" class="exb-center">{{ i18n.t('hrm.contractInfo.APPROVAL_PERSON', 'Người duyệt') }}</th>
         </tr>
       </thead>
       <tbody>
         @for (row of exbTable.data; track row.rowKey; let idx = $index) {
           <tr>
-            <td class="exb-col-center">
-              <label nz-checkbox [ngModel]="row.checked" (ngModelChange)="updateRow(row.rowKey, { checked: $event })"></label>
-            </td>
-            <td class="exb-col-center">{{ idx + 1 }}</td>
-            <td class="exb-col-center">{{ row.raw.empId }}</td>
-            <td>{{ row.raw.localName }}</td>
-            <td>{{ row.raw.deptName }}</td>
-            <td>{{ row.raw.postGradeName }}</td>
-            <td class="exb-col-center">{{ row.raw.arDateStr }}</td>
-            <td>{{ row.raw.itemNoName }}</td>
-            <td class="exb-col-center exb-small">
-              <div>{{ i18n.t('ex.js.in', 'Vào') }}: {{ row.raw.inDoorTime }}</div>
-              <div>{{ i18n.t('ex.js.out', 'Ra') }}: {{ row.raw.outDoorTime }}</div>
-            </td>
-            <td>
-              <div class="exb-time-row">
-                <span class="exb-time-label">{{ i18n.t('ex.js.in', 'Vào') }}</span>
-                <nz-date-picker
-                  [attr.id]="'exb-in-' + idx"
-                  [ngModel]="row.inDateTime"
-                  (ngModelChange)="updateRow(row.rowKey, { inDateTime: $event })"
-                  [nzShowTime]="{ nzFormat: 'HH:mm' }"
-                  nzFormat="dd/MM/yyyy HH:mm"
-                  style="flex: 1"
-                ></nz-date-picker>
-              </div>
-              <div class="exb-time-row">
-                <span class="exb-time-label">{{ i18n.t('ex.js.out', 'Ra') }}</span>
-                <nz-date-picker
-                  [attr.id]="'exb-out-' + idx"
-                  [ngModel]="row.outDateTime"
-                  (ngModelChange)="updateRow(row.rowKey, { outDateTime: $event })"
-                  [nzShowTime]="{ nzFormat: 'HH:mm' }"
-                  nzFormat="dd/MM/yyyy HH:mm"
-                  style="flex: 1"
-                ></nz-date-picker>
-              </div>
-            </td>
-            <td>
-              <input
-                [attr.id]="'exb-remark-' + idx"
-                nz-input
-                [ngModel]="row.remark"
-                (ngModelChange)="updateRow(row.rowKey, { remark: $event })"
-                [placeholder]="i18n.t('ex.placeholder.remark', 'Nhập lý do')"
-              />
-            </td>
-            <td>
-              @for (a of row.approvers; track $index; let aIdx = $index) {
-                <div class="exb-approver-item">
-                  <small class="exb-approver-text">{{ a.empId }} - {{ a.localName }}</small>
-                  <button nz-button nzDanger nzSize="small" (click)="removeApprover(row.rowKey, aIdx)">
-                    <span nz-icon nzType="close"></span>
-                  </button>
-                </div>
+            <td nzLeft class="exb-center">{{ (exbTable.nzPageIndex - 1) * exbTable.nzPageSize + idx + 1 }}</td>
+            @if (row.selectable) {
+              <td nzLeft class="exb-center" [nzChecked]="row.checked" (nzCheckedChange)="updateRow(row.rowKey, { checked: $event })"></td>
+            } @else {
+              <td nzLeft></td>
+            }
+            <td nzLeft class="exb-center">{{ row.raw.empId }}</td>
+            <td nzLeft class="exb-center">
+              @if (row.raw.leaveApplyNo) {
+                <a class="exb-link" (click)="openLeaveDetail(row)">{{ row.raw.localName }}</a>
+              } @else {
+                {{ row.raw.localName }}
               }
-              <button [attr.id]="'exb-add-approver-' + idx" nz-button nzSize="small" nzType="dashed" (click)="openApproverModal(row.rowKey)">
-                <span nz-icon nzType="plus"></span>
-              </button>
             </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="12" class="exb-col-center">{{ i18n.t('essCwa.noData', 'Không có dữ liệu') }}</td>
+            <td class="exb-center">{{ row.raw.deptName }}</td>
+            <td class="exb-center">{{ row.arDateDisplay }}</td>
+            <td class="exb-center">{{ shiftText(row) }}</td>
+            <td class="exb-center">{{ row.raw.itemNoName }}</td>
+            <td class="exb-center">
+              <div>{{ i18n.t('ess.infoApply.in_door_card', 'Thẻ vào') }} {{ row.raw.inDoorTime }}</div>
+              <div>{{ i18n.t('ess.infoApply.out_door_card', 'Thẻ ra') }} {{ row.raw.outDoorTime }}</div>
+            </td>
+            <td>
+              <div class="exb-time-row">
+                <span class="exb-time-label">{{ i18n.t('ess.infoApply.in_door_card', 'Thẻ vào') }}</span>
+                <nz-date-picker nzSize="small" class="exb-time-date" nzFormat="dd/MM/yyyy" [ngModel]="row.inDate" (ngModelChange)="updateRow(row.rowKey, { inDate: $event })"></nz-date-picker>
+                <input nz-input nzSize="small" class="exb-hm-input" maxlength="2" [attr.id]="'exb-in-hour-' + row.rowKey" [ngModel]="row.inHour" (ngModelChange)="updateRow(row.rowKey, { inHour: $event })" />
+                <input nz-input nzSize="small" class="exb-hm-input" maxlength="2" [attr.id]="'exb-in-minute-' + row.rowKey" [ngModel]="row.inMinute" (ngModelChange)="updateRow(row.rowKey, { inMinute: $event })" />
+              </div>
+              <div class="exb-time-row">
+                <span class="exb-time-label">{{ i18n.t('ess.infoApply.out_door_card', 'Thẻ ra') }}</span>
+                <nz-date-picker nzSize="small" class="exb-time-date" nzFormat="dd/MM/yyyy" [ngModel]="row.outDate" (ngModelChange)="updateRow(row.rowKey, { outDate: $event })"></nz-date-picker>
+                <input nz-input nzSize="small" class="exb-hm-input" maxlength="2" [attr.id]="'exb-out-hour-' + row.rowKey" [ngModel]="row.outHour" (ngModelChange)="updateRow(row.rowKey, { outHour: $event })" />
+                <input nz-input nzSize="small" class="exb-hm-input" maxlength="2" [attr.id]="'exb-out-minute-' + row.rowKey" [ngModel]="row.outMinute" (ngModelChange)="updateRow(row.rowKey, { outMinute: $event })" />
+              </div>
+            </td>
+            <td>
+              <input nz-input nzSize="small" [attr.id]="'exb-reason-' + row.rowKey" [ngModel]="row.remark" (ngModelChange)="onRemarkChange(row, $event)" />
+            </td>
+            <td class="exb-center">{{ row.raw.leaveContent }}</td>
+            <td>
+              <app-row-approvers [idPrefix]="'exb-apv-' + row.rowKey" [approvers]="row.approvers" (approversChange)="updateRow(row.rowKey, { approvers: $event })"></app-row-approvers>
+            </td>
           </tr>
         }
       </tbody>
     </nz-table>
+    <ng-template #exbTotalTpl let-total let-range="range">{{ range[0] }}-{{ range[1] }} / {{ total }}</ng-template>
   </nz-card>
 </div>
 
-<nz-modal
-  [nzVisible]="approverModalVisible()"
-  [nzTitle]="i18n.t('ex.col.approver', 'Người duyệt')"
-  (nzOnCancel)="closeApproverModal()"
-  (nzVisibleChange)="approverModalVisible.set($event)"
-  [nzFooter]="null"
->
-  <ng-container *nzModalContent>
-    <nz-select
-      id="exb-approver-search"
-      [ngModel]="null"
-      (ngModelChange)="onApproverSelected($event)"
-      name="exbApproverSearch"
-      [nzPlaceHolder]="i18n.t('sa.placeholder.approverName', 'Nhập tên người phê duyệt...')"
-      nzShowSearch
-      [nzServerSearch]="true"
-      [nzLoading]="approverSearching()"
-      (nzOnSearch)="onApproverSearch($event)"
-      style="width: 100%"
-    >
-      <nz-option *ngFor="let emp of approverSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
-    </nz-select>
-  </ng-container>
-</nz-modal>
+<app-apply-detail-modal #exbDetailModal variant="leave"></app-apply-detail-modal>

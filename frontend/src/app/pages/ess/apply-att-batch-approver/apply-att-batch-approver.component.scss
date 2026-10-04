@@ -1,0 +1,118 @@
+.aaba-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aaba-card nz-form-item {
+  margin-bottom: 8px;
+}
+
+.aaba-flex {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aaba-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.aaba-full {
+  width: 100%;
+}
+
+.aaba-range span {
+  flex: none;
+}
+
+.aaba-fill-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  label {
+    flex: 0 0 130px;
+    text-align: right;
+  }
+}
+
+.aaba-fill-actions,
+.aaba-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aaba-fill-actions {
+  justify-content: flex-end;
+}
+
+.aaba-toolbar {
+  margin-bottom: 12px;
+
+  [nz-icon] {
+    margin-right: 4px;
+  }
+}
+
+.aaba-center {
+  text-align: center;
+}
+
+/* Cột có thể sửa trực tiếp - tương ứng class "titleColor" ở JSP cũ */
+.aaba-title-edit {
+  color: #1677ff !important;
+}
+
+.aaba-link {
+  color: #0000ff;
+  cursor: pointer;
+}
+
+.aaba-row-new > td {
+  background: #fffbe6;
+}
+
+.aaba-approvers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aaba-approver-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aaba-approver-level {
+  flex: 0 0 20px;
+  text-align: center;
+}
+
+.aaba-approver-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.aaba-approver-emp {
+  display: flex;
+  flex: 0 0 140px;
+}
+
+.aaba-approver-type {
+  flex: 0 0 110px;
+}
+
+.aaba-required {
+  border-color: #ff4d4f;
+}
+
+@media (max-width: 767px) {
+  .aaba-fill-item label {
+    flex-basis: 110px;
+  }
+}

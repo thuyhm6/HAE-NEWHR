@@ -111,7 +111,7 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
         // Bỏ qua record có AFFIRM_FLAG IN ('14014309','14014310') hoặc CONFIRM_FLAG = 0.
         String currentApplyNo = applyNoObj != null ? applyNoObj.toString().trim() : "";
         checkTimeConflict(params, currentApplyNo);
-        checkLeaveClash(params);
+        checkLeaveClash(params, currentApplyNo);
 
         // 1. Insert/Update thủ tục Leave Apply
         if (isNew) {
@@ -352,13 +352,14 @@ public class EssLeaveApplyServiceImpl implements EssLeaveApplyService {
         saveLeaveApply(params);
     }
 
-    private void checkLeaveClash(Map<String, Object> params) {
+    private void checkLeaveClash(Map<String, Object> params, String currentApplyNo) {
         String personId = toTrimmedString(params.get("personId"));
         String fromTime = toTrimmedString(params.get("leaveFromTime"));
         String toTime   = toTrimmedString(params.get("leaveToTime"));
         log.info("checkLeaveClash personId={} from={} to={}", personId, fromTime, toTime);
         try {
-            Integer result = essLeaveApplymapper.selectLeaveClash(personId, fromTime, toTime);
+            // Truyền APPLY_NO để AR_GET_LEAVE_CLASH bỏ qua chính đơn đang cập nhật (đơn mới = rỗng)
+            Integer result = essLeaveApplymapper.selectLeaveClash(currentApplyNo, personId, fromTime, toTime);
             if (result == null) return;
             if (result > 0) {
                 throw new IllegalStateException("Trùng với chấm công trước đó, xin kiểm tra thời gian này đã xin phép hay chưa!");

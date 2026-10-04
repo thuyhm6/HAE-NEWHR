@@ -2565,9 +2565,10 @@ Tương tự Tạo mới cho tôi giao diện /edu/traineducation/courseApply, /
 
 Tương tự Tạo mới cho tôi giao diện /edu/trainfile/personalTrainCalendar và /edu/traineducation/viewRegisterForTraining với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như các giao diện tương ứng ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
 
-Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Chỉnh sửa lại cho tôi giao diện /pa/workManagement/viewPaArSummaryForManageList với dạng Angular + NG-ZORRO  (Frontend). chức năng và giao diện hiển thị giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
 
-Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Chỉnh sửa lại cho tôi giao diện /pa/salary/viewPaResult với dạng Angular + NG-ZORRO  (Frontend). chức năng và giao diện hiển thị giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Chỉnh sửa lại cho tôi giao diện /ess/tempEmp/viewMonthDetailList  với dạng Angular + NG-ZORRO  (Frontend). chức năng và giao diện hiển thị giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Chỉnh sửa lại cho tôi giao diện /ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList, /ess/infoApply/viewApplyOTBatchInfoHAE, /ess/infoApply/viewApplyOtLBatchByAnyApproverList và /ess/infoApplyAttendance/viewAttendanceExForBatchInfoList với dạng Angular + NG-ZORRO  (Frontend). chức năng và giao diện hiển thị giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
 
 
 

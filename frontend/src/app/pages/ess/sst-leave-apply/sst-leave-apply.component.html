@@ -1,191 +1,93 @@
 <div class="sa-page">
-  <nz-card class="sa-empinfo-card">
-    @if (myInfo(); as info) {
-      <nz-descriptions [nzColumn]="2" nzBordered nzSize="small">
-        <nz-descriptions-item [nzTitle]="i18n.t('common.empName', 'Họ tên')">{{ info.localName }}</nz-descriptions-item>
-        <nz-descriptions-item [nzTitle]="i18n.t('common.empId', 'Mã nhân viên')">{{ info.empId }}</nz-descriptions-item>
-        <nz-descriptions-item [nzTitle]="i18n.t('common.deptName', 'Phòng ban')">{{ info.deptName }}</nz-descriptions-item>
-        <nz-descriptions-item [nzTitle]="i18n.t('vdp.card.dept', 'Trưởng phòng')">{{ info.headDepartment }}</nz-descriptions-item>
-        <nz-descriptions-item [nzTitle]="i18n.t('common.empGroup', 'Nhóm nhân viên')">{{ info.postFamilyName }}</nz-descriptions-item>
-        <nz-descriptions-item [nzTitle]="i18n.t('common.position', 'Chức vụ')">{{ info.dutyName }}</nz-descriptions-item>
-        <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.jobTitle', 'Chức danh')">{{ info.positionNoName }}</nz-descriptions-item>
-        <nz-descriptions-item [nzTitle]="i18n.t('vdp.detail.dateStarted', 'Ngày vào làm')">{{ info.dateStarted }}</nz-descriptions-item>
-      </nz-descriptions>
-    }
+  <nz-card class="sa-card">
+    <app-ess-personal-head (loaded)="onPersonLoaded($event)"></app-ess-personal-head>
   </nz-card>
 
-  <nz-card class="sa-form-card">
-    <form nz-form [nzLayout]="'vertical'">
-      <div nz-row [nzGutter]="12">
-        <div nz-col [nzSpan]="8">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('sa.label.leaveType', 'Loại nghỉ phép') }}</nz-form-label>
-            <nz-form-control>
-              <nz-select
-                id="sa-leave-type"
-                [ngModel]="leaveTypeCode()"
-                (ngModelChange)="leaveTypeCode.set($event); onLeaveTypeChange()"
-                name="saLeaveType"
-                [nzAllowClear]="true"
-                [nzPlaceHolder]="i18n.t('sa.placeholder.leaveType', '-- Chọn loại nghỉ --')"
-              >
-                <nz-option *ngFor="let opt of leaveTypeOptions" [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
-              </nz-select>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="16" class="sa-vac-info">
-          <span class="sa-vac-text">{{ vacInfoText() }}</span>
-        </div>
-
-        <div nz-col [nzSpan]="24">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('sa.label.startTime', 'Thời gian bắt đầu') }}</nz-form-label>
-            <nz-form-control>
-              <nz-date-picker
-                id="sa-from-time"
-                [ngModel]="fromTime()"
-                (ngModelChange)="fromTime.set($event); onTimeChange()"
-                name="saFromTime"
-                [nzShowTime]="{ nzFormat: 'HH:mm' }"
-                nzFormat="dd/MM/yyyy HH:mm"
-                style="width: 100%"
-              ></nz-date-picker>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="24">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('sa.label.endTime', 'Thời gian kết thúc') }}</nz-form-label>
-            <nz-form-control>
-              <nz-date-picker
-                id="sa-to-time"
-                [ngModel]="toTime()"
-                (ngModelChange)="toTime.set($event); onTimeChange()"
-                name="saToTime"
-                [nzShowTime]="{ nzFormat: 'HH:mm' }"
-                nzFormat="dd/MM/yyyy HH:mm"
-                style="width: 100%"
-              ></nz-date-picker>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-        <div nz-col [nzSpan]="24">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('sa.label.duration', 'Thời lượng') }}</nz-form-label>
-            <nz-form-control>
-              <span id="sa-duration" class="sa-duration-text">{{ durationText() }}</span>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-
-        <div nz-col [nzSpan]="24">
-          <nz-form-item>
-            <nz-form-label>{{ i18n.t('sa.label.reason', 'Lý do') }}</nz-form-label>
-            <nz-form-control>
-              <textarea id="sa-reason" nz-input rows="4" [ngModel]="reason()" (ngModelChange)="reason.set($event)" name="saReason"></textarea>
-            </nz-form-control>
-          </nz-form-item>
-        </div>
-      </div>
-    </form>
-  </nz-card>
-
-  <nz-card class="sa-approver-card">
-    <nz-table id="sa-approver-table" [nzData]="approverList()" [nzShowPagination]="false" nzSize="small">
-      <thead>
-        <tr>
-          <th nzWidth="50px" class="sa-col-center">{{ i18n.t('sa.col.stt', 'STT') }}</th>
-          <th>{{ i18n.t('sa.col.approver', 'Người duyệt') }}</th>
-          <th nzWidth="130px" class="sa-col-center">{{ i18n.t('sa.col.empId', 'Mã nhân viên') }}</th>
-          <th>{{ i18n.t('sa.col.dept', 'Phòng ban') }}</th>
-          <th>{{ i18n.t('sa.col.position', 'Chức danh') }}</th>
-          <th nzWidth="150px" class="sa-col-center">{{ i18n.t('sys.affirm.title.affirmTypeNames', 'Loại phê duyệt') }}</th>
-          <th nzWidth="60px" class="sa-col-center">
-            <button id="sa-add-approver-btn" type="button" nz-button nzType="primary" nzSize="small" nzShape="circle" (click)="showAddApproverRow()" [title]="i18n.t('sa.btn.addApprover', 'Thêm người phê duyệt')">
-              <span nz-icon nzType="plus"></span>
-            </button>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (addingApprover()) {
-          <tr>
-            <td class="sa-col-center">-</td>
-            <td colspan="3">
-              <nz-select
-                id="sa-approver-search"
-                [ngModel]="selectedApproverPersonId()"
-                (ngModelChange)="onApproverSelected($event)"
-                name="saApproverSearch"
-                [nzPlaceHolder]="i18n.t('sa.placeholder.approverName', 'Nhập tên người phê duyệt...')"
-                nzShowSearch
-                [nzServerSearch]="true"
-                [nzLoading]="approverSearching()"
-                (nzOnSearch)="onApproverSearch($event)"
-                style="width: 100%"
-              >
-                <nz-option *ngFor="let emp of approverSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
-              </nz-select>
-            </td>
-            <td></td>
-            <td class="sa-col-center">
-              <nz-select
-                id="sa-new-approver-type"
-                [ngModel]="newApproverApprovType()"
-                (ngModelChange)="newApproverApprovType.set($event)"
-                name="saNewApproverType"
-                style="width: 100%"
-              >
-                <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('sa.approvType.approval', 'Phê duyệt')"></nz-option>
-                <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('sa.approvType.notice', 'Thông báo')"></nz-option>
-              </nz-select>
-            </td>
-            <td class="sa-col-center">
-              <button id="sa-cancel-approver-btn" type="button" nz-button nzSize="small" (click)="cancelAddApprover()">
-                <span nz-icon nzType="close"></span>
-              </button>
-            </td>
-          </tr>
-        }
-        @for (item of approverList(); track $index; let idx = $index) {
-          <tr>
-            <td class="sa-col-center">{{ idx + 1 }}</td>
-            <td>{{ item.localName }}</td>
-            <td class="sa-col-center">{{ item.empId }}</td>
-            <td></td>
-            <td></td>
-            <td class="sa-col-center">
-              <nz-select
-                id="sa-approver-type-{{ idx }}"
-                [ngModel]="item.approvType"
-                (ngModelChange)="changeApproverType(idx, $event)"
-                name="saApproverType{{ idx }}"
-                style="width: 100%"
-              >
-                <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('sa.approvType.approval', 'Phê duyệt')"></nz-option>
-                <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('sa.approvType.notice', 'Thông báo')"></nz-option>
-              </nz-select>
-            </td>
-            <td class="sa-col-center">
-              <button id="sa-remove-approver-{{ idx }}" type="button" nz-button nzDanger nzSize="small" (click)="removeApprover(idx)">
-                <span nz-icon nzType="delete"></span>
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          @if (!addingApprover()) {
-            <tr>
-              <td colspan="7" class="sa-col-center">{{ i18n.t('sa.msg.noApprover', 'Chưa có người phê duyệt') }}</td>
-            </tr>
+  <nz-card class="sa-card">
+    <nz-descriptions id="sa-form" class="sa-form" nzBordered nzSize="small" [nzColumn]="1">
+      <!-- Loại nghỉ + thông tin phép năm -->
+      <nz-descriptions-item [nzTitle]="i18n.t('ess.infoApply.attendance_type', 'Loại chấm công')">
+        <div class="sa-type-row">
+          <nz-select
+            id="sa-leave-type"
+            class="sa-type-select"
+            [ngModel]="leaveTypeCode()"
+            (ngModelChange)="onLeaveTypeChange($event)"
+            [nzAllowClear]="true"
+            nzShowSearch
+          >
+            @for (opt of leaveTypeOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+            }
+          </nz-select>
+          @if (showVacInfo()) {
+            <span id="sa-vac-info" class="sa-vac-info">
+              {{ i18n.t('ess.infoApply.nianjiazongtianshu', 'Tổng số ngày phép năm') }}:{{ vacValue('TOT_VAC_CNT') }}/&nbsp;
+              {{ i18n.t('ar.viewVacEmpList.SHENGCHENGNIANJIA.b', 'Số phép năm phát sinh') }}:{{ vacValue('YEAR_VAC_CNT') }}/&nbsp;
+              {{ i18n.t('ar.viewVacEmpList.YINIANNIANJIA.b', 'Số phép năm chuyển') }}:{{ vacValue('LAST_YEAR_VAC') }}/&nbsp;
+              {{ i18n.t('ar.viewVacEmpList.TESHUNIANJIA.b', 'Số phép năm đặc biệt') }}:{{ vacValue('ADD_VAC') }}/&nbsp;
+              {{ i18n.t('ar.viewArAdjustRest.title.DAYSUSEED', 'Số ngày đã sử dụng') }}:{{ vacValue('USE_VAC') }}/&nbsp;
+              {{ i18n.t('ar.viewApplyAttenanceManagentInfoList.TIAOXIUSHISHUBUZU.HAE.b1', 'Phép năm đã nghỉ') }}:{{ vacValue('VAC_YN') }}/&nbsp;
+              {{ i18n.t('ar.viewArAdjustRest.title.shengyutianshu', 'Số ngày còn lại') }}:{{ vacRemainText }}
+            </span>
           }
-        }
-      </tbody>
-    </nz-table>
+        </div>
+      </nz-descriptions-item>
+
+      <!-- Thời gian bắt đầu -->
+      <nz-descriptions-item [nzTitle]="i18n.t('ess.infoApply.title.startTime', 'Thời gian bắt đầu')">
+        <div class="sa-time-row">
+          <nz-date-picker id="sa-from-date" nzFormat="dd/MM/yyyy" [nzAllowClear]="false" [ngModel]="fromDate()" (ngModelChange)="onFromDateChange($event)"></nz-date-picker>
+          <nz-select id="sa-from-hour" class="sa-hm-select" [ngModel]="fromHour()" (ngModelChange)="fromHour.set($event); onTimeChange()">
+            @for (h of hourOptions; track h) {
+              <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+            }
+          </nz-select>
+          <span>:</span>
+          <nz-select id="sa-from-minute" class="sa-hm-select" [ngModel]="fromMinute()" (ngModelChange)="fromMinute.set($event); onTimeChange()">
+            @for (m of minuteOptions; track m) {
+              <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </nz-descriptions-item>
+
+      <!-- Thời gian kết thúc -->
+      <nz-descriptions-item [nzTitle]="i18n.t('ess.infoApply.end_time', 'Thời gian kết thúc')">
+        <div class="sa-time-row">
+          <nz-date-picker id="sa-to-date" nzFormat="dd/MM/yyyy" [nzAllowClear]="false" [ngModel]="toDate()" (ngModelChange)="onToDateChange($event)"></nz-date-picker>
+          <nz-select id="sa-to-hour" class="sa-hm-select" [ngModel]="toHour()" (ngModelChange)="toHour.set($event); onTimeChange()">
+            @for (h of hourOptions; track h) {
+              <nz-option [nzValue]="h" [nzLabel]="h"></nz-option>
+            }
+          </nz-select>
+          <span>:</span>
+          <nz-select id="sa-to-minute" class="sa-hm-select" [ngModel]="toMinute()" (ngModelChange)="toMinute.set($event); onTimeChange()">
+            @for (m of minuteOptions; track m) {
+              <nz-option [nzValue]="m" [nzLabel]="m"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </nz-descriptions-item>
+
+      <!-- Thời lượng xin -->
+      <nz-descriptions-item [nzTitle]="i18n.t('ar.viewArAdjustRest.title.APPLYLENGTH', 'Thời lượng xin')">
+        <span id="sa-duration">{{ durationText() }}</span>
+      </nz-descriptions-item>
+
+      <!-- Lý do -->
+      <nz-descriptions-item [nzTitle]="i18n.t('ess.infoApply.Reason', 'Lý do')">
+        <textarea id="sa-reason" nz-input class="sa-reason" rows="4" [ngModel]="reason()" (ngModelChange)="reason.set($event)"></textarea>
+      </nz-descriptions-item>
+    </nz-descriptions>
+
+    <div class="sa-approver">
+      <app-approver-chain idPrefix="sa-apc" [(approvers)]="approvers"></app-approver-chain>
+    </div>
 
     <div class="sa-submit-row">
-      <button id="sa-submit-btn" nz-button nzType="primary" (click)="submit()" [nzLoading]="submitting()">
-        {{ i18n.t('sa.btn.submit', 'Xin phép') }}
+      <button id="sa-submit-btn" nz-button nzType="primary" [nzLoading]="submitting()" (click)="submit()">
+        {{ i18n.t('ess.infoApply.title.apply', 'Xin phép') }}
       </button>
     </div>
   </nz-card>

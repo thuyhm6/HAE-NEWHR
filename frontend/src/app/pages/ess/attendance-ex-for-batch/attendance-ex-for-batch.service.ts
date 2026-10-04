@@ -2,6 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { ApproverSaveItem } from '../../../shared/approver-chain/approver-chain.service';
+import { EssApplyResponse } from '../../../shared/ess-apply-response';
+
 export interface AttendanceExRow {
   applyNo?: string;
   personId?: string;
@@ -23,6 +26,12 @@ export interface AttendanceExRow {
   shiftName?: string;
   workHour?: string;
   remark?: string;
+  /** Giờ làm việc của ca (GET_AR_SHIFTNO_WORKTIME) */
+  shiftTime?: string;
+  /** Đơn nghỉ phép còn hiệu lực trùng ngày công */
+  leaveContent?: string;
+  leaveApplyNo?: string;
+  lockYn?: string;
 }
 
 export interface AttendanceExFilter {
@@ -80,6 +89,24 @@ export interface AttendanceExApplyItem {
   approvers: ApproverInput[];
 }
 
+/** Dòng xin phép kèm dây chuyền duyệt riêng (saveAttenanceExBatchInfo) */
+export interface AttendanceExApproverApplyItem {
+  applyNo: string;
+  personId: string;
+  empId: string;
+  localName: string;
+  itemNo: string;
+  /** YYYY/MM/DD */
+  arDateStr: string;
+  /** YYYY/MM/DD HH:mm */
+  fromDateTime: string;
+  /** YYYY/MM/DD HH:mm */
+  toDateTime: string;
+  workHour: string;
+  remark: string;
+  approvers: ApproverSaveItem[];
+}
+
 export interface ApplyResponse {
   success: boolean;
   message?: string;
@@ -88,6 +115,7 @@ export interface ApplyResponse {
 
 const LIST_URL = '/ess/infoApplyAttendance/api/attendanceEx/list';
 const APPLY_URL = '/ess/infoApplyAttendance/api/attendanceEx/apply';
+const APPLY_BY_APPROVER_URL = '/ess/infoApplyAttendance/api/attendanceEx/applyByApprover';
 const SHIFT_URL = '/ar/attendanceSettings/api/shift';
 const CODE_LIST_URL = '/sys/api/getCode/list';
 const AUTHORIZED_DEPTS_URL = '/ar/attendanceSettings/api/arSupervisor/authorized-departments';
@@ -133,6 +161,11 @@ export class AttendanceExForBatchService {
 
   apply(items: AttendanceExApplyItem[]): Promise<ApplyResponse> {
     return firstValueFrom(this.http.post<ApplyResponse>(APPLY_URL, items));
+  }
+
+  /** Xin phép hàng loạt, mỗi dòng mang dây chuyền duyệt riêng (viewAttendanceExForBatchInfoList) */
+  applyByApprover(items: AttendanceExApproverApplyItem[]): Promise<EssApplyResponse> {
+    return firstValueFrom(this.http.post<EssApplyResponse>(APPLY_BY_APPROVER_URL, items));
   }
 
   private toHttpParams(filter: Record<string, string | undefined>): Record<string, string> {

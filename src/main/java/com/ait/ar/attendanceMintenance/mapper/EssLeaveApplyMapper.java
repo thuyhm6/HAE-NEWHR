@@ -64,7 +64,8 @@ public interface EssLeaveApplyMapper {
      * Gọi hàm AR_GET_LEAVE_CLASH để kiểm tra xung đột chấm công / khóa ngày công.
      * Kết quả: >0 = trùng chấm công, -1 = ngày công đã chốt, -2 = thời gian đã khóa.
      */
-    Integer selectLeaveClash(@Param("personId") String personId,
+    Integer selectLeaveClash(@Param("applyNo") String applyNo,
+                             @Param("personId") String personId,
                              @Param("fromTime") String fromTime,
                              @Param("toTime") String toTime);
 

@@ -135,10 +135,12 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/ess/infoApply/viewSSTOtApplyInfo': '/ess/infoApply/viewSSTOtApplyInfo',
     '/ess/infoApply/viewSSTOtApplyInfoTx': '/ess/infoApply/viewSSTOtApplyInfoTx',
     '/ess/infoApply/viewShowCwaAbnormalApply': '/ess/infoApply/viewShowCwaAbnormalApply',
+    '/ess/infoApply/viewAbnormalApplyByAnyApprover': '/ess/infoApply/viewAbnormalApplyByAnyApprover',
     '/ess/infoApplyAttendance/viewAttendanceExForBatchInfoList':
       '/ess/infoApplyAttendance/viewAttendanceExForBatchInfoList',
     '/ess/infoApply/viewApplyOtLBatchByAnyApproverList':
       '/ess/infoApply/viewApplyOtLBatchByAnyApproverList',
+    '/ess/infoApply/viewApplyOTBatchInfoHAE': '/ess/infoApply/viewApplyOTBatchInfoHAE',
     '/ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList':
       '/ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList',
     '/ar/attendanceMintenance/viewApplyAttManagentByAnyApproverList':
@@ -236,6 +238,14 @@ export class AppShellComponent implements OnInit, OnDestroy {
     '/pa/workManagement/viewPaPayObj': '/pa/workManagement/viewPaPayObj',
     '/pa/workManagement/detailmonthCountInfoLeft': '/pa/workManagement/detailmonthCountInfoLeft',
     '/pa/workManagement/detailYearCountInfoLeft': '/pa/workManagement/detailYearCountInfoLeft',
+    '/pa/workManagement/monthPersonCountInfoList': '/pa/workManagement/monthPersonCountInfoList',
+    '/pa/paView/viewPaMonthChain': '/pa/paView/viewPaMonthChain',
+    '/pa/workManagement/viewVerificationList': '/pa/workManagement/viewVerificationList',
+    '/pa/workManagement/detailPersonCountInfo': '/pa/workManagement/detailPersonCountInfo',
+    '/pa/workManagement/detailPersonCountInfoLeft': '/pa/workManagement/detailPersonCountInfoLeft',
+    '/pa/workManagement/detailItemCountInfo': '/pa/workManagement/detailItemCountInfo',
+    '/pa/workManagement/detailItemDifCountInfo': '/pa/workManagement/detailItemDifCountInfo',
+    '/pa/workManagement/viewResultConfirmList': '/pa/workManagement/viewResultConfirmList',
     '/pa/workManagement/viewPaResultList': '/pa/workManagement/viewPaResultList',
     '/pa/workManagement/viewDeptPaResultList': '/pa/workManagement/viewDeptPaResultList',
     '/report/ar/viewArReportsList': '/report/ar/viewArReportsList',

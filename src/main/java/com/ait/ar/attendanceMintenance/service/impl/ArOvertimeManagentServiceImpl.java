@@ -353,9 +353,17 @@ public class ArOvertimeManagentServiceImpl implements ArOvertimeManagentService 
             throw new IllegalArgumentException("Đang trong thời gian mang thai hoặc nuôi con nhỏ. Không thể tăng ca!");
         }
 
-        String applyNo = String.valueOf(mapper.getNextApplySeq());
-        dto.setApplyNo(applyNo);
-        mapper.insertOvertimeApplyOver(dto);
+        // Đơn mới -> cấp số mới; đơn đã có (sửa từ viewApplyOTBatchInfoHAE) -> cập nhật tại chỗ
+        boolean isNew = safeString(dto.getApplyNo()).isEmpty() || "0".equals(safeString(dto.getApplyNo()));
+        String applyNo;
+        if (isNew) {
+            applyNo = String.valueOf(mapper.getNextApplySeq());
+            dto.setApplyNo(applyNo);
+            mapper.insertOvertimeApplyOver(dto);
+        } else {
+            applyNo = safeString(dto.getApplyNo());
+            mapper.updateOvertimeApplyOver(dto);
+        }
 
         Map<String, Object> deleteParams = new HashMap<>();
         deleteParams.put("applyNo", applyNo);

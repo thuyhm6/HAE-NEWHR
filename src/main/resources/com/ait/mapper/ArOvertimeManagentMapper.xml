@@ -832,7 +832,7 @@
             0,
             0,
             0,
-            0,
+            NVL(#{offsetYn, jdbcType=VARCHAR}, '0'),
             SYSDATE,
             #{adminID, jdbcType=VARCHAR},
             #{adminIP, jdbcType=VARCHAR},
@@ -890,7 +890,7 @@
             0,
             0,
             0,
-            0,
+            NVL(#{offsetYn, jdbcType=VARCHAR}, '0'),
             SYSDATE,
             #{adminID, jdbcType=VARCHAR},
             #{adminIP, jdbcType=VARCHAR},
@@ -944,6 +944,38 @@
             APPLY_TIME = SYSDATE,
             CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
             DEDUCT_YN = #{deductYn, jdbcType=VARCHAR},
+            OFFSET_YN = NVL(#{offsetYn, jdbcType=VARCHAR}, OFFSET_YN),
+            MISDOCID = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
+            USECAR_YN = #{usecarYn, jdbcType=NUMERIC},
+            CAR_ADDRESS = #{carAddress, jdbcType=VARCHAR},
+            CAR_ADDRESS_DETAIL = #{carAddressDetail, jdbcType=VARCHAR}
+        WHERE APPLY_NO = #{applyNo, jdbcType=VARCHAR}
+    </update>
+
+    <!-- Cập nhật đơn tăng ca vượt đã có (viewApplyOTBatchInfoHAE - updateOtOverApplyAffirm ở bản cũ) -->
+    <update id="updateOvertimeApplyOver" parameterType="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
+        UPDATE ESS_APPLY_OT_OVER
+        SET PERSON_ID = #{personId, jdbcType=VARCHAR},
+            APPLY_OT_DATE = TO_DATE(#{applyOtDate, jdbcType=VARCHAR}, 'YYYY-MM-DD'),
+            OT_FROM_TIME = TO_DATE(#{otFromTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            OT_TO_TIME = TO_DATE(#{otToTime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI'),
+            APPLY_OT_REMARK = #{applyOtRemark, jdbcType=VARCHAR},
+            OT_TYPE_NO = #{otTypeNo, jdbcType=VARCHAR},
+            OT_TYPE_CODE = #{otTypeCode, jdbcType=VARCHAR},
+            OT_APPLY_HOUR = #{otApplyHour, jdbcType=VARCHAR},
+            AFFIRM_FLAG = #{affirmFlag, jdbcType=VARCHAR},
+            CONFIRM_FLAG = 0,
+            CONFIRM_DATE = NULL,
+            CONFIRM_BY = NULL,
+            CONFIRM_IP = NULL,
+            UPDATE_DATE = SYSDATE,
+            UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+            UPDATED_IP = #{adminIP, jdbcType=VARCHAR},
+            ACTIVITY = 1,
+            APPLY_TIME = SYSDATE,
+            CPNY_ID = #{cpnyId, jdbcType=VARCHAR},
+            DEDUCT_YN = #{deductYn, jdbcType=VARCHAR},
+            OFFSET_YN = NVL(#{offsetYn, jdbcType=VARCHAR}, OFFSET_YN),
             MISDOCID = TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')||LPAD(MISDOCID.Nextval, 7, 0),
             USECAR_YN = #{usecarYn, jdbcType=NUMERIC},
             CAR_ADDRESS = #{carAddress, jdbcType=VARCHAR},
@@ -1028,7 +1060,7 @@
     <select id="checkOtClash" resultType="int"
             parameterType="com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto">
         SELECT AR_GET_OT_CLASH(
-            '',
+            NVL(#{applyNo, jdbcType=VARCHAR}, ''),
             #{personId, jdbcType=VARCHAR},
             #{otFromTime, jdbcType=VARCHAR},
             #{otToTime, jdbcType=VARCHAR},

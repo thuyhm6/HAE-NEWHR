@@ -1,0 +1,412 @@
+<div class="aaba-page">
+  <!-- Điều kiện tìm kiếm -->
+  <nz-card class="aaba-card" nzSize="small">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.nameAndEmpid', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-input-group nzCompact class="aaba-flex">
+                <input id="aaba-search-keyword" nz-input name="aabaSearchKeyword" class="aaba-grow" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" (keydown.enter)="$event.preventDefault(); search()" />
+                <button id="aaba-search-emp-btn" nz-button type="button" (click)="openSearchEmployeePicker()"><span nz-icon nzType="search"></span></button>
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="aaba-search-dept"
+                name="aabaSearchDept"
+                class="aaba-full"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="searchDeptNo()"
+                (ngModelChange)="searchDeptNo.set($event)"
+                nzShowSearch
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.Period', 'Thời gian') }}</nz-form-label>
+            <nz-form-control>
+              <div class="aaba-flex aaba-range">
+                <nz-date-picker id="aaba-search-start" name="aabaSearchStart" class="aaba-grow" nzFormat="dd/MM/yyyy" [ngModel]="searchStartDate()" (ngModelChange)="searchStartDate.set($event)"></nz-date-picker>
+                <span>~</span>
+                <nz-date-picker id="aaba-search-end" name="aabaSearchEnd" class="aaba-grow" nzFormat="dd/MM/yyyy" [ngModel]="searchEndDate()" (ngModelChange)="searchEndDate.set($event)"></nz-date-picker>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArBaseEmpInfoList.BANZULEIXING.b', 'Ca làm') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="aaba-search-shift" name="aabaSearchShift" [ngModel]="searchShiftNo()" (ngModelChange)="searchShiftNo.set($event)" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')">
+                @for (opt of shiftTypeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.attendance_type', 'Loại nghỉ phép') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="aaba-search-leave-type" name="aabaSearchLeaveType" nzShowSearch [ngModel]="searchLeaveTypeCode()" (ngModelChange)="searchLeaveTypeCode.set($event)" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')">
+                @for (opt of leaveTypeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.approval_status', 'Trạng thái duyệt') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="aaba-search-affirm-flag" name="aabaSearchAffirmFlag" [ngModel]="searchAffirmFlag()" (ngModelChange)="searchAffirmFlag.set($event)" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')">
+                @for (opt of affirmFlagOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.title.RENSHIQUERENZHUANGTAI', 'Trạng thái xác nhận') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="aaba-search-confirm-flag" name="aabaSearchConfirmFlag" [ngModel]="searchConfirmFlag()" (ngModelChange)="searchConfirmFlag.set($event)">
+                <nz-option nzValue="" [nzLabel]="i18n.t('org.title.ALL', 'Tất cả')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('ess.title.WEIQUEREN', 'Chưa xác nhận')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('ess.infoApply.adopt', 'Duyệt')"></nz-option>
+                <nz-option nzValue="2" [nzLabel]="i18n.t('ess.infoApply.veto', 'Từ chối')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Thanh nhập nhanh "Thực hiện tất cả" -->
+  <nz-card class="aaba-card" nzSize="small">
+    <div nz-row [nzGutter]="12">
+      <div nz-col [nzXs]="24" [nzMd]="8">
+        <div class="aaba-fill-item">
+          <label for="aaba-fill-leave-type">{{ i18n.t('ess.infoApply.attendance_type', 'Loại nghỉ phép') }}</label>
+          <nz-select id="aaba-fill-leave-type" class="aaba-grow" nzShowSearch [ngModel]="fillLeaveTypeCode()" (ngModelChange)="fillLeaveTypeCode.set($event)" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')">
+            @for (opt of leaveTypeOptions(); track opt.codeNo) {
+              <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </div>
+      <div nz-col [nzXs]="24" [nzMd]="8">
+        <div class="aaba-fill-item">
+          <label for="aaba-fill-from-date">{{ i18n.t('org.title.STARTDATE', 'Ngày bắt đầu') }}</label>
+          <nz-date-picker id="aaba-fill-from-date" class="aaba-grow" nzFormat="dd/MM/yyyy" [ngModel]="fillFromDate()" (ngModelChange)="fillFromDate.set($event)"></nz-date-picker>
+        </div>
+      </div>
+      <div nz-col [nzXs]="24" [nzMd]="8">
+        <div class="aaba-fill-item">
+          <label for="aaba-fill-from-time">{{ i18n.t('ess.infoApply.title.startTime', 'Thời gian bắt đầu') }}</label>
+          <nz-select id="aaba-fill-from-time" class="aaba-grow" nzShowSearch [ngModel]="fillFromTime()" (ngModelChange)="fillFromTime.set($event)" [nzAllowClear]="true">
+            @for (time of fillTimeOptions; track time) {
+              <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </div>
+      <div nz-col [nzXs]="24" [nzMd]="8">
+        <div class="aaba-fill-item">
+          <label for="aaba-fill-reason">{{ i18n.t('hrm.empinfo.reason', 'Lý do') }}</label>
+          <input id="aaba-fill-reason" nz-input class="aaba-grow" [ngModel]="fillReason()" (ngModelChange)="fillReason.set($event)" />
+        </div>
+      </div>
+      <div nz-col [nzXs]="24" [nzMd]="8">
+        <div class="aaba-fill-item">
+          <label for="aaba-fill-to-date">{{ i18n.t('hrm.recruitManage.END_DATE1', 'Ngày kết thúc') }}</label>
+          <nz-date-picker id="aaba-fill-to-date" class="aaba-grow" nzFormat="dd/MM/yyyy" [ngModel]="fillToDate()" (ngModelChange)="fillToDate.set($event)"></nz-date-picker>
+        </div>
+      </div>
+      <div nz-col [nzXs]="24" [nzMd]="8">
+        <div class="aaba-fill-item">
+          <label for="aaba-fill-to-time">{{ i18n.t('ess.infoApply.end_time', 'Thời gian kết thúc') }}</label>
+          <nz-select id="aaba-fill-to-time" class="aaba-grow" nzShowSearch [ngModel]="fillToTime()" (ngModelChange)="fillToTime.set($event)" [nzAllowClear]="true">
+            @for (time of fillTimeOptions; track time) {
+              <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+            }
+          </nz-select>
+        </div>
+      </div>
+    </div>
+    <div class="aaba-fill-actions">
+      <button id="aaba-fill-all-btn" nz-button nzType="primary" (click)="fillAll()">
+        <span nz-icon nzType="check"></span>
+        {{ i18n.t('ess.message.all_reaction', 'Thực hiện tất cả') }}
+      </button>
+    </div>
+  </nz-card>
+
+  <!-- Toolbar + bảng dữ liệu -->
+  <nz-card class="aaba-card" nzSize="small">
+    <div class="aaba-toolbar">
+      <button id="aaba-search-btn" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+        <span nz-icon nzType="search"></span>{{ i18n.t('org.title.SELECT', 'Tra cứu') }}
+      </button>
+      <button id="aaba-add-btn" nz-button (click)="addRow()">
+        <span nz-icon nzType="plus"></span>{{ i18n.t('ess.empInfo.insert', 'Thêm mới') }}
+      </button>
+      <button id="aaba-delete-btn" nz-button nzDanger [nzLoading]="deleting()" (click)="delete()">
+        <span nz-icon nzType="delete"></span>{{ i18n.t('ess.empInfo.Delete', 'Xóa') }}
+      </button>
+      <button id="aaba-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">
+        <span nz-icon nzType="save"></span>{{ i18n.t('ar.viewempcalender.title.save', 'Lưu') }}
+      </button>
+      <button id="aaba-template-btn" nz-button (click)="downloadTemplate()">
+        <span nz-icon nzType="download"></span>{{ i18n.t('ess.message.template_download', 'Bản mẫu') }}
+      </button>
+      <button id="aaba-import-btn" nz-button (click)="openImport()">
+        <span nz-icon nzType="upload"></span>{{ i18n.t('ess.infoApply.EXCEL_IN', 'Chèn file') }}
+      </button>
+      <button id="aaba-export-btn" nz-button (click)="exportExcel()">
+        <span nz-icon nzType="file-excel"></span>{{ i18n.t('hrm.empinfo.EXPORT', 'Xuất Excel') }}
+      </button>
+    </div>
+
+    <nz-table
+      id="aaba-table"
+      #aabaTable
+      nzSize="small"
+      nzBordered
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="defaultPageSize"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzShowTotal]="aabaTotalTpl"
+      [nzScroll]="{ x: '3200px', y: 'calc(100vh - 520px)' }"
+      [nzNoResult]="i18n.t('ess.message.NOT_FOUND_DATA_FROM_TABLE', 'Không có dữ liệu!')"
+    >
+      <thead>
+        <tr>
+          <th nzLeft nzWidth="50px" class="aaba-center">NO</th>
+          <th nzLeft nzWidth="40px" class="aaba-center" [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()" (nzCheckedChange)="toggleAll($event)"></th>
+          <th nzLeft nzWidth="140px" class="aaba-center">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th nzWidth="150px" class="aaba-center aaba-title-edit">{{ i18n.t('ess.infoApply.EMPID', 'Mã nhân viên') }}</th>
+          <th nzWidth="220px" class="aaba-center">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th nzWidth="140px" class="aaba-center">{{ i18n.t('hr.viewPersonalInfo.title.banzu', 'Ca') }}</th>
+          <th nzWidth="110px" class="aaba-center">{{ i18n.t('ess.empInfo.date_application', 'Thời gian') }}</th>
+          <th nzWidth="100px" class="aaba-center">{{ i18n.t('ess.infoApply.sum_year_leave_days', 'Tổng phép năm') }}</th>
+          <th nzWidth="90px" class="aaba-center">{{ i18n.t('ess.infoApply.nianjiashengyu', 'Còn lại') }}</th>
+          <th nzWidth="180px" class="aaba-center aaba-title-edit">{{ i18n.t('ess.infoApply.attendState', 'Phân loại') }}</th>
+          <th nzWidth="140px" class="aaba-center aaba-title-edit">{{ i18n.t('org.title.STARTDATE', 'Ngày bắt đầu') }}</th>
+          <th nzWidth="110px" class="aaba-center aaba-title-edit">{{ i18n.t('ess.infoApply.title.startTime', 'Thời gian bắt đầu') }}</th>
+          <th nzWidth="140px" class="aaba-center aaba-title-edit">{{ i18n.t('hr.viewTranslate.title.PUBLIC_END_DATE', 'Ngày kết thúc') }}</th>
+          <th nzWidth="110px" class="aaba-center aaba-title-edit">{{ i18n.t('ess.infoApply.end_time', 'Thời gian kết thúc') }}</th>
+          <th nzWidth="120px" class="aaba-center">{{ i18n.t('ess.infoApply.duration', 'Thời lượng') }}</th>
+          <th nzWidth="250px" class="aaba-center aaba-title-edit">{{ i18n.t('ess.infoApply.Reason', 'Lý do') }}</th>
+          <th nzWidth="560px" class="aaba-center">{{ i18n.t('hrm.contractInfo.APPROVAL_PERSON', 'Người duyệt') }}</th>
+          <th nzWidth="170px" class="aaba-center">{{ i18n.t('ess.infoApply.approval_status', 'Trạng thái duyệt') }}</th>
+          <th nzWidth="120px" class="aaba-center">{{ i18n.t('ess.empInfo.enclosure', 'File') }}</th>
+          <th nzWidth="160px" class="aaba-center">{{ i18n.t('hrm.contract.creator', 'Người tạo') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of aabaTable.data; track row.rowKey; let idx = $index) {
+          @let editable = !isRowDisabled(row);
+          <tr [class.aaba-row-new]="row.isNew">
+            <td nzLeft class="aaba-center">{{ (aabaTable.nzPageIndex - 1) * aabaTable.nzPageSize + idx + 1 }}</td>
+            <td nzLeft class="aaba-center" [nzChecked]="row.checked" [nzDisabled]="!editable" (nzCheckedChange)="toggleRow(row.rowKey, $event)"></td>
+            <td nzLeft class="aaba-center">
+              @if (!row.isNew && row.applyNo) {
+                <a class="aaba-link" (click)="openDetail(row)">{{ row.localName }}</a>
+              } @else {
+                {{ row.localName }}
+              }
+            </td>
+            <td class="aaba-center">
+              @if (row.isNew) {
+                <nz-input-group nzCompact class="aaba-flex">
+                  <input
+                    nz-input
+                    class="aaba-grow"
+                    [attr.id]="'aaba-row-emp-' + row.rowKey"
+                    [ngModel]="row.empId"
+                    (keydown.enter)="onRowEmpEnter(row.rowKey, $event)"
+                    nz-tooltip
+                    [nzTooltipTitle]="i18n.t('evs.affirm.please_input_enter.e', 'Chọn từ khóa sau đó Enter')"
+                  />
+                  <button nz-button type="button" (click)="openRowEmployeePicker(row.rowKey)"><span nz-icon nzType="search"></span></button>
+                </nz-input-group>
+              } @else {
+                {{ row.empId }}
+              }
+            </td>
+            <td class="aaba-center">{{ row.deptName }}</td>
+            <td class="aaba-center">{{ row.shiftNoName }}</td>
+            <td class="aaba-center">{{ row.applyTime }}</td>
+            <td class="aaba-center">{{ row.totVacCnt }} {{ i18n.t('ar.viewitemparameter.title.dayofunit', 'Ngày') }}</td>
+            <td class="aaba-center">{{ row.shengyuVacCnt }} {{ i18n.t('ar.viewitemparameter.title.dayofunit', 'Ngày') }}</td>
+            <td class="aaba-center">
+              @if (editable) {
+                <nz-select class="aaba-full" nzShowSearch [ngModel]="row.leaveTypeCode || null" (ngModelChange)="onLeaveTypeChange(row.rowKey, $event)">
+                  @for (opt of leaveTypeOptions(); track opt.codeNo) {
+                    <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                  }
+                </nz-select>
+              } @else {
+                {{ row.leaveTypeCodeName }}
+              }
+            </td>
+            <td class="aaba-center">
+              @if (editable) {
+                <nz-date-picker class="aaba-full" nzFormat="dd/MM/yyyy" [nzAllowClear]="false" [ngModel]="row.fromDate" (ngModelChange)="onFromDateChange(row.rowKey, $event)"></nz-date-picker>
+              } @else {
+                {{ row.fromDate | date: 'dd/MM/yyyy' }}
+              }
+            </td>
+            <td class="aaba-center">
+              @if (editable) {
+                <nz-select class="aaba-full" nzShowSearch [ngModel]="row.fromTime || null" (ngModelChange)="onTimeChange(row.rowKey, 'fromTime', $event)">
+                  @for (time of timeOptionsFor(row.fromTime); track time) {
+                    <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+                  }
+                </nz-select>
+              } @else {
+                {{ row.fromTime }}
+              }
+            </td>
+            <td class="aaba-center">
+              @if (editable) {
+                <nz-date-picker class="aaba-full" nzFormat="dd/MM/yyyy" [nzAllowClear]="false" [ngModel]="row.toDate" (ngModelChange)="onToDateChange(row.rowKey, $event)"></nz-date-picker>
+              } @else {
+                {{ row.toDate | date: 'dd/MM/yyyy' }}
+              }
+            </td>
+            <td class="aaba-center">
+              @if (editable) {
+                <nz-select class="aaba-full" nzShowSearch [ngModel]="row.toTime || null" (ngModelChange)="onTimeChange(row.rowKey, 'toTime', $event)">
+                  @for (time of timeOptionsFor(row.toTime); track time) {
+                    <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+                  }
+                </nz-select>
+              } @else {
+                {{ row.toTime }}
+              }
+            </td>
+            <td class="aaba-center">{{ durationText(row) }}</td>
+            <td>
+              @if (editable) {
+                <input nz-input [ngModel]="row.leaveReason" (ngModelChange)="onReasonChange(row.rowKey, $event)" />
+              } @else {
+                {{ row.leaveReason }}
+              }
+            </td>
+            <td>
+              @if (editable) {
+                <div class="aaba-approvers">
+                  @for (a of row.approvers; track a.key; let aIdx = $index) {
+                    <div class="aaba-approver-line">
+                      <span class="aaba-approver-level">{{ aIdx + 1 }}</span>
+                      <input nz-input class="aaba-approver-info" [ngModel]="a.info" disabled />
+                      <nz-input-group nzCompact class="aaba-approver-emp">
+                        <input
+                          nz-input
+                          class="aaba-grow"
+                          [ngModel]="a.empId"
+                          (ngModelChange)="onApproverEmpChange(row.rowKey, a.key, $event)"
+                          (keydown.enter)="onApproverEnter(row.rowKey, a.key, $event)"
+                          [class.aaba-required]="!a.personId"
+                          nz-tooltip
+                          [nzTooltipTitle]="i18n.t('evs.affirm.please_input_enter.e', 'Chọn từ khóa sau đó Enter')"
+                        />
+                        <button nz-button type="button" (click)="openApproverPicker(row.rowKey, a.key)"><span nz-icon nzType="search"></span></button>
+                      </nz-input-group>
+                      <nz-select class="aaba-approver-type" [ngModel]="a.approvType" (ngModelChange)="onApproverTypeChange(row.rowKey, a.key, $event)">
+                        <nz-option [nzValue]="APPROV_TYPE_APPROVAL" [nzLabel]="i18n.t('hr.contract.title.shenpi', 'Duyệt')"></nz-option>
+                        <nz-option [nzValue]="APPROV_TYPE_NOTICE" [nzLabel]="i18n.t('ess.infoApply.gonggao', 'Thông báo')"></nz-option>
+                      </nz-select>
+                      <button nz-button nzSize="small" nzShape="circle" type="button" [title]="i18n.t('button.add', 'Thêm mới')" (click)="addApprover(row.rowKey, a.key)">
+                        <span nz-icon nzType="plus"></span>
+                      </button>
+                      <button nz-button nzSize="small" nzShape="circle" nzDanger type="button" [title]="i18n.t('button.delete', 'Xóa')" (click)="removeApprover(row.rowKey, a.key)">
+                        <span nz-icon nzType="minus"></span>
+                      </button>
+                    </div>
+                  } @empty {
+                    <button nz-button nzSize="small" nzShape="circle" type="button" [title]="i18n.t('button.add', 'Thêm mới')" (click)="addApprover(row.rowKey, null)">
+                      <span nz-icon nzType="plus"></span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                {{ approversText(row) }}
+              }
+            </td>
+            <td class="aaba-center">
+              @if (!row.isNew) {
+                {{ row.affirmFlagName }} {{ confirmText(row) }}
+              }
+            </td>
+            <td></td>
+            <td class="aaba-center">{{ row.createdBy }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+    <ng-template #aabaTotalTpl let-total let-range="range">{{ range[0] }}-{{ range[1] }} / {{ total }}</ng-template>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #aabaDetailModal variant="leave"></app-apply-detail-modal>
+
+<!-- Popup tìm nhân viên: dùng chung cho ô tìm kiếm, mã NV dòng mới và người duyệt -->
+<nz-modal
+  [nzVisible]="pickerVisible()"
+  [nzTitle]="i18n.t('empSearch.title', 'Tìm kiếm nhân viên')"
+  [nzFooter]="null"
+  (nzOnCancel)="closePicker()"
+>
+  <ng-container *nzModalContent>
+    <nz-select
+      id="aaba-picker-select"
+      class="aaba-full"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="pickerSearching()"
+      [ngModel]="null"
+      (ngModelChange)="onPickerSelected($event)"
+      (nzOnSearch)="onPickerSearch($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã NV hoặc họ tên...')"
+    >
+      @for (emp of pickerResults(); track emp.personId) {
+        <nz-option [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '') + (emp.deptName ? ' / ' + emp.deptName : '')"></nz-option>
+      }
+    </nz-select>
+  </ng-container>
+</nz-modal>
+
+<!-- Import Excel -->
+<nz-modal [nzVisible]="importVisible()" [nzTitle]="i18n.t('ess.infoApply.EXCEL_IN', 'Chèn file')" (nzOnCancel)="closeImport()">
+  <ng-container *nzModalContent>
+    <input id="aaba-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeImport()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="aaba-import-submit-btn" nz-button nzType="primary" [disabled]="!importFile()" [nzLoading]="importing()" (click)="submitImport()">
+      {{ i18n.t('ess.infoApply.EXCEL_IN', 'Chèn file') }}
+    </button>
+  </div>
+</nz-modal>

@@ -1,50 +1,96 @@
 .exb-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-.exb-toolbar-actions {
+.exb-card nz-form-item {
+  margin-bottom: 8px;
+}
+
+.exb-flex {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  align-items: center;
+  gap: 4px;
 }
 
-.exb-col-center {
+.exb-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.exb-full {
+  width: 100%;
+}
+
+.exb-fill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+}
+
+.exb-fill-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  label {
+    white-space: nowrap;
+  }
+}
+
+.exb-hm {
+  width: 72px;
+}
+
+.exb-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  [nz-icon] {
+    margin-right: 4px;
+  }
+}
+
+.exb-center {
   text-align: center;
 }
 
-.exb-small {
-  font-size: 12px;
+/* Cột có thể sửa trực tiếp - tương ứng class "titleColor" ở JSP cũ */
+.exb-title-edit {
+  color: #1677ff !important;
+}
+
+.exb-link {
+  color: #0000ff;
+  cursor: pointer;
 }
 
 .exb-time-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
-}
+  gap: 4px;
 
-.exb-time-row:last-child {
-  margin-bottom: 0;
+  & + & {
+    margin-top: 4px;
+  }
 }
 
 .exb-time-label {
-  flex-shrink: 0;
-  width: 26px;
-  font-size: 12px;
-}
-
-.exb-approver-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 4px;
-}
-
-.exb-approver-text {
-  flex: 1;
+  flex: 0 0 56px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.exb-time-date {
+  flex: 1;
+  min-width: 110px;
+}
+
+.exb-hm-input {
+  flex: 0 0 44px;
+  width: 44px;
+  text-align: center;
 }

@@ -1,0 +1,386 @@
+<div class="aoba-page">
+  <!-- Điều kiện tìm kiếm -->
+  <nz-card class="aoba-card" nzSize="small">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.nameAndEmpid', 'Mã nhân viên/Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="aoba-search-keyword" nz-input name="aobaSearchKeyword" [ngModel]="searchKeyword()" (ngModelChange)="searchKeyword.set($event)" (keydown.enter)="$event.preventDefault(); search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hr.viewPersonalInfo.title.DEPTNAME', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="aoba-search-dept"
+                name="aobaSearchDept"
+                class="aoba-full"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="searchDeptNo()"
+                (ngModelChange)="searchDeptNo.set($event)"
+                nzShowSearch
+                [nzAllowClear]="true"
+                [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="8">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('org.title.DATE', 'Ngày') }}</nz-form-label>
+            <nz-form-control>
+              <div class="aoba-flex">
+                <nz-date-picker id="aoba-search-start" name="aobaSearchStart" class="aoba-grow" nzFormat="dd/MM/yyyy" [ngModel]="searchStartDate()" (ngModelChange)="searchStartDate.set($event)"></nz-date-picker>
+                <span>~</span>
+                <nz-date-picker id="aoba-search-end" name="aobaSearchEnd" class="aoba-grow" nzFormat="dd/MM/yyyy" [ngModel]="searchEndDate()" (ngModelChange)="searchEndDate.set($event)"></nz-date-picker>
+              </div>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewArBaseEmpInfoList.BANZULEIXING.b', 'Loại ca') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="aoba-search-shift" name="aobaSearchShift" nzShowSearch [ngModel]="searchShiftNo()" (ngModelChange)="searchShiftNo.set($event)" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('hr.viewCondSql.title.QINGXUANZE', 'Lựa chọn')">
+                @for (opt of shiftOptions(); track opt.shiftNo) {
+                  <nz-option [nzValue]="opt.shiftNo" [nzLabel]="opt.nameVi || opt.shiftNo || ''"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.overtime_type', 'Loại tăng ca') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="aoba-search-ot-type" name="aobaSearchOtType" [ngModel]="searchOtTypeCode()" (ngModelChange)="searchOtTypeCode.set($event)" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')">
+                @for (opt of otTypeOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzXs]="24" [nzMd]="8" [nzXl]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ess.infoApply.approval_status', 'Trạng thái duyệt') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="aoba-search-affirm-flag" name="aobaSearchAffirmFlag" [ngModel]="searchAffirmFlag()" (ngModelChange)="searchAffirmFlag.set($event)" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('org.title.ALL', 'Tất cả')">
+                @for (opt of affirmFlagOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Thanh nhập nhanh "Thực hiện tất cả" -->
+  <nz-card class="aoba-card" nzSize="small">
+    <div class="aoba-fill">
+      <div class="aoba-fill-item">
+        <label for="aoba-fill-ot-type">{{ i18n.t('ess.title.JIABANZHUANGTAI', 'Loại tăng ca') }}</label>
+        <nz-select id="aoba-fill-ot-type" class="aoba-fill-select" [ngModel]="fillOtTypeCode()" [nzDisabled]="true">
+          @for (opt of otTypeOptions(); track opt.codeNo) {
+            <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="aoba-fill-item">
+        <label for="aoba-fill-date">{{ i18n.t('ess.infoApply.attendance_date', 'Ngày') }}</label>
+        <nz-date-picker id="aoba-fill-date" nzFormat="dd/MM/yyyy" [ngModel]="fillDate()" (ngModelChange)="onFillDateChange($event)"></nz-date-picker>
+      </div>
+      <div class="aoba-fill-item">
+        <label for="aoba-fill-from-time">{{ i18n.t('ess.infoApply.title.startTime', 'Thời gian bắt đầu') }}</label>
+        <nz-select id="aoba-fill-from-time" class="aoba-time" nzShowSearch [nzAllowClear]="true" [ngModel]="fillFromTime()" (ngModelChange)="fillFromTime.set($event)">
+          @for (time of fillTimeOptions; track time) {
+            <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="aoba-fill-item">
+        <label for="aoba-fill-to-time">{{ i18n.t('ess.infoApply.end_time', 'Thời gian kết thúc') }}</label>
+        <nz-select id="aoba-fill-to-time" class="aoba-time" nzShowSearch [nzAllowClear]="true" [ngModel]="fillToTime()" (ngModelChange)="fillToTime.set($event)">
+          @for (time of fillTimeOptions; track time) {
+            <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="aoba-fill-item aoba-fill-reason">
+        <label for="aoba-fill-reason">{{ i18n.t('hrm.empinfo.reason', 'Lý do') }}</label>
+        <input id="aoba-fill-reason" nz-input [ngModel]="fillReason()" (ngModelChange)="fillReason.set($event)" />
+      </div>
+      <button id="aoba-fill-all-btn" nz-button nzType="primary" (click)="fillAll()">
+        <span nz-icon nzType="check"></span>{{ i18n.t('ess.message.all_reaction', 'Thực hiện tất cả') }}
+      </button>
+    </div>
+  </nz-card>
+
+  <!-- Toolbar + bảng dữ liệu -->
+  <nz-card class="aoba-card" nzSize="small">
+    <div class="aoba-toolbar">
+      <button id="aoba-search-btn" nz-button nzType="primary" [nzLoading]="loading()" (click)="search()">
+        <span nz-icon nzType="search"></span>{{ i18n.t('org.title.SELECT', 'Tra cứu') }}
+      </button>
+      <button id="aoba-add-btn" nz-button (click)="addRow()">
+        <span nz-icon nzType="plus"></span>{{ i18n.t('ess.empInfo.insert', 'Thêm mới') }}
+      </button>
+      <button id="aoba-delete-btn" nz-button nzDanger [nzLoading]="deleting()" (click)="delete()">
+        <span nz-icon nzType="delete"></span>{{ i18n.t('ess.empInfo.Delete', 'Xóa') }}
+      </button>
+      <button id="aoba-save-btn" nz-button nzType="primary" [nzLoading]="saving()" (click)="save()">
+        <span nz-icon nzType="save"></span>{{ i18n.t('ar.viewempcalender.title.save', 'Lưu') }}
+      </button>
+      <button id="aoba-template-btn" nz-button (click)="downloadTemplate()">
+        <span nz-icon nzType="download"></span>{{ i18n.t('ess.message.template_download', 'Bản mẫu') }}
+      </button>
+      <button id="aoba-import-btn" nz-button (click)="openImport()">
+        <span nz-icon nzType="upload"></span>{{ i18n.t('ess.infoApply.EXCEL_IN', 'Chèn file') }}
+      </button>
+      <button id="aoba-export-btn" nz-button (click)="exportExcel()">
+        <span nz-icon nzType="file-excel"></span>{{ i18n.t('hrm.empinfo.EXPORT', 'Xuất Excel') }}
+      </button>
+    </div>
+
+    <nz-table
+      id="aoba-table"
+      #aobaTable
+      nzSize="small"
+      nzBordered
+      [nzData]="rows()"
+      [nzLoading]="loading()"
+      [nzPageSize]="defaultPageSize"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzShowTotal]="aobaTotalTpl"
+      [nzScroll]="{ x: over ? '3300px' : '3700px', y: 'calc(100vh - 560px)' }"
+      [nzNoResult]="i18n.t('ess.message.NOT_FOUND_DATA_FROM_TABLE', 'Không có dữ liệu!')"
+    >
+      <thead>
+        <tr>
+          <th rowspan="2" nzLeft nzWidth="50px" class="aoba-center">NO</th>
+          <th rowspan="2" nzLeft nzWidth="40px" class="aoba-center" [nzChecked]="allChecked()" [nzIndeterminate]="someChecked()" (nzCheckedChange)="toggleAll($event)"></th>
+          <th rowspan="2" nzLeft nzWidth="150px" class="aoba-center">{{ i18n.t('ess.infoApply.NAME', 'Họ tên') }}</th>
+          <th rowspan="2" nzWidth="140px" class="aoba-center aoba-title-edit">{{ i18n.t('ess.infoApply.EMPID', 'Mã nhân viên') }}</th>
+          <th rowspan="2" nzWidth="200px" class="aoba-center">{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</th>
+          <th rowspan="2" nzWidth="160px" class="aoba-center">{{ i18n.t('hr.viewPersonalInfo.title.banzu', 'Ca') }}</th>
+          <th rowspan="2" nzWidth="140px" class="aoba-center aoba-title-edit">{{ i18n.t('ess.infoApply.attendance_date', 'Ngày') }}</th>
+          <th colspan="13" class="aoba-center">{{ i18n.t('ess.infoApply.title.apply', 'Đăng ký') }}</th>
+          <th rowspan="2" nzWidth="300px" class="aoba-center aoba-title-edit">
+            {{ i18n.t('ess.infoApply.Reason', 'Lý do') }} ({{ i18n.t('ess.infoApply.title.otReason', 'Ghi rõ lý do, tên sản phẩm, công đoạn thực hiện trong thời gian tăng ca') }})
+          </th>
+          <th [attr.colspan]="over ? 2 : 6" class="aoba-center">{{ i18n.t('ess.title.JIABANLEIJI', 'Tăng ca lũy kế') }}</th>
+          <th rowspan="2" nzWidth="560px" class="aoba-center">{{ i18n.t('hrm.contractInfo.APPROVAL_PERSON', 'Người duyệt') }}</th>
+          <th rowspan="2" nzWidth="140px" class="aoba-center">{{ i18n.t('ess.infoApply.approval_status', 'Trạng thái duyệt') }}</th>
+          <th rowspan="2" nzWidth="160px" class="aoba-center">{{ i18n.t('hrm.contract.creator', 'Người tạo') }}</th>
+        </tr>
+        <tr>
+          <th nzWidth="90px" class="aoba-center">{{ i18n.t('ess.infoApply.in_door_time', 'Giờ vào') }}</th>
+          <th nzWidth="90px" class="aoba-center">{{ i18n.t('ess.infoApply.out_door_time', 'Giờ ra') }}</th>
+          <th nzWidth="140px" class="aoba-center aoba-title-edit">{{ i18n.t('public.title.startDate', 'Ngày bắt đầu') }}</th>
+          <th nzWidth="110px" class="aoba-center aoba-title-edit">{{ i18n.t('ess.infoApply.title.startTime', 'Thời gian bắt đầu') }}</th>
+          <th nzWidth="140px" class="aoba-center aoba-title-edit">{{ i18n.t('public.title.endDate', 'Ngày kết thúc') }}</th>
+          <th nzWidth="110px" class="aoba-center aoba-title-edit">{{ i18n.t('ess.infoApply.end_time', 'Thời gian kết thúc') }}</th>
+          <th nzWidth="100px" class="aoba-center">{{ i18n.t('ess.infoApply.overtime_hours', 'Thời gian tăng ca') }}</th>
+          <th nzWidth="100px" class="aoba-center aoba-title-edit">
+            {{ i18n.t('ess.viewPiciOtAffirmLBatchList.DEDUCT_MEAL_TIME.b', 'Trừ giờ ăn') }}
+            <label nz-checkbox [ngModel]="allDeduct()" (ngModelChange)="toggleAllDeduct($event)"></label>
+          </th>
+          <th nzWidth="70px" class="aoba-center aoba-title-edit">{{ i18n.t('ess.title.KUATIAN', 'Qua ngày') }}</th>
+          <th nzWidth="90px" class="aoba-center aoba-title-edit">
+            {{ i18n.t('ess.title.USE_CAR', 'Đặt xe') }}
+            <label nz-checkbox [ngModel]="allUsecar()" (ngModelChange)="toggleAllUsecar($event)"></label>
+          </th>
+          <th nzWidth="150px" class="aoba-center aoba-title-edit">{{ i18n.t('ess.title.NAME_CAR', 'Tuyến xe') }}</th>
+          <th nzWidth="170px" class="aoba-center aoba-title-edit">{{ i18n.t('ess.title.ADDRESS_CAR', 'Điểm đón') }}</th>
+          <th nzWidth="130px" class="aoba-center">{{ i18n.t('ess.title.JIABANZHUANGTAI', 'Loại tăng ca') }}</th>
+          <th nzWidth="80px" class="aoba-center">{{ i18n.t('ess.viewPiciOtAffirmBatchList.BENNIAN.b', 'Năm nay') }}</th>
+          <th nzWidth="80px" class="aoba-center">{{ i18n.t('ess.viewPiciOtAffirmBatchList.BENYUE.b', 'Tháng này') }}</th>
+          @if (!over) {
+            <th nzWidth="100px" class="aoba-center">{{ i18n.t('ar.viewitemparameter.title.pingshi', 'Ngày thường') }}</th>
+            <th nzWidth="100px" class="aoba-center">{{ i18n.t('ar.viewComanyCalendar.DAIXINJIA.b', 'Nghỉ có lương') }}</th>
+            <th nzWidth="80px" class="aoba-center">{{ i18n.t('ar.viewitemparameter.title.zhoumo', 'Cuối tuần') }}</th>
+            <th nzWidth="90px" class="aoba-center">{{ i18n.t('ar.viewitemparameter.title.jiejiari', 'Ngày lễ') }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of aobaTable.data; track row.rowKey; let idx = $index) {
+          @let editable = !isRowDisabled(row);
+          <tr [class.aoba-row-new]="row.isNew">
+            <td nzLeft class="aoba-center">{{ (aobaTable.nzPageIndex - 1) * aobaTable.nzPageSize + idx + 1 }}</td>
+            <td nzLeft class="aoba-center" [nzChecked]="row.checked" [nzDisabled]="!editable" (nzCheckedChange)="toggleRow(row.rowKey, $event)"></td>
+            <td nzLeft class="aoba-center">
+              @if (!row.isNew && row.applyNo) {
+                <a class="aoba-link" (click)="openDetail(row)">{{ row.localName }}</a>
+              } @else {
+                {{ row.localName }}
+              }
+            </td>
+            <td class="aoba-center">
+              @if (row.isNew) {
+                <nz-input-group nzCompact class="aoba-flex">
+                  <input
+                    nz-input
+                    class="aoba-grow"
+                    [attr.id]="'aoba-row-emp-' + row.rowKey"
+                    [ngModel]="row.empId"
+                    (keydown.enter)="onRowEmpEnter(row.rowKey, $event)"
+                    nz-tooltip
+                    [nzTooltipTitle]="i18n.t('evs.affirm.please_input_enter.e', 'Chọn từ khóa sau đó Enter')"
+                  />
+                  <button nz-button type="button" (click)="openPicker(row.rowKey, [])"><span nz-icon nzType="search"></span></button>
+                </nz-input-group>
+              } @else {
+                {{ row.empId }}
+              }
+            </td>
+            <td class="aoba-center">{{ row.deptName }}</td>
+            <td class="aoba-center">{{ shiftText(row) }}</td>
+            <td class="aoba-center">
+              @if (editable) {
+                <nz-date-picker nzSize="small" class="aoba-full" nzFormat="dd/MM/yyyy" [nzAllowClear]="false" [ngModel]="row.applyOtDate" (ngModelChange)="onDateChange(row.rowKey, 'applyOtDate', $event)"></nz-date-picker>
+              } @else {
+                {{ row.applyOtDate | date: 'dd/MM/yyyy' }}
+              }
+            </td>
+            <td class="aoba-center">{{ row.indoorTime }}</td>
+            <td class="aoba-center">{{ row.outdoorTime }}</td>
+            <td class="aoba-center">
+              @if (editable) {
+                <nz-date-picker nzSize="small" class="aoba-full" nzFormat="dd/MM/yyyy" [nzAllowClear]="false" [ngModel]="row.otFromDate" (ngModelChange)="onDateChange(row.rowKey, 'otFromDate', $event)"></nz-date-picker>
+              } @else {
+                {{ row.otFromDate | date: 'dd/MM/yyyy' }}
+              }
+            </td>
+            <td class="aoba-center">
+              @if (editable) {
+                <nz-select nzSize="small" class="aoba-full" nzShowSearch [ngModel]="row.otFromTime || null" (ngModelChange)="onTimeChange(row.rowKey, 'otFromTime', $event)">
+                  @for (time of timeOptionsFor(row.otFromTime); track time) {
+                    <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+                  }
+                </nz-select>
+              } @else {
+                {{ row.otFromTime }}
+              }
+            </td>
+            <td class="aoba-center">
+              @if (editable) {
+                <nz-date-picker nzSize="small" class="aoba-full" nzFormat="dd/MM/yyyy" [nzAllowClear]="false" [ngModel]="row.otToDate" (ngModelChange)="onDateChange(row.rowKey, 'otToDate', $event)"></nz-date-picker>
+              } @else {
+                {{ row.otToDate | date: 'dd/MM/yyyy' }}
+              }
+            </td>
+            <td class="aoba-center">
+              @if (editable) {
+                <nz-select nzSize="small" class="aoba-full" nzShowSearch [ngModel]="row.otToTime || null" (ngModelChange)="onTimeChange(row.rowKey, 'otToTime', $event)">
+                  @for (time of timeOptionsFor(row.otToTime); track time) {
+                    <nz-option [nzValue]="time" [nzLabel]="time"></nz-option>
+                  }
+                </nz-select>
+              } @else {
+                {{ row.otToTime }}
+              }
+            </td>
+            <td class="aoba-center">{{ row.otApplyHour }} {{ i18n.t('ar.viewitemparameter.title.xiaoshi', 'Tiếng') }}</td>
+            <td class="aoba-center">
+              <label nz-checkbox [nzDisabled]="!editable" [ngModel]="row.deductYn" (ngModelChange)="onDeductChange(row.rowKey, $event)"></label>
+            </td>
+            <td class="aoba-center">
+              <label nz-checkbox [nzDisabled]="!editable" [ngModel]="row.offsetYn" (ngModelChange)="onFieldChange(row.rowKey, { offsetYn: $event })"></label>
+            </td>
+            <td class="aoba-center">
+              <label nz-checkbox [nzDisabled]="!editable" [ngModel]="row.usecarYn" (ngModelChange)="onFieldChange(row.rowKey, { usecarYn: $event })"></label>
+            </td>
+            <td class="aoba-center">
+              <nz-select nzSize="small" class="aoba-full" [nzDisabled]="!editable" [nzAllowClear]="true" [ngModel]="row.carAddress || null" (ngModelChange)="onCarAddressChange(row.rowKey, $event)">
+                @for (opt of carAddressOptions(); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </td>
+            <td class="aoba-center">
+              <nz-select nzSize="small" class="aoba-full" nzShowSearch [nzDisabled]="!editable" [nzAllowClear]="true" [ngModel]="row.carAddressDetail || null" (ngModelChange)="onFieldChange(row.rowKey, { carAddressDetail: $event ?? '' })">
+                @for (opt of carDetailOptionsFor(row); track opt.codeNo) {
+                  <nz-option [nzValue]="opt.codeNo" [nzLabel]="codeLabel(opt)"></nz-option>
+                }
+              </nz-select>
+            </td>
+            <td class="aoba-center">{{ row.otTypeCodeName }}</td>
+            <td>
+              @if (editable) {
+                <input nz-input nzSize="small" [attr.id]="'aoba-reason-' + row.rowKey" [ngModel]="row.applyOtRemark" (ngModelChange)="onFieldChange(row.rowKey, { applyOtRemark: $event })" />
+              } @else {
+                {{ row.applyOtRemark }}
+              }
+            </td>
+            <td class="aoba-center">{{ row.otTotail }}</td>
+            <td class="aoba-center">{{ row.otTotailMonth }}</td>
+            @if (!over) {
+              <td class="aoba-center">{{ row.weekdayOtTotail }}</td>
+              <td class="aoba-center">{{ row.saturdayOtTotail }}</td>
+              <td class="aoba-center">{{ row.weekendOtTotail }}</td>
+              <td class="aoba-center">{{ row.hoildayOtTotail }}</td>
+            }
+            <td>
+              @if (editable) {
+                <app-row-approvers [idPrefix]="'aoba-apv-' + row.rowKey" [approvers]="row.approvers" (approversChange)="onApproversChange(row.rowKey, $event)"></app-row-approvers>
+              } @else {
+                @for (a of row.approvers; track a.key; let aIdx = $index) {
+                  <div>{{ aIdx + 1 }}. {{ a.empId }} - {{ a.localName }}</div>
+                }
+              }
+            </td>
+            <td class="aoba-center">{{ row.affirmFlagName }}</td>
+            <td class="aoba-center">{{ row.createdBy }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+    <ng-template #aobaTotalTpl let-total let-range="range">{{ range[0] }}-{{ range[1] }} / {{ total }}</ng-template>
+  </nz-card>
+</div>
+
+<app-apply-detail-modal #aobaDetailModal [variant]="over ? 'otOver' : 'ot'"></app-apply-detail-modal>
+
+<!-- Popup tìm nhân viên cho mã NV dòng mới (thay viewAddAffirmEvsList ở bản cũ) -->
+<nz-modal [nzVisible]="pickerVisible()" [nzTitle]="i18n.t('empSearch.title', 'Tìm kiếm nhân viên')" [nzFooter]="null" (nzOnCancel)="closePicker()">
+  <ng-container *nzModalContent>
+    <nz-select
+      id="aoba-picker-select"
+      class="aoba-full"
+      nzShowSearch
+      [nzServerSearch]="true"
+      [nzLoading]="pickerSearching()"
+      [ngModel]="null"
+      (ngModelChange)="onPickerSelected($event)"
+      (nzOnSearch)="onPickerSearch($event)"
+      [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã NV hoặc họ tên...')"
+    >
+      @for (emp of pickerResults(); track emp.personId) {
+        <nz-option [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '') + (emp.deptName ? ' / ' + emp.deptName : '')"></nz-option>
+      }
+    </nz-select>
+  </ng-container>
+</nz-modal>
+
+<!-- Import Excel -->
+<nz-modal [nzVisible]="importVisible()" [nzTitle]="i18n.t('ess.infoApply.EXCEL_IN', 'Chèn file')" (nzOnCancel)="closeImport()">
+  <ng-container *nzModalContent>
+    <input id="aoba-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeImport()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="aoba-import-submit-btn" nz-button nzType="primary" [disabled]="!importFile()" [nzLoading]="importing()" (click)="submitImport()">
+      {{ i18n.t('ess.infoApply.EXCEL_IN', 'Chèn file') }}
+    </button>
+  </div>
+</nz-modal>

@@ -1,0 +1,67 @@
+.aaa-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aaa-batch-row,
+.aaa-time-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.aaa-batch-row {
+  margin-bottom: 12px;
+}
+
+.aaa-gap {
+  margin-left: 12px;
+}
+
+.aaa-time-row + .aaa-time-row {
+  margin-top: 4px;
+}
+
+.aaa-time-label {
+  min-width: 48px;
+}
+
+.aaa-hm-select {
+  width: 72px;
+}
+
+.aaa-minute-input {
+  width: 56px;
+  text-align: center;
+}
+
+.aaa-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.aaa-quick-filter {
+  max-width: 220px;
+}
+
+.aaa-center {
+  text-align: center;
+}
+
+.aaa-col-time {
+  min-width: 380px;
+}
+
+.aaa-col-reason {
+  min-width: 180px;
+}
+
+.aaa-approver {
+  margin-top: 16px;
+}

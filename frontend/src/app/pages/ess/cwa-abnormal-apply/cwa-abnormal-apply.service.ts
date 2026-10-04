@@ -17,6 +17,8 @@ export interface CwaAbnormalRow {
   shiftEndYyyy?: string;
   shiftEndHh?: string;
   shiftEndMi?: string;
+  /** 'N' = chưa khóa (được chọn xin phép) */
+  lockYn?: string;
 }
 
 export interface MyInfo {

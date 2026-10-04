@@ -44,6 +44,8 @@ public interface ArOvertimeManagentMapper {
 
     void updateOvertimeApply(ArOvertimeManagentDto dto);
 
+    void updateOvertimeApplyOver(ArOvertimeManagentDto dto);
+
     void callDeleteOtConfirm(Map<String, Object> params);
 
     void cancelOvertimeApply(@Param("applyNo") String applyNo);

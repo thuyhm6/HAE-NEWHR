@@ -2,119 +2,262 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.ait.ess.tempEmp.mapper.MonthDetailListMapper">
 
-    <resultMap id="MonthDetailListResultMap" type="com.ait.ess.tempEmp.dto.MonthDetailListDto">
-        <result column="EMPID"              property="empId"            jdbcType="VARCHAR"/>
-        <result column="LOCAL_NAME"         property="localName"        jdbcType="VARCHAR"/>
-        <result column="DEPTNAME"           property="deptName"         jdbcType="VARCHAR"/>
-        <result column="DOB"                property="dob"              jdbcType="VARCHAR"/>
-        <result column="DUTY_NAME"          property="dutyName"         jdbcType="VARCHAR"/>
-        <result column="DATE_STARTED"       property="dateStarted"      jdbcType="VARCHAR"/>
-        <result column="END_PROBATION_DATE" property="endProbationDate" jdbcType="VARCHAR"/>
-        <result column="HC_DAY_OT"          property="hcDayOt"          jdbcType="INTEGER"/>
-        <result column="HC_NIGHT_OT"        property="hcNightOt"        jdbcType="INTEGER"/>
-        <result column="HC_NIGHT_OT_210"    property="hcNightOt210"     jdbcType="INTEGER"/>
-        <result column="REST_DAY_OT"        property="restDayOt"        jdbcType="INTEGER"/>
-        <result column="REST_NIGHT_OT"      property="restNightOt"      jdbcType="INTEGER"/>
-        <result column="HOL_DAY_OT"         property="holDayOt"         jdbcType="INTEGER"/>
-        <result column="HOL_NIGHT_OT"       property="holNightOt"       jdbcType="INTEGER"/>
-        <result column="ADMIN_SHIFT_DAYS"   property="adminShiftDays"   jdbcType="INTEGER"/>
-        <result column="NIGHT_SHIFT_DAYS"   property="nightShiftDays"   jdbcType="INTEGER"/>
-        <result column="STANDARD_WORK_DAYS" property="standardWorkDays" jdbcType="INTEGER"/>
+    <!-- ===== Lịch tháng (AR_CALENDER) - dựng header các cột chi tiết theo ngày =====
+         Port từ ess.tempEmp.viewFixedDateList (Hanwha_HAE). TYPEID = 1440 là ngày làm việc,
+         các ngày khác (nghỉ/lễ) được tô xám trên giao diện. -->
+    <resultMap id="MonthDetailDateResultMap" type="com.ait.ess.tempEmp.dto.MonthDetailDateDto">
+        <result column="DDATE_STR"    property="ddateStr"   jdbcType="VARCHAR"/>
+        <result column="IWEEK"        property="iweek"      jdbcType="INTEGER"/>
+        <result column="TYPEID"       property="typeId"     jdbcType="VARCHAR"/>
+        <result column="IDAY"         property="iday"       jdbcType="INTEGER"/>
+        <result column="DATE_KEY"     property="dateKey"    jdbcType="VARCHAR"/>
+        <result column="DAY_OT_KEY"   property="dayOtKey"   jdbcType="VARCHAR"/>
+        <result column="NIGHT_OT_KEY" property="nightOtKey" jdbcType="VARCHAR"/>
+        <result column="WEEK_TITLE"   property="weekTitle"  jdbcType="VARCHAR"/>
     </resultMap>
 
-    <!-- ===== Fragment điều kiện lọc dùng chung ===== -->
-    <sql id="filterCondition">
-        H.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
-        AND H.DEPTNO = D.DEPTNO(+)
-        AND HP.PERSON_ID = H.PERSON_ID
-        AND H.EMPID NOT LIKE '111111%'
-        AND EXISTS (
-            SELECT B1.DEPTID
-            FROM HR_DEPARTMENT B1
-            WHERE B1.DEPTNO = D.DEPTNO
-            START WITH B1.DEPTNO IN (
-                SELECT HRD.DEPTID
-                FROM HR_DEPARTMENT HRD
-                WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR}
-            )
-            CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
-            UNION
-            SELECT ASI.DEPTNO
-            FROM AR_SUPERVISOR_INFO ASI
-            WHERE ASI.DEPTNO = D.DEPTNO
-              AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
-        )
-        <if test="month != null and month != '' and year != null and year != ''">
-            AND TRUNC(H.DATE_STARTED) &lt;= LAST_DAY(TO_DATE(#{year, jdbcType=VARCHAR} || #{month, jdbcType=VARCHAR}, 'YYYYMM'))
-            AND (H.DATE_LEFT IS NULL
-                 OR TRUNC(H.DATE_LEFT) &gt;= TO_DATE(#{year, jdbcType=VARCHAR} || #{month, jdbcType=VARCHAR} || '01', 'YYYYMMDD'))
-        </if>
-        <if test="keyword != null and keyword != ''">
-            AND (
-                UPPER(H.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
-                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
-            )
-        </if>
-        <if test="quickFilter != null and quickFilter != ''">
-            AND (
-                UPPER(H.EMPID) LIKE '%' || UPPER(#{quickFilter, jdbcType=VARCHAR}) || '%'
-                OR CONVERTTOUNSIGN(UPPER(H.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{quickFilter, jdbcType=VARCHAR})) || '%'
-                OR CONVERTTOUNSIGN(UPPER(GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR}))) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{quickFilter, jdbcType=VARCHAR})) || '%'
-            )
-        </if>
-        <if test="deptNos != null and deptNos != ''">
-            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || H.DEPTNO || ',') &gt; 0
-        </if>
-        <choose>
-            <when test="empTypeCode == 'THOIVU'">
-                AND H.EMP_TYPE_CODE = '14016053'
-            </when>
-            <when test="empTypeCode == 'MTSVN'">
-                AND H.EMP_TYPE_CODE &lt;&gt; '14016053'
-                AND (SELECT HPI.NATIONALITY_CODE FROM HR_PERSONAL_INFO HPI WHERE HPI.PERSON_ID = H.PERSON_ID) &lt;&gt; '872'
-            </when>
-        </choose>
-    </sql>
-
-    <!-- ===== Đếm danh sách (dùng cho phân trang) ===== -->
-    <select id="countList" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
-            resultType="int">
-        SELECT COUNT(*)
-        FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
-        WHERE <include refid="filterCondition"/>
+    <select id="selectFixedDateList" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
+            resultMap="MonthDetailDateResultMap">
+        <bind name="arMonth" value="month + year"/>
+        SELECT DDATE_STR,
+               IWEEK,
+               TYPEID,
+               IDAY,
+               'DATE_' || IDAY      AS DATE_KEY,
+               'DAY_OT_' || IDAY    AS DAY_OT_KEY,
+               'NIGHT_OT_' || IDAY  AS NIGHT_OT_KEY,
+               DECODE(IWEEK, 1, 'Mon', 2, 'Tues', 3, 'Wed', 4, 'Thur', 5, 'Fri', 6, 'Sat', 0, 'Sun') AS WEEK_TITLE
+          FROM AR_CALENDER
+         WHERE CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND DDATE_STR BETWEEN TO_CHAR(TO_DATE(#{arMonth, jdbcType=VARCHAR}, 'MMYYYY'), 'YYYY/MM') || '/01'
+                             AND TO_CHAR(ADD_MONTHS(TO_DATE(#{arMonth, jdbcType=VARCHAR}, 'MMYYYY'), 1) - 1, 'YYYY/MM') || '/31'
+         ORDER BY DDATE_STR
     </select>
 
-    <!-- ===== Danh sách chi tiết chấm công tháng có phân trang ===== -->
-    <select id="selectListPage" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
-            resultMap="MonthDetailListResultMap">
-        SELECT * FROM (
-            SELECT INNER_Q.*, ROWNUM AS RN FROM (
-                SELECT
-                    H.EMPID                                                     AS EMPID,
-                    H.LOCAL_NAME                                                AS LOCAL_NAME,
-                    GET_DEPT_NAME(H.DEPTNO, #{lang, jdbcType=VARCHAR})          AS DEPTNAME,
-                    TO_CHAR(HP.DOB, 'YYYY/MM/DD')                              AS DOB,
-                    GET_GLOBAL_NAME(H.DUTY_NO, #{lang, jdbcType=VARCHAR})       AS DUTY_NAME,
-                    TO_CHAR(H.DATE_STARTED, 'YYYY/MM/DD')                      AS DATE_STARTED,
-                    TO_CHAR(H.END_PROBATION_DATE, 'YYYY/MM/DD')                AS END_PROBATION_DATE,
-                    <!-- Dữ liệu chấm công (TC ngày/đêm, ngày nghỉ, lễ tết, ca...) chưa có nguồn bảng chấm công,
-                         để 0 tạm thời, sẽ nối câu lệnh thực tế khi nghiệp vụ cung cấp sau -->
-                    0 AS HC_DAY_OT,
-                    0 AS HC_NIGHT_OT,
-                    0 AS HC_NIGHT_OT_210,
-                    0 AS REST_DAY_OT,
-                    0 AS REST_NIGHT_OT,
-                    0 AS HOL_DAY_OT,
-                    0 AS HOL_NIGHT_OT,
-                    0 AS ADMIN_SHIFT_DAYS,
-                    0 AS NIGHT_SHIFT_DAYS,
-                    0 AS STANDARD_WORK_DAYS
-                FROM HR_EMPLOYEE H, HR_DEPARTMENT D, HR_PERSONAL_INFO HP
-                WHERE <include refid="filterCondition"/>
-                ORDER BY H.EMPID ASC
-            ) INNER_Q
-            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
-        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    <!-- ===== Danh sách chi tiết chấm công tháng (thời gian thực) =====
+         Port từ ess.tempEmp.getMonthDetailRealTimeList (Hanwha_HAE). Số cột chi tiết theo ngày
+         (DATE_n / DAY_OT_n / NIGHT_OT_n) thay đổi theo tháng nên map vào LinkedHashMap
+         (key = tên cột) thay vì DTO cố định. -->
+    <resultMap id="MonthDetailRowResultMap" type="java.util.LinkedHashMap" autoMapping="true"/>
+
+    <select id="selectMonthDetailList" parameterType="com.ait.ess.tempEmp.dto.MonthDetailListDto"
+            resultMap="MonthDetailRowResultMap">
+        <bind name="arMonth" value="month + year"/>
+        SELECT <include refid="monthYYYYMM"/> AS AR_MONTH,
+               HR.EMPID,
+               HR.PERSON_ID,
+               HR.LOCAL_NAME,
+               HR.DEPTNO,
+               GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+               HR.EMP_TYPE_CODE,
+               GET_GLOBAL_NAME(HR.EMP_TYPE_CODE, #{lang, jdbcType=VARCHAR}) AS EMP_TYPE_NAME,
+               HR.POST_FAMILY,
+               GET_GLOBAL_NAME(HR.POST_FAMILY, #{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
+               HR.POST_GRADE_NO,
+               GET_GLOBAL_NAME(HR.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               HR.POSITION_NO,
+               GET_GLOBAL_NAME(HR.POSITION_NO, #{lang, jdbcType=VARCHAR}) AS POSITION_NAME,
+               TO_CHAR(HR.DATE_STARTED, 'DD/MM/YYYY') AS DATE_STARTED,
+               TO_CHAR(HR.END_PROBATION_DATE, 'DD/MM/YYYY') AS END_PROBATION_DATE,
+               TO_CHAR(HR.DATE_LEFT, 'DD/MM/YYYY') AS DATE_LEFT,
+               AR_GET_VAC_FOR_ESS(<include refid="monthFirstDay"/>, #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '3') AS REMAIN_ANNUAL,
+               (SELECT TO_CHAR(HPI.DOB, 'DD/MM/YYYY') FROM HR_PERSONAL_INFO HPI WHERE HPI.PERSON_ID = HR.PERSON_ID) AS DOB,
+               (SELECT GET_GLOBAL_NAME(HPI.SEXCODE, #{lang, jdbcType=VARCHAR}) FROM HR_PERSONAL_INFO HPI WHERE HPI.PERSON_ID = HR.PERSON_ID) AS GENDER,
+               GETTENPOINT(#{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, <include refid="monthRange"/>, '', 'GROUP_TYPE') AS GROUP_TYPE,
+               GETTENPOINT(#{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, <include refid="monthRange"/>, '', 'EMPLOYEE_TYPE') AS EMPLOYEE_TYPE,
+               GETTENPOINT(#{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, <include refid="monthRange"/>, '', 'DEPT_TYPE') AS DEPT_TYPE,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'WORK_SCHEDULE_DAYS') AS WORK_SCHEDULE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_WORK_HOURS') AS REG_WORK_HOURS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_WORK_HOURS') AS PROB_WORK_HOURS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'DAY_WORK_SCHEDULE_DAYS') AS DAY_WORK_SCHEDULE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'NIGHT_WORK_SCHEDULE_DAYS') AS NIGHT_WORK_SCHEDULE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_WORK_DAYS') AS PROB_WORK_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_WORK_DAYS') AS REG_WORK_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_REST_PAY_DAYS') AS PROB_REST_PAY_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_REST_PAY_DAYS') AS REG_REST_PAY_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_LEAVE_PAY_DAYS') AS PROB_LEAVE_PAY_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_LEAVE_PAY_DAYS') AS REG_LEAVE_PAY_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_UNPAID_LEAVE_DAYS') AS PROB_UNPAID_LEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_UNPAID_LEAVE_DAYS') AS REG_UNPAID_LEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_WORK_DAYS') AS PROB_NIGHT_WORK_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_WORK_DAYS') AS REG_NIGHT_WORK_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'LATE_ARRIVE_HOURS') AS LATE_ARRIVE_HOURS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'EARLY_LEAVE_HOURS') AS EARLY_LEAVE_HOURS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'LATE_ARRIVE_COUNT') AS LATE_ARRIVE_COUNT,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'EARLY_LEAVE_COUNT') AS EARLY_LEAVE_COUNT,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'WOMEN_LEAVE_DEFAULT') AS WOMEN_LEAVE_DEFAULT,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'WOMEN_LEAVE_HOURS') AS WOMEN_LEAVE_HOURS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'ANNUAL_LEAVE_DAYS') AS ANNUAL_LEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'BUSINESS_LEAVE_DAYS') AS BUSINESS_LEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'COMPENSATORY_LEAVE_DAYS') AS COMPENSATORY_LEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PRO_ACTUAL_WORKING') AS PRO_ACTUAL_WORKING,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_ACTUAL_WORKING') AS REG_ACTUAL_WORKING,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'SHUTDOWN_LEAVE_DAYS') AS SHUTDOWN_LEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'FULL_ATTENDANCE_FLAG') AS FULL_ATTENDANCE_FLAG,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'UNPAID_LEAVE_RAESON_DAYS') AS UNPAID_LEAVE_RAESON_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'UNPAID_LEAVE_UNRAESON_DAYS') AS UNPAID_LEAVE_UNRAESON_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'SICK_LEAVE_DAYS') AS SICK_LEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'MATERNITYLEAVE_DAYS') AS MATERNITYLEAVE_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'HUNSANGJIA_DAYS') AS HUNSANGJIA_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PAID_LEAVE_70_DAYS') AS PAID_LEAVE_70_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_PAID_LEAVE_70_DAYS') AS PROB_PAID_LEAVE_70_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PAID_LEAVE_50_DAYS') AS PAID_LEAVE_50_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_PAID_LEAVE_50_DAYS') AS PROB_PAID_LEAVE_50_DAYS,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_DAY_OT_WEEKDAY') AS PROB_DAY_OT_WEEKDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_DAY_OT_WEEKDAY') AS REG_DAY_OT_WEEKDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_OT_WEEKDAY') AS PROB_NIGHT_OT_WEEKDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_OT_WEEKDAY') AS REG_NIGHT_OT_WEEKDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_OT_WEEKDAY_210') AS PROB_NIGHT_OT_WEEKDAY_210,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_OT_WEEKDAY_210') AS REG_NIGHT_OT_WEEKDAY_210,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_DAY_OT_SATURDAY') AS PROB_DAY_OT_SATURDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_DAY_OT_SATURDAY') AS REG_DAY_OT_SATURDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_OT_SATURDAY') AS PROB_NIGHT_OT_SATURDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_OT_SATURDAY') AS REG_NIGHT_OT_SATURDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_DAY_OT_WEEKEND') AS PROB_DAY_OT_WEEKEND,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_DAY_OT_WEEKEND') AS REG_DAY_OT_WEEKEND,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_OT_WEEKEND') AS PROB_NIGHT_OT_WEEKEND,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_OT_WEEKEND') AS REG_NIGHT_OT_WEEKEND,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_DAY_OT_2S3G_SUNDAY') AS PROB_DAY_OT_2S3G_SUNDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_DAY_OT_2S3G_SUNDAY') AS REG_DAY_OT_2S3G_SUNDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_OT_2S3G_SUNDAY') AS PROB_NIGHT_OT_2S3G_SUNDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_OT_2S3G_SUNDAY') AS REG_NIGHT_OT_2S3G_SUNDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_DAY_OT_HOLIDAY') AS PROB_DAY_OT_HOLIDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_DAY_OT_HOLIDAY') AS REG_DAY_OT_HOLIDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'PROB_NIGHT_OT_HOLIDAY') AS PROB_NIGHT_OT_HOLIDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'REG_NIGHT_OT_HOLIDAY') AS REG_NIGHT_OT_HOLIDAY,
+               AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'SENIORITY') AS SENIORITY,
+               (CASE AR_GET_ATTEND_VALUE(<include refid="monthRange"/>, HR.PERSON_ID, #{cpnyId, jdbcType=VARCHAR}, 'BONUS_2S3G_2A_DAYS')
+                     WHEN '1' THEN '2S3G'
+                     WHEN '2' THEN '2A'
+                     WHEN '3' THEN 'S2A'
+                END) AS BONUS_2S3G_2A_DAYS,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '01', #{cpnyId, jdbcType=VARCHAR}) AS DATE_1,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '02', #{cpnyId, jdbcType=VARCHAR}) AS DATE_2,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '03', #{cpnyId, jdbcType=VARCHAR}) AS DATE_3,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '04', #{cpnyId, jdbcType=VARCHAR}) AS DATE_4,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '05', #{cpnyId, jdbcType=VARCHAR}) AS DATE_5,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '06', #{cpnyId, jdbcType=VARCHAR}) AS DATE_6,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '07', #{cpnyId, jdbcType=VARCHAR}) AS DATE_7,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '08', #{cpnyId, jdbcType=VARCHAR}) AS DATE_8,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '09', #{cpnyId, jdbcType=VARCHAR}) AS DATE_9,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '10', #{cpnyId, jdbcType=VARCHAR}) AS DATE_10,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '11', #{cpnyId, jdbcType=VARCHAR}) AS DATE_11,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '12', #{cpnyId, jdbcType=VARCHAR}) AS DATE_12,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '13', #{cpnyId, jdbcType=VARCHAR}) AS DATE_13,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '14', #{cpnyId, jdbcType=VARCHAR}) AS DATE_14,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '15', #{cpnyId, jdbcType=VARCHAR}) AS DATE_15,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '16', #{cpnyId, jdbcType=VARCHAR}) AS DATE_16,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '17', #{cpnyId, jdbcType=VARCHAR}) AS DATE_17,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '18', #{cpnyId, jdbcType=VARCHAR}) AS DATE_18,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '19', #{cpnyId, jdbcType=VARCHAR}) AS DATE_19,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '20', #{cpnyId, jdbcType=VARCHAR}) AS DATE_20,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '21', #{cpnyId, jdbcType=VARCHAR}) AS DATE_21,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '22', #{cpnyId, jdbcType=VARCHAR}) AS DATE_22,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '23', #{cpnyId, jdbcType=VARCHAR}) AS DATE_23,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '24', #{cpnyId, jdbcType=VARCHAR}) AS DATE_24,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '25', #{cpnyId, jdbcType=VARCHAR}) AS DATE_25,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '26', #{cpnyId, jdbcType=VARCHAR}) AS DATE_26,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '27', #{cpnyId, jdbcType=VARCHAR}) AS DATE_27,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '28', #{cpnyId, jdbcType=VARCHAR}) AS DATE_28,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '29', #{cpnyId, jdbcType=VARCHAR}) AS DATE_29,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '30', #{cpnyId, jdbcType=VARCHAR}) AS DATE_30,
+               AR_GET_DETAIL_VALUE(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '31', #{cpnyId, jdbcType=VARCHAR}) AS DATE_31,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '01', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_1,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '02', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_2,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '03', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_3,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '04', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_4,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '05', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_5,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '06', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_6,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '07', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_7,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '08', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_8,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '09', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_9,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '10', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_10,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '11', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_11,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '12', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_12,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '13', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_13,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '14', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_14,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '15', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_15,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '16', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_16,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '17', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_17,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '18', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_18,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '19', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_19,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '20', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_20,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '21', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_21,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '22', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_22,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '23', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_23,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '24', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_24,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '25', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_25,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '26', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_26,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '27', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_27,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '28', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_28,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '29', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_29,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '30', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_30,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '31', #{cpnyId, jdbcType=VARCHAR}, 'DAY') AS DAY_OT_31,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '01', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_1,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '02', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_2,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '03', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_3,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '04', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_4,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '05', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_5,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '06', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_6,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '07', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_7,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '08', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_8,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '09', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_9,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '10', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_10,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '11', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_11,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '12', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_12,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '13', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_13,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '14', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_14,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '15', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_15,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '16', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_16,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '17', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_17,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '18', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_18,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '19', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_19,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '20', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_20,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '21', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_21,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '22', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_22,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '23', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_23,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '24', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_24,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '25', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_25,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '26', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_26,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '27', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_27,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '28', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_28,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '29', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_29,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '30', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_30,
+               AR_GET_DETAIL_OT(HR.PERSON_ID, <include refid="monthYYYYMM"/> || '31', #{cpnyId, jdbcType=VARCHAR}, 'NIGHT') AS NIGHT_OT_31
+          FROM HR_EMPLOYEE HR
+         WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND HR.EMPID NOT LIKE '111111%'
+           AND HR.EMP_TYPE_CODE NOT IN ('14016053', '10418')
+           AND (HR.DATE_LEFT IS NULL OR TO_CHAR(HR.DATE_LEFT, 'YYYY/MM/DD') &gt; <include refid="monthFirstDay"/>)
+           AND TO_CHAR(HR.DATE_STARTED, 'YYYY/MM/DD') &lt;= TO_CHAR(ADD_MONTHS(TO_DATE('01' || #{arMonth, jdbcType=VARCHAR}, 'DDMMYYYY'), 1) - 1, 'YYYY/MM/DD')
+           AND TO_CHAR(HR.DATE_STARTED, 'YYYY/MM/DD') &lt;&gt; NVL(TO_CHAR(HR.DATE_LEFT, 'YYYY/MM/DD'), '1099/01/01')
+        <choose>
+            <when test="deptNos != null and deptNos != ''">
+                AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+            </when>
+            <otherwise>
+                <!-- Không chọn phòng ban: chỉ lấy phòng ban người đăng nhập quản lý / giám sát -->
+                AND EXISTS (
+                    SELECT B1.DEPTID
+                      FROM HR_DEPARTMENT B1
+                     WHERE B1.DEPTNO = HR.DEPTNO
+                     START WITH B1.DEPTNO IN (SELECT HRD.DEPTID
+                                                FROM HR_DEPARTMENT HRD
+                                               WHERE HRD.MANAGER_EMP_ID = #{adminID, jdbcType=VARCHAR})
+                    CONNECT BY PRIOR B1.DEPTNO = B1.PARENT_DEPT_NO
+                    UNION
+                    SELECT ASI.DEPTNO
+                      FROM AR_SUPERVISOR_INFO ASI
+                     WHERE ASI.DEPTNO = HR.DEPTNO
+                       AND ASI.PERSON_ID = #{adminID, jdbcType=VARCHAR}
+                )
+            </otherwise>
+        </choose>
+        <if test="keyword != null and keyword != ''">
+            AND (UPPER(HR.EMPID) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+                 OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%')
+        </if>
+         ORDER BY HR.EMPID ASC
     </select>
 
     <!-- ===== Báo cáo "Công tính lương" (reportType = 314) ===== -->

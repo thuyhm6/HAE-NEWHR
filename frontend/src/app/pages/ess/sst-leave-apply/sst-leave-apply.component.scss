@@ -1,30 +1,53 @@
 .sa-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+.sa-form ::ng-deep .ant-descriptions-item-label {
+  width: 20%;
+  text-align: right;
+}
+
+.sa-type-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.sa-type-select {
+  width: 260px;
+  max-width: 100%;
 }
 
 .sa-vac-info {
+  flex: 1;
+  min-width: 240px;
+}
+
+.sa-time-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 6px;
 }
 
-.sa-vac-text {
-  color: rgba(0, 0, 0, 0.45);
-  font-size: 13px;
+.sa-hm-select {
+  width: 80px;
 }
 
-.sa-duration-text {
-  display: inline-block;
-  padding-top: 6px;
-  font-weight: 500;
+.sa-reason {
+  max-width: 500px;
+  resize: none;
 }
 
-.sa-col-center {
-  text-align: center;
+.sa-approver {
+  margin-top: 16px;
 }
 
 .sa-submit-row {
-  text-align: right;
-  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }

@@ -5,56 +5,40 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzDescriptionsModule } from 'ng-zorro-antd/descriptions';
-import { NzFormModule } from 'ng-zorro-antd/form';
-import { NzGridModule } from 'ng-zorro-antd/grid';
-import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzTableModule } from 'ng-zorro-antd/table';
 
 import { I18nService } from '../../../i18n/i18n.service';
-import {
-  APPROV_TYPE_APPROVAL,
-  APPROV_TYPE_NOTICE,
-  ApproverInput,
-  EmployeeSearchResult,
-  LEAVE_TYPE_PARENT_CODE,
-  MyInfo,
-  SstLeaveApplyService,
-  SyCodeOption,
-  VacationInfo,
-} from './sst-leave-apply.service';
+import { ApproverChainComponent } from '../../../shared/approver-chain/approver-chain.component';
+import { ApproverChainItem, ApproverChainService } from '../../../shared/approver-chain/approver-chain.service';
+import { EssPersonalHeadComponent } from '../../../shared/ess-personal-head/ess-personal-head.component';
+import { EssPersonalHeadInfo } from '../../../shared/ess-personal-head/ess-personal-head.service';
+import { essApplyErrorText } from '../../../shared/ess-apply-response';
+import { SstLeaveApplyService, SyCodeOption, VacationInfo } from './sst-leave-apply.service';
 
-const FEMALE_SEX_CODE = '1325';
-const FEMALE_ONLY_LEAVE_TYPES = ['141474', '27'];
-const WOMEN_LEAVE_TYPE = '141474';
-const ANNUAL_LEAVE_TYPE = '26';
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+/** Danh sách phút đúng như select fromTime_fen / toTime_fen ở JSP gốc */
+const MINUTE_OPTIONS = ['00', '03', '10', '20', '30', '33', '40', '45', '50', '58'];
+/** Loại nghỉ cần kiểm tra giới tính khi chọn (getLeaveDateSST) */
+const SEX_CHECK_TYPES = ['27', '16415', '28', '482', '141474'];
+const EPSILON = 1e-10;
 
-function defaultFromTime(): Date {
+function today(): Date {
   const d = new Date();
-  d.setHours(8, 0, 0, 0);
-  return d;
-}
-
-function defaultToTime(): Date {
-  const d = new Date();
-  d.setHours(17, 0, 0, 0);
+  d.setHours(0, 0, 0, 0);
   return d;
 }
 
 /**
- * Form tạo đơn xin nghỉ phép mới cho bản thân - port lại từ
- * ess/infoApplyAttendance/viewSSTApplyAttendance.html (Thymeleaf, đã xoá)
- * sang Angular + NG-ZORRO. Thay EmployeeSearchModal (jQuery) bằng nz-select
- * tìm kiếm server-side chọn người phê duyệt (giống ChangeUserComponent). Giữ
- * nguyên toàn bộ rule nghiệp vụ validate trước khi gửi (giới tính, thời
- * lượng tối đa nghỉ phụ nữ, bội số nửa ngày cho phép năm...) đúng như bản
- * gốc. Khối "Thông tin nhân viên" tái dùng luôn API myInfo() sẵn có (đã gọi
- * để lấy personId/sexCode) và render bằng nz-descriptions theo đúng pattern
- * đã dùng ở personal-info-ess.component.html. Không port phần đính kèm file
- * vì bản gốc không có UI cho việc này (chỉ còn dead code trong script,
- * không có input file/nút hiển thị trong HTML).
+ * Xin nghỉ phép cho chính nhân viên đăng nhập - /ess/infoApplyAttendance/viewSSTApplyAttendance.
+ * Port đúng giao diện/chức năng JSP Hanwha_HAE (viewSSTApplyAttendance.jsp):
+ * ngày + giờ + phút rời (danh sách phút như bản gốc, mặc định 07:45 ~ 17:33),
+ * thông tin phép năm hiện sau khi chọn loại nghỉ, cách hiển thị thời lượng
+ * (ngày/giờ, phút với nghỉ phụ nữ), toàn bộ rule kiểm tra trước khi gửi theo
+ * đúng thứ tự bản gốc và bảng người duyệt tự chọn (bản gốc không nạp sẵn dây
+ * chuyền duyệt mặc định ở màn hình này).
  */
 @Component({
   selector: 'app-sst-leave-apply',
@@ -66,12 +50,10 @@ function defaultToTime(): Date {
     NzCardModule,
     NzDatePickerModule,
     NzDescriptionsModule,
-    NzFormModule,
-    NzGridModule,
-    NzIconModule,
     NzInputModule,
     NzSelectModule,
-    NzTableModule,
+    ApproverChainComponent,
+    EssPersonalHeadComponent,
   ],
   templateUrl: './sst-leave-apply.component.html',
   styleUrl: './sst-leave-apply.component.scss',
@@ -79,329 +61,251 @@ function defaultToTime(): Date {
 export class SstLeaveApplyComponent implements OnInit {
   private readonly service = inject(SstLeaveApplyService);
   private readonly message = inject(NzMessageService);
+  private readonly modal = inject(NzModalService);
   protected readonly i18n = inject(I18nService);
 
-  private personId = '';
-  private localName = '';
-  private sexCode = '';
-  protected readonly myInfo = signal<MyInfo | null>(null);
-  private vacData: VacationInfo | null = null;
-  private durationDays: number | null = null;
-  private durationHours: number | null = null;
-  private calcTimer: ReturnType<typeof setTimeout> | null = null;
+  protected readonly hourOptions = HOUR_OPTIONS;
+  protected readonly minuteOptions = MINUTE_OPTIONS;
 
-  protected readonly leaveTypeOptionsAll = signal<SyCodeOption[]>([]);
+  private me: EssPersonalHeadInfo = {};
+
+  protected readonly leaveTypeOptions = signal<SyCodeOption[]>([]);
   protected readonly leaveTypeCode = signal<string | null>(null);
-  protected readonly vacInfoText = signal('');
-  protected readonly fromTime = signal<Date | null>(defaultFromTime());
-  protected readonly toTime = signal<Date | null>(defaultToTime());
-  protected readonly durationText = signal('-');
+  protected readonly vacInfo = signal<VacationInfo | null>(null);
+  /** view_vac_sub: ẩn cho tới khi chọn loại nghỉ lần đầu */
+  protected readonly showVacInfo = signal(false);
+
+  protected readonly fromDate = signal<Date | null>(today());
+  protected readonly fromHour = signal('07');
+  protected readonly fromMinute = signal('45');
+  protected readonly toDate = signal<Date | null>(today());
+  protected readonly toHour = signal('17');
+  protected readonly toMinute = signal('33');
+
+  /** shenqingshichangText / shenqingshichang (giờ) / shenchangFormatHour (ngày) - giá trị khởi tạo như bản gốc */
+  protected readonly durationText = signal('');
+  private applyLength = 8;
+  private applyLengthDay = 1;
+  private calcSeq = 0;
+
   protected readonly reason = signal('');
-
-  protected readonly approverList = signal<ApproverInput[]>([]);
-  protected readonly approverSearchResults = signal<EmployeeSearchResult[]>([]);
-  protected readonly approverSearching = signal(false);
-  protected readonly addingApprover = signal(false);
-  protected readonly selectedApproverPersonId = signal<string | null>(null);
-  protected readonly newApproverApprovType = signal<string>(APPROV_TYPE_APPROVAL);
-
+  protected readonly approvers = signal<ApproverChainItem[]>([]);
   protected readonly submitting = signal(false);
-
-  protected readonly APPROV_TYPE_APPROVAL = APPROV_TYPE_APPROVAL;
-  protected readonly APPROV_TYPE_NOTICE = APPROV_TYPE_NOTICE;
-
-  protected get leaveTypeOptions(): SyCodeOption[] {
-    if (this.sexCode === FEMALE_SEX_CODE) {
-      return this.leaveTypeOptionsAll();
-    }
-    return this.leaveTypeOptionsAll().filter((opt) => !FEMALE_ONLY_LEAVE_TYPES.includes(opt.codeNo));
-  }
 
   async ngOnInit(): Promise<void> {
     await this.i18n.load();
+    this.durationText.set(`1 ${this.i18n.t('ar.viewitemparameter.title.dayofunit', 'Ngày')}`);
     try {
-      this.leaveTypeOptionsAll.set(await this.service.getLeaveTypeOptions());
+      this.leaveTypeOptions.set(await this.service.getLeaveTypeOptions());
     } catch {
-      this.leaveTypeOptionsAll.set([]);
+      this.leaveTypeOptions.set([]);
     }
     try {
-      const info = await this.service.getMyInfo();
-      this.personId = info.personId ?? '';
-      this.localName = info.localName ?? '';
-      this.sexCode = info.sexCode ?? '';
-      this.myInfo.set(info);
+      this.vacInfo.set(await this.service.getVacationInfo());
     } catch {
-      // im lặng bỏ qua - form vẫn dùng được, chỉ thiếu thông tin cá nhân mặc định
+      this.vacInfo.set(null);
     }
-    this.calcDuration();
+  }
+
+  onPersonLoaded(info: EssPersonalHeadInfo): void {
+    this.me = info ?? {};
   }
 
   codeLabel(opt: SyCodeOption): string {
     return opt.codeName || opt.nameVi || opt.codeNo;
   }
 
-  async onLeaveTypeChange(): Promise<void> {
-    await this.loadVacationInfo();
-    this.calcDuration();
+  protected vacValue(field: keyof VacationInfo): string {
+    const v = this.vacInfo()?.[field];
+    return v === null || v === undefined || v === '' ? '' : String(v);
   }
 
-  private async loadVacationInfo(): Promise<void> {
-    try {
-      this.vacData = await this.service.getVacationInfo();
-      this.vacInfoText.set(this.formatVacInfo(this.vacData));
-    } catch {
-      this.vacData = null;
-      this.vacInfoText.set('');
+  /** VAC_SHENGYU = TOT_VAC_CNT - USE_VAC */
+  private get vacRemain(): number {
+    const info = this.vacInfo();
+    return toNumber(info?.TOT_VAC_CNT) - toNumber(info?.USE_VAC);
+  }
+
+  protected get vacRemainText(): string {
+    return this.vacInfo() ? String(this.vacRemain) : '';
+  }
+
+  // ── Đổi loại nghỉ (APPLY_TYPE_CODE change + composeLeaveTime) ────────────
+  async onLeaveTypeChange(code: string | null): Promise<void> {
+    this.leaveTypeCode.set(code);
+    this.showVacInfo.set(true);
+    if (code && SEX_CHECK_TYPES.includes(code) && this.me.personId) {
+      try {
+        const res = await this.service.checkLeaveSex(this.me.personId, code);
+        if (!res.valid && res.messageKey) {
+          this.message.error(this.i18n.t(res.messageKey, res.messageKey));
+          this.leaveTypeCode.set(null);
+        }
+      } catch {
+        // lỗi kiểm tra không chặn người dùng - backend kiểm tra lại khi lưu
+      }
     }
-  }
-
-  private formatVacInfo(d: VacationInfo | null): string {
-    if (!d) {
-      return '';
+    if (code === '14015956') {
+      this.message.info(this.i18n.t('alert.message.ess.changQiBingJia', 'Nghỉ ốm dài ngày'));
     }
-    const f = (v?: string | number) => (v !== null && v !== undefined && v !== '' ? v : '0');
-    return (
-      `${this.i18n.t('sa.vac.totalYear', 'Tổng phép năm:')} ${f(d.TOT_VAC_CNT)}/  ` +
-      `${this.i18n.t('sa.vac.yearVac', 'Tạo phép năm:')} ${f(d.YEAR_VAC_CNT)}/  ` +
-      `${this.i18n.t('sa.vac.lastYear', 'Còn lại năm ngoái:')} ${f(d.LAST_YEAR_VAC)}/  ` +
-      `${this.i18n.t('sa.vac.special', 'Đặc biệt:')} ${f(d.ADD_VAC)}/  ` +
-      `${this.i18n.t('sa.vac.used', 'Số ngày đã sử dụng:')} ${f(d.USE_VAC)}/  ` +
-      `${this.i18n.t('sa.vac.remain', 'Số ngày còn lại:')} ${f(d.REMAIN_VAC)}`
-    );
+    await this.calcLength();
   }
 
-  private toApiDateTime(value: Date | null): string {
-    // Mapper Oracle backend dùng TO_DATE(..., 'YYYY-MM-DD HH24:MI') nên cần
-    // khoảng trắng giữa ngày và giờ, không phải 'T' như input datetime-local
-    // gốc gửi thẳng (đã xác nhận qua lỗi ORA khi test với dấu 'T').
-    return value ? formatDate(value, 'yyyy-MM-dd HH:mm', 'en-US') : '';
+  onFromDateChange(value: Date | null): void {
+    this.fromDate.set(value);
+    void this.calcLength();
+  }
+
+  onToDateChange(value: Date | null): void {
+    this.toDate.set(value);
+    void this.calcLength();
   }
 
   onTimeChange(): void {
-    this.calcDuration();
+    void this.calcLength();
   }
 
-  private calcDuration(): void {
-    if (this.calcTimer) {
-      clearTimeout(this.calcTimer);
-    }
-    this.calcTimer = setTimeout(() => this.doCalcDuration(), 300);
+  private toApiDateTime(date: Date | null, hour: string, minute: string): string {
+    return date ? `${formatDate(date, 'yyyy-MM-dd', 'en-US')} ${hour}:${minute}` : '';
   }
 
-  private async doCalcDuration(): Promise<void> {
-    const leaveTypeCode = this.leaveTypeCode();
-    const fromDt = this.toApiDateTime(this.fromTime());
-    const toDt = this.toApiDateTime(this.toTime());
-
-    if (!fromDt || !toDt || !leaveTypeCode) {
-      this.durationText.set('-');
-      this.durationDays = null;
-      this.durationHours = null;
+  // ── Tính thời lượng (callength) ──────────────────────────────────────────
+  private async calcLength(): Promise<void> {
+    const from = this.toApiDateTime(this.fromDate(), this.fromHour(), this.fromMinute());
+    let to = this.toApiDateTime(this.toDate(), this.toHour(), this.toMinute());
+    if (!from || !to || !this.me.personId) {
       return;
     }
-
-    this.durationText.set(this.i18n.t('sa.msg.calculating', 'Đang tính...'));
+    // Kết thúc không sau bắt đầu -> ngày kết thúc = ngày bắt đầu (như bản gốc)
+    if (to <= from) {
+      this.toDate.set(this.fromDate());
+      to = this.toApiDateTime(this.fromDate(), this.toHour(), this.toMinute());
+    }
+    const code = this.leaveTypeCode() ?? '';
+    const seq = ++this.calcSeq;
     try {
-      const res = await this.service.getLeaveLength(fromDt, toDt, leaveTypeCode);
-      const leaveLen = parseFloat(String(res.LEAVE_LENGTH ?? ''));
-      const dayHour = parseFloat(String(res.DAY_HOUR ?? ''));
-      if (isNaN(leaveLen) || isNaN(dayHour) || dayHour === 0) {
-        this.durationText.set('-');
-        this.durationDays = null;
-        this.durationHours = null;
-        return;
-      }
-      this.durationHours = leaveLen;
-      this.durationDays = leaveLen / dayHour;
-      const days = Math.floor(leaveLen / dayHour);
-      const hours = leaveLen - days * dayHour;
+      const res = await this.service.getLeaveLength(this.me.personId, from, to, code);
+      if (seq !== this.calcSeq) return;
+      const len = toNumber(res.applyLength);
+      const dayHour = toNumber(res.dayHours);
+      this.applyLength = Number(len.toFixed(1));
+      const unitHour = this.i18n.t('ar.viewitemparameter.title.xiaoshi', 'Giờ');
       let text = '';
-      if (days > 0) text += `${days} ${this.i18n.t('sa.unit.days', 'Ngày')}`;
-      if (hours > 0) text += (text ? ' ' : '') + `${hours} ${this.i18n.t('sa.unit.hours', 'Giờ')}`;
-      this.durationText.set(text || '0');
-    } catch {
-      this.durationText.set('-');
-      this.durationDays = null;
-      this.durationHours = null;
-    }
-  }
-
-  async onApproverSearch(keyword: string): Promise<void> {
-    const trimmed = keyword?.trim();
-    if (!trimmed) {
-      this.approverSearchResults.set([]);
-      return;
-    }
-    this.approverSearching.set(true);
-    try {
-      this.approverSearchResults.set(await this.service.searchEmployees(trimmed));
-    } catch {
-      this.approverSearchResults.set([]);
-    } finally {
-      this.approverSearching.set(false);
-    }
-  }
-
-  showAddApproverRow(): void {
-    this.addingApprover.set(true);
-    this.selectedApproverPersonId.set(null);
-    this.newApproverApprovType.set(APPROV_TYPE_APPROVAL);
-    this.approverSearchResults.set([]);
-  }
-
-  cancelAddApprover(): void {
-    this.addingApprover.set(false);
-    this.selectedApproverPersonId.set(null);
-  }
-
-  /**
-   * Thêm ngay khi chọn xong (không đợi nút "xác nhận" riêng) - tra cứu
-   * `approverSearchResults()` phải làm NGAY tại thời điểm chọn, vì nz-select
-   * có thể phát lại `nzOnSearch` (làm rỗng danh sách) trước khi người dùng
-   * kịp bấm 1 nút xác nhận riêng biệt, khiến tra cứu theo personId sau đó
-   * thất bại âm thầm.
-   */
-  onApproverSelected(personId: string | null): void {
-    this.selectedApproverPersonId.set(personId);
-    if (!personId) {
-      return;
-    }
-    const emp = this.approverSearchResults().find((e) => e.personId === personId);
-    if (emp) {
-      this.approverList.set([
-        ...this.approverList(),
-        {
-          personId: emp.personId ?? '',
-          localName: emp.localName ?? '',
-          empId: emp.empId ?? '',
-          approvType: this.newApproverApprovType(),
-        },
-      ]);
-    }
-    this.addingApprover.set(false);
-    this.selectedApproverPersonId.set(null);
-  }
-
-  removeApprover(idx: number): void {
-    const list = [...this.approverList()];
-    list.splice(idx, 1);
-    this.approverList.set(list);
-  }
-
-  changeApproverType(idx: number, approvType: string): void {
-    const list = [...this.approverList()];
-    if (!list[idx]) {
-      return;
-    }
-    list[idx] = { ...list[idx], approvType };
-    this.approverList.set(list);
-  }
-
-  private resetForm(): void {
-    this.leaveTypeCode.set(null);
-    this.vacInfoText.set('');
-    this.vacData = null;
-    this.durationDays = null;
-    this.durationHours = null;
-    this.fromTime.set(defaultFromTime());
-    this.toTime.set(defaultToTime());
-    this.reason.set('');
-    this.approverList.set([]);
-    this.durationText.set('-');
-  }
-
-  async submit(): Promise<void> {
-    const leaveTypeCode = this.leaveTypeCode();
-    if (!leaveTypeCode) {
-      this.message.warning(this.i18n.t('sa.msg.selectLeaveType', 'Vui lòng chọn loại nghỉ phép!'));
-      return;
-    }
-
-    const fromTime = this.toApiDateTime(this.fromTime());
-    const toTime = this.toApiDateTime(this.toTime());
-    if (!fromTime) {
-      this.message.warning(this.i18n.t('sa.msg.enterStartTime', 'Vui lòng nhập thời gian bắt đầu!'));
-      return;
-    }
-    if (!toTime) {
-      this.message.warning(this.i18n.t('sa.msg.enterEndTime', 'Vui lòng nhập thời gian kết thúc!'));
-      return;
-    }
-    if (toTime <= fromTime) {
-      this.message.warning(this.i18n.t('sa.msg.endTimeBeforeStart', 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu!'));
-      return;
-    }
-
-    if (this.durationDays === null) {
-      this.message.warning(this.i18n.t('sa.msg.calculating', 'Đang tính...'));
-      return;
-    }
-    if (this.durationDays <= 0) {
-      this.message.warning(this.i18n.t('sa.msg.durationZero', 'Thời lượng phải lớn hơn 0!'));
-      return;
-    }
-
-    if (FEMALE_ONLY_LEAVE_TYPES.includes(leaveTypeCode) && this.sexCode !== FEMALE_SEX_CODE) {
-      this.message.warning(this.i18n.t('sa.msg.womenOnlyLeave', 'Chỉ nhân viên nữ mới được chọn loại nghỉ phép này!'));
-      return;
-    }
-
-    if (leaveTypeCode === WOMEN_LEAVE_TYPE && this.durationHours !== null && this.durationHours >= 3) {
-      this.message.warning(this.i18n.t('sa.msg.womenLeaveMax3h', 'Nghỉ phụ nữ không được vượt quá 3 tiếng (180 phút)!'));
-      return;
-    }
-
-    if (leaveTypeCode === ANNUAL_LEAVE_TYPE) {
-      const remainVac = this.vacData ? parseFloat(String(this.vacData.REMAIN_VAC ?? '')) : NaN;
-      const durationDays = this.durationDays ?? NaN;
-      if (!isNaN(remainVac) && !isNaN(durationDays) && durationDays > remainVac) {
-        this.message.warning(this.i18n.t('sa.msg.durationExceedsRemain', 'Thời lượng vượt quá số ngày phép còn lại!'));
-        return;
+      if (code === '141474') {
+        if (len > 0) text += `${len} ${this.i18n.t('ar.viewitemparameter.title.fenzhong', 'Phút')}`;
+      } else if (dayHour > 0) {
+        const days = Math.floor(len / dayHour);
+        this.applyLengthDay = Number((len / dayHour).toFixed(1));
+        if (days > 0) text += `${days} ${this.i18n.t('ar.viewitemparameter.title.dayofunit', 'Ngày')} `;
+        const hours = code === '90000803' ? 0 : len % dayHour;
+        if (Math.abs(hours) > EPSILON) text += `${hours.toFixed(1)} ${unitHour}`;
       }
-      if (!isNaN(durationDays)) {
-        const halfDayRemainder = (durationDays * 2) % 1;
-        if (halfDayRemainder > 0.01 && halfDayRemainder < 0.99) {
-          this.message.warning(
-            this.i18n.t('sa.msg.annualLeaveHalfDay', 'Thời lượng nghỉ phép năm phải là bội số của nửa ngày (0.5, 1, 1.5, ...)!'),
-          );
-          return;
-        }
-      }
+      this.durationText.set(text || ` 0 ${unitHour}`);
+    } catch {
+      // giữ nguyên giá trị cũ giống bản gốc khi ajax lỗi
     }
+  }
 
-    if (!this.reason().trim()) {
-      this.message.warning(this.i18n.t('sa.msg.enterReason', 'Vui lòng nhập lý do!'));
+  // ── Lưu (viewSSTApplyAttendance_save) ────────────────────────────────────
+  private validate(): string | null {
+    const t = (key: string, fallback: string) => this.i18n.t(key, fallback);
+    const code = this.leaveTypeCode() ?? '';
+    const len = this.applyLength;
+    const days = this.applyLengthDay;
+    const remain = this.vacRemain;
+    if (!this.reason().trim()) return t('ga.viewApplyCard.APPLY_REASON_NOT_NULL.d', 'Không được để trống lý do đăng ký!');
+    if (!this.fromDate()) return t('ess.infoApplyAttendance.PLEASE_ATTENDANCE_SDATE.Z', 'Vui lòng chọn thời gian bắt đầu!');
+    if (len === 0) return t('ess.infoApplyAttendance.ATTENDANCE_LONGER_THAN_0.Z', 'Thời lượng phải lớn hơn 0');
+    if (!this.toDate()) return t('ess.infoApplyAttendance.PLEASE_ATTENDANCE_EDATE.Z', 'Vui lòng chọn thời gian kết thúc!');
+    if (!code) return t('ess.infoApplyAttendance.PLEASE_ATTENDANCE_TYPE.Z', 'Vui lòng chọn loại nghỉ!');
+    const from = this.toApiDateTime(this.fromDate(), this.fromHour(), this.fromMinute());
+    const to = this.toApiDateTime(this.toDate(), this.toHour(), this.toMinute());
+    if (to <= from) return t('ess.infoApplyAttendance.ATTENDANCE_SDATE_THAN_EDATE.Z', 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu');
+    if (code === '22' && days > 5) return t('alert.message.GERENHUNJIAZUIDUOSANTIAN.b', 'Nghỉ kết hôn tối đa 5 ngày!');
+    if (code === '124851') return t('ga.affirmApplyGeneralAffairs.businesscancel', 'Chỉ có thể đăng ký đi công tác tại giao diện xin đi công tác!');
+    if (code === '27' && days > 180) return t('alert.message.CHANJIAZUIDUOYIBAIBASHITIAN.b', 'Nghỉ thai sản tối đa 180 ngày!');
+    if (code === '23' && days > 5) return t('alert.message.YOUXINSANGJIAZUIDUOSANTIAN.b', 'Nghỉ tang có lương tối đa 5 ngày!');
+    if (code === '80000229' && days > 1) {
+      return `${t('ess.infoApplyAttendance.ATTENDANCE_DAY_CAN_NOT_GREATER_THAN', 'Thời gian nghỉ không được phép lớn hơn')} 1`;
+    }
+    if (code === '26') {
+      if (days > remain) return t('ar.viewApplyAttenanceManagentInfoList.NIANJIASHISHUBUZU.b', 'Số giờ phép năm không đủ');
+      if (Math.abs(days % 0.5) > EPSILON) return t('ar.viewApplyAttenanceManagentInfoList.FANGJIAZUIXIAOBANTIAN.b', 'Phép ít nhất là nửa ngày');
+    }
+    if (code === '90000813') {
+      if (remain !== 0) return t('ar.viewApplyAttenanceManagentInfoList.TIAOXIUSHISHUBUZU.b', 'Số giờ nghỉ bù không đủ');
+      if (days > 3) return t('ar.viewApplyAttenanceManagentInfoList.TIAOXIUSHISHUBUZU.HAE.b', 'Loại nghỉ này chỉ được xin tối đa 3 ngày!');
+    }
+    if (code === '18135' && remain >= 0.5) {
+      return t('alert.message.ess.infoApply.haveAnnualCannotApplyPersonalLeave', 'Còn phép năm, không thể xin nghỉ việc riêng');
+    }
+    if (code === '141474' && len > 180) {
+      return t('alert.message.ess.infoApply.womenDayCanNotExceedThreeHours', 'Nghỉ phụ nữ không được vượt quá 3 tiếng');
+    }
+    const approverError = ApproverChainService.validate(this.approvers());
+    if (approverError) return t(approverError.key, approverError.fallback);
+    return null;
+  }
+
+  submit(): void {
+    const error = this.validate();
+    if (error) {
+      this.message.error(error);
       return;
     }
+    this.modal.confirm({
+      nzTitle: this.i18n.t('ess.message.confirm_sava', 'Bạn có chắc chắn muốn lưu không?'),
+      nzOnOk: () => this.doSave(),
+    });
+  }
 
-    if (!this.approverList().length) {
-      this.message.warning(this.i18n.t('sa.msg.requireApprover', 'Vui lòng thêm ít nhất một người phê duyệt!'));
-      return;
-    }
-
+  private async doSave(): Promise<void> {
     this.submitting.set(true);
     try {
       const res = await this.service.save({
         applyNo: '',
-        personId: this.personId,
-        localName: this.localName,
-        leaveTypeCode,
-        leaveFromTime: fromTime,
-        leaveToTime: toTime,
-        applyLength: null,
+        personId: this.me.personId ?? '',
+        empId: this.me.empId ?? '',
+        localName: this.me.localName ?? '',
+        leaveTypeCode: this.leaveTypeCode() ?? '',
+        leaveFromTime: this.toApiDateTime(this.fromDate(), this.fromHour(), this.fromMinute()),
+        leaveToTime: this.toApiDateTime(this.toDate(), this.toHour(), this.toMinute()),
+        applyLength: String(this.applyLength),
         leaveReason: this.reason(),
-        approvers: this.approverList(),
+        approvers: ApproverChainService.toSaveItems(this.approvers()),
       });
       if (res.success) {
-        this.message.success(res.message || this.i18n.t('sa.msg.submitSuccess', 'Xin phép thành công!'));
+        this.message.success(this.i18n.t(res.messageKey || 'alert.message.save_success', 'Lưu thành công'));
         this.resetForm();
+        this.vacInfo.set(await this.service.getVacationInfo().catch(() => null));
       } else {
-        this.message.error(res.error || this.i18n.t('sa.msg.submitError', 'Lỗi khi gửi đơn!'));
+        this.message.error(essApplyErrorText(this.i18n, res));
       }
     } catch {
-      this.message.error(this.i18n.t('sa.msg.submitConnError', 'Lỗi kết nối khi gửi đơn!'));
+      this.message.error(this.i18n.t('alert.message.add_fail', 'Lưu thất bại'));
     } finally {
       this.submitting.set(false);
     }
   }
+
+  private resetForm(): void {
+    this.leaveTypeCode.set(null);
+    this.showVacInfo.set(false);
+    this.fromDate.set(today());
+    this.fromHour.set('07');
+    this.fromMinute.set('45');
+    this.toDate.set(today());
+    this.toHour.set('17');
+    this.toMinute.set('33');
+    this.applyLength = 8;
+    this.applyLengthDay = 1;
+    this.durationText.set(`1 ${this.i18n.t('ar.viewitemparameter.title.dayofunit', 'Ngày')}`);
+    this.reason.set('');
+    this.approvers.set([]);
+  }
+}
+
+function toNumber(value: unknown): number {
+  const n = parseFloat(String(value ?? ''));
+  return isNaN(n) ? 0 : n;
 }

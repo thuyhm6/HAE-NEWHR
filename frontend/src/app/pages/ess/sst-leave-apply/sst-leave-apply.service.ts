@@ -2,97 +2,62 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { ApproverSaveItem } from '../../../shared/approver-chain/approver-chain.service';
+import { EssApplyResponse } from '../../../shared/ess-apply-response';
+
 export interface SyCodeOption {
   codeNo: string;
   codeName?: string;
   nameVi?: string;
 }
 
-export interface MyInfo {
-  personId?: string;
-  localName?: string;
-  sexCode?: string;
-  empId?: string;
-  deptName?: string;
-  headDepartment?: string;
-  postFamilyName?: string;
-  dutyName?: string;
-  positionNoName?: string;
-  dateStarted?: string;
-}
-
+/** getEmpVacInfoSST */
 export interface VacationInfo {
   TOT_VAC_CNT?: string | number;
   YEAR_VAC_CNT?: string | number;
   LAST_YEAR_VAC?: string | number;
   ADD_VAC?: string | number;
   USE_VAC?: string | number;
+  VAC_YN?: string | number;
   REMAIN_VAC?: string | number;
 }
 
+/** GET_AR_LEAVE_LENGTH + AR_GET_DAY_HOURS */
 export interface LeaveLengthResult {
-  LEAVE_LENGTH?: string | number;
-  DAY_HOUR?: string | number;
+  applyLength?: string;
+  dayHours?: string;
 }
 
-export interface EmployeeSearchResult {
-  personId?: string;
-  empId?: string;
-  localName?: string;
-  deptNo?: string;
-  deptName?: string;
-  position?: string;
-  positionName?: string;
-}
-
-export interface ApproverInput {
-  personId: string;
-  localName: string;
-  empId: string;
-  /** AFFIRM_TYPE bên backend: '1' = Phê duyệt, '3' = Thông báo */
-  approvType: string;
-}
-
-export interface LeaveApplySavePayload {
+export interface SstLeaveSavePayload {
   applyNo: string;
   personId: string;
+  empId: string;
   localName: string;
   leaveTypeCode: string;
+  /** YYYY-MM-DD HH:mm */
   leaveFromTime: string;
+  /** YYYY-MM-DD HH:mm */
   leaveToTime: string;
-  applyLength: null;
+  applyLength: string;
   leaveReason: string;
-  approvers: ApproverInput[];
+  approvers: ApproverSaveItem[];
 }
 
-export interface SaveResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
 
 const CODE_LIST_URL = '/sys/api/getCode/list';
-const MY_INFO_URL = '/ess/empinfo/api/personalInfo/myInfo';
 const VACATION_INFO_URL = '/ess/infoApplyAttendance/api/vacationInfo';
-const LEAVE_LENGTH_URL = '/ess/infoApplyAttendance/api/leaveLength';
-const EMPLOYEE_SEARCH_URL = '/hrm/empinfo/api/employee/search';
-const SAVE_URL = '/ar/attendanceMintenance/api/leaveApply/save';
+const LEAVE_LENGTH_URL = '/ess/infoApplyAttendance/api/applyAttBatch/leaveLength';
+const CHECK_LEAVE_SEX_URL = '/ess/infoApplyAttendance/api/applyAttBatch/checkLeaveSex';
+const SAVE_URL = '/ess/infoApplyAttendance/api/sstLeave/save';
 
 export const LEAVE_TYPE_PARENT_CODE = '21';
 
-/** Giá trị AFFIRM_TYPE bên backend (SY_AFFIRM_EMAIL): '1' = Phê duyệt, '3' = Thông báo */
-export const APPROV_TYPE_APPROVAL = '1';
-export const APPROV_TYPE_NOTICE = '3';
-
 /**
- * Form tạo đơn xin nghỉ phép mới cho bản thân - port lại từ
- * ess/infoApplyAttendance/viewSSTApplyAttendance.html (Thymeleaf, đã xoá)
- * sang Angular + NG-ZORRO. Thay EmployeeSearchModal (jQuery, chưa có bản
- * Angular) bằng nz-select tìm kiếm server-side chọn người phê duyệt, tái
- * dụng API tìm nhân viên sẵn có (giống ChangeUserComponent). Gọi lại nguyên
- * vẹn API JSON sẵn có. Bản gốc có biến JS giữ danh sách file đính kèm nhưng
- * không có UI đính kèm file thật (dead code, không gọi upload) nên không
- * port phần đó.
+ * API cho form xin nghỉ phép của chính nhân viên đăng nhập
+ * (/ess/infoApplyAttendance/viewSSTApplyAttendance - port JSP Hanwha_HAE).
+ * Tái sử dụng endpoint tính thời lượng / kiểm tra giới tính của màn hình
+ * viewApplyAttBatchByAnyApproverList (cùng hàm GET_AR_LEAVE_LENGTH, getLeaveDateSST
+ * ở bản cũ); lưu qua /api/sstLeave/save (addLeaveApplySST).
  */
 @Injectable({ providedIn: 'root' })
 export class SstLeaveApplyService {
@@ -102,25 +67,24 @@ export class SstLeaveApplyService {
     return firstValueFrom(this.http.get<SyCodeOption[]>(CODE_LIST_URL, { params: { parentCodeNo: LEAVE_TYPE_PARENT_CODE } }));
   }
 
-  getMyInfo(): Promise<MyInfo> {
-    return firstValueFrom(this.http.get<MyInfo>(MY_INFO_URL));
-  }
-
   getVacationInfo(): Promise<VacationInfo> {
     return firstValueFrom(this.http.get<VacationInfo>(VACATION_INFO_URL));
   }
 
-  getLeaveLength(fromDateTime: string, toDateTime: string, leaveTypeCode: string): Promise<LeaveLengthResult> {
+  /** fromTime/toTime: YYYY-MM-DD HH:mm */
+  getLeaveLength(personId: string, fromTime: string, toTime: string, leaveTypeCode: string): Promise<LeaveLengthResult> {
     return firstValueFrom(
-      this.http.get<LeaveLengthResult>(LEAVE_LENGTH_URL, { params: { fromDateTime, toDateTime, leaveTypeCode } }),
+      this.http.get<LeaveLengthResult>(LEAVE_LENGTH_URL, { params: { personId, fromTime, toTime, leaveTypeCode } }),
     );
   }
 
-  searchEmployees(keyword: string): Promise<EmployeeSearchResult[]> {
-    return firstValueFrom(this.http.get<EmployeeSearchResult[]>(EMPLOYEE_SEARCH_URL, { params: { keyword } }));
+  checkLeaveSex(personId: string, leaveTypeCode: string): Promise<{ valid: boolean; messageKey?: string }> {
+    return firstValueFrom(
+      this.http.get<{ valid: boolean; messageKey?: string }>(CHECK_LEAVE_SEX_URL, { params: { personId, leaveTypeCode } }),
+    );
   }
 
-  save(payload: LeaveApplySavePayload): Promise<SaveResponse> {
-    return firstValueFrom(this.http.post<SaveResponse>(SAVE_URL, payload));
+  save(payload: SstLeaveSavePayload): Promise<EssApplyResponse> {
+    return firstValueFrom(this.http.post<EssApplyResponse>(SAVE_URL, payload));
   }
 }

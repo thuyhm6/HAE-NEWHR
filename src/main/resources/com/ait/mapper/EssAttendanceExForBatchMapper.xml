@@ -33,6 +33,9 @@
         <result column="SHIFT_NO" property="shiftNo" />
         <result column="SHIFT_NAME" property="shiftName" />
         <result column="REMARK" property="remark" />
+        <result column="SHIFT_TIME" property="shiftTime" />
+        <result column="LEAVE_CONTENT" property="leaveContent" />
+        <result column="LEAVE_APPLY_NO" property="leaveApplyNo" />
     </resultMap>
 
     <resultMap id="CardApplyDetailResultMap" type="com.ait.ar.attendanceMintenance.dto.EssLeaveApplyDto">
@@ -115,15 +118,38 @@
             HR.POST_FAMILY,
             GET_GLOBAL_NAME(HR.POST_FAMILY,#{lang, jdbcType=VARCHAR}) AS POST_FAMILY_NAME,
             EC.SHIFT_NO,
-            GET_GLOBAL_NAME(EC.SHIFT_NO,#{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            GET_GLOBAL_NAME(GET_AR_SHIFTNO(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR}), #{lang, jdbcType=VARCHAR}) AS SHIFT_NAME,
+            GET_AR_SHIFTNO_WORKTIME(GET_AR_SHIFTNO(EC.PERSON_ID, EC.AR_DATE_STR, #{cpnyId, jdbcType=VARCHAR})) AS SHIFT_TIME,
+            <!-- Đơn nghỉ phép còn hiệu lực trùng ngày công (LEAVE_CONTENT / LEAVE_APPLY_NO ở SQL gốc) -->
+            (SELECT GET_GLOBAL_NAME(E.LEAVE_TYPE_CODE, #{lang, jdbcType=VARCHAR}) || ' ('
+                        || TO_CHAR(E.LEAVE_FROM_TIME, 'DD/MM/YYYY HH24:MI') || ' - '
+                        || TO_CHAR(E.LEAVE_TO_TIME, 'DD/MM/YYYY HH24:MI') || ')'
+               FROM ESS_LEAVE_APPLY_TB E
+              WHERE E.ACTIVITY = '1'
+                AND E.BATCH_YN &lt;&gt; '2'
+                AND E.CONFIRM_FLAG &lt;&gt; '2'
+                AND E.AFFIRM_FLAG NOT IN ('14014310', '14014309')
+                AND E.PERSON_ID = EC.PERSON_ID
+                AND EC.AR_DATE_STR BETWEEN TO_CHAR(E.LEAVE_FROM_TIME, 'YYYY/MM/DD') AND TO_CHAR(E.LEAVE_TO_TIME - 8 / 24, 'YYYY/MM/DD')
+                AND ROWNUM = 1) AS LEAVE_CONTENT,
+            (SELECT TO_CHAR(E.APPLY_NO)
+               FROM ESS_LEAVE_APPLY_TB E
+              WHERE E.ACTIVITY = '1'
+                AND E.BATCH_YN &lt;&gt; '2'
+                AND E.CONFIRM_FLAG &lt;&gt; '2'
+                AND E.AFFIRM_FLAG NOT IN ('14014310', '14014309')
+                AND E.PERSON_ID = EC.PERSON_ID
+                AND EC.AR_DATE_STR BETWEEN TO_CHAR(E.LEAVE_FROM_TIME, 'YYYY/MM/DD') AND TO_CHAR(E.LEAVE_TO_TIME - 8 / 24, 'YYYY/MM/DD')
+                AND ROWNUM = 1) AS LEAVE_APPLY_NO,
             EC.REMARK,
             GET_UPDATED_INFO(EC.CREATED_BY) AS CREATED_BY,
             GET_UPDATED_INFO(EC.UPDATED_BY) AS UPDATED_BY,
             EC.LOCK_YN
-        FROM AR_DETAIL_HAE EC, HR_EMPLOYEE HR
-        WHERE EC.PERSON_ID = HR.PERSON_ID
-          AND HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        FROM AR_DETAIL_HAE EC
+        INNER JOIN HR_EMPLOYEE HR ON EC.PERSON_ID = HR.PERSON_ID
+        WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
           AND HR.PERSON_ID NOT LIKE '111111%'
+          AND HR.EMP_OFFICE &lt;&gt; '123452'
           AND EC.AR_DATE_STR NOT IN (
               SELECT AR_DATE_STR
               FROM ESS_CARD_APPLY_TB CARD

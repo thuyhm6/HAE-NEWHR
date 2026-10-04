@@ -1,6 +1,15 @@
 package com.ait.ess.infoApply.controller;
 
+import com.ait.ar.attendanceMintenance.dto.ArOvertimeManagentDto;
+import com.ait.ess.infoApply.dto.EssAbnormalAnyApproverRequest;
 import com.ait.ess.infoApply.dto.EssApplyOtBatchHAEDto;
+import com.ait.ess.infoApply.dto.EssSstApplyDto;
+import com.ait.ess.infoApply.dto.EssOtBatchApproverDto;
+import com.ait.ess.infoApply.dto.EssOtBatchApproverSaveRequest;
+import com.ait.ess.infoApply.service.EssOtBatchApproverService;
+import com.ait.ess.infoApply.service.EssSstApplyService;
+import com.ait.ess.infoApplyAttendance.dto.EssAttendanceExForBatchDto;
+import com.ait.ess.infoApplyAttendance.service.EssAttendanceExForBatchService;
 import com.ait.ess.infoApply.dto.EssCwaAbnormalDto;
 import com.ait.ess.infoApply.dto.EssCoordApplyOtInfoDto;
 import com.ait.ess.infoApply.dto.EssOtApplyListDto;
@@ -24,6 +33,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +63,15 @@ public class EssInfoApplyController {
 
     @Autowired
     private SyAffirmEmailService syAffirmEmailService;
+
+    @Autowired
+    private EssSstApplyService essSstApplyService;
+
+    @Autowired
+    private EssAttendanceExForBatchService essAttendanceExForBatchService;
+
+    @Autowired
+    private EssOtBatchApproverService essOtBatchApproverService;
 
     @Autowired
     private MailSendApprovalManager mailSendApprovalManager;
@@ -205,6 +225,126 @@ public class EssInfoApplyController {
     public String viewApplyOtLBatchByAnyApproverList(HttpServletResponse response) throws IOException {
         angularIndexService.writeIndexHtml(response);
         return null;
+    }
+
+    @GetMapping("/viewApplyOTBatchInfoHAE")
+    public String viewApplyOTBatchInfoHAE(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
+    }
+
+    // ===== Tăng ca hàng loạt chọn người duyệt tùy ý (viewApplyOtLBatchByAnyApproverList / viewApplyOTBatchInfoHAE) =====
+    // over=false: ESS_APPLY_OT (tăng ca thường), over=true: ESS_APPLY_OT_OVER (tăng ca vượt)
+
+    @GetMapping("/api/otBatchApprover/list")
+    @ResponseBody
+    public ResponseEntity<List<EssOtBatchApproverDto>> getOtBatchApproverList(
+            @RequestParam(defaultValue = "false") boolean over,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptNo,
+            @RequestParam(required = false) String shiftNo,
+            @RequestParam(required = false) String otTypeCode,
+            @RequestParam(required = false) String affirmFlag,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        EssOtBatchApproverDto params = new EssOtBatchApproverDto();
+        params.setOver(over);
+        params.setKeyword(keyword);
+        params.setDeptNo(deptNo);
+        params.setShiftNo(shiftNo);
+        params.setSearchOtTypeCode(otTypeCode);
+        params.setSearchAffirmFlag(affirmFlag);
+        params.setStartDate(startDate);
+        params.setEndDate(endDate);
+        return ResponseEntity.ok(essOtBatchApproverService.getList(params));
+    }
+
+    /** getValidateInfo - applyOtDate: YYYY-MM-DD, otFromTime/otToTime: YYYY-MM-DD HH:mm */
+    @GetMapping("/api/otBatchApprover/validateInfo")
+    @ResponseBody
+    public ResponseEntity<EssOtBatchApproverDto> getOtBatchApproverValidateInfo(
+            @RequestParam String personId,
+            @RequestParam String applyOtDate,
+            @RequestParam(required = false) String otFromTime,
+            @RequestParam(required = false) String otToTime,
+            @RequestParam(defaultValue = "0") String deductYn) {
+        return ResponseEntity.ok(essOtBatchApproverService.getValidateInfo(personId, applyOtDate, otFromTime, otToTime, deductYn));
+    }
+
+    /** Thông tin nhân viên + tăng ca lũy kế/giới hạn tại ngày tăng ca (YYYY-MM-DD) */
+    @GetMapping("/api/otBatchApprover/rowInfo")
+    @ResponseBody
+    public ResponseEntity<EssOtBatchApproverDto> getOtBatchApproverRowInfo(
+            @RequestParam String personId,
+            @RequestParam String applyOtDate) {
+        return ResponseEntity.ok(essOtBatchApproverService.getRowInfo(personId, applyOtDate));
+    }
+
+    /** getDefaultOtTimeSST - loại ngày + giờ ca của người đăng nhập (YYYY-MM-DD) */
+    @GetMapping("/api/otBatchApprover/dayDefault")
+    @ResponseBody
+    public ResponseEntity<EssOtBatchApproverDto> getOtBatchApproverDayDefault(@RequestParam String applyOtDate) {
+        return ResponseEntity.ok(essOtBatchApproverService.getDayDefault(applyOtDate));
+    }
+
+    @PostMapping("/api/otBatchApprover/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveOtBatchApprover(
+            @Valid @RequestBody EssOtBatchApproverSaveRequest body,
+            @RequestParam(defaultValue = "false") boolean over,
+            HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            List<String> applyNos = essOtBatchApproverService.save(body.getItems(), over);
+            response.put("success", true);
+            response.put("messageKey", "alert.message.save_success");
+            // Gửi thông tin phê duyệt lên EagleOffice cho các đơn vừa lưu (best-effort)
+            for (String applyNo : applyNos) {
+                try {
+                    mailSendApprovalManager.sendAffirmInfoEmailApproval(request, applyNo);
+                } catch (Exception eagleEx) {
+                    log.warn("EagleOffice notification failed for applyNo={}: {}", applyNo, eagleEx.getMessage());
+                }
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to save OT batch by approver over={}", over, e);
+            response.put("success", false);
+            response.put("messageKey", "alert.message.add_fail");
+            response.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/otBatchApprover/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteOtBatchApprover(
+            @RequestBody List<String> applyNos,
+            @RequestParam(defaultValue = "false") boolean over) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            int count = essOtBatchApproverService.delete(applyNos, over);
+            response.put("success", true);
+            response.put("count", count);
+            response.put("messageKey", "alert.message.delete_success");
+            // Hủy phê duyệt trên EagleOffice (best-effort)
+            try {
+                mailSendApprovalManager.cancelMailApprovaledInfo(applyNos);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice cancel failed for applyNos={}: {}", applyNos, eagleEx.getMessage());
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to delete OT batch by approver over={} applyNos={}", over, applyNos, e);
+            response.put("success", false);
+            response.put("messageKey", "alert.message.delete_fail");
+            response.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/viewApprovalEmail")
@@ -384,5 +524,128 @@ public class EssInfoApplyController {
         dto.setStartDate(startDate);
         dto.setEndDate(endDate);
         return ResponseEntity.ok(essCwaAbnormalService.getMyList(dto));
+    }
+
+    // ===== Xin tăng ca SST (viewSSTOtApplyInfo / viewSSTOtApplyInfoTx) - port đúng JSP gốc Hanwha_HAE =====
+
+    /** getOtShiftTime - applyDate: YYYY-MM-DD */
+    @GetMapping("/api/sstOt/shiftTime")
+    @ResponseBody
+    public ResponseEntity<EssSstApplyDto> getSstOtShiftTime(@RequestParam String applyDate) {
+        return ResponseEntity.ok(essSstApplyService.getOtShiftTime(applyDate));
+    }
+
+    /** getOtLength - applyDate: YYYY-MM-DD, otFromTime/otToTime: YYYY-MM-DD HH:mm */
+    @GetMapping("/api/sstOt/length")
+    @ResponseBody
+    public ResponseEntity<EssSstApplyDto> getSstOtLength(
+            @RequestParam String applyDate,
+            @RequestParam(required = false) String otTypeCode,
+            @RequestParam String otFromTime,
+            @RequestParam String otToTime,
+            @RequestParam(defaultValue = "0") String deductYn) {
+        return ResponseEntity.ok(essSstApplyService.getOtLength(applyDate, otTypeCode, otFromTime, otToTime, deductYn));
+    }
+
+    /** AR_GET_OT_CLASH (over=false) / AR_GET_OT_OVER_CLASH (over=true) */
+    @GetMapping("/api/sstOt/clash")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkSstOtClash(
+            @RequestParam String otFromTime,
+            @RequestParam String otToTime,
+            @RequestParam(defaultValue = "0") String offsetYn,
+            @RequestParam(defaultValue = "false") boolean over) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("flag", essSstApplyService.checkOtClash(otFromTime, otToTime, offsetYn, over));
+        return ResponseEntity.ok(response);
+    }
+
+    /** addSSTOvertimeApply (over=false) / addOtOverApply (over=true) - luôn lưu cho chính user đăng nhập */
+    @PostMapping("/api/sstOt/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveSstOt(
+            @RequestBody ArOvertimeManagentDto dto,
+            @RequestParam(defaultValue = "false") boolean over,
+            HttpServletRequest request,
+            HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            dto.setPersonId((String) session.getAttribute("adminID"));
+            String applyNo = essSstApplyService.saveOvertime(dto, over);
+            response.put("success", true);
+            response.put("messageKey", "alert.message.save_success");
+            try {
+                mailSendApprovalManager.sendAffirmInfoEmailApproval(request, applyNo);
+            } catch (Exception eagleEx) {
+                log.warn("EagleOffice notification failed for applyNo={}: {}", applyNo, eagleEx.getMessage());
+            }
+        } catch (EssSstApplyService.CheckException | IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to save SST overtime over={}", over, e);
+            response.put("success", false);
+            response.put("messageKey", "alert.message.add_fail");
+            response.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    // ===== Xin phép chấm công bất thường chọn người duyệt tùy ý (viewAbnormalApplyByAnyApprover) =====
+
+    @GetMapping("/viewAbnormalApplyByAnyApprover")
+    public String viewAbnormalApplyByAnyApprover(HttpServletResponse response) throws IOException {
+        angularIndexService.writeIndexHtml(response);
+        return null;
+    }
+
+    /** addAbnormalApplyByAnyApprover - các dòng chấm công bất thường + dây chuyền duyệt tự chọn */
+    @PostMapping("/api/abnormalAnyApprover/apply")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> applyAbnormalAnyApprover(
+            @Valid @RequestBody EssAbnormalAnyApproverRequest body,
+            HttpServletRequest request,
+            HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String personId = (String) session.getAttribute("adminID");
+            body.getItems().forEach(item -> item.setPersonId(personId));
+            int count = essAttendanceExForBatchService.applyAbnormalByAnyApprover(body.getItems(), body.getApprovers());
+            response.put("success", true);
+            response.put("count", count);
+            response.put("messageKey", "alert.message.save_success");
+            for (EssAttendanceExForBatchDto item : body.getItems()) {
+                String applyNo = item.getApplyNo() != null ? item.getApplyNo() : "";
+                try {
+                    mailSendApprovalManager.sendAffirmInfoEmailApproval(request, applyNo);
+                } catch (Exception eagleEx) {
+                    log.warn("EagleOffice notification failed for applyNo={}: {}", applyNo, eagleEx.getMessage());
+                }
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to apply abnormal attendance by any approver", e);
+            response.put("success", false);
+            response.put("messageKey", "alert.message.add_fail");
+            response.put("message", e.getMessage());
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    /** Lỗi @Valid của body - trả về cùng định dạng {success, messageKey, message} */
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleValidationException(
+            org.springframework.web.bind.MethodArgumentNotValidException e) {
+        log.warn("Validation failed: {}", e.getMessage());
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("messageKey", "alert.message.add_fail");
+        response.put("message", e.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .reduce((a, b) -> a + "; " + b).orElse(""));
+        return ResponseEntity.ok(response);
     }
 }

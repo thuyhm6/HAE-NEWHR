@@ -1,0 +1,83 @@
+.aoba-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aoba-card nz-form-item {
+  margin-bottom: 8px;
+}
+
+.aoba-flex {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aoba-grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.aoba-full {
+  width: 100%;
+}
+
+.aoba-fill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.aoba-fill-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  label {
+    white-space: nowrap;
+  }
+}
+
+.aoba-fill-select {
+  width: 160px;
+}
+
+.aoba-fill-reason {
+  flex: 1;
+  min-width: 220px;
+}
+
+.aoba-time {
+  width: 100px;
+}
+
+.aoba-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  [nz-icon] {
+    margin-right: 4px;
+  }
+}
+
+.aoba-center {
+  text-align: center;
+}
+
+/* Cột có thể sửa trực tiếp - tương ứng class "titleColor" ở JSP cũ */
+.aoba-title-edit {
+  color: #1677ff !important;
+}
+
+.aoba-link {
+  color: #0000ff;
+  cursor: pointer;
+}
+
+.aoba-row-new > td {
+  background: #fffbe6;
+}

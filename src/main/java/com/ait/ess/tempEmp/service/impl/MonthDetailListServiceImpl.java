@@ -1,9 +1,10 @@
 package com.ait.ess.tempEmp.service.impl;
 
+import com.ait.ess.tempEmp.dto.MonthDetailDateDto;
 import com.ait.ess.tempEmp.dto.MonthDetailListDto;
+import com.ait.ess.tempEmp.dto.MonthDetailResultDto;
 import com.ait.ess.tempEmp.mapper.MonthDetailListMapper;
 import com.ait.ess.tempEmp.service.MonthDetailListService;
-import com.ait.sy.sys.dto.DataTablesResponse;
 import com.ait.util.I18nUtil;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.Cell;
@@ -24,6 +25,8 @@ import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,12 +58,26 @@ public class MonthDetailListServiceImpl implements MonthDetailListService {
     @Autowired
     private MonthDetailListMapper mapper;
 
+    /**
+     * Tra cứu chi tiết chấm công tháng (port từ TempEmpCtroller#viewMonthDetailList - Hanwha_HAE):
+     * lịch tháng (header cột theo ngày) + danh sách nhân viên tính thời gian thực.
+     */
     @Override
-    public DataTablesResponse<MonthDetailListDto> getPageList(MonthDetailListDto params) {
+    @Transactional(readOnly = true)
+    public MonthDetailResultDto getMonthDetail(MonthDetailListDto params) {
+        log.info("Tra cứu chi tiết chấm công tháng: month={}, year={}, deptNos={}, keyword={}",
+                params.getMonth(), params.getYear(), params.getDeptNos(), params.getKeyword());
         try {
-            int total = mapper.countList(params);
-            List<MonthDetailListDto> list = mapper.selectListPage(params);
-            return new DataTablesResponse<>(params.getDraw(), total, total, list);
+            if (!StringUtils.hasText(params.getMonth()) || !StringUtils.hasText(params.getYear())) {
+                throw new IllegalArgumentException(I18nUtil.getMessage("ess.viewMonthDetailList.msg.selectMonth"));
+            }
+            List<MonthDetailDateDto> dates = mapper.selectFixedDateList(params);
+            List<Map<String, Object>> rows = mapper.selectMonthDetailList(params);
+            log.info("Tra cứu chi tiết chấm công tháng xong: {} ngày, {} nhân viên", dates.size(), rows.size());
+            return new MonthDetailResultDto(dates, rows);
+        } catch (IllegalArgumentException e) {
+            log.warn("Tham số tra cứu chi tiết chấm công tháng không hợp lệ: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Lỗi khi lấy danh sách chi tiết chấm công tháng: {}", e.getMessage(), e);
             throw e;

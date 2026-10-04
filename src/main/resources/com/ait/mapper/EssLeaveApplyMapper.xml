@@ -599,13 +599,15 @@
             SUM(TOT_VAC_CNT + ADD_VAC + LAST_YEAR_VAC - USE_VAC - AFFIRM_USE_VAC - USE_VAC_CNT) AS REMAIN_VAC,
             SUM(TOT_VAC_CNT) AS YEAR_VAC_CNT,
             SUM(ADD_VAC) AS ADD_VAC,
-            SUM(LAST_YEAR_VAC) AS LAST_YEAR_VAC
+            SUM(LAST_YEAR_VAC) AS LAST_YEAR_VAC,
+            SUM(VAC_YN) AS VAC_YN
         FROM (
             SELECT A.TOT_VAC_CNT,
                    A.ADD_VAC,
                    A.MENT_VAC,
                    A.USE_VAC_CNT,
                    A.LAST_YEAR_VAC,
+                   AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'ANUAL') AS VAC_YN,
                    AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'CONFIRM') AS USE_VAC,
                    AR_USE_VACATION(TO_CHAR(A.STRT_DATE,'YYYY/MM/DD'), TO_CHAR(A.END_DATE,'YYYY/MM/DD'), A.CPNY_ID, A.PERSON_ID, 'AFFIRM') AS AFFIRM_USE_VAC
               FROM AR_VAC_EMP A
@@ -655,7 +657,7 @@
     </select>
 
     <select id="selectLeaveClash" resultType="java.lang.Integer">
-        SELECT AR_GET_LEAVE_CLASH('', #{personId, jdbcType=VARCHAR}, #{fromTime, jdbcType=VARCHAR}, #{toTime, jdbcType=VARCHAR}) FROM DUAL
+        SELECT AR_GET_LEAVE_CLASH(#{applyNo, jdbcType=VARCHAR}, #{personId, jdbcType=VARCHAR}, #{fromTime, jdbcType=VARCHAR}, #{toTime, jdbcType=VARCHAR}) FROM DUAL
     </select>
 
     <update id="updateCancelLeaveApply">

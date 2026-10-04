@@ -371,25 +371,34 @@ export const routes: Routes = [
       },
       {
         // /ess/infoApply/viewSSTOtApplyInfo - xem
-        // EssInfoApplyController#viewSSTOtApplyInfo. Tăng ca THƯỜNG - giới
-        // hạn 40h/tháng, 300h/năm, lưu vào ESS_APPLY_OT. Component riêng
-        // (không dùng chung với viewSSTOtApplyInfoTx nữa) vì rule nghiệp vụ
-        // khác nhau - xem docblock SstOtApplyComponent.
+        // EssInfoApplyController#viewSSTOtApplyInfo. Tăng ca THƯỜNG (ESS_APPLY_OT).
+        // Dùng chung SstOtApplyComponent với viewSSTOtApplyInfoTx vì 2 JSP gốc
+        // gần như giống hệt, khác biệt rule chọn qua route data `otOver`.
         path: 'ess/infoApply/viewSSTOtApplyInfo',
         loadComponent: () =>
           import('./pages/ess/sst-ot-apply/sst-ot-apply.component').then(
             (m) => m.SstOtApplyComponent,
           ),
+        data: { otOver: false },
       },
       {
         // /ess/infoApply/viewSSTOtApplyInfoTx - xem
-        // EssInfoApplyController#viewSSTOtApplyInfoTx. Tăng ca VƯỢT - không
-        // giới hạn giờ/tháng/năm, lưu vào ESS_APPLY_OT_OVER. Component riêng
-        // - xem docblock SstOtApplyOverComponent.
+        // EssInfoApplyController#viewSSTOtApplyInfoTx. Tăng ca VƯỢT (ESS_APPLY_OT_OVER).
         path: 'ess/infoApply/viewSSTOtApplyInfoTx',
         loadComponent: () =>
-          import('./pages/ess/sst-ot-apply-over/sst-ot-apply-over.component').then(
-            (m) => m.SstOtApplyOverComponent,
+          import('./pages/ess/sst-ot-apply/sst-ot-apply.component').then(
+            (m) => m.SstOtApplyComponent,
+          ),
+        data: { otOver: true },
+      },
+      {
+        // /ess/infoApply/viewAbnormalApplyByAnyApprover - xem
+        // EssInfoApplyController#viewAbnormalApplyByAnyApprover. Xin phép chấm
+        // công bất thường của chính nhân viên, dây chuyền duyệt tự chọn.
+        path: 'ess/infoApply/viewAbnormalApplyByAnyApprover',
+        loadComponent: () =>
+          import('./pages/ess/abnormal-apply-any-approver/abnormal-apply-any-approver.component').then(
+            (m) => m.AbnormalApplyAnyApproverComponent,
           ),
       },
       {
@@ -416,21 +425,36 @@ export const routes: Routes = [
       {
         // /ess/infoApply/viewApplyOtLBatchByAnyApproverList - xem
         // EssInfoApplyController#viewApplyOtLBatchByAnyApproverList.
-        // HR/quản lý xem+xin tăng ca hàng loạt thay bất kỳ nhân viên nào.
+        // HR/quản lý xem+xin tăng ca hàng loạt thay bất kỳ nhân viên nào (ESS_APPLY_OT).
+        // Giao diện/chức năng port đúng theo JSP gốc Hanwha_HAE (ApplyOtBatchApproverComponent).
         path: 'ess/infoApply/viewApplyOtLBatchByAnyApproverList',
         loadComponent: () =>
-          import('./pages/ess/apply-ot-batch/apply-ot-batch.component').then(
-            (m) => m.ApplyOtBatchComponent,
+          import('./pages/ess/apply-ot-batch-approver/apply-ot-batch-approver.component').then(
+            (m) => m.ApplyOtBatchApproverComponent,
           ),
+        data: { over: false },
+      },
+      {
+        // /ess/infoApply/viewApplyOTBatchInfoHAE - xem
+        // EssInfoApplyController#viewApplyOTBatchInfoHAE. Tăng ca VƯỢT hàng loạt
+        // (ESS_APPLY_OT_OVER) - dùng chung ApplyOtBatchApproverComponent vì 2 JSP
+        // gốc gần như giống hệt, khác biệt chọn qua route data `over`.
+        path: 'ess/infoApply/viewApplyOTBatchInfoHAE',
+        loadComponent: () =>
+          import('./pages/ess/apply-ot-batch-approver/apply-ot-batch-approver.component').then(
+            (m) => m.ApplyOtBatchApproverComponent,
+          ),
+        data: { over: true },
       },
       {
         // /ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList - xem
         // EssInfoApplyAttendanceController#viewApplyAttBatchByAnyApproverList.
         // HR/quản lý xem+xin nghỉ phép hàng loạt thay bất kỳ nhân viên nào.
+        // Giao diện/chức năng port đúng theo JSP gốc Hanwha_HAE (ApplyAttBatchApproverComponent).
         path: 'ess/infoApplyAttendance/viewApplyAttBatchByAnyApproverList',
         loadComponent: () =>
-          import('./pages/ess/apply-att-batch/apply-att-batch.component').then(
-            (m) => m.ApplyAttBatchComponent,
+          import('./pages/ess/apply-att-batch-approver/apply-att-batch-approver.component').then(
+            (m) => m.ApplyAttBatchApproverComponent,
           ),
       },
       // ===== Module `ar` (attendance/chấm công) - Batch M =====

@@ -1,198 +1,251 @@
 <div class="vmdl-page">
   <nz-card class="vmdl-search-card">
-    <form nz-form [nzLayout]="'vertical'">
+    <form nz-form [nzLayout]="'vertical'" (ngSubmit)="search()">
       <div nz-row [nzGutter]="12">
-        <div nz-col [nzSpan]="3">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="3">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('common.month', 'Tháng') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('ar.excelexport.title.month', 'Tháng') }}</nz-form-label>
             <nz-form-control>
               <nz-date-picker
                 id="vmdl-month"
-                [ngModel]="monthYear()"
-                (ngModelChange)="monthYear.set($event)"
-                name="vmdlMonth"
                 nzMode="month"
                 nzFormat="MM/yyyy"
-                style="width: 100%"
+                name="vmdlMonth"
+                [nzAllowClear]="false"
+                [ngModel]="arMonth()"
+                (ngModelChange)="arMonth.set($event)"
+                class="vmdl-full-width"
               ></nz-date-picker>
             </nz-form-control>
           </nz-form-item>
         </div>
 
-        <div nz-col [nzSpan]="4">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="4">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('essDept.keyword', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.nameAndEmpid', 'Mã nhân viên/Họ tên') }}</nz-form-label>
             <nz-form-control>
               <input
                 id="vmdl-keyword"
                 nz-input
+                name="vmdlKeyword"
                 [ngModel]="keyword()"
                 (ngModelChange)="keyword.set($event)"
-                name="vmdlKeyword"
-                [placeholder]="i18n.t('vdp.search.empKeyword.placeholder', 'Nhập mã hoặc họ tên')"
               />
             </nz-form-control>
           </nz-form-item>
         </div>
 
-        <div nz-col [nzSpan]="5">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('ess.infoApply.DEPT', 'Phòng ban') }}</nz-form-label>
             <nz-form-control>
               <nz-tree-select
                 id="vmdl-dept-select"
+                name="vmdlDeptNos"
                 [nzNodes]="deptTreeNodes()"
                 [nzCheckable]="true"
                 [nzShowSearch]="true"
+                [nzAllowClear]="true"
+                [nzMaxTagCount]="2"
                 [ngModel]="selectedDeptCodes()"
-                (ngModelChange)="selectedDeptCodes.set($event)"
-                name="vmdlDeptNos"
-                [nzPlaceHolder]="i18n.t('vdp.search.dept.placeholder', 'Chọn phòng ban')"
+                (ngModelChange)="selectedDeptCodes.set($event ?? [])"
+                class="vmdl-full-width"
               ></nz-tree-select>
             </nz-form-control>
           </nz-form-item>
         </div>
 
-        <div nz-col [nzSpan]="3">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="6">
           <nz-form-item>
-            <nz-form-label>{{ i18n.t('common.type', 'Loại') }}</nz-form-label>
+            <nz-form-label>{{ i18n.t('org.title.DATE', 'Thời gian') }}</nz-form-label>
             <nz-form-control>
-              <nz-select
-                id="vmdl-emp-type"
-                [ngModel]="empTypeCode()"
-                (ngModelChange)="empTypeCode.set($event)"
-                name="vmdlEmpTypeCode"
-                [nzAllowClear]="true"
-                [nzPlaceHolder]="i18n.t('common.all', 'Tất cả')"
-              >
-                <nz-option nzValue="MTSVN" [nzLabel]="i18n.t('ess.viewMonthDetailList.empType.mtsvn', 'MTSVN')"></nz-option>
-                <nz-option nzValue="THOIVU" [nzLabel]="i18n.t('ess.viewMonthDetailList.empType.thoiVu', 'Thời vụ')"></nz-option>
-              </nz-select>
+              <nz-range-picker
+                id="vmdl-date-range"
+                name="vmdlDateRange"
+                nzFormat="dd/MM/yyyy"
+                [ngModel]="dateRange()"
+                (ngModelChange)="dateRange.set($event ?? [])"
+                class="vmdl-full-width"
+              ></nz-range-picker>
             </nz-form-control>
           </nz-form-item>
         </div>
 
-        <div nz-col [nzSpan]="5">
+        <div nz-col [nzXs]="24" [nzSm]="12" [nzLg]="5">
           <nz-form-item>
             <nz-form-label>{{ i18n.t('ess.viewMonthDetailList.reportType', 'Loại báo cáo') }}</nz-form-label>
             <nz-form-control>
               <nz-select
                 id="vmdl-report-type"
-                [ngModel]="reportType()"
-                (ngModelChange)="reportType.set($event)"
                 name="vmdlReportType"
                 [nzAllowClear]="true"
                 [nzPlaceHolder]="i18n.t('ess.viewMonthDetailList.reportType.select', 'LỰA CHỌN')"
+                [ngModel]="reportType()"
+                (ngModelChange)="reportType.set($event)"
               >
-                <nz-option *ngFor="let opt of reportTypeOptions" [nzValue]="opt.code" [nzLabel]="i18n.t(opt.labelKey, opt.fallback)"></nz-option>
+                @for (opt of reportTypeOptions; track opt.code) {
+                  <nz-option [nzValue]="opt.code" [nzLabel]="i18n.t(opt.labelKey, opt.fallback)"></nz-option>
+                }
               </nz-select>
             </nz-form-control>
           </nz-form-item>
         </div>
       </div>
 
-      <div nz-row [nzGutter]="8">
-        <div nz-col [nzSpan]="24" class="vmdl-search-actions">
-          <button id="vmdl-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="loading()">
-            <span nz-icon nzType="search"></span>
-            {{ i18n.t('essDept.search', 'Tra cứu') }}
-          </button>
-          @for (btn of quickExportButtons; track btn.code) {
-            <button nz-button (click)="quickExport(btn.code)">{{ i18n.t(btn.labelKey, btn.fallback) }}</button>
-          }
-          <button id="vmdl-export-btn" nz-button nzType="primary" nzDanger (click)="exportSelectedReport()">
-            <span nz-icon nzType="export"></span>
-            {{ i18n.t('ess.viewMonthDetailList.btnExport', 'XUẤT BÁO CÁO') }}
-          </button>
-        </div>
+      <div class="vmdl-actions">
+        <button id="vmdl-search-btn" nz-button nzType="primary" type="submit" [nzLoading]="loading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('org.title.SELECT', 'Tra cứu') }}
+        </button>
+        <button id="vmdl-excel-btn" nz-button type="button" (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>
+          {{ i18n.t('ess.infoApply.EXCEL_OUT', 'Xuất Excel') }}
+        </button>
+        <button id="vmdl-excel-days-btn" nz-button type="button" (click)="exportExcelDays()">
+          <span nz-icon nzType="file-excel"></span>
+          {{ i18n.t('ess.viewMonthDetailList.btnExcelDays', 'Xuất Excel Days') }}
+        </button>
+        <button id="vmdl-report-btn" nz-button nzType="primary" nzDanger type="button" (click)="exportSelectedReport()">
+          <span nz-icon nzType="export"></span>
+          {{ i18n.t('ess.viewMonthDetailList.btnExport', 'XUẤT BÁO CÁO') }}
+        </button>
       </div>
     </form>
   </nz-card>
 
   <nz-card class="vmdl-table-card">
     <div class="vmdl-toolbar">
-      <span class="vmdl-total">{{ i18n.t('common.total', 'Tổng') }}: <strong>{{ total() }}</strong></span>
+      <span class="vmdl-total">{{ i18n.t('common.total', 'Tổng') }}: <strong>{{ displayRows().length }}</strong></span>
       <div class="vmdl-quick-filter">
         <span class="vmdl-quick-filter-label">{{ i18n.t('common.quickFilter', 'Lọc nhanh') }}</span>
         <input
           id="vmdl-quick-filter"
           nz-input
+          class="vmdl-quick-filter-input"
           [ngModel]="quickFilter()"
           (ngModelChange)="onQuickFilterChange($event)"
-          [placeholder]="i18n.t('common.quickFilter', 'Lọc nhanh')"
-          style="max-width: 200px"
         />
       </div>
     </div>
 
     <nz-table
       id="vmdl-data-table"
-      [nzData]="rows()"
+      #vmdlTable
+      nzBordered
+      nzSize="small"
+      [nzData]="displayRows()"
       [nzLoading]="loading()"
-      [nzFrontPagination]="false"
-      [nzTotal]="total()"
+      [nzWidthConfig]="widthConfig()"
+      [nzScroll]="{ x: 'max-content', y: 'calc(100vh - 430px)' }"
       [nzPageIndex]="pageIndex()"
+      (nzPageIndexChange)="pageIndex.set($event)"
       [nzPageSize]="pageSize()"
+      (nzPageSizeChange)="pageSize.set($event)"
       [nzShowSizeChanger]="true"
       [nzPageSizeOptions]="pageSizeOptions"
-      (nzQueryParams)="onQueryParamsChange($event)"
-      [nzScroll]="{ x: 'max-content', y: '100%' }"
-      nzSize="small"
+      [nzNoResult]="i18n.t('ess.viewMonthDetailList.msg.noData', 'Không có dữ liệu')"
     >
       <thead>
         <tr>
-          <th rowspan="2" nzWidth="50px" class="vmdl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
-          <th colspan="7" class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.BASIC_INFO.b', 'Thông tin cơ bản') }}</th>
-          <th colspan="3" class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.OT_ON_WEEKDAY.b', 'HÀNH CHÍNH') }}</th>
-          <th colspan="2" class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.OT_ON_WEEKEND.b', 'NGÀY NGHỈ') }}</th>
-          <th colspan="2" class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.OT_ON_HOLIDAY.b', 'LỄ TẾT') }}</th>
-          <th colspan="3" class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.WORK_DAYS.b', 'Số ngày làm việc') }}</th>
+          <th [colspan]="4" [nzLeft]="fixedLeftOffsets[0]" class="vmdl-center">
+            {{ i18n.t('ess.empInfo.essential_information', 'Thông tin cơ bản') }}
+          </th>
+          <th [attr.colspan]="basicOtherColumns.length"></th>
+          @for (group of summaryGroups; track group.labelKey) {
+            @if (group.single) {
+              <th
+                rowspan="2"
+                class="vmdl-center"
+                [nzShowSort]="true"
+                [nzSortOrder]="sortOrderOf(group.cols[0].key)"
+                (nzSortOrderChange)="onSortChange(group.cols[0].key, $event)"
+              >
+                {{ i18n.t(group.labelKey, group.fallback) }}
+              </th>
+            } @else {
+              <th [attr.colspan]="group.cols.length" class="vmdl-center">{{ i18n.t(group.labelKey, group.fallback) }}</th>
+            }
+          }
+          @if (dates().length) {
+            <th [attr.colspan]="dates().length" class="vmdl-center">
+              {{ i18n.t('ess.viewMonthDetailList.DAY_LEAVE_DETAIL.b', 'HÀNH CHÍNH') }}
+            </th>
+            <th [attr.colspan]="dates().length" class="vmdl-center">
+              {{ i18n.t('ess.viewMonthDetailList.DAY_OT_DETAIL.b', 'TĂNG CA NGÀY') }}
+            </th>
+            <th [attr.colspan]="dates().length" class="vmdl-center">
+              {{ i18n.t('ess.viewMonthDetailList.NIGHT_OT_DETAIL.b', 'TĂNG CA ĐÊM') }}
+            </th>
+          }
         </tr>
         <tr>
-          <th class="vmdl-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
-          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
-          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('epi.field.dob', 'Ngày sinh') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('common.duty', 'Chức vụ') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('common.dateJoined', 'Ngày vào làm') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('hr.enpinfo.title.EMP.PROBATION_END_DATE', 'Ngày kết thúc thử việc') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.DAY_OT.b', 'TC NGÀY') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.NIGHT_OT.b', 'TC ĐÊM') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.NIGHT_OT_210.b', 'TC ĐÊM(210%)') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.DAY_OT.b', 'TC NGÀY') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.NIGHT_OT.b', 'TC ĐÊM') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.DAY_OT.b', 'TC NGÀY') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.NIGHT_OT.b', 'TC ĐÊM') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ar.viewArShiftMonthCheckList.ZHENGCHANGBAN.b', 'Ca hành chính') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.NIGHT_SHIFT.b', 'CA ĐÊM') }}</th>
-          <th class="vmdl-col-center">{{ i18n.t('ar.viewSearchOtInfo.YINGCHUQIN.b', 'Ngày công chuẩn') }}</th>
+          <th [nzLeft]="fixedLeftOffsets[0]" class="vmdl-center">NO.</th>
+          @for (col of basicFixedColumns; track col.key; let i = $index) {
+            <th
+              class="vmdl-center"
+              [nzLeft]="fixedLeftOffsets[i + 1]"
+              [nzShowSort]="col.sortable"
+              [nzSortOrder]="sortOrderOf(col.key)"
+              (nzSortOrderChange)="onSortChange(col.key, $event)"
+            >
+              {{ i18n.t(col.labelKey, col.fallback) }}
+            </th>
+          }
+          @for (col of basicOtherColumns; track col.key) {
+            <th
+              class="vmdl-center"
+              [nzShowSort]="col.sortable"
+              [nzSortOrder]="sortOrderOf(col.key)"
+              (nzSortOrderChange)="onSortChange(col.key, $event)"
+            >
+              {{ i18n.t(col.labelKey, col.fallback) }}
+            </th>
+          }
+          @for (group of summaryGroups; track group.labelKey) {
+            @if (!group.single) {
+              @for (col of group.cols; track col.key) {
+                <th
+                  class="vmdl-center"
+                  [nzShowSort]="true"
+                  [nzSortOrder]="sortOrderOf(col.key)"
+                  (nzSortOrderChange)="onSortChange(col.key, $event)"
+                >
+                  {{ i18n.t(col.labelKey, col.fallback) }}{{ col.suffix ?? '' }}
+                </th>
+              }
+            }
+          }
+          @for (section of [1, 2, 3]; track section) {
+            @for (date of dates(); track date.ddateStr) {
+              <th class="vmdl-center vmdl-day-head" [class.vmdl-off-day]="isOffDay(date)" [attr.title]="date.ddateStr">
+                {{ date.weekTitle }}<br />{{ date.iday }}
+              </th>
+            }
+          }
         </tr>
       </thead>
       <tbody>
-        @for (row of rows(); track $index; let idx = $index) {
+        @for (row of vmdlTable.data; track $index; let idx = $index) {
           <tr>
-            <td class="vmdl-col-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
-            <td class="vmdl-col-center">{{ row.empId }}</td>
-            <td>{{ row.localName }}</td>
-            <td>{{ row.deptName }}</td>
-            <td class="vmdl-col-center">{{ row.dob }}</td>
-            <td class="vmdl-col-center">{{ row.dutyName }}</td>
-            <td class="vmdl-col-center">{{ row.dateStarted }}</td>
-            <td class="vmdl-col-center">{{ row.endProbationDate }}</td>
-            <td class="vmdl-col-right">{{ row.hcDayOt }}</td>
-            <td class="vmdl-col-right">{{ row.hcNightOt }}</td>
-            <td class="vmdl-col-right">{{ row.hcNightOt210 }}</td>
-            <td class="vmdl-col-right">{{ row.restDayOt }}</td>
-            <td class="vmdl-col-right">{{ row.restNightOt }}</td>
-            <td class="vmdl-col-right">{{ row.holDayOt }}</td>
-            <td class="vmdl-col-right">{{ row.holNightOt }}</td>
-            <td class="vmdl-col-right">{{ row.adminShiftDays }}</td>
-            <td class="vmdl-col-right">{{ row.nightShiftDays }}</td>
-            <td class="vmdl-col-right">{{ row.standardWorkDays }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="18" class="vmdl-col-center">{{ i18n.t('ess.viewMonthDetailList.msg.noData', 'Không có dữ liệu') }}</td>
+            <td [nzLeft]="fixedLeftOffsets[0]" class="vmdl-center">{{ (pageIndex() - 1) * pageSize() + idx + 1 }}</td>
+            @for (col of basicFixedColumns; track col.key; let i = $index) {
+              <td [nzLeft]="fixedLeftOffsets[i + 1]" [class.vmdl-center]="col.align === 'center'">{{ cellText(row.raw, col.key) }}</td>
+            }
+            @for (col of basicOtherColumns; track col.key) {
+              <td [class.vmdl-center]="col.align === 'center'">{{ cellText(row.raw, col.key) }}</td>
+            }
+            @for (col of summaryColumns; track col.key) {
+              <td class="vmdl-center">{{ formatNumber(row.values[col.key]) }}</td>
+            }
+            @for (date of dates(); track date.ddateStr) {
+              <td class="vmdl-center" [class.vmdl-off-day]="isOffDay(date)">{{ cellText(row.raw, date.dateKey) }}</td>
+            }
+            @for (date of dates(); track date.ddateStr) {
+              <td class="vmdl-center" [class.vmdl-off-day]="isOffDay(date)">{{ cellText(row.raw, date.dayOtKey) }}</td>
+            }
+            @for (date of dates(); track date.ddateStr) {
+              <td class="vmdl-center" [class.vmdl-off-day]="isOffDay(date)">{{ cellText(row.raw, date.nightOtKey) }}</td>
+            }
           </tr>
         }
       </tbody>

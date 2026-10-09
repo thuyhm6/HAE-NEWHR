@@ -1,0 +1,36 @@
+.otl-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.otl-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.otl-fill-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.otl-fill-select {
+  width: 140px;
+}
+
+.otl-cell-select {
+  width: 90px;
+}
+
+.otl-col-center {
+  text-align: center;
+}
+
+.otl-col-right {
+  text-align: right;
+}

@@ -1,0 +1,54 @@
+.acrc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.acrc-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.acrc-total {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.acrc-col-center {
+  text-align: center;
+}
+
+.acrc-modal-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.acrc-import-spinner {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.acrc-muted {
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 8px;
+}
+
+.acrc-import-result {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.acrc-result-success {
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+}
+
+.acrc-result-error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+}

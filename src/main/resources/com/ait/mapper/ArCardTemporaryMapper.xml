@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArCardTemporaryMapper">
+
+    <resultMap id="ArCardTemporaryResultMap" type="com.ait.ar.attendanceMintenance.dto.ArCardTemporaryDto">
+        <result column="RECORD_NO" property="recordNo"/>
+        <result column="PERSON_ID" property="personId"/>
+        <result column="EMPID" property="empId"/>
+        <result column="LOCAL_NAME" property="localName"/>
+        <result column="CARD_NO" property="cardNo"/>
+        <result column="REMARK" property="remark"/>
+        <result column="ACTIVITY" property="activity"/>
+        <result column="DEPT_NAME" property="deptName"/>
+        <result column="POST_GRADE_NAME" property="postGradeName"/>
+        <result column="CREATED_BY" property="createdBy"/>
+        <result column="CREATED_NAME" property="createdName"/>
+        <result column="CREATE_DATE" property="createDate"/>
+        <result column="UPDATED_BY" property="updatedBy"/>
+        <result column="UPDATED_NAME" property="updatedName"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+    </resultMap>
+
+    <sql id="arCardTemporaryColumns">
+        A.RECORD_NO,
+        B.EMPID,
+        B.LOCAL_NAME,
+        A.PERSON_ID,
+        A.CARD_NO,
+        A.REMARK,
+        TO_CHAR(A.ACTIVITY) AS ACTIVITY,
+        GET_DEPT_NAME(B.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+        GET_CODE_NAME(B.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+        GET_EMPID(A.CREATED_BY) AS CREATED_BY,
+        (SELECT H.LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.EMPID = GET_EMPID(A.CREATED_BY) AND ROWNUM = 1) AS CREATED_NAME,
+        TO_CHAR(A.CREATE_DATE, 'DD/MM/YYYY HH24:MI') AS CREATE_DATE,
+        GET_EMPID(A.UPDATED_BY) AS UPDATED_BY,
+        (SELECT H.LOCAL_NAME FROM HR_EMPLOYEE H WHERE H.EMPID = GET_EMPID(A.UPDATED_BY) AND ROWNUM = 1) AS UPDATED_NAME,
+        TO_CHAR(A.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') AS UPDATE_DATE
+    </sql>
+
+    <!-- Port từ select "getArCardTemporaryList" (sqlArCardRecord.xml) dự án cũ. -->
+    <select id="selectArCardTemporaryList"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardTemporaryDto"
+            resultMap="ArCardTemporaryResultMap">
+        SELECT
+        <include refid="arCardTemporaryColumns"/>
+        FROM AR_MAC_CARDS_LINK A
+        JOIN HR_EMPLOYEE B ON A.PERSON_ID = B.PERSON_ID
+        WHERE B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+        <if test="keyword != null and keyword != ''">
+            AND (
+                B.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(B.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                OR UPPER(B.ENGLISH_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="filterActivity != null and filterActivity != ''">
+            AND A.ACTIVITY = #{filterActivity, jdbcType=VARCHAR}
+        </if>
+        ORDER BY B.EMPID ASC, A.RECORD_NO DESC
+    </select>
+
+    <!-- Port từ select "getArCardTemporaryInfoS" (sqlArCardRecord.xml) dự án cũ. -->
+    <select id="selectArCardTemporaryInfo" resultMap="ArCardTemporaryResultMap">
+        SELECT
+        <include refid="arCardTemporaryColumns"/>
+        FROM AR_MAC_CARDS_LINK A
+        JOIN HR_EMPLOYEE B ON A.PERSON_ID = B.PERSON_ID
+        WHERE A.RECORD_NO = #{recordNo, jdbcType=NUMERIC}
+          AND B.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </select>
+
+    <!-- Port từ "deleteArCardTemporary" bản cũ: thẻ cũ của NV chuyển về không sử dụng. -->
+    <update id="deactivateByPersonId">
+        UPDATE AR_MAC_CARDS_LINK A
+           SET A.ACTIVITY = 0,
+               A.UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               A.UPDATED_IP = #{adminIP, jdbcType=VARCHAR},
+               A.UPDATE_DATE = SYSDATE
+         WHERE A.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND A.ACTIVITY = 1
+    </update>
+
+    <!-- Port từ "addArCardTemporaryInfo" bản cũ. EMPID lấy trực tiếp từ HR_EMPLOYEE. -->
+    <insert id="insertArCardTemporary" parameterType="com.ait.ar.attendanceMintenance.dto.ArCardTemporarySaveRequest">
+        INSERT INTO AR_MAC_CARDS_LINK
+            (RECORD_NO,
+             PERSON_ID,
+             EMPID,
+             CARD_NO,
+             ACTIVITY,
+             CREATED_BY,
+             CREATED_IP,
+             CREATE_DATE,
+             UPDATED_BY,
+             UPDATED_IP,
+             UPDATE_DATE,
+             REMARK)
+        SELECT AR_RECORDS_SEQ.NEXTVAL,
+               HR.PERSON_ID,
+               HR.EMPID,
+               #{cardNo, jdbcType=VARCHAR},
+               #{activity, jdbcType=VARCHAR},
+               #{adminID, jdbcType=VARCHAR},
+               #{adminIP, jdbcType=VARCHAR},
+               SYSDATE,
+               #{adminID, jdbcType=VARCHAR},
+               #{adminIP, jdbcType=VARCHAR},
+               SYSDATE,
+               #{remark, jdbcType=VARCHAR}
+          FROM HR_EMPLOYEE HR
+         WHERE HR.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </insert>
+
+    <!-- Port từ "updateArCardTemporaryInfo" bản cũ (bản cũ ghi nhầm vào CREATED_IP, ở đây sửa thành UPDATED_IP). -->
+    <update id="updateArCardTemporary">
+        UPDATE AR_MAC_CARDS_LINK A
+           SET A.ACTIVITY = #{activity, jdbcType=VARCHAR},
+               A.UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               A.UPDATED_IP = #{adminIP, jdbcType=VARCHAR},
+               A.UPDATE_DATE = SYSDATE
+         WHERE A.RECORD_NO = #{recordNo, jdbcType=NUMERIC}
+    </update>
+</mapper>

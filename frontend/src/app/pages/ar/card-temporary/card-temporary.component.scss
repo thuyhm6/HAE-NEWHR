@@ -1,0 +1,26 @@
+.act-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.act-toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.act-total {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.act-readonly {
+  font-weight: 500;
+}
+
+.act-col-center {
+  text-align: center;
+}

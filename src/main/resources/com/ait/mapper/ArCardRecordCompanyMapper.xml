@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- Port từ sqlArCardRecord.xml#getArCardRecordCompanyList và
+     sqlArReadCard.xml#readMacRecordCompanyList của dự án cũ -->
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArCardRecordCompanyMapper">
+
+    <resultMap id="DtoResultMap" type="com.ait.ar.attendanceMintenance.dto.ArCardRecordCompanyDto">
+        <result property="recordNo"      column="RECORD_NO"/>
+        <result property="cardNo"        column="CARD_NO"/>
+        <result property="localName"     column="LOCAL_NAME"/>
+        <result property="deptName"      column="DEPTNAME"/>
+        <result property="postGradeName" column="POST_GRADE_NAME"/>
+        <result property="rDate"         column="R_DATE"/>
+        <result property="rTime"         column="R_TIME"/>
+        <result property="doorType"      column="DOOR_TYPE"/>
+        <result property="remark"        column="REMARK"/>
+        <result property="insertBy"      column="INSERT_BY"/>
+    </resultMap>
+
+    <!-- CARD_NO của AR_MAC_RECORDS_COMPANY LEFT JOIN HR_EMPLOYEE.EMPID (giữ nguyên như bản cũ) -->
+    <sql id="baseQuery">
+        SELECT A.RECORD_NO,
+               A.CARD_NO,
+               NVL(A.EMPLOYEE_NAME, B.LOCAL_NAME)                        AS LOCAL_NAME,
+               GET_DEPT_NAME(B.DEPTNO, #{lang, jdbcType=VARCHAR})        AS DEPTNAME,
+               GET_CODE_NAME(B.POST_GRADE_NO, #{lang, jdbcType=VARCHAR}) AS POST_GRADE_NAME,
+               TO_CHAR(A.R_TIME, 'DD/MM/YYYY')                           AS R_DATE,
+               TO_CHAR(A.R_TIME, 'HH24:MI')                              AS R_TIME,
+               A.DOOR_TYPE,
+               A.REMARK,
+               A.INSERT_BY
+          FROM AR_MAC_RECORDS_COMPANY A
+          LEFT JOIN HR_EMPLOYEE B ON A.CARD_NO = B.EMPID
+         WHERE 1 = 1
+        <if test="keyword != null and keyword != ''">
+           AND (
+               UPPER(A.CARD_NO) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+               OR CONVERTTOUNSIGN(UPPER(NVL(A.EMPLOYEE_NAME, B.LOCAL_NAME)))
+                  LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+           )
+        </if>
+        <!-- Bao gồm cả phòng ban con của các phòng ban được chọn (giống START WITH/CONNECT BY bản cũ) -->
+        <if test="deptNos != null and deptNos != ''">
+           AND EXISTS (
+               SELECT 1
+                 FROM HR_DEPARTMENT D
+                WHERE D.DEPTNO = B.DEPTNO
+                START WITH INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || D.DEPTNO || ',') &gt; 0
+              CONNECT BY PRIOR D.DEPTNO = D.PARENT_DEPT_NO
+           )
+        </if>
+        <if test="fromDate != null and fromDate != ''">
+           AND A.R_TIME &gt;= TO_DATE(#{fromDate, jdbcType=VARCHAR}, 'YYYY-MM-DD')
+        </if>
+        <if test="toDate != null and toDate != ''">
+           AND A.R_TIME &lt; TO_DATE(#{toDate, jdbcType=VARCHAR}, 'YYYY-MM-DD') + 1
+        </if>
+    </sql>
+
+    <select id="countList" resultType="int"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordCompanyDto">
+        SELECT COUNT(*) FROM (
+            <include refid="baseQuery"/>
+        )
+    </select>
+
+    <select id="selectListPage" resultMap="DtoResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordCompanyDto">
+        SELECT * FROM (
+            SELECT INNER_Q.*, ROWNUM AS RN FROM (
+                <include refid="baseQuery"/>
+                ORDER BY A.R_TIME DESC, B.DEPTNO, B.EMPID
+            ) INNER_Q
+            WHERE ROWNUM &lt;= #{start, jdbcType=INTEGER} + #{length, jdbcType=INTEGER}
+        ) WHERE RN &gt; #{start, jdbcType=INTEGER}
+    </select>
+
+    <select id="selectListAll" resultMap="DtoResultMap"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordCompanyDto">
+        <include refid="baseQuery"/>
+        ORDER BY A.R_TIME DESC, B.DEPTNO, B.EMPID
+    </select>
+
+    <!-- Insert từ máy chủ Access Control, bỏ qua nếu đã có cùng CARD_NO + R_TIME (giống bản cũ) -->
+    <insert id="insertFromDevice"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArCardRecordCompanyDto">
+        INSERT INTO AR_MAC_RECORDS_COMPANY (
+            RECORD_NO,
+            CARD_NO,
+            EMPLOYEE_NAME,
+            DOOR_TYPE,
+            R_TIME,
+            INSERT_BY,
+            CREATE_DATE,
+            CREATED_BY,
+            AR_DATE_STR,
+            DEVICENAME
+        )
+        SELECT AR_MAC_RECORDS_COMPANY_SEQ.NEXTVAL,
+               #{cardNo,       jdbcType=VARCHAR},
+               #{employeeName, jdbcType=VARCHAR},
+               #{doorType,     jdbcType=VARCHAR},
+               TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI:SS'),
+               'M',
+               SYSDATE,
+               #{adminID,      jdbcType=VARCHAR},
+               SUBSTR(#{swipeDatetime, jdbcType=VARCHAR}, 1, 10),
+               #{deviceName,   jdbcType=VARCHAR}
+          FROM DUAL
+         WHERE NOT EXISTS (
+               SELECT 1
+                 FROM AR_MAC_RECORDS_COMPANY X
+                WHERE X.CARD_NO = #{cardNo, jdbcType=VARCHAR}
+                  AND X.R_TIME  = TO_DATE(#{swipeDatetime, jdbcType=VARCHAR}, 'YYYY-MM-DD HH24:MI:SS')
+         )
+    </insert>
+
+</mapper>

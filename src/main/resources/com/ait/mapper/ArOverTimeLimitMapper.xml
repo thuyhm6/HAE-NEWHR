@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ait.ar.attendanceMintenance.mapper.ArOverTimeLimitMapper">
+
+    <resultMap id="OverTimeLimitResultMap" type="com.ait.ar.attendanceMintenance.dto.ArOverTimeLimitDto">
+        <result column="OT_LIMIT_NO" property="otLimitNo"/>
+        <result column="PERSON_ID" property="personId"/>
+        <result column="EMPID" property="empId"/>
+        <result column="LOCAL_NAME" property="localName"/>
+        <result column="DEPTNO" property="deptNo"/>
+        <result column="DEPT_NAME" property="deptName"/>
+        <result column="AR_MONTH_STR" property="arMonthStr"/>
+        <result column="OT_LIMIT_MONTH" property="otLimitMonth"/>
+        <result column="OT_LIMIT_YEAR" property="otLimitYear"/>
+        <result column="OT_TOTAIL" property="otTotail"/>
+        <result column="OT_TOTAIL_MONTH" property="otTotailMonth"/>
+        <result column="WEEKDAY_OT_TOTAIL" property="weekdayOtTotail"/>
+        <result column="SATURDAY_OT_TOTAIL" property="saturdayOtTotail"/>
+        <result column="WEEKEND_OT_TOTAIL" property="weekendOtTotail"/>
+        <result column="HOILDAY_OT_TOTAIL" property="hoildayOtTotail"/>
+        <result column="UPDATED_BY_ID" property="updatedById"/>
+        <result column="UPDATE_LOCAL_NAME" property="updateLocalName"/>
+        <result column="UPDATE_DATE" property="updateDate"/>
+    </resultMap>
+
+    <!-- Port từ select "viewOverTimeLimit" (sqlArDetail.xml) dự án cũ. -->
+    <select id="selectOverTimeLimitList"
+            parameterType="com.ait.ar.attendanceMintenance.dto.ArOverTimeLimitDto"
+            resultMap="OverTimeLimitResultMap">
+        SELECT
+            AR.OT_LIMIT_NO,
+            HR.PERSON_ID,
+            HR.EMPID,
+            HR.LOCAL_NAME,
+            HR.DEPTNO,
+            GET_DEPT_NAME(HR.DEPTNO, #{lang, jdbcType=VARCHAR}) AS DEPT_NAME,
+            TO_CHAR(TO_DATE(AR.AR_MONTH_STR, 'YYYYMM'), 'MM/YYYY') AS AR_MONTH_STR,
+            AR.OT_LIMIT_MONTH,
+            AR.OT_LIMIT_YEAR,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(AR.AR_MONTH_STR, 'YYYYMM'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '2011') AS OT_TOTAIL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(AR.AR_MONTH_STR, 'YYYYMM'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '31') AS OT_TOTAIL_MONTH,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(AR.AR_MONTH_STR, 'YYYYMM'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '311') AS WEEKDAY_OT_TOTAIL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(AR.AR_MONTH_STR, 'YYYYMM'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '312') AS SATURDAY_OT_TOTAIL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(AR.AR_MONTH_STR, 'YYYYMM'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '314') AS WEEKEND_OT_TOTAIL,
+            GET_AR_OT_TOTAIL(TO_CHAR(TO_DATE(AR.AR_MONTH_STR, 'YYYYMM'), 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '315') AS HOILDAY_OT_TOTAIL,
+            GET_EMPID(AR.UPDATED_BY) AS UPDATED_BY_ID,
+            GET_LOCAL_NAME_BY_PERSONID(AR.UPDATED_BY, #{cpnyId, jdbcType=VARCHAR}) AS UPDATE_LOCAL_NAME,
+            TO_CHAR(AR.UPDATE_DATE, 'DD/MM/YYYY HH24:MI') AS UPDATE_DATE
+        FROM AR_OVERTIME_LIMIT AR
+        JOIN HR_EMPLOYEE HR ON AR.PERSON_ID = HR.PERSON_ID
+        WHERE HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+          AND AR.PERSON_ID NOT LIKE '111111%'
+          AND AR.ACTIVITY = '1'
+        <if test="deptNos != null and deptNos != ''">
+            AND INSTR(',' || #{deptNos, jdbcType=VARCHAR} || ',', ',' || HR.DEPTNO || ',') &gt; 0
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                HR.EMPID LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                OR CONVERTTOUNSIGN(UPPER(HR.LOCAL_NAME)) LIKE '%' || CONVERTTOUNSIGN(UPPER(#{keyword, jdbcType=VARCHAR})) || '%'
+                OR UPPER(HR.ENGLISH_NAME) LIKE '%' || UPPER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+        <if test="postFamily != null and postFamily != ''">
+            AND HR.POST_FAMILY = #{postFamily, jdbcType=VARCHAR}
+        </if>
+        <if test="startMonth != null and startMonth != '' and endMonth != null and endMonth != ''">
+            AND AR.AR_MONTH_STR BETWEEN #{startMonth, jdbcType=VARCHAR} AND #{endMonth, jdbcType=VARCHAR}
+        </if>
+        <if test="filterOtLimitMonth != null and filterOtLimitMonth != ''">
+            AND AR.OT_LIMIT_MONTH = #{filterOtLimitMonth, jdbcType=VARCHAR}
+        </if>
+        <if test="filterOtLimitYear != null and filterOtLimitYear != ''">
+            AND AR.OT_LIMIT_YEAR = #{filterOtLimitYear, jdbcType=VARCHAR}
+        </if>
+        <if test="minOtHours != null and minOtHours != ''">
+            AND GET_AR_OT_TOTAIL(TO_CHAR(SYSDATE, 'YYYY/MM/DD'), #{cpnyId, jdbcType=VARCHAR}, HR.PERSON_ID, '30') &gt;= TO_NUMBER(#{minOtHours, jdbcType=VARCHAR})
+        </if>
+        ORDER BY HR.PERSON_ID ASC
+    </select>
+
+    <!-- Port từ update "updateOvertimeLimit" (sqlArDetail.xml) dự án cũ. -->
+    <update id="updateOverTimeLimit">
+        UPDATE AR_OVERTIME_LIMIT AR
+           SET AR.UPDATED_BY = #{adminID, jdbcType=VARCHAR},
+               AR.UPDATE_DATE = SYSDATE,
+               AR.UPDATED_IP = #{adminIP, jdbcType=VARCHAR}
+        <if test="otLimitMonth != null and otLimitMonth != ''">
+               , AR.OT_LIMIT_MONTH = #{otLimitMonth, jdbcType=VARCHAR}
+        </if>
+        <if test="otLimitYear != null and otLimitYear != ''">
+               , AR.OT_LIMIT_YEAR = #{otLimitYear, jdbcType=VARCHAR}
+        </if>
+         WHERE AR.OT_LIMIT_NO = #{otLimitNo, jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectPersonIdByEmpId" resultType="String">
+        SELECT PERSON_ID
+          FROM HR_EMPLOYEE
+         WHERE EMPID = TRIM(#{empId, jdbcType=VARCHAR})
+           AND CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+           AND ROWNUM = 1
+    </select>
+
+    <!--
+        Port từ import "importOTLimitTSTO" + update "insertOTLimit" (sqlExcelUtil.xml)
+        dự án cũ: import Excel cập nhật cờ khóa tăng ca trên HR_EMPLOYEE
+        (OT_LIMIT = 30h/tháng, OT_LIMIT_100 = năm). Tên cột người/ngày cập nhật
+        giữ đúng như dự án cũ (UPDATED_BY_OT_LIMIT / UPDATE_DATE_OT_LIMIT).
+    -->
+    <update id="updateEmployeeOtLimit">
+        UPDATE HR_EMPLOYEE HR
+           SET HR.UPDATED_BY_OT_LIMIT = #{adminID, jdbcType=VARCHAR},
+               HR.UPDATE_DATE_OT_LIMIT = SYSDATE,
+               HR.OT_LIMIT = #{otLimit, jdbcType=INTEGER},
+               HR.OT_LIMIT_100 = #{otLimit100, jdbcType=INTEGER}
+         WHERE HR.PERSON_ID = #{personId, jdbcType=VARCHAR}
+           AND HR.CPNY_ID = #{cpnyId, jdbcType=VARCHAR}
+    </update>
+</mapper>

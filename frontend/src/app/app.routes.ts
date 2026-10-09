@@ -593,6 +593,37 @@ export const routes: Routes = [
             (m) => m.AttendanceOtSearchComponent,
           ),
       },
+      {
+        // /ar/attendanceMintenance/viewOverTimeLimit - xem
+        // ArOverTimeLimitController#viewOverTimeLimit(). Giới hạn tăng ca theo
+        // tháng: sửa cờ khóa tháng/năm trên lưới, import/xuất Excel.
+        path: 'ar/attendanceMintenance/viewOverTimeLimit',
+        loadComponent: () =>
+          import('./pages/ar/over-time-limit/over-time-limit.component').then(
+            (m) => m.OverTimeLimitComponent,
+          ),
+      },
+      {
+        // /ar/attendanceMintenance/viewArCardTemporary - xem
+        // ArCardTemporaryController#viewArCardTemporary(). Thẻ chấm công tạm
+        // thời (AR_MAC_CARDS_LINK): tra cứu, thêm, sửa trạng thái.
+        path: 'ar/attendanceMintenance/viewArCardTemporary',
+        loadComponent: () =>
+          import('./pages/ar/card-temporary/card-temporary.component').then(
+            (m) => m.CardTemporaryComponent,
+          ),
+      },
+      {
+        // /ar/attendanceMintenance/viewArCardRecordCompany - xem
+        // ArCardRecordCompanyController#viewArCardRecordCompany(). Dữ liệu quẹt
+        // thẻ ra/vào cổng công ty (AR_MAC_RECORDS_COMPANY): tra cứu, đọc từ máy
+        // chủ Access Control, xuất Excel.
+        path: 'ar/attendanceMintenance/viewArCardRecordCompany',
+        loadComponent: () =>
+          import('./pages/ar/card-record-company/card-record-company.component').then(
+            (m) => m.CardRecordCompanyComponent,
+          ),
+      },
       // ===== Module `ar` (attendance/chấm công) - Batch R =====
       {
         // /ar/attendanceSettings/viewArItem - xem ArItemController#viewArItem().

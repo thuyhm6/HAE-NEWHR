@@ -1,0 +1,166 @@
+<div class="act-page">
+  <nz-card class="act-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="6">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="act-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="actKeyword" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="act-filter-activity" [ngModel]="filterActivity()" (ngModelChange)="filterActivity.set($event)" name="actFilterActivity">
+                <nz-option nzValue="" [nzLabel]="i18n.t('attSearch.all', '-- Tất cả --')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.active', 'Đang hoạt động')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.inactive', 'Ngừng hoạt động')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="act-toolbar-actions">
+        <button id="act-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="act-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="act-add-btn" nz-button nzType="primary" (click)="openAdd()">
+          <span nz-icon nzType="plus"></span>
+          {{ i18n.t('common.add', 'Thêm') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card class="act-table-card">
+    <div class="act-total">{{ i18n.t('common.total', 'Tổng') }}: {{ rows().length }}</div>
+    <nz-table
+      #actTable
+      id="act-table"
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="defaultPageSize"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content' }"
+      nzBordered
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th nzWidth="60px" class="act-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th>{{ i18n.t('acr.col.cardNo', 'Mã thẻ') }}</th>
+          <th class="act-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th>{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th>{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th nzWidth="140px" class="act-col-center">{{ i18n.t('common.status', 'Trạng thái') }}</th>
+          <th>{{ i18n.t('common.creator', 'Người tạo') }}</th>
+          <th class="act-col-center">{{ i18n.t('common.createDate', 'Ngày tạo') }}</th>
+          <th nzWidth="80px" nzRight class="act-col-center">{{ i18n.t('common.action', 'Thao tác') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of actTable.data; track row.recordNo; let idx = $index) {
+          <tr>
+            <td class="act-col-center">{{ (actTable.nzPageIndex - 1) * actTable.nzPageSize + idx + 1 }}</td>
+            <td>{{ row.cardNo }}</td>
+            <td class="act-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td class="act-col-center">
+              <nz-tag [nzColor]="row.activity === '1' ? 'green' : 'default'">{{ activityLabel(row.activity) }}</nz-tag>
+            </td>
+            <td>{{ row.createdBy ? row.createdBy + ' - ' + (row.createdName || '') : '' }}</td>
+            <td class="act-col-center">{{ row.createDate }}</td>
+            <td nzRight class="act-col-center">
+              <button nz-button nzType="link" nzSize="small" (click)="openEdit(row)" [attr.aria-label]="i18n.t('common.edit', 'Sửa')">
+                <span nz-icon nzType="edit"></span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="act-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal thêm / sửa thẻ tạm -->
+<nz-modal
+  [nzVisible]="formVisible()"
+  [nzTitle]="editingRow() ? i18n.t('common.edit', 'Sửa') : i18n.t('common.add', 'Thêm')"
+  (nzOnCancel)="closeForm()"
+  (nzVisibleChange)="formVisible.set($event)"
+  [nzWidth]="560"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [nzLayout]="'horizontal'">
+      @if (editingRow(); as row) {
+        <nz-form-item>
+          <nz-form-label [nzSpan]="7">{{ i18n.t('common.empId', 'Mã nhân viên') }}</nz-form-label>
+          <nz-form-control [nzSpan]="17"><span class="act-readonly">{{ row.empId }}</span></nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSpan]="7">{{ i18n.t('common.empName', 'Họ tên') }}</nz-form-label>
+          <nz-form-control [nzSpan]="17"><span class="act-readonly">{{ row.localName }}</span></nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSpan]="7">{{ i18n.t('acr.col.cardNo', 'Mã thẻ') }}</nz-form-label>
+          <nz-form-control [nzSpan]="17"><span class="act-readonly">{{ row.cardNo }}</span></nz-form-control>
+        </nz-form-item>
+      } @else {
+        <nz-form-item>
+          <nz-form-label [nzSpan]="7" nzRequired>{{ i18n.t('common.empId', 'Mã nhân viên') }}</nz-form-label>
+          <nz-form-control [nzSpan]="17">
+            <nz-select
+              id="act-f-emp"
+              name="actFEmp"
+              [ngModel]="formPersonId()"
+              (ngModelChange)="formPersonId.set($event)"
+              [nzPlaceHolder]="i18n.t('empSearch.placeholder.keyword', 'Nhập mã NV hoặc họ tên...')"
+              nzShowSearch
+              nzAllowClear
+              [nzServerSearch]="true"
+              [nzLoading]="empSearching()"
+              (nzOnSearch)="onEmpSearch($event)"
+            >
+              <nz-option *ngFor="let emp of empSearchResults()" [nzValue]="emp.personId" [nzLabel]="(emp.empId || '') + ' - ' + (emp.localName || '')"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSpan]="7">{{ i18n.t('acr.col.cardNo', 'Mã thẻ') }}</nz-form-label>
+          <nz-form-control [nzSpan]="17">
+            <input id="act-f-card-no" nz-input name="actFCardNo" maxlength="50" [ngModel]="formCardNo()" (ngModelChange)="formCardNo.set($event)" />
+          </nz-form-control>
+        </nz-form-item>
+      }
+      <nz-form-item>
+        <nz-form-label [nzSpan]="7">{{ i18n.t('common.status', 'Trạng thái') }}</nz-form-label>
+        <nz-form-control [nzSpan]="17">
+          <nz-select id="act-f-activity" name="actFActivity" [ngModel]="formActivity()" (ngModelChange)="formActivity.set($event)">
+            <nz-option nzValue="1" [nzLabel]="i18n.t('common.active', 'Đang hoạt động')"></nz-option>
+            <nz-option nzValue="0" [nzLabel]="i18n.t('common.inactive', 'Ngừng hoạt động')"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+  <div *nzModalFooter>
+    <button id="act-f-cancel-btn" nz-button (click)="closeForm()">{{ i18n.t('common.cancel', 'Hủy') }}</button>
+    <button id="act-f-save-btn" nz-button nzType="primary" [nzLoading]="formSaving()" (click)="submitForm()">
+      {{ i18n.t('common.save', 'Lưu') }}
+    </button>
+  </div>
+</nz-modal>

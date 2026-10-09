@@ -1,0 +1,235 @@
+<div class="otl-page">
+  <nz-card class="otl-search-card">
+    <form nz-form [nzLayout]="'vertical'">
+      <div nz-row [nzGutter]="12">
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.search.empIdOrName', 'Mã nhân viên / Họ tên') }}</nz-form-label>
+            <nz-form-control>
+              <input id="otl-keyword" nz-input [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" name="otlKeyword" (keydown.enter)="search()" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="7">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('common.deptName', 'Phòng ban') }}</nz-form-label>
+            <nz-form-control>
+              <nz-tree-select
+                id="otl-dept"
+                [nzNodes]="deptTreeNodes()"
+                [ngModel]="selectedDeptCodes()"
+                (ngModelChange)="selectedDeptCodes.set($event)"
+                name="otlDept"
+                nzMultiple
+                nzCheckable
+                nzShowSearch
+                [nzMaxTagCount]="2"
+                [nzPlaceHolder]="i18n.t('common.select', 'Chọn')"
+                style="width: 100%"
+              ></nz-tree-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('public.title.startDate', 'Ngày bắt đầu') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="otl-start-month" nzMode="month" nzFormat="MM/yyyy" [ngModel]="startMonth()" (ngModelChange)="startMonth.set($event)" name="otlStartMonth" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('public.title.endDate', 'Ngày kết thúc') }}</nz-form-label>
+            <nz-form-control>
+              <nz-date-picker id="otl-end-month" nzMode="month" nzFormat="MM/yyyy" [ngModel]="endMonth()" (ngModelChange)="endMonth.set($event)" name="otlEndMonth" style="width: 100%"></nz-date-picker>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b', 'Giới hạn tăng ca') }} {{ i18n.t('ar.excelexport.title.month', 'Tháng') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="otl-filter-limit-month" [ngModel]="filterOtLimitMonth()" (ngModelChange)="filterOtLimitMonth.set($event)" name="otlFilterLimitMonth">
+                <nz-option nzValue="" [nzLabel]="i18n.t('attSearch.all', '-- Tất cả --')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="3">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b', 'Giới hạn tăng ca') }} {{ i18n.t('rp.report.title.year', 'Năm') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="otl-filter-limit-year" [ngModel]="filterOtLimitYear()" (ngModelChange)="filterOtLimitYear.set($event)" name="otlFilterLimitYear">
+                <nz-option nzValue="" [nzLabel]="i18n.t('attSearch.all', '-- Tất cả --')"></nz-option>
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="5">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('hrm.empinfo.POST_FAMILY', 'Nhóm nhân viên') }}</nz-form-label>
+            <nz-form-control>
+              <nz-select id="otl-post-family" [ngModel]="postFamily()" (ngModelChange)="postFamily.set($event)" name="otlPostFamily" [nzAllowClear]="true" [nzPlaceHolder]="i18n.t('attSearch.all', '-- Tất cả --')">
+                <nz-option *ngFor="let opt of postFamilyOptions()" [nzValue]="opt.codeNo" [nzLabel]="opt.nameVi || opt.codeName || opt.codeNo"></nz-option>
+              </nz-select>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+        <div nz-col [nzSpan]="4">
+          <nz-form-item>
+            <nz-form-label>{{ i18n.t('ar.viewAdjustLeaveTSTOBatchList.JIABANSHIJIAN.b', 'Thời gian tăng ca') }} &gt;=</nz-form-label>
+            <nz-form-control>
+              <nz-input-number id="otl-min-ot-hours" [ngModel]="minOtHours()" (ngModelChange)="minOtHours.set($event)" name="otlMinOtHours" [nzMin]="0" [nzStep]="1" style="width: 100%"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+      </div>
+      <div class="otl-toolbar-actions">
+        <button id="otl-search-btn" nz-button nzType="primary" (click)="search()" [nzLoading]="listLoading()">
+          <span nz-icon nzType="search"></span>
+          {{ i18n.t('common.search', 'Tìm kiếm') }}
+        </button>
+        <button id="otl-clear-btn" nz-button (click)="clearSearch()">
+          <span nz-icon nzType="close"></span>
+          {{ i18n.t('common.clearFilter', 'Xóa lọc') }}
+        </button>
+        <button id="otl-download-template-btn" nz-button (click)="downloadTemplate()">
+          <span nz-icon nzType="download"></span>
+          {{ i18n.t('common.downloadTemplate', 'Tải File Mẫu') }}
+        </button>
+        <button id="otl-import-btn" nz-button (click)="openImportModal()">
+          <span nz-icon nzType="upload"></span>
+          {{ i18n.t('common.importExcel', 'Import Excel') }}
+        </button>
+        <button id="otl-save-btn" nz-button nzType="primary" (click)="save()" [nzLoading]="saving()">
+          <span nz-icon nzType="save"></span>
+          {{ i18n.t('common.save', 'Lưu') }}
+        </button>
+        <button id="otl-export-btn" nz-button (click)="exportExcel()">
+          <span nz-icon nzType="file-excel"></span>
+          {{ i18n.t('common.exportExcel', 'Xuất Excel') }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Gán nhanh giá trị cho các dòng đã tick (khối FILL_OT_LIMIT_* bản cũ) -->
+  <nz-card class="otl-fill-card">
+    <div class="otl-fill-bar">
+      <span>{{ i18n.t('ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b', 'Giới hạn tăng ca') }} {{ i18n.t('ar.excelexport.title.month', 'Tháng') }}:</span>
+      <nz-select id="otl-fill-limit-month" class="otl-fill-select" [ngModel]="fillOtLimitMonth()" (ngModelChange)="fillOtLimitMonth.set($event)">
+        <nz-option nzValue="" [nzLabel]="i18n.t('attSearch.all', '-- Tất cả --')"></nz-option>
+        <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+        <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+      </nz-select>
+      <span>{{ i18n.t('ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b', 'Giới hạn tăng ca') }} {{ i18n.t('rp.report.title.year', 'Năm') }}:</span>
+      <nz-select id="otl-fill-limit-year" class="otl-fill-select" [ngModel]="fillOtLimitYear()" (ngModelChange)="fillOtLimitYear.set($event)">
+        <nz-option nzValue="" [nzLabel]="i18n.t('attSearch.all', '-- Tất cả --')"></nz-option>
+        <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+        <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+      </nz-select>
+      <button id="otl-fill-apply-btn" nz-button (click)="applyFillToChecked()">
+        <span nz-icon nzType="check-square"></span>
+        {{ i18n.t('hrm.approve.ALL_REACTION', 'Thực hiện tất cả') }}
+      </button>
+    </div>
+  </nz-card>
+
+  <nz-card class="otl-table-card">
+    <nz-table
+      #otlTable
+      id="otl-table"
+      [nzData]="rows()"
+      [nzLoading]="listLoading()"
+      [nzPageSize]="defaultPageSize"
+      [nzShowSizeChanger]="true"
+      [nzPageSizeOptions]="pageSizeOptions"
+      [nzScroll]="{ x: 'max-content', y: '100%' }"
+      nzBordered
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th rowspan="2" nzWidth="40px" nzLeft class="otl-col-center" [nzChecked]="allChecked()" [nzIndeterminate]="indeterminate()" (nzCheckedChange)="onAllChecked($event)"></th>
+          <th rowspan="2" nzWidth="60px" class="otl-col-center">{{ i18n.t('common.stt', 'STT') }}</th>
+          <th rowspan="2" class="otl-col-center">{{ i18n.t('common.empId', 'Mã nhân viên') }}</th>
+          <th rowspan="2">{{ i18n.t('common.empName', 'Họ tên') }}</th>
+          <th rowspan="2">{{ i18n.t('common.deptName', 'Phòng ban') }}</th>
+          <th rowspan="2" class="otl-col-center">{{ i18n.t('ar.excelexport.title.month', 'Tháng') }}</th>
+          <th rowspan="2" nzWidth="110px" class="otl-col-center">{{ i18n.t('ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b', 'Giới hạn tăng ca') }} {{ i18n.t('ar.excelexport.title.month', 'Tháng') }}</th>
+          <th rowspan="2" nzWidth="110px" class="otl-col-center">{{ i18n.t('ar.viewAdjustLeaveTSTOBatchList.JIABANSHANGXIAN.b', 'Giới hạn tăng ca') }} {{ i18n.t('rp.report.title.year', 'Năm') }}</th>
+          <th colspan="6" class="otl-col-center">{{ i18n.t('ess.title.JIABANLEIJI', 'Tổng tăng ca') }}</th>
+          <th rowspan="2">{{ i18n.t('hrm.empinfo.UPDATED_BY', 'Người thay đổi') }}</th>
+          <th rowspan="2" class="otl-col-center">{{ i18n.t('hrm.empinfo.UPDATE_DATE', 'Thời gian thay đổi') }}</th>
+        </tr>
+        <tr>
+          <th nzWidth="80px" class="otl-col-center">{{ i18n.t('ess.viewPiciOtAffirmBatchList.BENNIAN.b', 'Năm nay') }}</th>
+          <th nzWidth="80px" class="otl-col-center">{{ i18n.t('ess.viewPiciOtAffirmBatchList.BENYUE.b', 'Tháng này') }}</th>
+          <th nzWidth="80px" class="otl-col-center">{{ i18n.t('ar.viewitemparameter.title.pingshi', 'Ngày thường') }}</th>
+          <th nzWidth="80px" class="otl-col-center">{{ i18n.t('ess.viewMonthDetailList.OT_ON_SATURDAY.b', 'Thứ 7') }}</th>
+          <th nzWidth="80px" class="otl-col-center">{{ i18n.t('ar.viewitemparameter.title.zhoumo', 'Cuối tuần') }}</th>
+          <th nzWidth="80px" class="otl-col-center">{{ i18n.t('ar.viewitemparameter.title.jiejiari', 'Ngày nghỉ lễ') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of otlTable.data; track row.otLimitNo; let idx = $index) {
+          <tr>
+            <td nzLeft class="otl-col-center" [nzChecked]="isChecked(row)" (nzCheckedChange)="setChecked(row.otLimitNo, $event)"></td>
+            <td class="otl-col-center">{{ (otlTable.nzPageIndex - 1) * otlTable.nzPageSize + idx + 1 }}</td>
+            <td class="otl-col-center">{{ row.empId }}</td>
+            <td>{{ row.localName }}</td>
+            <td>{{ row.deptName }}</td>
+            <td class="otl-col-center">{{ row.arMonthStr }}</td>
+            <td class="otl-col-center">
+              <nz-select class="otl-cell-select" nzSize="small" [ngModel]="editValue(row, 'month')" (ngModelChange)="onEditChange(row, 'month', $event)">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+              </nz-select>
+            </td>
+            <td class="otl-col-center">
+              <nz-select class="otl-cell-select" nzSize="small" [ngModel]="editValue(row, 'year')" (ngModelChange)="onEditChange(row, 'year', $event)">
+                <nz-option nzValue="1" [nzLabel]="i18n.t('common.yes', 'Có')"></nz-option>
+                <nz-option nzValue="0" [nzLabel]="i18n.t('common.no', 'Không')"></nz-option>
+              </nz-select>
+            </td>
+            <td class="otl-col-right">{{ row.otTotail }}</td>
+            <td class="otl-col-right">{{ row.otTotailMonth }}</td>
+            <td class="otl-col-right">{{ row.weekdayOtTotail }}</td>
+            <td class="otl-col-right">{{ row.saturdayOtTotail }}</td>
+            <td class="otl-col-right">{{ row.weekendOtTotail }}</td>
+            <td class="otl-col-right">{{ row.hoildayOtTotail }}</td>
+            <td>{{ row.updatedById ? row.updatedById + ' - ' + (row.updateLocalName || '') : '' }}</td>
+            <td class="otl-col-center">{{ row.updateDate }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="16" class="otl-col-center">{{ i18n.t('common.noData', 'Không có dữ liệu') }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  </nz-card>
+</div>
+
+<!-- Modal Import Excel -->
+<nz-modal
+  [nzVisible]="importModalVisible()"
+  [nzTitle]="i18n.t('common.importExcel', 'Import Excel')"
+  (nzOnCancel)="closeImportModal()"
+  (nzVisibleChange)="importModalVisible.set($event)"
+>
+  <ng-container *nzModalContent>
+    <input id="otl-import-file" type="file" accept=".xlsx,.xls" (change)="onImportFileSelected($event)" />
+  </ng-container>
+  <div *nzModalFooter>
+    <button nz-button (click)="closeImportModal()">{{ i18n.t('common.close', 'Đóng') }}</button>
+    <button id="otl-import-submit-btn" nz-button nzType="primary" [disabled]="!importFile()" [nzLoading]="importing()" (click)="submitImport()">
+      {{ i18n.t('common.importExcel', 'Import Excel') }}
+    </button>
+  </div>
+</nz-modal>

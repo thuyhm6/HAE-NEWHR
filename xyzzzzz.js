@@ -2572,7 +2572,7 @@ Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java
 
 
 
-Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Tạo mới cho tôi giao diện /pa/workManagement/detailmonthCountInfoLeft, /pa/workManagement/detailYearCountInfoLeft, /pa/workManagement/viewPaResultList, /pa/workManagement/viewDeptPaResultList và /report/ar/viewArReportsList  với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
+Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Tạo mới cho tôi giao diện /ar/attendanceMintenance/viewArCardRecordCompany với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.
 
 
 Tôi đang thực hiện việc chuyển đổi dự án HR ở dự án D:\Java\WorkSpace\Hanwha_HAE sang dự án này. Tạo mới cho tôi giao diện /pa/workManagement/monthPersonCountInfoList, /pa/paView/viewPaMonthChain, /pa/workManagement/viewVerificationList, /pa/workManagement/detailPersonCountInfo, /pa/workManagement/detailPersonCountInfoLeft, /pa/workManagement/detailItemCountInfo, /pa/workManagement/detailItemDifCountInfo và /pa/workManagement/viewResultConfirmList  với dạng Angular + NG-ZORRO  (Frontend). chức năng giống như ở dự án D:\Java\WorkSpace\Hanwha_HAE. chỉ là giao diện được chuyển sang Angular + NG-ZORRO  (Frontend) và tương thích với dự án mới này.

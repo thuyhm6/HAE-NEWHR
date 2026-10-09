@@ -166,6 +166,9 @@ export class AppShellComponent implements OnInit, OnDestroy {
       '/ar/attendanceMintenance/viewAttendanceManagentForSerchInfoList',
     '/ar/attendanceMintenance/viewSearchApplyOtInfoList':
       '/ar/attendanceMintenance/viewSearchApplyOtInfoList',
+    '/ar/attendanceMintenance/viewOverTimeLimit': '/ar/attendanceMintenance/viewOverTimeLimit',
+    '/ar/attendanceMintenance/viewArCardTemporary': '/ar/attendanceMintenance/viewArCardTemporary',
+    '/ar/attendanceMintenance/viewArCardRecordCompany': '/ar/attendanceMintenance/viewArCardRecordCompany',
     '/ar/attendanceSettings/viewArItem': '/ar/attendanceSettings/viewArItem',
     '/ar/attendanceSettings/viewCycle': '/ar/attendanceSettings/viewCycle',
     '/ar/attendanceSettings/viewCycleParameter': '/ar/attendanceSettings/viewCycleParameter',
